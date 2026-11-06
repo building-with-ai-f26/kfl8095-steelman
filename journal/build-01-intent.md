@@ -37,7 +37,7 @@ Kieran requested much less explanatory text and a sparse black-and-white design 
 ## Remaining builder tasks
 
 - [ ] Create a PostHog account; install and verify analytics in Build 2.
-- [ ] Make a meaningful improvement and push on another calendar day this week. No backdated commits.
+- [x] Meaningful commits pushed on November 5 (initial build) and November 6 (editorial redesign). Continue this cadence each week.
 - [ ] Ask a Pod 6 classmate to try the prototype and record actual feedback.
 - [ ] Read the Week 1 memo and complete Terminus Episodes 1 and 2.
 - [ ] Submit https://building-with-ai-f26.github.io/kfl8095-steelman/ in Icerynk's Link field, with https://github.com/building-with-ai-f26/kfl8095-steelman in the note, before November 9 at noon New York time.

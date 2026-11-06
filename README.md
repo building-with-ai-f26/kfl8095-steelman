@@ -52,4 +52,6 @@ GitHub Pages publishes `main` → `/docs`. There is no build command; `.nojekyll
 
 Submit the Product Page URL in Icerynk's Link field and the repository URL in its note, by **Monday, November 9, 2026 at noon New York time**. The page contains the required PRD and log; no separate Intent or journal submission is needed.
 
-Still requires builder participation: create a PostHog account (instrumentation is Build 2), do meaningful work and push on a second calendar day, complete the Week 1 memo and Terminus Episodes 1–2, and prepare the November 10 two-minute demo. Do not backdate commits or treat agent browser checks as user research.
+Meaningful builds were committed and pushed on November 5 and November 6. Continue the two-day cadence each week.
+
+Still requires builder participation: create a PostHog account (instrumentation is Build 2), complete the Week 1 memo and Terminus Episodes 1–2, submit the two URLs in Icerynk, and prepare the November 10 two-minute demo. Do not backdate commits or treat agent browser checks as user research.
