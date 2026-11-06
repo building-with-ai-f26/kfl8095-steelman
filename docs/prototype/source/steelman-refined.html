@@ -1,0 +1,582 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap');
+  #steelman-study { --sm-paper:light-dark(#fafafa,#202020); --sm-card:light-dark(#ffffff,#2b2b2b); --sm-ink:light-dark(#242424,#f2f2f2); --sm-muted:light-dark(#6b6b6b,#b3b3b3); --sm-line:light-dark(#d5d5d5,#505050); --sm-wire:light-dark(#b2b2b2,#777777); --sm-soft:light-dark(#f1f1f1,#373737); --sm-green:light-dark(#33765a,#91c3a3); --sm-amber:light-dark(#a36436,#d4aa7f); --sm-selected:light-dark(#292929,#eeeeee); --sm-on-selected:light-dark(#ffffff,#242424); --sm-shadow:light-dark(#0000000b,#00000026); --sm-grid:light-dark(#ececec,#2d2d2d); --sm-question:light-dark(#ffffff,#2b2b2b); --sm-question-text:var(--sm-ink); --sm-serif:"Source Serif 4",Georgia,"Times New Roman",serif; --sm-sans:"Libre Franklin","Helvetica Neue",Arial,sans-serif; font-family:var(--sm-sans); color:var(--sm-ink); background:transparent; }
+  #steelman-study, #steelman-study .sm-modal::backdrop { color-scheme:light; }
+  #steelman-study * { box-sizing:border-box; }
+  #steelman-study button, #steelman-study textarea { font:inherit; color:inherit; }
+  #steelman-study button { -webkit-tap-highlight-color:transparent; }
+  #steelman-study button:disabled { opacity:.5; cursor:default; }
+  #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:var(--sm-card); border-bottom:1px solid var(--sm-ink); }
+  #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font-family:var(--sm-serif); font-size:23px; font-weight:700; letter-spacing:-1px; }
+  #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:1px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
+  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:radial-gradient(circle,var(--sm-grid) .8px,transparent .9px); background-size:18px 18px; }
+  #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
+  #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
+  #steelman-study .sm-links path { fill:none; stroke:var(--sm-wire); stroke-width:1.3; stroke-linejoin:round; }
+  #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
+  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-question); color:var(--sm-question-text); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:1px; box-shadow:0 2px 4px var(--sm-shadow); }
+  #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
+  #steelman-study .sm-board { display:grid; grid-template-columns:1fr 1fr; gap:56px; padding-top:56px; }
+  #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
+  #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:1px; background:var(--sm-paper); z-index:-1; }
+  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:1px; box-shadow:none; margin-bottom:28px; }
+  #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
+  #steelman-study .sm-idea { display:grid; grid-template-columns:25px minmax(0,1fr); gap:10px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
+  #steelman-study .sm-idea:last-child { margin-bottom:0; }
+  #steelman-study .sm-importance { display:flex; align-items:center; flex-direction:column; padding-top:35px; gap:2px; color:var(--sm-muted); }
+  #steelman-study .sm-arrow { display:grid; place-items:center; border:0; border-radius:5px; background:var(--sm-paper); padding:4px; width:25px; height:25px; }
+  #steelman-study .sm-arrow:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-arrow[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-vote-number { background:var(--sm-paper); font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:6px; box-shadow:0 3px 7px var(--sm-shadow); transition:transform 180ms ease,box-shadow 180ms ease; }
+  #steelman-study .sm-card:hover { transform:translateY(-2px); box-shadow:0 7px 13px var(--sm-shadow); }
+  #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:5px 5px 0 0; }
+  #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
+  #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 10px; border-top:1px solid var(--sm-line); flex-wrap:wrap; }
+  #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:26px; padding:3px; line-height:16px; }
+  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:4px; font-size:11px; text-align:left; min-width:0; }
+  #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
+  #steelman-study .sm-percentage { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
+  #steelman-study .sm-few { border-bottom:1px dotted var(--sm-muted); }
+  #steelman-study .sm-evidence-symbol { display:grid; place-items:center; position:relative; width:17px; height:18px; flex:none; color:var(--sm-green); }
+  #steelman-study .sm-evidence-symbol svg { width:16px; height:16px; stroke-width:1.6; }
+  #steelman-study .sm-evidence-symbol.sm-uncertain { color:var(--sm-amber); }
+  #steelman-study .sm-evidence-symbol.sm-unreviewed { color:var(--sm-muted); opacity:.7; }
+  #steelman-study .sm-evidence-symbol .sm-stamp { position:absolute; bottom:-1px; right:-3px; background:var(--sm-card); border-radius:50%; width:12px; height:12px; }
+  #steelman-study .sm-evidence-symbol .sm-stamp svg { width:12px; height:12px; stroke-width:2.3; }
+  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; border-radius:4px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-button svg { width:13px; height:13px; }
+  #steelman-study .sm-stack-button { position:absolute; top:7px; bottom:7px; right:0; width:33px; padding:0; border:0; background:transparent; z-index:1; border-radius:5px; }
+  #steelman-study .sm-stack-button span { position:absolute; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:5px; width:28px; pointer-events:none; transition:transform 220ms cubic-bezier(.2,.8,.2,1); }
+  #steelman-study .sm-stack-button span:first-child { right:0; top:5px; bottom:5px; }
+  #steelman-study .sm-stack-button span:last-child { right:10px; top:0; bottom:0; }
+  #steelman-study .sm-stack-button:hover span:first-child { transform:translateX(5px); }
+  #steelman-study .sm-stack-button:hover span:last-child { transform:translateX(2px); }
+  #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
+  #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  #steelman-study .sm-detail { position:relative; padding:23px; margin:30px auto 0; max-width:850px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-paper); }
+  #steelman-study .sm-breadcrumb { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:22px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:5px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
+  #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
+  #steelman-study .sm-text-button svg { width:14px; height:14px; }
+  #steelman-study .sm-section-title { font-size:21px; font-weight:500; line-height:1.3; letter-spacing:-.4px; margin:0 0 18px; }
+  #steelman-study .sm-caption { font-size:12px; line-height:1.6; color:var(--sm-muted); margin:0 0 18px; }
+  #steelman-study .sm-alternatives { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:stretch; gap:16px; }
+  #steelman-study .sm-version { display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; min-width:0; box-shadow:0 3px 7px var(--sm-shadow); }
+  #steelman-study .sm-version .sm-claim-button { flex:1; }
+  #steelman-study .sm-version .sm-claim { font-size:16px; }
+  #steelman-study .sm-version .sm-card-meta { padding:3px 10px; margin:0; }
+  #steelman-study .sm-preference { border-top:1px solid var(--sm-line); padding:12px; }
+  #steelman-study .sm-preference-label { display:flex; align-items:center; justify-content:space-between; gap:6px; color:var(--sm-muted); font-size:11px; margin-bottom:8px; }
+  #steelman-study .sm-preference-label strong { font-size:12px; font-weight:500; color:var(--sm-ink); }
+  #steelman-study .sm-preference-actions { display:flex; gap:5px; flex-wrap:wrap; }
+  #steelman-study .sm-button { display:inline-flex; justify-content:center; align-items:center; gap:6px; border:1px solid var(--sm-line); background:var(--sm-card); padding:8px 10px; border-radius:5px; font-size:11px; line-height:1.4; }
+  #steelman-study .sm-button svg { width:14px; height:14px; }
+  #steelman-study .sm-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-selected-note { display:block; color:var(--sm-muted); font-size:11px; line-height:1.5; margin-top:8px; min-height:16px; }
+  #steelman-study .sm-compare-footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:18px; }
+  #steelman-study .sm-evidence-claim { margin:0 0 20px; font-size:23px; font-weight:400; line-height:1.4; letter-spacing:-.45px; }
+  #steelman-study .sm-evidence-intro { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-meta { font-size:12px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-prose { font-size:13px; line-height:1.65; margin:17px 0; }
+  #steelman-study .sm-kicker { font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-source { background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; padding:17px 19px; margin-top:12px; }
+  #steelman-study .sm-source h3 { font-size:13px; line-height:1.5; font-weight:500; margin:5px 0 12px; }
+  #steelman-study .sm-source dl { display:grid; grid-template-columns:85px minmax(0,1fr); gap:9px 14px; margin:0; font-size:12px; line-height:1.65; }
+  #steelman-study .sm-source dt { color:var(--sm-muted); }
+  #steelman-study .sm-source dd { margin:0; }
+  #steelman-study .sm-assess { border-top:1px solid var(--sm-line); padding-top:20px; margin-top:24px; }
+  #steelman-study .sm-assess h3 { font-size:14px; font-weight:500; margin:0 0 7px; }
+  #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
+  #steelman-study .sm-form label { display:block; font-size:12px; font-weight:500; margin:16px 0 7px; }
+  #steelman-study textarea { width:100%; min-height:100px; resize:vertical; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); padding:12px; font-size:16px; line-height:1.5; }
+  #steelman-study .sm-preview { margin-top:20px; }
+  #steelman-study .sm-error { color:var(--sm-amber); font-size:12px; }
+  #steelman-study .sm-reading .sm-modal-chrome { margin-bottom:15px; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-size:21px; line-height:1.4; margin:0 0 13px; }
+  #steelman-study .sm-brief { font-size:14px; line-height:1.6; color:var(--sm-muted); margin:0 0 23px; }
+  #steelman-study .sm-source-list { margin:0; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-source-row { border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-source-row summary { display:flex; align-items:center; gap:9px; min-height:45px; padding:11px 0; list-style:none; font-size:12px; line-height:1.5; }
+  #steelman-study .sm-source-row summary::-webkit-details-marker { display:none; }
+  #steelman-study .sm-source-row summary>svg { flex:none; color:var(--sm-muted); }
+  #steelman-study .sm-source-row summary span:first-of-type { flex:1; }
+  #steelman-study .sm-source-row summary .sm-chevron { width:14px; height:14px; transition:transform 160ms ease; }
+  #steelman-study .sm-source-row[open] summary .sm-chevron { transform:rotate(90deg); }
+  #steelman-study .sm-source-row summary:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-source-note { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-packet { padding:0 0 16px 25px; font-size:12px; line-height:1.6; }
+  #steelman-study .sm-source-packet p { margin:8px 0 0; }
+  #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:58px minmax(0,1fr); gap:8px 10px; margin:12px 0 0; }
+  #steelman-study .sm-source-packet dt { color:var(--sm-muted); }
+  #steelman-study .sm-source-packet dd { margin:0; }
+  #steelman-study .sm-reading-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:19px; }
+  #steelman-study .sm-reading-footer .sm-text-button { font-size:12px; }
+  #steelman-study .sm-assessment-drawer { border-top:1px solid var(--sm-line); margin-top:17px; padding-top:15px; }
+  #steelman-study .sm-assessment-drawer h3 { font-size:12px; line-height:1.5; font-weight:400; margin:0 0 11px; }
+  #steelman-study .sm-assessment-drawer .sm-assess-actions { margin-top:0; }
+  #steelman-study .sm-preference { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  #steelman-study .sm-preference-score { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; color:var(--sm-muted); }
+  #steelman-study .sm-modal { position:absolute; margin:0; padding:0; border:0; max-width:none; max-height:none; overflow:visible; background:transparent; color:var(--sm-ink); }
+  #steelman-study .sm-modal::backdrop { background:light-dark(#20202026,#00000055); animation:sm-backdrop-in 380ms ease both; }
+  #steelman-study .sm-modal.sm-closing::backdrop { animation:sm-backdrop-out 420ms ease both; }
+  #steelman-study .sm-modal .sm-detail { margin:0; max-width:none; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); transform-origin:top left; }
+  #steelman-study .sm-modal[data-view="alternatives"] .sm-detail { border:0; border-radius:0; background:transparent; padding:0; box-shadow:none; }
+  #steelman-study .sm-modal-chrome { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; min-height:36px; }
+  #steelman-study .sm-option-context { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-close { display:grid; place-items:center; width:36px; height:36px; padding:8px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; box-shadow:0 3px 8px var(--sm-shadow); }
+  #steelman-study .sm-close:hover { background:var(--sm-soft); }
+  #steelman-study .sm-modal .sm-version { box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
+  #steelman-study .sm-version-face { display:flex; flex:1; flex-direction:column; min-width:0; }
+  #steelman-study .sm-version .sm-claim-button { display:flex; align-items:flex-start; }
+  #steelman-study .sm-origin .sm-card, #steelman-study .sm-origin .sm-stack-button { visibility:hidden; }
+  #steelman-study .sm-origin .sm-card-wrap::after { content:""; position:absolute; inset:0 24px 0 0; border:1px dashed var(--sm-wire); border-radius:6px; background:var(--sm-soft); opacity:.45; }
+  #steelman-study .sm-flight { position:absolute; margin:0; display:flex; flex-direction:column; overflow:hidden; pointer-events:none; box-shadow:0 16px 38px light-dark(#0000002b,#00000055); transform:none; transition:none; }
+  #steelman-study .sm-flight .sm-claim-button { flex:1; display:flex; align-items:flex-start; }
+  #steelman-study .sm-flight .sm-card-meta { flex:none; }
+  #steelman-study .sm-card, #steelman-study .sm-version, #steelman-study .sm-detail, #steelman-study .sm-stack-button, #steelman-study .sm-stack-button span, #steelman-study .sm-origin .sm-card-wrap::after { border-radius:2px; }
+  #steelman-study .sm-button, #steelman-study .sm-close, #steelman-study .sm-option-context, #steelman-study textarea { border-radius:2px; }
+  #steelman-study .sm-claim-button { border-radius:1px 1px 0 0; }
+  #steelman-study .sm-section-title { font-family:var(--sm-serif); font-weight:600; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-family:var(--sm-sans); font-weight:500; }
+  #steelman-study .sm-percentage { font-weight:600; }
+  #steelman-study .sm-evidence-symbol:not(.sm-unreviewed)+.sm-cred-copy .sm-percentage { color:var(--sm-green); }
+  #steelman-study .sm-evidence-symbol.sm-uncertain+.sm-cred-copy .sm-percentage { color:var(--sm-amber); }
+  #steelman-study[data-type="serif"] .sm-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; letter-spacing:-.15px; }
+  #steelman-study[data-type="serif"] .sm-reading .sm-evidence-claim { font-family:var(--sm-serif); font-size:24px; line-height:1.3; font-weight:400; }
+  #steelman-study .sm-board { transform-origin:50% 0; }
+  #steelman-study .sm-focused .sm-board { transform:translateY(16px) scale(.97); }
+  #steelman-study .sm-row-context { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; font-size:13px; line-height:1.4; padding:9px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:2px; }
+  #steelman-study .sm-row-context strong { font-weight:600; }
+  #steelman-study .sm-row-context span { color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-row-body { display:grid; grid-template-columns:minmax(0,1fr) 100px; gap:18px; align-items:start; }
+  #steelman-study .sm-modal .sm-version { background:transparent; border:0; box-shadow:none; }
+  #steelman-study .sm-version-face { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
+  #steelman-study .sm-preference { justify-content:center; align-self:center; border:1px solid var(--sm-line); border-radius:2px; gap:0; padding:2px; margin-top:8px; background:var(--sm-card); }
+  #steelman-study .sm-preference .sm-arrow, #steelman-study .sm-preference-score { background:var(--sm-card); }
+  #steelman-study .sm-preference .sm-arrow[aria-pressed="true"] { background:var(--sm-selected); }
+  #steelman-study .sm-preference-score { display:grid; place-items:center; min-width:24px; min-height:25px; font-size:11px; font-weight:500; color:var(--sm-muted); }
+  #steelman-study .sm-add-version { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:9px; padding:15px 8px; margin-top:20px; min-height:108px; width:100%; border:1px dashed var(--sm-wire); border-radius:2px; background:var(--sm-card); color:var(--sm-muted); font-size:12px; line-height:1.5; }
+  #steelman-study .sm-add-version svg { width:19px; height:19px; }
+  #steelman-study .sm-add-version:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-modal .sm-reading { padding:0; background:transparent; border:0; box-shadow:none; }
+  #steelman-study .sm-reading .sm-modal-chrome>.sm-text-button { padding:8px 10px; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:2px; }
+  #steelman-study .sm-expanded-card { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); overflow:hidden; }
+  #steelman-study .sm-reading-body { padding:22px; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-weight:400; }
+  #steelman-study .sm-reading .sm-brief { margin:0; }
+  #steelman-study .sm-evidence-group { padding:16px 22px; background:var(--sm-soft); border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-evidence-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  #steelman-study .sm-evidence-heading h3 { margin:0; font-size:12px; font-weight:600; line-height:1.5; }
+  #steelman-study .sm-evidence-group .sm-source-row summary { min-height:40px; padding:9px 0; }
+  #steelman-study .sm-evidence-group .sm-stamp { background:var(--sm-soft); }
+  #steelman-study .sm-evidence-vote { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
+  #steelman-study .sm-evidence-vote .sm-assess-actions { margin:0; gap:6px; }
+  #steelman-study .sm-value-note { padding:12px 22px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-transition-ghost { position:absolute; pointer-events:none; transform-origin:center top; }
+  @media(max-width:640px) { #steelman-study .sm-row-body { grid-template-columns:1fr; gap:12px; } #steelman-study .sm-add-version { flex-direction:row; min-height:44px; margin:0; padding:12px; } #steelman-study .sm-reading-body { padding:18px; } #steelman-study .sm-evidence-group { padding:14px 18px; } #steelman-study .sm-row-context { gap:4px; } #steelman-study .sm-row-context strong { font-size:12px; } #steelman-study .sm-row-context span { width:100%; } }
+  @keyframes sm-backdrop-in { from {opacity:0} to {opacity:1} }
+  @keyframes sm-backdrop-out { from {opacity:1} to {opacity:0} }
+  #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
+  #steelman-study[data-density="compact"] .sm-claim { font-size:15px; }
+  #steelman-study [hidden] { display:none !important; }
+  @media(max-width:800px) { #steelman-study .sm-scene { padding:24px 14px 20px; } #steelman-study .sm-board { gap:30px; } #steelman-study .sm-column { padding:0 9px 13px; } #steelman-study .sm-claim-button { padding:15px; } #steelman-study .sm-claim { font-size:15px; } #steelman-study .sm-column-head { padding:13px; } #steelman-study .sm-alternatives { gap:10px; } }
+  @media(max-width:640px) { #steelman-study .sm-scene { padding:20px 10px; } #steelman-study .sm-head { width:100%; padding:18px; } #steelman-study h1 { font-size:23px; } #steelman-study .sm-board { grid-template-columns:1fr; padding-top:38px; gap:30px; padding-left:12px; } #steelman-study .sm-column { padding:0 8px 15px; } #steelman-study .sm-alternatives { grid-template-columns:1fr; gap:18px; } #steelman-study .sm-detail { padding:15px; } #steelman-study .sm-breadcrumb { align-items:flex-start; } #steelman-study .sm-source { padding:15px; } #steelman-study .sm-source dl { grid-template-columns:1fr; gap:3px; } #steelman-study .sm-source dd { margin-bottom:10px; } #steelman-study .sm-claim { font-size:16px; } }
+  @media(pointer:coarse) { #steelman-study .sm-arrow { height:44px; width:30px; } #steelman-study .sm-idea { grid-template-columns:30px minmax(0,1fr); gap:6px; } #steelman-study .sm-importance { padding-top:25px; } #steelman-study .sm-card-wrap { padding-right:44px; } #steelman-study .sm-stack-button { width:44px; } #steelman-study .sm-stack-button span { width:40px; } #steelman-study .sm-stack-button span:last-child { right:18px; } #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; } #steelman-study .sm-source-button { min-width:44px; } }
+  @media(pointer:coarse) { #steelman-study .sm-close { width:44px; height:44px; } #steelman-study .sm-origin .sm-card-wrap::after { right:44px; } }
+  @media(pointer:coarse) { #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:44px; } }
+  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } #steelman-study .sm-card:hover { transform:none; } #steelman-study .sm-modal::backdrop { animation:none; } }
+</style>
+<div id="steelman-study" aria-label="Steelman canvas prototype" data-indicator="dossier" data-density="comfortable">
+  <header class="sm-site"><div class="sm-wordmark"><span class="sm-logo" aria-hidden="true">s</span>steelman.</div></header>
+  <div class="sm-surface">
+    <div class="sm-scene">
+      <svg class="sm-links" aria-hidden="true"></svg>
+      <header class="sm-head"><h1>Should our library open on Sundays?</h1></header>
+      <main id="sm-content"></main>
+    </div>
+    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Preview a shared-order update"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Preview update</button></div>
+    <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
+  </div>
+  <dialog class="sm-modal" id="sm-modal" aria-label="Alternative articulations"></dialog>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('steelman-study');
+  const content = document.getElementById('sm-content');
+  const status = document.getElementById('sm-status');
+  const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
+  const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cards = {
+    access: {idea:'access', label:'Weekday workers', version:'Qualified', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
+    accessBold: {idea:'access', label:'Weekday workers', version:'Broader claim', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
+    accessNarrow: {idea:'access', label:'Weekday workers', version:'More specific', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
+    study: {idea:'study',label:'A place to learn',claim:'Sunday study space could improve outcomes for students without a quiet place at home.',yes:2,no:4,pref:12,sources:['study'],explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
+    purpose: {idea:'purpose',label:'Public purpose',claim:'A public library should be available on the day families can spend time together.',value:true,pref:7,sources:[],explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
+    staffing: {idea:'staffing',label:'Staffing tradeoffs',claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.',yes:10,no:10,pref:21,sources:['roster','budget'],explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
+    evenings: {idea:'evenings',label:'Reaching more people',claim:'Improving evening hours may reach more residents for the same budget.',yes:0,no:0,pref:5,sources:['unavailable'],explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
+    services: {idea:'services',label:'Building operations',claim:'Sunday opening would add one more day of building services each week.',yes:18,no:0,pref:9,sources:['contract'],explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
+  };
+  const sources = {
+    survey: {name:'Resident access survey',locator:'Example packet · p. 2, question 4',finding:'18 of 80 respondents selected Sunday as their only available day to visit.',premise:'Some respondents cannot visit during the current opening hours.',limit:'Voluntary sample; not representative of all residents. Availability was self-reported.'},
+    hours: {name:'Current opening schedule',locator:'Example packet · p. 1',finding:'The library opens Monday–Friday, 10–6, and Saturday, 10–2. It is closed on Sunday.',premise:'A Sunday session would create access at a currently unavailable time.',limit:'The schedule does not establish who would actually attend.'},
+    study: {name:'Student listening session',locator:'Example packet · p. 3, notes 6–9',finding:'Seven of twelve participants asked for a quiet weekend study space.',premise:'Some students report a need for more weekend study space.',limit:'No academic outcomes were measured. A need for space does not establish an educational benefit.'},
+    roster: {name:'Staff rota',locator:'Example packet · p. 4, table A',finding:'All scheduled staff hours are allocated to the current six-day week.',premise:'Sunday opening is not covered by the current rota.',limit:'A different rota or changed duties might free capacity without cutting opening hours.'},
+    budget: {name:'Four-hour Sunday estimate',locator:'Example packet · p. 5, assumptions',finding:'The estimate assumes two additional staff members for four hours.',premise:'The modeled Sunday session includes extra paid staffing.',limit:'This is one staffing model. It does not prove that every viable model requires extra hours.'},
+    unavailable: {name:'Evening vs. Sunday cost estimate',locator:'Example packet · attachment unavailable',unavailable:true,finding:'The cited attachment cannot be opened.',premise:'No comparison can be inspected from the available material.',limit:'An unavailable source does not show the claim is false. You can skip assessment or challenge its support.'},
+    contract: {name:'Building services agreement',locator:'Example packet · p. 6, section 2',finding:'Cleaning and closing services are provided for each day the building opens.',premise:'Opening another day adds a day of services.',limit:'This does not establish the size of the additional cost or its importance.'}
+  };
+  const ideas = [
+    {id:'access',option:'open',title:'Weekday workers',score:42,versions:['access','accessBold','accessNarrow']},
+    {id:'study',option:'open',title:'A place to learn',score:31,versions:['study']},
+    {id:'purpose',option:'open',title:'Public purpose',score:12,versions:['purpose']},
+    {id:'staffing',option:'keep',title:'Staffing tradeoffs',score:39,versions:['staffing']},
+    {id:'evenings',option:'keep',title:'Reaching more people',score:25,versions:['evenings']},
+    {id:'services',option:'keep',title:'Building operations',score:8,versions:['services']}
+  ];
+  let state = {view:'board',idea:'access',card:'access',from:'board',importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',preview:false,added:[],updated:false,assessOpen:false,openSources:{}};
+  const design = {indicator:'dossier',density:'comfortable',type:'sans'};
+  const validViews = ['board','alternatives','evidence','compose'];
+  function restore(raw) {
+    const data = raw?.privateContent;
+    if (!data || data.version !== 2) return;
+    const selected = data.state || {};
+    state = {...state,...selected,view:validViews.includes(selected.view) ? selected.view : 'board'};
+    for (const key of ['importance','preference','assessments']) if (!state[key] || typeof state[key] !== 'object') state[key] = {};
+    if (!Array.isArray(state.added)) state.added=[];
+    if (!ideas.some(i=>i.id===state.idea)) state.idea='access';
+    syncAdded();
+    if (!cards[state.card]) state.card='access';
+    if (['dossier','books','checklist'].includes(data.design?.indicator)) design.indicator=data.design.indicator;
+    if (['comfortable','compact'].includes(data.design?.density)) design.density=data.design.density;
+    if (['sans','serif'].includes(data.design?.type)) design.type=data.design.type;
+  }
+  function syncAdded() {
+    for (const id of Object.keys(cards)) if (id.startsWith('local')) delete cards[id];
+    ideas.forEach(i=>{i.versions=i.versions.filter(id=>!id.startsWith('local'));});
+    state.added.slice(0,5).forEach((item,index)=>{
+      const idea=ideas.find(i=>i.id===item.idea); if (!idea) return;
+      const id='local'+index;
+      cards[id]={idea:item.idea,label:idea.title,version:'Your version',claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
+      idea.versions.push(id);
+    });
+  }
+  let lastSavedSnapshot='';
+  function save() {
+    const privateContent={version:2,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
+    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',view:state.view,selectedIdea:state.idea,selectedCard:state.card,design},privateContent}).catch(()=>{});
+  }
+  function announce(message) { status.textContent=message; }
+  const optionName = option => option==='open' ? 'Open on Sundays' : 'Keep current hours';
+  const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
+  function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote==='yes'?1:0), no=(card.no||0)+(vote==='no'?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
+  function credibility(id, interactive=true) {
+    const card=cards[id],s=stats(id); const tag=interactive?'button':'div';
+    const attrs=interactive?`type="button" data-action="evidence" data-id="${id}" data-key="cred-${id}"`:'';
+    if(card.value) return `<${tag} ${attrs} class="sm-cred cursor-interaction" aria-label="Value judgment; no factual credibility score">${icon('scale')}<span>Value judgment</span></${tag}>`;
+    const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
+    const symbol={dossier:'files',books:'book-open-text',checklist:'clipboard-list'}[design.indicator];
+    const mark=s.n===0?'circle-help':s.pct===100?'check':s.pct===0?'x':null;
+    return `<${tag} ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-evidence-symbol ${!s.n?'sm-unreviewed':s.pct<60?'sm-uncertain':''}">${icon(symbol)}${mark?`<span class="sm-stamp">${icon(mark)}</span>`:''}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></${tag}>`;
+  }
+  function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="evidence" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'} for ${escape(cards[id].label)}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
+  function importance(idea) {
+    const vote=state.importance[idea.id]||0;
+    const score=idea.score+vote+(state.updated&&['study','evenings'].includes(idea.id)?20:0);
+    return `<div class="sm-importance" role="group" aria-label="Importance of ${escape(idea.title)}"><button type="button" class="sm-arrow cursor-interaction" data-action="importance" data-id="${idea.id}" data-vote="1" data-key="up-${idea.id}" aria-label="More important if true: ${escape(idea.title)}" aria-pressed="${vote===1}" data-tooltip="More important if true">${icon('chevron-up')}</button><span class="sm-vote-number" aria-label="Net importance ${score}">${score}</span><button type="button" class="sm-arrow cursor-interaction" data-action="importance" data-id="${idea.id}" data-vote="-1" data-key="down-${idea.id}" aria-label="Less important if true: ${escape(idea.title)}" aria-pressed="${vote===-1}" data-tooltip="Less important if true">${icon('chevron-down')}</button></div>`;
+  }
+  function row(idea) {
+    const id=idea.versions[0],card=cards[id],stack=idea.versions.length>1;
+    return `<section class="sm-idea" data-node="${idea.id}" aria-label="${escape(idea.title)}">${importance(idea)}<div class="sm-card-wrap ${stack?'sm-stacked':''}">${stack?`<button type="button" class="sm-stack-button cursor-interaction" data-action="alternatives" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="Compare ${idea.versions.length} versions of this argument" data-tooltip="Alternative articulations"><span aria-hidden="true"></span><span aria-hidden="true"></span></button>`:''}<article class="sm-card"><button type="button" class="sm-claim-button cursor-interaction" data-action="evidence" data-id="${id}" data-key="claim-${id}" aria-label="Open claim and evidence: ${escape(card.claim)}"><span class="sm-claim">${escape(card.claim)}</span></button><div class="sm-card-meta">${credibility(id)}${sourceButton(id)}</div></article></div></section>`;
+  }
+  function board() { return `<div class="sm-board">${['open','keep'].map(option=>{const rows=ideas.filter(i=>i.option===option);if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];return `<section class="sm-column" aria-label="${optionName(option)}"><div class="sm-column-head"><h2>${optionName(option)}</h2></div>${rows.map(row).join('')}</section>`;}).join('')}</div>`; }
+  function breadcrumb(back='board') { return `<div class="sm-modal-chrome">${back==='alternatives'?`<button type="button" class="sm-text-button cursor-interaction" data-action="back" data-to="alternatives" data-key="back">${icon('arrow-left')}Back to versions</button>`:'<span aria-hidden="true"></span>'}<button type="button" class="sm-close cursor-interaction" data-action="close" data-key="close" aria-label="Return cards to the diagram" autofocus>${icon('x')}</button></div>`; }
+  function preference(id) {
+    const vote=state.preference[id]||0;
+    return `<div class="sm-preference" role="group" aria-label="Wording preference"><button type="button" class="sm-arrow cursor-interaction" data-action="preference" data-id="${id}" data-vote="1" data-key="prefer-${id}" aria-pressed="${vote===1}" aria-label="Prefer this wording: ${escape(cards[id].version||'Your')} version" data-tooltip="More preferred wording · toward the left">${icon('chevron-left')}</button><span class="sm-preference-score" data-tooltip="Net wording preference" aria-label="Net wording preference ${cards[id].pref+vote}">${cards[id].pref+vote}</span><button type="button" class="sm-arrow cursor-interaction" data-action="preference" data-id="${id}" data-vote="-1" data-key="less-${id}" aria-pressed="${vote===-1}" aria-label="Less preferred wording: ${escape(cards[id].version||'Your')} version" data-tooltip="Less preferred wording · toward the right">${icon('chevron-right')}</button></div>`;
+  }
+  function alternatives() { const idea=ideas.find(i=>i.id===state.idea); return `<section class="sm-detail"><div class="sm-modal-chrome"><div class="sm-row-context"><strong>One idea. Different articulations.</strong><span>← More preferred wording</span></div><button type="button" class="sm-close cursor-interaction" data-action="close" data-key="close" aria-label="Return cards to the diagram" autofocus>${icon('x')}</button></div><div class="sm-row-body"><div class="sm-alternatives">${idea.versions.map((id,index)=>`<article class="sm-version ${index===0?'sm-lead':''}" data-version="${id}" aria-label="${escape(cards[id].version||'Your')} version"><div class="sm-version-face"><button type="button" class="sm-claim-button cursor-interaction" data-action="evidence" data-id="${id}" data-key="claim-${id}" aria-label="Open claim and evidence: ${escape(cards[id].claim)}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${credibility(id)}${sourceButton(id)}</div></div>${preference(id)}</article>`).join('')}</div><button type="button" class="sm-add-version cursor-interaction" data-action="compose" data-key="suggest" ${state.added.length>=5?'disabled':''}>${icon('plus')}<span>Suggest a<br>version</span></button></div></section>`; }
+  function evidence() {
+    const card=cards[state.card],assessment=state.assessments[state.card];
+    const brief={
+      access:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.',
+      accessBold:'The survey shows a need among some residents. It doesn’t establish access for everyone.',
+      accessNarrow:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.',
+      study:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.',
+      purpose:'This puts family access at the heart of the library’s public purpose.',
+      staffing:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.',
+      evenings:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.',
+      services:'The agreement provides cleaning and closing services for each day the building opens.'
+    }[state.card]||card.explanation;
+    const sourceRows=card.sources.map(id=>{
+      const source=sources[id],key=state.card+'/'+id;
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
+    }).join('');
+    return `<section class="sm-detail sm-reading">${breadcrumb(state.from==='alternatives'?'alternatives':'board')}<article class="sm-expanded-card"><div class="sm-reading-body"><h2 class="sm-evidence-claim">${escape(card.claim)}</h2><p class="sm-brief">${escape(brief)}</p></div>${card.value?`<div class="sm-value-note">${credibility(state.card,false)}</div>`:`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><div class="sm-evidence-heading"><h3>Evidence</h3>${credibility(state.card,false)}</div>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}</article></section>`;
+  }
+  function composer() {
+    const idea=ideas.find(i=>i.id===state.idea);
+    return `<section class="sm-detail">${breadcrumb('alternatives')}<h2 class="sm-section-title">Suggest a version</h2><p class="sm-caption">Keep the underlying reason. A different reason would belong in its own row.</p><form class="sm-form" id="sm-form"><label for="sm-draft">Your version</label><textarea id="sm-draft" name="claim" maxlength="500" required placeholder="State the claim, including any qualifications.">${escape(state.draftClaim)}</textarea><label for="sm-reason">What does this improve?</label><textarea id="sm-reason" name="reason" maxlength="700" required placeholder="Explain what is clearer, more precise, or better supported.">${escape(state.draftReason)}</textarea><div class="sm-compare-footer">${button('preview','Preview card')}<span class="sm-meta">Same idea · Fresh preference and support assessments</span></div><div class="sm-error" id="sm-error" role="alert"></div></form>${state.preview?`<div class="sm-preview"><article class="sm-source"><div class="sm-kicker">Your version · Preview</div><p class="sm-claim">${escape(state.draftClaim)}</p><p class="sm-prose">${escape(state.draftReason)}</p><div class="sm-meta">Unreviewed · No sources attached</div></article><div class="sm-compare-footer">${button('add','Add to this idea',state.added.length>=5?'disabled':'')}</div></div>`:''}</section>`;
+  }
+  const scene=root.querySelector('.sm-scene');
+  const links=root.querySelector('.sm-links');
+  const modal=root.querySelector('#sm-modal');
+  let returnKey='stack-access', originId='access', opening=false, closing=false, closeQueued=false;
+  const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const originCard=()=>content.querySelector(`[data-node="${originId}"] .sm-card`);
+  function focusCanvas(focused,animate=true) {
+    const board=content.querySelector('.sm-board');
+    const from=getComputedStyle(board).transform;
+    board.getAnimations().forEach(animation=>animation.cancel());
+    scene.classList.toggle('sm-focused',focused);
+    const to=getComputedStyle(board).transform;
+    const destination=originCard()?.getBoundingClientRect();
+    if(animate&&!reducedMotion())board.animate([{transform:from},{transform:to}],{duration:focused?600:420,easing:'cubic-bezier(.22,.78,.18,1)'});
+    animateWires(650);
+    return destination;
+  }
+  function snapshotFace(face) {
+    if(!face)return null;
+    const claim=face.querySelector('.sm-claim,.sm-evidence-claim');
+    const type=claim?getComputedStyle(claim):null;
+    return {face:face.cloneNode(true),rect:face.getBoundingClientRect(),fontSize:type?.fontSize,lineHeight:type?.lineHeight};
+  }
+  function collapsedFace(id) {
+    const face=document.createElement('div');
+    face.innerHTML=`<div class="sm-claim-button"><span class="sm-claim">${escape(cards[id].claim)}</span></div><div class="sm-card-meta">${credibility(id,false)}${sourceButton(id)}</div>`;
+    return face;
+  }
+  function rememberOrigin(trigger) {
+    if(modal.open)return;
+    returnKey=trigger.dataset.key||'';
+    originId=trigger.closest('[data-node]')?.dataset.node||state.idea;
+  }
+  function placeModal() {
+    if(!modal.open)return;
+    const rootBox=root.getBoundingClientRect(),source=originCard()?.getBoundingClientRect();
+    const question=root.querySelector('.sm-head').getBoundingClientRect();
+    const width=Math.min(rootBox.width-32,state.view==='alternatives'?940:state.view==='evidence'?600:760);
+    const top=Math.max(question.bottom+26,(source?.top||question.bottom+60)-20);
+    modal.style.width=width+'px';
+    modal.style.left=(rootBox.left+(rootBox.width-width)/2+window.scrollX)+'px';
+    modal.style.top=(top+window.scrollY)+'px';
+    const naturalBottom=content.getBoundingClientRect().bottom+24;
+    const requiredBottom=top+modal.offsetHeight+30;
+    scene.style.minHeight=Math.max(naturalBottom-scene.getBoundingClientRect().top,requiredBottom-scene.getBoundingClientRect().top)+'px';
+  }
+  function makeFlight(face, rect, z) {
+    const shell=document.createElement('article');
+    shell.className='sm-card sm-flight';shell.setAttribute('aria-hidden','true');shell.inert=true;
+    shell.innerHTML=face.innerHTML;
+    shell.querySelectorAll('[data-key],[id]').forEach(el=>{el.removeAttribute('data-key');el.removeAttribute('id');});
+    const parent=modal.getBoundingClientRect();
+    Object.assign(shell.style,{left:(rect.left-parent.left)+'px',top:(rect.top-parent.top)+'px',width:rect.width+'px',height:rect.height+'px',zIndex:String(z)});
+    modal.appendChild(shell);return shell;
+  }
+  function boxKeyframe(rect,parent) {return {left:(rect.left-parent.left)+'px',top:(rect.top-parent.top)+'px',width:rect.width+'px',height:rect.height+'px'};}
+  async function liftCards(startRect) {
+    if(reducedMotion())return;
+    opening=true;
+    const source=startRect||originCard().getBoundingClientRect(),parent=modal.getBoundingClientRect();
+    const versions=[...modal.querySelectorAll('.sm-version')];
+    const tasks=versions.map((version,index)=>{
+      const face=version.querySelector('.sm-version-face'),end=face.getBoundingClientRect();
+      const start={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
+      const flight=makeFlight(face,start,20-index);
+      version.style.visibility='hidden';
+      const animation=flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:520+index*45,easing:'cubic-bezier(.22,.78,.18,1)',fill:'forwards'});
+      return animation.finished.catch(()=>{}).then(()=>{
+        version.style.visibility='';flight.remove();
+        version.querySelector('.sm-preference').animate([{opacity:0,transform:'translateY(-6px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});
+      });
+    });
+    modal.querySelectorAll('.sm-modal-chrome,.sm-add-version').forEach(el=>el.animate([{opacity:0},{opacity:1}],{duration:250,delay:180,fill:'backwards'}));
+    await Promise.all(tasks);opening=false;
+    if(closeQueued){closeQueued=false;closeModal();}
+  }
+  async function morphCard(snapshot,target,expanding) {
+    if(!snapshot||!target||reducedMotion())return;
+    opening=true;
+    const destination=target.getBoundingClientRect(),parent=modal.getBoundingClientRect();
+    const flight=makeFlight(expanding?snapshot.face:target,snapshot.rect,30);
+    const finalClaim=target.querySelector('.sm-claim,.sm-evidence-claim');
+    const finalType=getComputedStyle(finalClaim);
+    const claim=flight.querySelector('.sm-claim');
+    target.style.visibility='hidden';
+    if(claim)claim.animate([{fontSize:snapshot.fontSize,lineHeight:snapshot.lineHeight},{fontSize:finalType.fontSize,lineHeight:finalType.lineHeight}],{duration:520,easing:'cubic-bezier(.22,.78,.18,1)',fill:'forwards'});
+    await flight.animate([boxKeyframe(snapshot.rect,parent),boxKeyframe(destination,parent)],{duration:520,easing:'cubic-bezier(.22,.78,.18,1)',fill:'forwards'}).finished.catch(()=>{});
+    target.style.visibility='';flight.remove();
+    if(expanding)target.querySelectorAll('.sm-brief,.sm-evidence-group,.sm-value-note').forEach(el=>el.animate([{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:200,easing:'ease-out'}));
+    opening=false;
+    if(closeQueued){closeQueued=false;closeModal();}
+  }
+  function fadeRow(ghost,rect) {
+    if(!ghost||reducedMotion())return;
+    const parent=modal.getBoundingClientRect();
+    ghost.classList.add('sm-transition-ghost');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
+    ghost.querySelectorAll('[data-key],[id]').forEach(el=>{el.removeAttribute('data-key');el.removeAttribute('id');});
+    ghost.querySelector(`[data-version="${state.card}"]`)?.style.setProperty('visibility','hidden');
+    Object.assign(ghost.style,{left:(rect.left-parent.left)+'px',top:(rect.top-parent.top)+'px',width:rect.width+'px',padding:'0',border:'0',background:'transparent',boxShadow:'none'});
+    modal.appendChild(ghost);
+    ghost.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(12px) scale(.97)'}],{duration:340,easing:'ease-out',fill:'forwards'}).finished.catch(()=>{}).then(()=>ghost.remove());
+  }
+  function syncBoardIndicators() {
+    ideas.forEach(idea=>{
+      const node=content.querySelector(`[data-node="${idea.id}"]`);if(!node)return;
+      const id=idea.versions[0];
+      node.querySelector('.sm-card-meta').innerHTML=credibility(id)+sourceButton(id);
+      node.querySelector('.sm-stack-button')?.setAttribute('aria-label',`Compare ${idea.versions.length} versions of this argument`);
+    });
+    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  async function closeModal() {
+    if(!modal.open||closing)return;
+    if(opening){closeQueued=true;return;}
+    closing=true;
+    modal.classList.add('sm-closing');
+    const source=focusCanvas(false),parent=modal.getBoundingClientRect();
+    if(source&&!reducedMotion()) {
+      const faces=[...modal.querySelectorAll('.sm-version-face')];
+      if(faces.length) {
+        const tasks=faces.map((face,index)=>{
+          const start=face.getBoundingClientRect();
+          const end={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
+          const flight=makeFlight(face,start,20-index);
+          face.closest('.sm-version').style.visibility='hidden';
+          return flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:420,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'}).finished.catch(()=>{});
+        });
+        modal.querySelectorAll('.sm-modal-chrome,.sm-add-version').forEach(el=>el.animate([{opacity:1},{opacity:0}],{duration:140,fill:'forwards'}));
+        await Promise.all(tasks);
+      } else if(modal.querySelector('.sm-expanded-card')) {
+        const panel=modal.querySelector('.sm-expanded-card'),start=panel.getBoundingClientRect();
+        const flight=makeFlight(collapsedFace(state.card),start,30);
+        if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+        const fromType=getComputedStyle(panel.querySelector('.sm-evidence-claim'));
+        const toType=getComputedStyle(originCard().querySelector('.sm-claim'));
+        flight.querySelector('.sm-claim').animate([{fontSize:fromType.fontSize,lineHeight:fromType.lineHeight},{fontSize:toType.fontSize,lineHeight:toType.lineHeight}],{duration:420,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'});
+        modal.querySelector('.sm-reading').style.visibility='hidden';
+        await flight.animate([boxKeyframe(start,parent),boxKeyframe(source,parent)],{duration:420,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'}).finished.catch(()=>{});
+      } else {
+        const panel=modal.querySelector('.sm-detail');const box=panel.getBoundingClientRect();
+        await panel.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${source.left-box.left}px,${source.top-box.top}px) scale(${source.width/box.width},${source.height/box.height})`,opacity:.25}],{duration:350,easing:'cubic-bezier(.4,0,.3,1)',fill:'forwards'}).finished.catch(()=>{});
+      }
+    }
+    content.querySelector('.sm-origin')?.classList.remove('sm-origin');
+    syncBoardIndicators();
+    modal.close();modal.innerHTML='';modal.classList.remove('sm-closing');
+    scene.style.minHeight='';
+    state.view='board';closing=false;
+    content.querySelector(`[data-key="${returnKey}"]`)?.focus({preventScroll:true});
+    announce('Cards returned to their place in the diagram.');animateWires();save();
+  }
+  function renderModal(focusKey,motion) {
+    const wasOpen=modal.open;
+    const previousView=modal.dataset.view;
+    const startingCard=motion==='detail'?snapshotFace(wasOpen?modal.querySelector(`[data-version="${state.card}"] .sm-version-face`):originCard()):motion==='return'&&previousView==='evidence'?snapshotFace(modal.querySelector('.sm-expanded-card')):null;
+    const oldRow=wasOpen&&previousView==='alternatives'&&motion==='detail'?modal.querySelector('.sm-detail'):null;
+    const ghost=oldRow?.cloneNode(true),ghostRect=oldRow?.getBoundingClientRect();
+    const startingStack=!wasOpen?originCard()?.getBoundingClientRect():null;
+    modal.dataset.view=state.view;
+    modal.setAttribute('aria-label',(state.view==='alternatives'?'Alternative articulations':state.view==='evidence'?'Claim and evidence':'Suggest an alternative articulation')+': '+optionName(ideas.find(i=>i.id===state.idea).option));
+    modal.innerHTML=state.view==='alternatives'?alternatives():state.view==='evidence'?evidence():composer();
+    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+    if(!wasOpen){modal.showModal();focusCanvas(true,!!motion);}
+    placeModal();
+    content.querySelector(`[data-node="${originId}"]`)?.classList.add('sm-origin');
+    (modal.querySelector(`[data-key="${focusKey}"]`)||modal.querySelector('[data-key="close"]'))?.focus({preventScroll:true});
+    if(!wasOpen&&state.view==='alternatives'&&motion==='fan')liftCards(startingStack);
+    else if(startingCard&&motion==='detail'){fadeRow(ghost,ghostRect);morphCard(startingCard,modal.querySelector('.sm-expanded-card'),true);}
+    else if(startingCard&&motion==='return')morphCard(startingCard,modal.querySelector(`[data-version="${state.card}"] .sm-version-face`),false);
+    else if(!reducedMotion()&&motion){const panel=modal.querySelector('.sm-detail');panel.style.transformOrigin='top left';panel.animate([{transform:'translateY(12px)',opacity:.6},{transform:'translateY(0)',opacity:1}],{duration:230,easing:'ease-out'});}
+  }
+  let wireFrame=0,wireUntil=0;
+  function drawLinks() {
+    const sceneBox=scene.getBoundingClientRect();
+    const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
+    const question=rect(root.querySelector('.sm-head'));
+    const qx=question.x+question.w/2,qy=question.y+question.h;
+    const line=(x1,y1,x2,y2)=>`M${x1} ${y1}L${x2} ${y2}`;
+    const path=d=>`<path d="${d}"/>`;
+    const port=(x,y)=>`<circle cx="${x}" cy="${y}" r="3"/>`;
+    const columns=[...content.querySelectorAll('.sm-column')];
+    const narrow=window.matchMedia('(max-width:640px)').matches;
+    let markup=port(qx,qy);
+    columns.forEach((column,index)=>{
+      const head=rect(column.querySelector('.sm-column-head'));
+      const hx=head.x+head.w/2,hy=head.y;
+      if(narrow&&index>0) markup+=path(`M${qx} ${qy}V${qy+18}H8V${hy-17}H${hx}V${hy}`);
+      else markup+=path(`M${qx} ${qy}V${qy+24}H${hx}V${hy}`);
+      markup+=port(hx,hy);
+      const rows=[...column.querySelectorAll('.sm-card')].map(rect);
+      const spine=head.x+12;
+      if(rows.length) markup+=path(line(spine,head.y+head.h,spine,Math.max(...rows.map(r=>r.y+16))));
+      rows.forEach(card=>{markup+=path(line(spine,card.y+16,card.x,card.y+16))+port(card.x,card.y+16);});
+    });
+    links.setAttribute('viewBox',`0 0 ${sceneBox.width} ${sceneBox.height}`);
+    links.innerHTML=markup;
+  }
+  function animateWires(duration=0) {
+    wireUntil=Math.max(wireUntil,performance.now()+duration);
+    if(wireFrame)return;
+    const tick=()=>{drawLinks();if(performance.now()<wireUntil)wireFrame=requestAnimationFrame(tick);else wireFrame=0;};
+    wireFrame=requestAnimationFrame(tick);
+  }
+  function render(focusKey, motion='') {
+    root.dataset.indicator=design.indicator; root.dataset.density=design.density; root.dataset.type=design.type;
+    if(!content.children.length)content.innerHTML=board();
+    if(state.view!=='board'){renderModal(focusKey,motion);animateWires();return;}
+    const before=new Map([...content.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,el.getBoundingClientRect().top]));
+    content.innerHTML=board();
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
+    const reduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    if(!reduced&&motion==='reorder') content.querySelectorAll('[data-node]').forEach(el=>{const from=before.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;el.animate([{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.75,.2,1)'});}});
+    animateWires(motion&&!reduced?700:0);
+  }
+  root.addEventListener('input',event=>{
+    if(event.target.id==='sm-draft') state.draftClaim=event.target.value;
+    if(event.target.id==='sm-reason') state.draftReason=event.target.value;
+    if(state.preview && ['sm-draft','sm-reason'].includes(event.target.id)) {state.preview=false;modal.querySelector('.sm-preview')?.remove();}
+  });
+  root.addEventListener('submit',event=>event.preventDefault());
+  root.addEventListener('click',event=>{
+    const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger))return;
+    const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
+    if(action==='close'){closeModal();return;}
+    if(closing||opening)return;
+    if(action==='alternatives'||action==='evidence')rememberOrigin(trigger);
+    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared row order stays in place.':'Importance vote withdrawn. The shared row order stays in place.');}
+    if(action==='alternatives') {state.view='alternatives';state.idea=id;focus='back';motion='fan';announce('Compare versions of one idea. Browsing does not cast a vote.');}
+    if(action==='evidence') {state.from=state.view==='alternatives'?'alternatives':'board';state.view='evidence';state.card=id;state.idea=cards[id].idea;state.assessOpen=false;focus='close';motion='detail';announce('Illustrative evidence packet. Opening it does not cast an assessment.');}
+    if(action==='back') {state.view=trigger.dataset.to;focus='close';motion='return';announce('Alternative articulations in front of the diagram.');}
+    if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Version preference saved. The shared card order stays in place.':'Version preference withdrawn.');}
+    if(action==='assessment-toggle') {state.assessOpen=!state.assessOpen;}
+    if(action==='assess') {const value=trigger.dataset.value;state.assessments[state.card]=value==='skip'||state.assessments[state.card]===value?null:value;announce(state.assessments[state.card]?'Your one active assessment is included in the support percentage.':value==='skip'?'No active assessment. Skipping adds nothing to the denominator.':'Assessment withdrawn.');}
+    if(action==='compose') {state.view='compose';state.preview=false;focus='back';announce('Your suggestion will remain in this prototype.');}
+    if(action==='preview') {if(!state.draftClaim.trim()||!state.draftReason.trim()){modal.querySelector('#sm-error').textContent='Add a claim and a short explanation to preview your version.';return;}state.preview=true;focus=null;announce('Preview ready. This version has no inherited preference or credibility assessments.');}
+    if(action==='add') {if(state.added.length>=5)return;state.added.push({idea:state.idea,claim:state.draftClaim.trim(),reason:state.draftReason.trim()});syncAdded();state.view='alternatives';state.draftClaim='';state.draftReason='';state.preview=false;focus='back';announce('Your version was added locally. The idea keeps its importance; the new card starts unreviewed.');}
+    if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
+    render(focus,motion);save();
+  });
+  root.addEventListener('click',event=>{
+    const summary=event.target.closest('.sm-source-row summary');if(!summary)return;
+    const detail=summary.parentElement;
+    requestAnimationFrame(()=>{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;placeModal();save();});
+  });
+  modal.addEventListener('cancel',event=>{event.preventDefault();closeModal();});
+  modal.addEventListener('click',event=>{if(event.target===modal)closeModal();});
+  restore(window.openai?.widgetState);
+  originId=state.idea;
+  render();
+  window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);originId=state.idea;render();}});
+  new ResizeObserver(()=>animateWires()).observe(scene);
+  window.addEventListener('resize',()=>{if(modal.open&&!opening&&!closing)placeModal();});
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>render()});tweak.addSelect(design,'type',{label:'Argument typography',options:[{label:'Graphics sans',value:'sans'},{label:'Editorial serif',value:'serif'}]});tweak.addSelect(design,'indicator',{label:'Evidence metaphor',options:[{label:'Paper dossier',value:'dossier'},{label:'Open book',value:'books'},{label:'Review checklist',value:'checklist'}]});tweak.addSelect(design,'density',{label:'Card density',options:[{label:'Comfortable',value:'comfortable'},{label:'Compact',value:'compact'}]});}
+})();
+</script>

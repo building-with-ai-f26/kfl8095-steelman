@@ -1,45 +1,55 @@
-# [Project Name]
+# Steelman
 
-> **One-line pitch:** [Who is this for, and what job does it do for them?]
+> A shared argument document for understanding the strongest case for each option.
 
-- **Builder:** [Your Name] (`@github-handle`)
-- **Pod:** [Pod Name / Number]
-- **Product Page & Living PRD:** [Add your GitHub Pages URL]
-- **App:** runs locally through Week 4; add a cloud URL in Build 5.
+- **Builder:** Kieran LaMee ([@Kieran-LaMee](https://github.com/Kieran-LaMee))
+- **Pod:** 6 · Building with AI, Fall 2026
+- **Product Page, living PRD v1, and build log:** https://building-with-ai-f26.github.io/kfl8095-steelman/
+- **Interactive prototype:** https://building-with-ai-f26.github.io/kfl8095-steelman/prototype/
+- **Repository:** https://github.com/building-with-ai-f26/kfl8095-steelman
 
-## Start here: Build 1
+## Run locally
 
-**Due Monday, November 9 at noon, New York time.** No class November 3; keep building that week.
+No package installation, API keys, or backend are needed. Open `docs/prototype/index.html` directly in a modern browser. An internet connection loads the supplied prototype's fonts and icons.
 
-1. Join the [class organization](https://github.com/building-with-ai-f26), then use this template to create a **public** repo named `<netid>-<project-slug>`. Ask Christian or Hew if the organization is missing from the owner list.
-2. Set up Git and one coding agent during the week of October 27. Follow the [Icerynk setup guide](https://www.icerynk.com/c/fa26-tech-gb-2160-dm2-f2/content/pre-class-setup-github-openrouter-your-coding-agent).
-3. Publish [`docs/index.html`](./docs/index.html): **Settings → Pages → Deploy from a branch → main → /docs → Save**. When deployment finishes, open `https://building-with-ai-f26.github.io/<your-repo-name>/`.
-4. Fill in PRD v1: a reachable user, their painful before/after workflow, one core workflow, and three non-goals.
-5. Build a rough local prototype. Add a screenshot or GIF and an honest Build 1 log to the Product Page, including progress, learning, problems, costs, and hours.
-6. Push meaningful commits on **at least two separate days each week outside class**, including the November 3 break.
-7. Submit your **Product Page URL and repository URL in Icerynk**. Come ready to demo the prototype in two minutes on November 10.
+To serve both the Product Page and prototype:
 
-Create your PostHog account in Week 1. Install it on the Product Page and local app in **Build 2**, then verify events. The Product Page is public from Build 1; the app can stay local through Week 4.
-
-## Repository map
-
-| File / folder | Purpose |
-| --- | --- |
-| [`docs/index.html`](./docs/index.html) | Required public pitch, living PRD, and weekly build log. Update with actual work and evidence. |
-| [`Intent.md`](./Intent.md), [`Plan.md`](./Plan.md), [`journal/`](./journal/) | Optional drafting aids. No duplicate submission is required. |
-| [`AGENTS.md`](./AGENTS.md) | Local run commands, project context, and agent rules. Build 2 onward. |
-| [`tests/`](./tests/) | Verification guidance. Build 4 offers Track A domain evals **or** Track B user replays. |
-| [`SPONSOR_MEMO.md`](./SPONSOR_MEMO.md) | One-page recommendation backed by actual usage, full costs, and risks. Due December 14 at noon. |
-
-[Icerynk](https://www.icerynk.com/c/fa26-tech-gb-2160-dm2-f2/content) holds the assignment instructions and submissions.
-
-## Local setup
-
-Clone **your own repository** and ask your coding agent to document the exact install and run commands here and in `AGENTS.md`.
-
-```bash
-git clone https://github.com/building-with-ai-f26/<your-repo-name>.git
-cd <your-repo-name>
+```sh
+git clone https://github.com/building-with-ai-f26/kfl8095-steelman.git
+cd kfl8095-steelman
+python3 -m http.server 8000 --bind 127.0.0.1 --directory docs
 ```
 
-If your app needs API keys, use a local environment file such as `.env`. Keep private keys out of source code, browser code, screenshots, and commits. The template ignores `.env`; `.env.example` contains placeholders only.
+Open http://127.0.0.1:8000/ for the page, or http://127.0.0.1:8000/prototype/ for the demo. Stop the server with Ctrl+C.
+
+## Try the core workflow
+
+1. Read the two cases for “Should our library open on Sundays?”
+2. Open the stack beside the first argument and compare its three wordings.
+3. Prefer a wording, then open a claim and inspect its source finding and limitation.
+4. Assess whether the evidence supports the wording; change or withdraw the assessment.
+5. Suggest a qualified version, preview it, and add it to the same idea.
+6. Return to the diagram. Importance voting leaves the order stable; “Preview update” applies a simulated shared-order change.
+
+The claims, sources, and aggregate votes are illustrative. The export saves votes and suggestions locally in this browser when browser storage is available. They survive refresh but are not shared with other visitors or devices. There are no real users, live AI calls, shared backend, server storage, or implemented revision history.
+
+## Project map
+
+| Path | Purpose |
+| --- | --- |
+| `docs/index.html` | Canonical class PRD v1, Product Page, and Build 1 log |
+| `docs/styles.css` | Product Page layout and responsive styling |
+| `docs/prototype/` | Original supplied prototype and editable source fragment, preserved unchanged |
+| `docs/assets/` | Actual browser screenshots for the Product Page |
+| `docs/reference/steelman-prd-v0.4.md` | Original detailed PRD, unchanged; background vision rather than class scope |
+| `tests/build-1-manual.md` | Browser checks, results, and limits |
+| `journal/build-01-intent.md` | Build notes and remaining submission tasks |
+| `AGENTS.md` | Project context, run commands, and engineering rules |
+
+GitHub Pages publishes `main` → `/docs`. There is no build command; `.nojekyll` keeps delivery static. The remaining course-template planning and journal files are optional aids for later builds.
+
+## Build 1 handoff
+
+Submit the Product Page URL in Icerynk's Link field and the repository URL in its note, by **Monday, November 9, 2026 at noon New York time**. The page contains the required PRD and log; no separate Intent or journal submission is needed.
+
+Still requires builder participation: create a PostHog account (instrumentation is Build 2), do meaningful work and push on a second calendar day, complete the Week 1 memo and Terminus Episodes 1–2, and prepare the November 10 two-minute demo. Do not backdate commits or treat agent browser checks as user research.

@@ -1,0 +1,3240 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Steelman — Core Cards Prototype</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Steelman — Core Cards Prototype" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Steelman — Core Cards Prototype&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 16px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans:
+    -apple-system-body, ui-sans-serif, -apple-system, system-ui, &quot;Segoe UI&quot;,
+    Helvetica, &quot;Apple Color Emoji&quot;, Arial, sans-serif, &quot;Segoe UI Emoji&quot;,
+    &quot;Segoe UI Symbol&quot;;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 8px);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-weight: var(--font-weight-normal);
+}
+
+.cursor-interaction {
+  cursor: var(--cursor-interaction, pointer);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  font-weight: inherit;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+.table {
+  font-family: var(--font-sans);
+}
+
+h1 {
+  font-size: calc(var(--font-size-base) * 1.5);
+  line-height: 1.3333333333;
+}
+
+h2 {
+  font-size: calc(var(--font-size-base) * 1.25);
+  line-height: 1.4;
+}
+h3 {
+  font-size: calc(var(--font-size-base) * 1.125);
+  line-height: 1.5555555556;
+}
+h4 {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+h5,
+h6 {
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong,
+th {
+  font-weight: 600;
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+pre,
+pre code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: calc(var(--font-size-base) * 0.875);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-family: var(--font-sans);
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+.table :is(th, td):not(:last-child) {
+  padding-inline-end: calc(var(--font-size-base) * 1.5);
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead :is(th, td) {
+  border-bottom-color: var(--border-strong, var(--input));
+  padding-block: calc(var(--font-size-base) / 2);
+  line-height: var(--font-size-base);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+.table tbody :is(th, td) {
+  padding-block: calc(var(--font-size-base) * 0.625);
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 8px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+.widget {
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  box-shadow: 0 0 0 0.5px var(--border-strong, var(--border));
+  color: var(--foreground);
+  background: var(--background);
+}
+
+#widget &gt; :not(.card, .widget, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  border: 1px solid var(--border);
+  corner-shape: var(--corner-shape);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-sans);
+  padding: 5px 12px;
+  border-color: color-mix(
+    in oklab,
+    light-dark(var(--primary-foreground), var(--foreground)) 5%,
+    transparent
+  );
+  border-radius: var(--radius-2xl);
+  color: light-dark(var(--primary-foreground), var(--foreground));
+  background: light-dark(var(--foreground), var(--popover));
+  box-shadow: 0 8px 18px rgb(15 23 42 / 20%);
+  letter-spacing: -0.15px;
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: color-mix(in srgb, var(--foreground) 40%, var(--muted-foreground));
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-family: var(--font-sans);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+}
+
+small,
+.text-small {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+/* Match inline alignment without overriding a containing flex or grid layout. */
+.btn,
+.nav-link,
+.form-control,
+.form-select,
+.form-range,
+.form-check {
+  vertical-align: middle;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: inherit;
+  font-family: var(--font-sans);
+  height: fit-content;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding-inline: var(--control-spacing, 12px);
+  border-color: transparent;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.btn {
+  border-color: var(--border);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.btn-primary {
+  border-color: var(--border);
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: border-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: border-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--muted-foreground);
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+/* Shared preview chrome; product styles stay inside each variant. */
+.viz-dotted-background {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--foreground) 14%, transparent) 0.8px,
+    transparent 0.8px
+  );
+  background-position: center;
+  background-size: 16px 16px;
+}
+
+.viz-carousel {
+  position: relative;
+  min-width: 0;
+}
+
+.viz-carousel:has(&gt; .viz-carousel-controls) {
+  min-height: calc(60px + var(--viz-carousel-picker-height, 0px));
+  padding-bottom: 60px;
+}
+
+.viz-carousel &gt; [data-variant][hidden] {
+  display: none !important;
+}
+
+.viz-carousel &gt; [data-variant] {
+  isolation: isolate;
+}
+
+.viz-carousel-controls {
+  --viz-carousel-hover: light-dark(
+    color-mix(in srgb, var(--foreground) 5.4%, transparent),
+    color-mix(in srgb, var(--foreground) 7.8%, transparent)
+  );
+  position: absolute;
+  z-index: 2;
+  bottom: 8px;
+  left: 50%;
+  display: flex;
+  width: max-content;
+  /* Leave room for the host&#x27;s design-controls launcher at the trailing edge. */
+  max-width: calc(100% - 96px);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  /* Match the settings dropdown chrome independently of the content font size. */
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+  transform: translateX(-50%);
+  user-select: none;
+}
+
+/* Keep authored mockup button styles out of the shared carousel chrome. */
+.viz-carousel-controls button,
+.viz-carousel-picker &gt; summary {
+  display: flex !important;
+  height: auto !important;
+  min-height: 30px;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
+  padding: 0 6px !important;
+  -webkit-app-region: no-drag;
+  border: 0 !important;
+  border-radius: 14px !important;
+  color: inherit !important;
+  background: transparent !important;
+  font: inherit !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-picker &gt; summary {
+  position: relative;
+  isolation: isolate;
+}
+
+.viz-carousel-controls &gt; button {
+  --icon-size: 16px;
+  width: 30px !important;
+  padding: 0 !important;
+}
+
+.viz-carousel-picker &gt; summary {
+  padding-inline: 12px !important;
+}
+
+.viz-carousel-controls .viz-carousel-caret {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin: 0;
+  color: inherit;
+  transform: rotate(180deg);
+}
+
+.viz-carousel-controls &gt; button &gt; svg,
+.viz-carousel-controls .viz-carousel-caret,
+.viz-carousel-count {
+  opacity: 0.5;
+}
+
+.viz-carousel-controls &gt; button::before,
+.viz-carousel-picker &gt; summary::before {
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  border-radius: 12px;
+  content: &quot;&quot;;
+  pointer-events: none;
+}
+
+.viz-carousel-controls &gt; button:hover::before,
+.viz-carousel-picker &gt; summary:hover::before {
+  background: var(--viz-carousel-hover);
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-controls [data-lucide],
+.viz-carousel-controls .lucide {
+  flex-shrink: 0;
+}
+
+.viz-carousel-picker {
+  min-width: 0;
+}
+
+.viz-carousel-picker &gt; summary {
+  min-width: 0;
+  list-style: none;
+}
+
+.viz-carousel-picker &gt; summary::-webkit-details-marker {
+  display: none;
+}
+
+.viz-carousel-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.viz-carousel-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viz-carousel-options {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  max-height: 240px;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  box-shadow: 0 4px 12px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
+}
+
+.viz-carousel-options &gt; button {
+  border-radius: max(0px, calc(var(--radius-lg) - 5px)) !important;
+  width: 100% !important;
+  min-height: 28px;
+  justify-content: flex-start !important;
+  padding: 4px 8px !important;
+  font-size: var(--font-size-small) !important;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.viz-carousel-options &gt; [aria-current=&quot;true&quot;],
+.viz-carousel-options &gt; button:hover {
+  background: var(--viz-carousel-hover) !important;
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding-inline: calc(4px + var(--control-spacing, 12px) / 2);
+  border-color: var(--input);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--popover) 96%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4285714286;
+}
+.form-control:is(
+  [type=&quot;file&quot;],
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;],
+  [type=&quot;color&quot;]
+) {
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  line-height: 18px;
+}
+.form-control:is(
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;]
+) {
+  padding-inline: var(--control-spacing, 12px);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+  padding: 0;
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+  min-height: calc(10px + 2 * var(--control-spacing, 12px));
+  padding-inline: var(--control-spacing, 12px);
+  margin-inline-end: var(--control-spacing, 12px);
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  resize: vertical;
+  min-height: 96px;
+  padding: 8px 10px;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: none;
+}
+.form-control:disabled {
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  opacity: 1;
+}
+.form-control[aria-invalid=&quot;true&quot;] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 20%, transparent);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: fit-content;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  margin: 0;
+  /* The secondary icon role is 14px at compact density and 16px at web density. */
+  --icon-size: calc(10px + var(--control-spacing, 12px) / 2);
+  /* Settings dropdowns retain a 12px inset and a 4px text-to-chevron gap. */
+  padding: 0 calc(16px + var(--icon-size)) 0 12px;
+  outline: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    ),
+    linear-gradient(
+      135deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    );
+  background-position:
+    calc(100% - 12px - var(--icon-size) / 2) 50%,
+    calc(100% - 12px - var(--icon-size) * 0.18) 50%;
+  background-repeat: no-repeat;
+  background-size: calc(var(--icon-size) * 0.32) calc(var(--icon-size) * 0.32);
+  cursor: var(--cursor-interaction, default);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.form-select option {
+  color: var(--popover-foreground);
+  background-color: var(--popover);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.form-select:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+.form-select:disabled {
+  opacity: 0.4;
+}
+
+.form-check {
+  display: flex;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  corner-shape: round;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  width: calc(10px + var(--control-spacing, 12px) / 2);
+  height: calc(10px + var(--control-spacing, 12px) / 2);
+  border-color: var(--border-strong, var(--input));
+  border-radius: calc(var(--radius-sm) / 2);
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:is(:checked, :indeterminate) {
+  border-color: var(--border-strong, var(--input));
+  background-color: color-mix(in srgb, var(--popover) 96%, transparent);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+  background-color: var(--foreground);
+}
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:indeterminate::before {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 65%;
+  height: 6.65%;
+  margin: auto;
+  border-radius: var(--radius-full);
+  background: var(--foreground);
+  mask: none;
+  content: &quot;&quot;;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  border-radius: var(--radius-full);
+  width: 16px;
+  height: 16px;
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--input);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 0;
+  background: radial-gradient(
+    circle,
+    var(--primary-foreground) 0 3px,
+    var(--foreground) 3px
+  );
+  box-shadow: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:focus-visible {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;radio&quot;]:disabled,
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;radio&quot;]:disabled
+  + .form-check-label {
+  opacity: 0.5;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  border-color: #fff;
+  background: #fff;
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--blue);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+  outline: none;
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--primary);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  outline: none;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: transparent;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  margin-top: -9px;
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Outline the native track and thumb, preserving the larger input hit area. */
+.form-range:focus-visible::-webkit-slider-runnable-track {
+  outline: 2px auto Highlight;
+  outline-color: -webkit-focus-ring-color;
+}
+
+.form-range::-moz-range-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid Highlight;
+  outline-offset: 2px;
+}
+
+.form-range:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--blue);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.viz-carousel-controls :is(button, summary):focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Web recipes are the default, including on renderers without inline style queries. */
+@supports (border-radius: if(style(--corner-shape: round): 1px; else: 2px)) {
+  /* Match the host&#x27;s proportional text-sm scale at every text preference. */
+  .tooltip,
+  .viz-badge,
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    font-size: if(
+      style(--corner-shape: round): round(
+          nearest,
+          calc(var(--font-size-base) * 14 / 16),
+          1px
+        );
+        else: round(nearest, calc(var(--font-size-base) * 13 / 14), 1px)
+    );
+  }
+
+  .btn,
+  .nav-link,
+  .form-select {
+    border-radius: if(
+      style(--corner-shape: round): var(--radius-full); else: var(--radius-lg)
+    );
+  }
+
+  .form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+    border-radius: if(
+      style(--corner-shape: round): calc(var(--radius-sm) / 2);
+        else: calc(var(--radius-lg) * 0.4)
+    );
+  }
+
+  .tooltip {
+    font-weight: if(
+      style(--corner-shape: round): 600; else: var(--font-weight-normal)
+    );
+  }
+}
+
+@media (pointer: coarse) {
+  .viz-carousel:has(&gt; .viz-carousel-controls) {
+    min-height: calc(76px + var(--viz-carousel-picker-height, 0px));
+    padding-bottom: 76px;
+  }
+
+  .btn,
+  .nav-link,
+  .viz-carousel-controls button,
+  .viz-carousel-picker &gt; summary,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+  .form-control:is(
+    [type=&quot;file&quot;],
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;week&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;color&quot;]
+  ) {
+    height: 44px;
+    min-height: 44px;
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap&#x27;);
+  #steelman-study { --sm-paper:light-dark(#fafafa,#202020); --sm-card:light-dark(#ffffff,#2b2b2b); --sm-ink:light-dark(#242424,#f2f2f2); --sm-muted:light-dark(#6b6b6b,#b3b3b3); --sm-line:light-dark(#d5d5d5,#505050); --sm-wire:light-dark(#b2b2b2,#777777); --sm-soft:light-dark(#f1f1f1,#373737); --sm-green:light-dark(#33765a,#91c3a3); --sm-amber:light-dark(#a36436,#d4aa7f); --sm-selected:light-dark(#292929,#eeeeee); --sm-on-selected:light-dark(#ffffff,#242424); --sm-shadow:light-dark(#0000000b,#00000026); --sm-grid:light-dark(#ececec,#2d2d2d); --sm-question:light-dark(#ffffff,#2b2b2b); --sm-question-text:var(--sm-ink); --sm-serif:&quot;Source Serif 4&quot;,Georgia,&quot;Times New Roman&quot;,serif; --sm-sans:&quot;Libre Franklin&quot;,&quot;Helvetica Neue&quot;,Arial,sans-serif; font-family:var(--sm-sans); color:var(--sm-ink); background:transparent; }
+  #steelman-study, #steelman-study .sm-modal::backdrop { color-scheme:light; }
+  #steelman-study * { box-sizing:border-box; }
+  #steelman-study button, #steelman-study textarea { font:inherit; color:inherit; }
+  #steelman-study button { -webkit-tap-highlight-color:transparent; }
+  #steelman-study button:disabled { opacity:.5; cursor:default; }
+  #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:var(--sm-card); border-bottom:1px solid var(--sm-ink); }
+  #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font-family:var(--sm-serif); font-size:23px; font-weight:700; letter-spacing:-1px; }
+  #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:1px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
+  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:radial-gradient(circle,var(--sm-grid) .8px,transparent .9px); background-size:18px 18px; }
+  #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
+  #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
+  #steelman-study .sm-links path { fill:none; stroke:var(--sm-wire); stroke-width:1.3; stroke-linejoin:round; }
+  #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
+  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-question); color:var(--sm-question-text); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:1px; box-shadow:0 2px 4px var(--sm-shadow); }
+  #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
+  #steelman-study .sm-board { display:grid; grid-template-columns:1fr 1fr; gap:56px; padding-top:56px; }
+  #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
+  #steelman-study .sm-column::before { content:&quot;&quot;; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:1px; background:var(--sm-paper); z-index:-1; }
+  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:1px; box-shadow:none; margin-bottom:28px; }
+  #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
+  #steelman-study .sm-idea { display:grid; grid-template-columns:25px minmax(0,1fr); gap:10px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
+  #steelman-study .sm-idea:last-child { margin-bottom:0; }
+  #steelman-study .sm-importance { display:flex; align-items:center; flex-direction:column; padding-top:35px; gap:2px; color:var(--sm-muted); }
+  #steelman-study .sm-arrow { display:grid; place-items:center; border:0; border-radius:5px; background:var(--sm-paper); padding:4px; width:25px; height:25px; }
+  #steelman-study .sm-arrow:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-arrow[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-vote-number { background:var(--sm-paper); font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:6px; box-shadow:0 3px 7px var(--sm-shadow); transition:transform 180ms ease,box-shadow 180ms ease; }
+  #steelman-study .sm-card:hover { transform:translateY(-2px); box-shadow:0 7px 13px var(--sm-shadow); }
+  #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:5px 5px 0 0; }
+  #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
+  #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 10px; border-top:1px solid var(--sm-line); flex-wrap:wrap; }
+  #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:26px; padding:3px; line-height:16px; }
+  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:4px; font-size:11px; text-align:left; min-width:0; }
+  #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
+  #steelman-study .sm-percentage { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
+  #steelman-study .sm-few { border-bottom:1px dotted var(--sm-muted); }
+  #steelman-study .sm-evidence-symbol { display:grid; place-items:center; position:relative; width:17px; height:18px; flex:none; color:var(--sm-green); }
+  #steelman-study .sm-evidence-symbol svg { width:16px; height:16px; stroke-width:1.6; }
+  #steelman-study .sm-evidence-symbol.sm-uncertain { color:var(--sm-amber); }
+  #steelman-study .sm-evidence-symbol.sm-unreviewed { color:var(--sm-muted); opacity:.7; }
+  #steelman-study .sm-evidence-symbol .sm-stamp { position:absolute; bottom:-1px; right:-3px; background:var(--sm-card); border-radius:50%; width:12px; height:12px; }
+  #steelman-study .sm-evidence-symbol .sm-stamp svg { width:12px; height:12px; stroke-width:2.3; }
+  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; border-radius:4px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-button svg { width:13px; height:13px; }
+  #steelman-study .sm-stack-button { position:absolute; top:7px; bottom:7px; right:0; width:33px; padding:0; border:0; background:transparent; z-index:1; border-radius:5px; }
+  #steelman-study .sm-stack-button span { position:absolute; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:5px; width:28px; pointer-events:none; transition:transform 220ms cubic-bezier(.2,.8,.2,1); }
+  #steelman-study .sm-stack-button span:first-child { right:0; top:5px; bottom:5px; }
+  #steelman-study .sm-stack-button span:last-child { right:10px; top:0; bottom:0; }
+  #steelman-study .sm-stack-button:hover span:first-child { transform:translateX(5px); }
+  #steelman-study .sm-stack-button:hover span:last-child { transform:translateX(2px); }
+  #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
+  #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  #steelman-study .sm-detail { position:relative; padding:23px; margin:30px auto 0; max-width:850px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-paper); }
+  #steelman-study .sm-breadcrumb { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:22px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:5px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
+  #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
+  #steelman-study .sm-text-button svg { width:14px; height:14px; }
+  #steelman-study .sm-section-title { font-size:21px; font-weight:500; line-height:1.3; letter-spacing:-.4px; margin:0 0 18px; }
+  #steelman-study .sm-caption { font-size:12px; line-height:1.6; color:var(--sm-muted); margin:0 0 18px; }
+  #steelman-study .sm-alternatives { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:stretch; gap:16px; }
+  #steelman-study .sm-version { display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; min-width:0; box-shadow:0 3px 7px var(--sm-shadow); }
+  #steelman-study .sm-version .sm-claim-button { flex:1; }
+  #steelman-study .sm-version .sm-claim { font-size:16px; }
+  #steelman-study .sm-version .sm-card-meta { padding:3px 10px; margin:0; }
+  #steelman-study .sm-preference { border-top:1px solid var(--sm-line); padding:12px; }
+  #steelman-study .sm-preference-label { display:flex; align-items:center; justify-content:space-between; gap:6px; color:var(--sm-muted); font-size:11px; margin-bottom:8px; }
+  #steelman-study .sm-preference-label strong { font-size:12px; font-weight:500; color:var(--sm-ink); }
+  #steelman-study .sm-preference-actions { display:flex; gap:5px; flex-wrap:wrap; }
+  #steelman-study .sm-button { display:inline-flex; justify-content:center; align-items:center; gap:6px; border:1px solid var(--sm-line); background:var(--sm-card); padding:8px 10px; border-radius:5px; font-size:11px; line-height:1.4; }
+  #steelman-study .sm-button svg { width:14px; height:14px; }
+  #steelman-study .sm-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-button[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-selected-note { display:block; color:var(--sm-muted); font-size:11px; line-height:1.5; margin-top:8px; min-height:16px; }
+  #steelman-study .sm-compare-footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:18px; }
+  #steelman-study .sm-evidence-claim { margin:0 0 20px; font-size:23px; font-weight:400; line-height:1.4; letter-spacing:-.45px; }
+  #steelman-study .sm-evidence-intro { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-meta { font-size:12px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-prose { font-size:13px; line-height:1.65; margin:17px 0; }
+  #steelman-study .sm-kicker { font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-source { background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; padding:17px 19px; margin-top:12px; }
+  #steelman-study .sm-source h3 { font-size:13px; line-height:1.5; font-weight:500; margin:5px 0 12px; }
+  #steelman-study .sm-source dl { display:grid; grid-template-columns:85px minmax(0,1fr); gap:9px 14px; margin:0; font-size:12px; line-height:1.65; }
+  #steelman-study .sm-source dt { color:var(--sm-muted); }
+  #steelman-study .sm-source dd { margin:0; }
+  #steelman-study .sm-assess { border-top:1px solid var(--sm-line); padding-top:20px; margin-top:24px; }
+  #steelman-study .sm-assess h3 { font-size:14px; font-weight:500; margin:0 0 7px; }
+  #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
+  #steelman-study .sm-form label { display:block; font-size:12px; font-weight:500; margin:16px 0 7px; }
+  #steelman-study textarea { width:100%; min-height:100px; resize:vertical; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); padding:12px; font-size:16px; line-height:1.5; }
+  #steelman-study .sm-preview { margin-top:20px; }
+  #steelman-study .sm-error { color:var(--sm-amber); font-size:12px; }
+  #steelman-study .sm-reading .sm-modal-chrome { margin-bottom:15px; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-size:21px; line-height:1.4; margin:0 0 13px; }
+  #steelman-study .sm-brief { font-size:14px; line-height:1.6; color:var(--sm-muted); margin:0 0 23px; }
+  #steelman-study .sm-source-list { margin:0; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-source-row { border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-source-row summary { display:flex; align-items:center; gap:9px; min-height:45px; padding:11px 0; list-style:none; font-size:12px; line-height:1.5; }
+  #steelman-study .sm-source-row summary::-webkit-details-marker { display:none; }
+  #steelman-study .sm-source-row summary&gt;svg { flex:none; color:var(--sm-muted); }
+  #steelman-study .sm-source-row summary span:first-of-type { flex:1; }
+  #steelman-study .sm-source-row summary .sm-chevron { width:14px; height:14px; transition:transform 160ms ease; }
+  #steelman-study .sm-source-row[open] summary .sm-chevron { transform:rotate(90deg); }
+  #steelman-study .sm-source-row summary:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-source-note { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-packet { padding:0 0 16px 25px; font-size:12px; line-height:1.6; }
+  #steelman-study .sm-source-packet p { margin:8px 0 0; }
+  #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:58px minmax(0,1fr); gap:8px 10px; margin:12px 0 0; }
+  #steelman-study .sm-source-packet dt { color:var(--sm-muted); }
+  #steelman-study .sm-source-packet dd { margin:0; }
+  #steelman-study .sm-reading-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:19px; }
+  #steelman-study .sm-reading-footer .sm-text-button { font-size:12px; }
+  #steelman-study .sm-assessment-drawer { border-top:1px solid var(--sm-line); margin-top:17px; padding-top:15px; }
+  #steelman-study .sm-assessment-drawer h3 { font-size:12px; line-height:1.5; font-weight:400; margin:0 0 11px; }
+  #steelman-study .sm-assessment-drawer .sm-assess-actions { margin-top:0; }
+  #steelman-study .sm-preference { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  #steelman-study .sm-preference-score { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; color:var(--sm-muted); }
+  #steelman-study .sm-modal { position:absolute; margin:0; padding:0; border:0; max-width:none; max-height:none; overflow:visible; background:transparent; color:var(--sm-ink); }
+  #steelman-study .sm-modal::backdrop { background:light-dark(#20202026,#00000055); animation:sm-backdrop-in 380ms ease both; }
+  #steelman-study .sm-modal.sm-closing::backdrop { animation:sm-backdrop-out 420ms ease both; }
+  #steelman-study .sm-modal .sm-detail { margin:0; max-width:none; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); transform-origin:top left; }
+  #steelman-study .sm-modal[data-view=&quot;alternatives&quot;] .sm-detail { border:0; border-radius:0; background:transparent; padding:0; box-shadow:none; }
+  #steelman-study .sm-modal-chrome { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; min-height:36px; }
+  #steelman-study .sm-option-context { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-close { display:grid; place-items:center; width:36px; height:36px; padding:8px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; box-shadow:0 3px 8px var(--sm-shadow); }
+  #steelman-study .sm-close:hover { background:var(--sm-soft); }
+  #steelman-study .sm-modal .sm-version { box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
+  #steelman-study .sm-version-face { display:flex; flex:1; flex-direction:column; min-width:0; }
+  #steelman-study .sm-version .sm-claim-button { display:flex; align-items:flex-start; }
+  #steelman-study .sm-origin .sm-card, #steelman-study .sm-origin .sm-stack-button { visibility:hidden; }
+  #steelman-study .sm-origin .sm-card-wrap::after { content:&quot;&quot;; position:absolute; inset:0 24px 0 0; border:1px dashed var(--sm-wire); border-radius:6px; background:var(--sm-soft); opacity:.45; }
+  #steelman-study .sm-flight { position:absolute; margin:0; display:flex; flex-direction:column; overflow:hidden; pointer-events:none; box-shadow:0 16px 38px light-dark(#0000002b,#00000055); transform:none; transition:none; }
+  #steelman-study .sm-flight .sm-claim-button { flex:1; display:flex; align-items:flex-start; }
+  #steelman-study .sm-flight .sm-card-meta { flex:none; }
+  #steelman-study .sm-card, #steelman-study .sm-version, #steelman-study .sm-detail, #steelman-study .sm-stack-button, #steelman-study .sm-stack-button span, #steelman-study .sm-origin .sm-card-wrap::after { border-radius:2px; }
+  #steelman-study .sm-button, #steelman-study .sm-close, #steelman-study .sm-option-context, #steelman-study textarea { border-radius:2px; }
+  #steelman-study .sm-claim-button { border-radius:1px 1px 0 0; }
+  #steelman-study .sm-section-title { font-family:var(--sm-serif); font-weight:600; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-family:var(--sm-sans); font-weight:500; }
+  #steelman-study .sm-percentage { font-weight:600; }
+  #steelman-study .sm-evidence-symbol:not(.sm-unreviewed)+.sm-cred-copy .sm-percentage { color:var(--sm-green); }
+  #steelman-study .sm-evidence-symbol.sm-uncertain+.sm-cred-copy .sm-percentage { color:var(--sm-amber); }
+  #steelman-study[data-type=&quot;serif&quot;] .sm-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; letter-spacing:-.15px; }
+  #steelman-study[data-type=&quot;serif&quot;] .sm-reading .sm-evidence-claim { font-family:var(--sm-serif); font-size:24px; line-height:1.3; font-weight:400; }
+  #steelman-study .sm-board { transform-origin:50% 0; }
+  #steelman-study .sm-focused .sm-board { transform:translateY(16px) scale(.97); }
+  #steelman-study .sm-row-context { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; font-size:13px; line-height:1.4; padding:9px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:2px; }
+  #steelman-study .sm-row-context strong { font-weight:600; }
+  #steelman-study .sm-row-context span { color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-row-body { display:grid; grid-template-columns:minmax(0,1fr) 100px; gap:18px; align-items:start; }
+  #steelman-study .sm-modal .sm-version { background:transparent; border:0; box-shadow:none; }
+  #steelman-study .sm-version-face { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
+  #steelman-study .sm-preference { justify-content:center; align-self:center; border:1px solid var(--sm-line); border-radius:2px; gap:0; padding:2px; margin-top:8px; background:var(--sm-card); }
+  #steelman-study .sm-preference .sm-arrow, #steelman-study .sm-preference-score { background:var(--sm-card); }
+  #steelman-study .sm-preference .sm-arrow[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); }
+  #steelman-study .sm-preference-score { display:grid; place-items:center; min-width:24px; min-height:25px; font-size:11px; font-weight:500; color:var(--sm-muted); }
+  #steelman-study .sm-add-version { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:9px; padding:15px 8px; margin-top:20px; min-height:108px; width:100%; border:1px dashed var(--sm-wire); border-radius:2px; background:var(--sm-card); color:var(--sm-muted); font-size:12px; line-height:1.5; }
+  #steelman-study .sm-add-version svg { width:19px; height:19px; }
+  #steelman-study .sm-add-version:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-modal .sm-reading { padding:0; background:transparent; border:0; box-shadow:none; }
+  #steelman-study .sm-reading .sm-modal-chrome&gt;.sm-text-button { padding:8px 10px; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:2px; }
+  #steelman-study .sm-expanded-card { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); overflow:hidden; }
+  #steelman-study .sm-reading-body { padding:22px; }
+  #steelman-study .sm-reading .sm-evidence-claim { font-weight:400; }
+  #steelman-study .sm-reading .sm-brief { margin:0; }
+  #steelman-study .sm-evidence-group { padding:16px 22px; background:var(--sm-soft); border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-evidence-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  #steelman-study .sm-evidence-heading h3 { margin:0; font-size:12px; font-weight:600; line-height:1.5; }
+  #steelman-study .sm-evidence-group .sm-source-row summary { min-height:40px; padding:9px 0; }
+  #steelman-study .sm-evidence-group .sm-stamp { background:var(--sm-soft); }
+  #steelman-study .sm-evidence-vote { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
+  #steelman-study .sm-evidence-vote .sm-assess-actions { margin:0; gap:6px; }
+  #steelman-study .sm-value-note { padding:12px 22px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-transition-ghost { position:absolute; pointer-events:none; transform-origin:center top; }
+  @media(max-width:640px) { #steelman-study .sm-row-body { grid-template-columns:1fr; gap:12px; } #steelman-study .sm-add-version { flex-direction:row; min-height:44px; margin:0; padding:12px; } #steelman-study .sm-reading-body { padding:18px; } #steelman-study .sm-evidence-group { padding:14px 18px; } #steelman-study .sm-row-context { gap:4px; } #steelman-study .sm-row-context strong { font-size:12px; } #steelman-study .sm-row-context span { width:100%; } }
+  @keyframes sm-backdrop-in { from {opacity:0} to {opacity:1} }
+  @keyframes sm-backdrop-out { from {opacity:1} to {opacity:0} }
+  #steelman-study[data-density=&quot;compact&quot;] .sm-claim-button { padding:13px; }
+  #steelman-study[data-density=&quot;compact&quot;] .sm-claim { font-size:15px; }
+  #steelman-study [hidden] { display:none !important; }
+  @media(max-width:800px) { #steelman-study .sm-scene { padding:24px 14px 20px; } #steelman-study .sm-board { gap:30px; } #steelman-study .sm-column { padding:0 9px 13px; } #steelman-study .sm-claim-button { padding:15px; } #steelman-study .sm-claim { font-size:15px; } #steelman-study .sm-column-head { padding:13px; } #steelman-study .sm-alternatives { gap:10px; } }
+  @media(max-width:640px) { #steelman-study .sm-scene { padding:20px 10px; } #steelman-study .sm-head { width:100%; padding:18px; } #steelman-study h1 { font-size:23px; } #steelman-study .sm-board { grid-template-columns:1fr; padding-top:38px; gap:30px; padding-left:12px; } #steelman-study .sm-column { padding:0 8px 15px; } #steelman-study .sm-alternatives { grid-template-columns:1fr; gap:18px; } #steelman-study .sm-detail { padding:15px; } #steelman-study .sm-breadcrumb { align-items:flex-start; } #steelman-study .sm-source { padding:15px; } #steelman-study .sm-source dl { grid-template-columns:1fr; gap:3px; } #steelman-study .sm-source dd { margin-bottom:10px; } #steelman-study .sm-claim { font-size:16px; } }
+  @media(pointer:coarse) { #steelman-study .sm-arrow { height:44px; width:30px; } #steelman-study .sm-idea { grid-template-columns:30px minmax(0,1fr); gap:6px; } #steelman-study .sm-importance { padding-top:25px; } #steelman-study .sm-card-wrap { padding-right:44px; } #steelman-study .sm-stack-button { width:44px; } #steelman-study .sm-stack-button span { width:40px; } #steelman-study .sm-stack-button span:last-child { right:18px; } #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; } #steelman-study .sm-source-button { min-width:44px; } }
+  @media(pointer:coarse) { #steelman-study .sm-close { width:44px; height:44px; } #steelman-study .sm-origin .sm-card-wrap::after { right:44px; } }
+  @media(pointer:coarse) { #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:44px; } }
+  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } #steelman-study .sm-card:hover { transform:none; } #steelman-study .sm-modal::backdrop { animation:none; } }
+&lt;/style&gt;
+&lt;div id=&quot;steelman-study&quot; aria-label=&quot;Steelman canvas prototype&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
+  &lt;header class=&quot;sm-site&quot;&gt;&lt;div class=&quot;sm-wordmark&quot;&gt;&lt;span class=&quot;sm-logo&quot; aria-hidden=&quot;true&quot;&gt;s&lt;/span&gt;steelman.&lt;/div&gt;&lt;/header&gt;
+  &lt;div class=&quot;sm-surface&quot;&gt;
+    &lt;div class=&quot;sm-scene&quot;&gt;
+      &lt;svg class=&quot;sm-links&quot; aria-hidden=&quot;true&quot;&gt;&lt;/svg&gt;
+      &lt;header class=&quot;sm-head&quot;&gt;&lt;h1&gt;Should our library open on Sundays?&lt;/h1&gt;&lt;/header&gt;
+      &lt;main id=&quot;sm-content&quot;&gt;&lt;/main&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;reorder&quot; data-key=&quot;reorder&quot; aria-label=&quot;Preview a shared-order update&quot;&gt;&lt;i data-lucide=&quot;arrow-down-up&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Preview update&lt;/button&gt;&lt;/div&gt;
+    &lt;div id=&quot;sm-status&quot; class=&quot;sm-live&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;dialog class=&quot;sm-modal&quot; id=&quot;sm-modal&quot; aria-label=&quot;Alternative articulations&quot;&gt;&lt;/dialog&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(() =&gt; {
+  const root = document.getElementById(&#x27;steelman-study&#x27;);
+  const content = document.getElementById(&#x27;sm-content&#x27;);
+  const status = document.getElementById(&#x27;sm-status&#x27;);
+  const icon = name =&gt; `&lt;i data-lucide=&quot;${name}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;`;
+  const escape = text =&gt; String(text).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[c]));
+  const cards = {
+    access: {idea:&#x27;access&#x27;, label:&#x27;Weekday workers&#x27;, version:&#x27;Qualified&#x27;, claim:&#x27;Sunday hours would give some weekday workers their only practical time to visit.&#x27;, yes:24, no:8, pref:26, sources:[&#x27;survey&#x27;,&#x27;hours&#x27;], explanation:&#x27;The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.&#x27;},
+    accessBold: {idea:&#x27;access&#x27;, label:&#x27;Weekday workers&#x27;, version:&#x27;Broader claim&#x27;, claim:&#x27;Opening on Sundays would make the library accessible to everyone who works during the week.&#x27;, yes:0, no:8, pref:8, sources:[&#x27;survey&#x27;], explanation:&#x27;This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.&#x27;},
+    accessNarrow: {idea:&#x27;access&#x27;, label:&#x27;Weekday workers&#x27;, version:&#x27;More specific&#x27;, claim:&#x27;For 18 surveyed residents, Sunday was the only day they reported being able to visit.&#x27;, yes:3, no:1, pref:4, sources:[&#x27;survey&#x27;], explanation:&#x27;This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.&#x27;},
+    study: {idea:&#x27;study&#x27;,label:&#x27;A place to learn&#x27;,claim:&#x27;Sunday study space could improve outcomes for students without a quiet place at home.&#x27;,yes:2,no:4,pref:12,sources:[&#x27;study&#x27;],explanation:&#x27;If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.&#x27;},
+    purpose: {idea:&#x27;purpose&#x27;,label:&#x27;Public purpose&#x27;,claim:&#x27;A public library should be available on the day families can spend time together.&#x27;,value:true,pref:7,sources:[],explanation:&#x27;This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.&#x27;},
+    staffing: {idea:&#x27;staffing&#x27;,label:&#x27;Staffing tradeoffs&#x27;,claim:&#x27;Sunday opening would require additional staffing unless hours are reduced elsewhere.&#x27;,yes:10,no:10,pref:21,sources:[&#x27;roster&#x27;,&#x27;budget&#x27;],explanation:&#x27;The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.&#x27;},
+    evenings: {idea:&#x27;evenings&#x27;,label:&#x27;Reaching more people&#x27;,claim:&#x27;Improving evening hours may reach more residents for the same budget.&#x27;,yes:0,no:0,pref:5,sources:[&#x27;unavailable&#x27;],explanation:&#x27;This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.&#x27;},
+    services: {idea:&#x27;services&#x27;,label:&#x27;Building operations&#x27;,claim:&#x27;Sunday opening would add one more day of building services each week.&#x27;,yes:18,no:0,pref:9,sources:[&#x27;contract&#x27;],explanation:&#x27;The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.&#x27;}
+  };
+  const sources = {
+    survey: {name:&#x27;Resident access survey&#x27;,locator:&#x27;Example packet · p. 2, question 4&#x27;,finding:&#x27;18 of 80 respondents selected Sunday as their only available day to visit.&#x27;,premise:&#x27;Some respondents cannot visit during the current opening hours.&#x27;,limit:&#x27;Voluntary sample; not representative of all residents. Availability was self-reported.&#x27;},
+    hours: {name:&#x27;Current opening schedule&#x27;,locator:&#x27;Example packet · p. 1&#x27;,finding:&#x27;The library opens Monday–Friday, 10–6, and Saturday, 10–2. It is closed on Sunday.&#x27;,premise:&#x27;A Sunday session would create access at a currently unavailable time.&#x27;,limit:&#x27;The schedule does not establish who would actually attend.&#x27;},
+    study: {name:&#x27;Student listening session&#x27;,locator:&#x27;Example packet · p. 3, notes 6–9&#x27;,finding:&#x27;Seven of twelve participants asked for a quiet weekend study space.&#x27;,premise:&#x27;Some students report a need for more weekend study space.&#x27;,limit:&#x27;No academic outcomes were measured. A need for space does not establish an educational benefit.&#x27;},
+    roster: {name:&#x27;Staff rota&#x27;,locator:&#x27;Example packet · p. 4, table A&#x27;,finding:&#x27;All scheduled staff hours are allocated to the current six-day week.&#x27;,premise:&#x27;Sunday opening is not covered by the current rota.&#x27;,limit:&#x27;A different rota or changed duties might free capacity without cutting opening hours.&#x27;},
+    budget: {name:&#x27;Four-hour Sunday estimate&#x27;,locator:&#x27;Example packet · p. 5, assumptions&#x27;,finding:&#x27;The estimate assumes two additional staff members for four hours.&#x27;,premise:&#x27;The modeled Sunday session includes extra paid staffing.&#x27;,limit:&#x27;This is one staffing model. It does not prove that every viable model requires extra hours.&#x27;},
+    unavailable: {name:&#x27;Evening vs. Sunday cost estimate&#x27;,locator:&#x27;Example packet · attachment unavailable&#x27;,unavailable:true,finding:&#x27;The cited attachment cannot be opened.&#x27;,premise:&#x27;No comparison can be inspected from the available material.&#x27;,limit:&#x27;An unavailable source does not show the claim is false. You can skip assessment or challenge its support.&#x27;},
+    contract: {name:&#x27;Building services agreement&#x27;,locator:&#x27;Example packet · p. 6, section 2&#x27;,finding:&#x27;Cleaning and closing services are provided for each day the building opens.&#x27;,premise:&#x27;Opening another day adds a day of services.&#x27;,limit:&#x27;This does not establish the size of the additional cost or its importance.&#x27;}
+  };
+  const ideas = [
+    {id:&#x27;access&#x27;,option:&#x27;open&#x27;,title:&#x27;Weekday workers&#x27;,score:42,versions:[&#x27;access&#x27;,&#x27;accessBold&#x27;,&#x27;accessNarrow&#x27;]},
+    {id:&#x27;study&#x27;,option:&#x27;open&#x27;,title:&#x27;A place to learn&#x27;,score:31,versions:[&#x27;study&#x27;]},
+    {id:&#x27;purpose&#x27;,option:&#x27;open&#x27;,title:&#x27;Public purpose&#x27;,score:12,versions:[&#x27;purpose&#x27;]},
+    {id:&#x27;staffing&#x27;,option:&#x27;keep&#x27;,title:&#x27;Staffing tradeoffs&#x27;,score:39,versions:[&#x27;staffing&#x27;]},
+    {id:&#x27;evenings&#x27;,option:&#x27;keep&#x27;,title:&#x27;Reaching more people&#x27;,score:25,versions:[&#x27;evenings&#x27;]},
+    {id:&#x27;services&#x27;,option:&#x27;keep&#x27;,title:&#x27;Building operations&#x27;,score:8,versions:[&#x27;services&#x27;]}
+  ];
+  let state = {view:&#x27;board&#x27;,idea:&#x27;access&#x27;,card:&#x27;access&#x27;,from:&#x27;board&#x27;,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,preview:false,added:[],updated:false,assessOpen:false,openSources:{}};
+  const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
+  const validViews = [&#x27;board&#x27;,&#x27;alternatives&#x27;,&#x27;evidence&#x27;,&#x27;compose&#x27;];
+  function restore(raw) {
+    const data = raw?.privateContent;
+    if (!data || data.version !== 2) return;
+    const selected = data.state || {};
+    state = {...state,...selected,view:validViews.includes(selected.view) ? selected.view : &#x27;board&#x27;};
+    for (const key of [&#x27;importance&#x27;,&#x27;preference&#x27;,&#x27;assessments&#x27;]) if (!state[key] || typeof state[key] !== &#x27;object&#x27;) state[key] = {};
+    if (!Array.isArray(state.added)) state.added=[];
+    if (!ideas.some(i=&gt;i.id===state.idea)) state.idea=&#x27;access&#x27;;
+    syncAdded();
+    if (!cards[state.card]) state.card=&#x27;access&#x27;;
+    if ([&#x27;dossier&#x27;,&#x27;books&#x27;,&#x27;checklist&#x27;].includes(data.design?.indicator)) design.indicator=data.design.indicator;
+    if ([&#x27;comfortable&#x27;,&#x27;compact&#x27;].includes(data.design?.density)) design.density=data.design.density;
+    if ([&#x27;sans&#x27;,&#x27;serif&#x27;].includes(data.design?.type)) design.type=data.design.type;
+  }
+  function syncAdded() {
+    for (const id of Object.keys(cards)) if (id.startsWith(&#x27;local&#x27;)) delete cards[id];
+    ideas.forEach(i=&gt;{i.versions=i.versions.filter(id=&gt;!id.startsWith(&#x27;local&#x27;));});
+    state.added.slice(0,5).forEach((item,index)=&gt;{
+      const idea=ideas.find(i=&gt;i.id===item.idea); if (!idea) return;
+      const id=&#x27;local&#x27;+index;
+      cards[id]={idea:item.idea,label:idea.title,version:&#x27;Your version&#x27;,claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
+      idea.versions.push(id);
+    });
+  }
+  let lastSavedSnapshot=&#x27;&#x27;;
+  function save() {
+    const privateContent={version:2,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
+    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,view:state.view,selectedIdea:state.idea,selectedCard:state.card,design},privateContent}).catch(()=&gt;{});
+  }
+  function announce(message) { status.textContent=message; }
+  const optionName = option =&gt; option===&#x27;open&#x27; ? &#x27;Open on Sundays&#x27; : &#x27;Keep current hours&#x27;;
+  const button = (action,label,extra=&#x27;&#x27;) =&gt; `&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;${action}&quot; ${extra}&gt;${label}&lt;/button&gt;`;
+  function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote===&#x27;yes&#x27;?1:0), no=(card.no||0)+(vote===&#x27;no&#x27;?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
+  function credibility(id, interactive=true) {
+    const card=cards[id],s=stats(id); const tag=interactive?&#x27;button&#x27;:&#x27;div&#x27;;
+    const attrs=interactive?`type=&quot;button&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;cred-${id}&quot;`:&#x27;&#x27;;
+    if(card.value) return `&lt;${tag} ${attrs} class=&quot;sm-cred cursor-interaction&quot; aria-label=&quot;Value judgment; no factual credibility score&quot;&gt;${icon(&#x27;scale&#x27;)}&lt;span&gt;Value judgment&lt;/span&gt;&lt;/${tag}&gt;`;
+    const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n&lt;5?&#x27;; few assessments&#x27;:&#x27;&#x27;}`:&#x27;Unreviewed; no assessments&#x27;;
+    const symbol={dossier:&#x27;files&#x27;,books:&#x27;book-open-text&#x27;,checklist:&#x27;clipboard-list&#x27;}[design.indicator];
+    const mark=s.n===0?&#x27;circle-help&#x27;:s.pct===100?&#x27;check&#x27;:s.pct===0?&#x27;x&#x27;:null;
+    return `&lt;${tag} ${attrs} class=&quot;sm-cred cursor-interaction&quot; aria-label=&quot;${aria}&quot; data-tooltip=&quot;${aria}&quot;&gt;&lt;span class=&quot;sm-evidence-symbol ${!s.n?&#x27;sm-unreviewed&#x27;:s.pct&lt;60?&#x27;sm-uncertain&#x27;:&#x27;&#x27;}&quot;&gt;${icon(symbol)}${mark?`&lt;span class=&quot;sm-stamp&quot;&gt;${icon(mark)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-cred-copy&quot;&gt;&lt;span class=&quot;sm-percentage&quot;&gt;${s.n?s.pct+&#x27;%&#x27;:&#x27;Unreviewed&#x27;}&lt;/span&gt;${s.n?`&lt;span class=&quot;sm-count ${s.n&lt;5?&#x27;sm-few&#x27;:&#x27;&#x27;}&quot;&gt;· ${s.n}${s.n&lt;5?&#x27; · few&#x27;:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/${tag}&gt;`;
+  }
+  function sourceButton(id) { const n=cards[id].sources.length; return `&lt;button type=&quot;button&quot; class=&quot;sm-source-button cursor-interaction&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;source-${id}&quot; aria-label=&quot;Inspect ${n} ${n===1?&#x27;source&#x27;:&#x27;sources&#x27;} for ${escape(cards[id].label)}&quot; data-tooltip=&quot;${n} linked ${n===1?&#x27;source&#x27;:&#x27;sources&#x27;}&quot;&gt;${icon(&#x27;paperclip&#x27;)} ${n}&lt;/button&gt;`; }
+  function importance(idea) {
+    const vote=state.importance[idea.id]||0;
+    const score=idea.score+vote+(state.updated&amp;&amp;[&#x27;study&#x27;,&#x27;evenings&#x27;].includes(idea.id)?20:0);
+    return `&lt;div class=&quot;sm-importance&quot; role=&quot;group&quot; aria-label=&quot;Importance of ${escape(idea.title)}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;importance&quot; data-id=&quot;${idea.id}&quot; data-vote=&quot;1&quot; data-key=&quot;up-${idea.id}&quot; aria-label=&quot;More important if true: ${escape(idea.title)}&quot; aria-pressed=&quot;${vote===1}&quot; data-tooltip=&quot;More important if true&quot;&gt;${icon(&#x27;chevron-up&#x27;)}&lt;/button&gt;&lt;span class=&quot;sm-vote-number&quot; aria-label=&quot;Net importance ${score}&quot;&gt;${score}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;importance&quot; data-id=&quot;${idea.id}&quot; data-vote=&quot;-1&quot; data-key=&quot;down-${idea.id}&quot; aria-label=&quot;Less important if true: ${escape(idea.title)}&quot; aria-pressed=&quot;${vote===-1}&quot; data-tooltip=&quot;Less important if true&quot;&gt;${icon(&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+  }
+  function row(idea) {
+    const id=idea.versions[0],card=cards[id],stack=idea.versions.length&gt;1;
+    return `&lt;section class=&quot;sm-idea&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(idea.title)}&quot;&gt;${importance(idea)}&lt;div class=&quot;sm-card-wrap ${stack?&#x27;sm-stacked&#x27;:&#x27;&#x27;}&quot;&gt;${stack?`&lt;button type=&quot;button&quot; class=&quot;sm-stack-button cursor-interaction&quot; data-action=&quot;alternatives&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;Compare ${idea.versions.length} versions of this argument&quot; data-tooltip=&quot;Alternative articulations&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;}&lt;article class=&quot;sm-card&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;Open claim and evidence: ${escape(card.claim)}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(card.claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id)}${sourceButton(id)}&lt;/div&gt;&lt;/article&gt;&lt;/div&gt;&lt;/section&gt;`;
+  }
+  function board() { return `&lt;div class=&quot;sm-board&quot;&gt;${[&#x27;open&#x27;,&#x27;keep&#x27;].map(option=&gt;{const rows=ideas.filter(i=&gt;i.option===option);if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];return `&lt;section class=&quot;sm-column&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;div class=&quot;sm-column-head&quot;&gt;&lt;h2&gt;${optionName(option)}&lt;/h2&gt;&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}&lt;/section&gt;`;}).join(&#x27;&#x27;)}&lt;/div&gt;`; }
+  function breadcrumb(back=&#x27;board&#x27;) { return `&lt;div class=&quot;sm-modal-chrome&quot;&gt;${back===&#x27;alternatives&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;back&quot; data-to=&quot;alternatives&quot; data-key=&quot;back&quot;&gt;${icon(&#x27;arrow-left&#x27;)}Back to versions&lt;/button&gt;`:&#x27;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-close cursor-interaction&quot; data-action=&quot;close&quot; data-key=&quot;close&quot; aria-label=&quot;Return cards to the diagram&quot; autofocus&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`; }
+  function preference(id) {
+    const vote=state.preference[id]||0;
+    return `&lt;div class=&quot;sm-preference&quot; role=&quot;group&quot; aria-label=&quot;Wording preference&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;1&quot; data-key=&quot;prefer-${id}&quot; aria-pressed=&quot;${vote===1}&quot; aria-label=&quot;Prefer this wording: ${escape(cards[id].version||&#x27;Your&#x27;)} version&quot; data-tooltip=&quot;More preferred wording · toward the left&quot;&gt;${icon(&#x27;chevron-left&#x27;)}&lt;/button&gt;&lt;span class=&quot;sm-preference-score&quot; data-tooltip=&quot;Net wording preference&quot; aria-label=&quot;Net wording preference ${cards[id].pref+vote}&quot;&gt;${cards[id].pref+vote}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;-1&quot; data-key=&quot;less-${id}&quot; aria-pressed=&quot;${vote===-1}&quot; aria-label=&quot;Less preferred wording: ${escape(cards[id].version||&#x27;Your&#x27;)} version&quot; data-tooltip=&quot;Less preferred wording · toward the right&quot;&gt;${icon(&#x27;chevron-right&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+  }
+  function alternatives() { const idea=ideas.find(i=&gt;i.id===state.idea); return `&lt;section class=&quot;sm-detail&quot;&gt;&lt;div class=&quot;sm-modal-chrome&quot;&gt;&lt;div class=&quot;sm-row-context&quot;&gt;&lt;strong&gt;One idea. Different articulations.&lt;/strong&gt;&lt;span&gt;← More preferred wording&lt;/span&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-close cursor-interaction&quot; data-action=&quot;close&quot; data-key=&quot;close&quot; aria-label=&quot;Return cards to the diagram&quot; autofocus&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;sm-row-body&quot;&gt;&lt;div class=&quot;sm-alternatives&quot;&gt;${idea.versions.map((id,index)=&gt;`&lt;article class=&quot;sm-version ${index===0?&#x27;sm-lead&#x27;:&#x27;&#x27;}&quot; data-version=&quot;${id}&quot; aria-label=&quot;${escape(cards[id].version||&#x27;Your&#x27;)} version&quot;&gt;&lt;div class=&quot;sm-version-face&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;Open claim and evidence: ${escape(cards[id].claim)}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id)}${sourceButton(id)}&lt;/div&gt;&lt;/div&gt;${preference(id)}&lt;/article&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-version cursor-interaction&quot; data-action=&quot;compose&quot; data-key=&quot;suggest&quot; ${state.added.length&gt;=5?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Suggest a&lt;br&gt;version&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;`; }
+  function evidence() {
+    const card=cards[state.card],assessment=state.assessments[state.card];
+    const brief={
+      access:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;,
+      accessBold:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;,
+      accessNarrow:&#x27;This describes the survey respondents. It doesn’t tell us how common the need is across the community.&#x27;,
+      study:&#x27;Students asked for quiet weekend space. The effect on learning hasn’t been measured.&#x27;,
+      purpose:&#x27;This puts family access at the heart of the library’s public purpose.&#x27;,
+      staffing:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;,
+      evenings:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;,
+      services:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;
+    }[state.card]||card.explanation;
+    const sourceRows=card.sources.map(id=&gt;{
+      const source=sources[id],key=state.card+&#x27;/&#x27;+id;
+      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;&lt;p&gt;${escape(source.finding)}&lt;/p&gt;&lt;dl&gt;&lt;dt&gt;Supports&lt;/dt&gt;&lt;dd&gt;${escape(source.premise)}&lt;/dd&gt;&lt;dt&gt;Limit&lt;/dt&gt;&lt;dd&gt;${escape(source.limit)}&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;&lt;/details&gt;`;
+    }).join(&#x27;&#x27;);
+    return `&lt;section class=&quot;sm-detail sm-reading&quot;&gt;${breadcrumb(state.from===&#x27;alternatives&#x27;?&#x27;alternatives&#x27;:&#x27;board&#x27;)}&lt;article class=&quot;sm-expanded-card&quot;&gt;&lt;div class=&quot;sm-reading-body&quot;&gt;&lt;h2 class=&quot;sm-evidence-claim&quot;&gt;${escape(card.claim)}&lt;/h2&gt;&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;&lt;/div&gt;${card.value?`&lt;div class=&quot;sm-value-note&quot;&gt;${credibility(state.card,false)}&lt;/div&gt;`:`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;div class=&quot;sm-evidence-heading&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${credibility(state.card,false)}&lt;/div&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}&lt;/article&gt;&lt;/section&gt;`;
+  }
+  function composer() {
+    const idea=ideas.find(i=&gt;i.id===state.idea);
+    return `&lt;section class=&quot;sm-detail&quot;&gt;${breadcrumb(&#x27;alternatives&#x27;)}&lt;h2 class=&quot;sm-section-title&quot;&gt;Suggest a version&lt;/h2&gt;&lt;p class=&quot;sm-caption&quot;&gt;Keep the underlying reason. A different reason would belong in its own row.&lt;/p&gt;&lt;form class=&quot;sm-form&quot; id=&quot;sm-form&quot;&gt;&lt;label for=&quot;sm-draft&quot;&gt;Your version&lt;/label&gt;&lt;textarea id=&quot;sm-draft&quot; name=&quot;claim&quot; maxlength=&quot;500&quot; required placeholder=&quot;State the claim, including any qualifications.&quot;&gt;${escape(state.draftClaim)}&lt;/textarea&gt;&lt;label for=&quot;sm-reason&quot;&gt;What does this improve?&lt;/label&gt;&lt;textarea id=&quot;sm-reason&quot; name=&quot;reason&quot; maxlength=&quot;700&quot; required placeholder=&quot;Explain what is clearer, more precise, or better supported.&quot;&gt;${escape(state.draftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-compare-footer&quot;&gt;${button(&#x27;preview&#x27;,&#x27;Preview card&#x27;)}&lt;span class=&quot;sm-meta&quot;&gt;Same idea · Fresh preference and support assessments&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-error&quot; id=&quot;sm-error&quot; role=&quot;alert&quot;&gt;&lt;/div&gt;&lt;/form&gt;${state.preview?`&lt;div class=&quot;sm-preview&quot;&gt;&lt;article class=&quot;sm-source&quot;&gt;&lt;div class=&quot;sm-kicker&quot;&gt;Your version · Preview&lt;/div&gt;&lt;p class=&quot;sm-claim&quot;&gt;${escape(state.draftClaim)}&lt;/p&gt;&lt;p class=&quot;sm-prose&quot;&gt;${escape(state.draftReason)}&lt;/p&gt;&lt;div class=&quot;sm-meta&quot;&gt;Unreviewed · No sources attached&lt;/div&gt;&lt;/article&gt;&lt;div class=&quot;sm-compare-footer&quot;&gt;${button(&#x27;add&#x27;,&#x27;Add to this idea&#x27;,state.added.length&gt;=5?&#x27;disabled&#x27;:&#x27;&#x27;)}&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;/section&gt;`;
+  }
+  const scene=root.querySelector(&#x27;.sm-scene&#x27;);
+  const links=root.querySelector(&#x27;.sm-links&#x27;);
+  const modal=root.querySelector(&#x27;#sm-modal&#x27;);
+  let returnKey=&#x27;stack-access&#x27;, originId=&#x27;access&#x27;, opening=false, closing=false, closeQueued=false;
+  const reducedMotion=()=&gt;window.matchMedia(&#x27;(prefers-reduced-motion:reduce)&#x27;).matches;
+  const originCard=()=&gt;content.querySelector(`[data-node=&quot;${originId}&quot;] .sm-card`);
+  function focusCanvas(focused,animate=true) {
+    const board=content.querySelector(&#x27;.sm-board&#x27;);
+    const from=getComputedStyle(board).transform;
+    board.getAnimations().forEach(animation=&gt;animation.cancel());
+    scene.classList.toggle(&#x27;sm-focused&#x27;,focused);
+    const to=getComputedStyle(board).transform;
+    const destination=originCard()?.getBoundingClientRect();
+    if(animate&amp;&amp;!reducedMotion())board.animate([{transform:from},{transform:to}],{duration:focused?600:420,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;});
+    animateWires(650);
+    return destination;
+  }
+  function snapshotFace(face) {
+    if(!face)return null;
+    const claim=face.querySelector(&#x27;.sm-claim,.sm-evidence-claim&#x27;);
+    const type=claim?getComputedStyle(claim):null;
+    return {face:face.cloneNode(true),rect:face.getBoundingClientRect(),fontSize:type?.fontSize,lineHeight:type?.lineHeight};
+  }
+  function collapsedFace(id) {
+    const face=document.createElement(&#x27;div&#x27;);
+    face.innerHTML=`&lt;div class=&quot;sm-claim-button&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id,false)}${sourceButton(id)}&lt;/div&gt;`;
+    return face;
+  }
+  function rememberOrigin(trigger) {
+    if(modal.open)return;
+    returnKey=trigger.dataset.key||&#x27;&#x27;;
+    originId=trigger.closest(&#x27;[data-node]&#x27;)?.dataset.node||state.idea;
+  }
+  function placeModal() {
+    if(!modal.open)return;
+    const rootBox=root.getBoundingClientRect(),source=originCard()?.getBoundingClientRect();
+    const question=root.querySelector(&#x27;.sm-head&#x27;).getBoundingClientRect();
+    const width=Math.min(rootBox.width-32,state.view===&#x27;alternatives&#x27;?940:state.view===&#x27;evidence&#x27;?600:760);
+    const top=Math.max(question.bottom+26,(source?.top||question.bottom+60)-20);
+    modal.style.width=width+&#x27;px&#x27;;
+    modal.style.left=(rootBox.left+(rootBox.width-width)/2+window.scrollX)+&#x27;px&#x27;;
+    modal.style.top=(top+window.scrollY)+&#x27;px&#x27;;
+    const naturalBottom=content.getBoundingClientRect().bottom+24;
+    const requiredBottom=top+modal.offsetHeight+30;
+    scene.style.minHeight=Math.max(naturalBottom-scene.getBoundingClientRect().top,requiredBottom-scene.getBoundingClientRect().top)+&#x27;px&#x27;;
+  }
+  function makeFlight(face, rect, z) {
+    const shell=document.createElement(&#x27;article&#x27;);
+    shell.className=&#x27;sm-card sm-flight&#x27;;shell.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);shell.inert=true;
+    shell.innerHTML=face.innerHTML;
+    shell.querySelectorAll(&#x27;[data-key],[id]&#x27;).forEach(el=&gt;{el.removeAttribute(&#x27;data-key&#x27;);el.removeAttribute(&#x27;id&#x27;);});
+    const parent=modal.getBoundingClientRect();
+    Object.assign(shell.style,{left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,height:rect.height+&#x27;px&#x27;,zIndex:String(z)});
+    modal.appendChild(shell);return shell;
+  }
+  function boxKeyframe(rect,parent) {return {left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,height:rect.height+&#x27;px&#x27;};}
+  async function liftCards(startRect) {
+    if(reducedMotion())return;
+    opening=true;
+    const source=startRect||originCard().getBoundingClientRect(),parent=modal.getBoundingClientRect();
+    const versions=[...modal.querySelectorAll(&#x27;.sm-version&#x27;)];
+    const tasks=versions.map((version,index)=&gt;{
+      const face=version.querySelector(&#x27;.sm-version-face&#x27;),end=face.getBoundingClientRect();
+      const start={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
+      const flight=makeFlight(face,start,20-index);
+      version.style.visibility=&#x27;hidden&#x27;;
+      const animation=flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:520+index*45,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;});
+      return animation.finished.catch(()=&gt;{}).then(()=&gt;{
+        version.style.visibility=&#x27;&#x27;;flight.remove();
+        version.querySelector(&#x27;.sm-preference&#x27;).animate([{opacity:0,transform:&#x27;translateY(-6px)&#x27;},{opacity:1,transform:&#x27;translateY(0)&#x27;}],{duration:180,easing:&#x27;ease-out&#x27;});
+      });
+    });
+    modal.querySelectorAll(&#x27;.sm-modal-chrome,.sm-add-version&#x27;).forEach(el=&gt;el.animate([{opacity:0},{opacity:1}],{duration:250,delay:180,fill:&#x27;backwards&#x27;}));
+    await Promise.all(tasks);opening=false;
+    if(closeQueued){closeQueued=false;closeModal();}
+  }
+  async function morphCard(snapshot,target,expanding) {
+    if(!snapshot||!target||reducedMotion())return;
+    opening=true;
+    const destination=target.getBoundingClientRect(),parent=modal.getBoundingClientRect();
+    const flight=makeFlight(expanding?snapshot.face:target,snapshot.rect,30);
+    const finalClaim=target.querySelector(&#x27;.sm-claim,.sm-evidence-claim&#x27;);
+    const finalType=getComputedStyle(finalClaim);
+    const claim=flight.querySelector(&#x27;.sm-claim&#x27;);
+    target.style.visibility=&#x27;hidden&#x27;;
+    if(claim)claim.animate([{fontSize:snapshot.fontSize,lineHeight:snapshot.lineHeight},{fontSize:finalType.fontSize,lineHeight:finalType.lineHeight}],{duration:520,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;});
+    await flight.animate([boxKeyframe(snapshot.rect,parent),boxKeyframe(destination,parent)],{duration:520,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
+    target.style.visibility=&#x27;&#x27;;flight.remove();
+    if(expanding)target.querySelectorAll(&#x27;.sm-brief,.sm-evidence-group,.sm-value-note&#x27;).forEach(el=&gt;el.animate([{opacity:0,transform:&#x27;translateY(5px)&#x27;},{opacity:1,transform:&#x27;translateY(0)&#x27;}],{duration:200,easing:&#x27;ease-out&#x27;}));
+    opening=false;
+    if(closeQueued){closeQueued=false;closeModal();}
+  }
+  function fadeRow(ghost,rect) {
+    if(!ghost||reducedMotion())return;
+    const parent=modal.getBoundingClientRect();
+    ghost.classList.add(&#x27;sm-transition-ghost&#x27;);ghost.inert=true;ghost.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
+    ghost.querySelectorAll(&#x27;[data-key],[id]&#x27;).forEach(el=&gt;{el.removeAttribute(&#x27;data-key&#x27;);el.removeAttribute(&#x27;id&#x27;);});
+    ghost.querySelector(`[data-version=&quot;${state.card}&quot;]`)?.style.setProperty(&#x27;visibility&#x27;,&#x27;hidden&#x27;);
+    Object.assign(ghost.style,{left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,padding:&#x27;0&#x27;,border:&#x27;0&#x27;,background:&#x27;transparent&#x27;,boxShadow:&#x27;none&#x27;});
+    modal.appendChild(ghost);
+    ghost.animate([{opacity:1,transform:&#x27;translateY(0) scale(1)&#x27;},{opacity:0,transform:&#x27;translateY(12px) scale(.97)&#x27;}],{duration:340,easing:&#x27;ease-out&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{}).then(()=&gt;ghost.remove());
+  }
+  function syncBoardIndicators() {
+    ideas.forEach(idea=&gt;{
+      const node=content.querySelector(`[data-node=&quot;${idea.id}&quot;]`);if(!node)return;
+      const id=idea.versions[0];
+      node.querySelector(&#x27;.sm-card-meta&#x27;).innerHTML=credibility(id)+sourceButton(id);
+      node.querySelector(&#x27;.sm-stack-button&#x27;)?.setAttribute(&#x27;aria-label&#x27;,`Compare ${idea.versions.length} versions of this argument`);
+    });
+    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  async function closeModal() {
+    if(!modal.open||closing)return;
+    if(opening){closeQueued=true;return;}
+    closing=true;
+    modal.classList.add(&#x27;sm-closing&#x27;);
+    const source=focusCanvas(false),parent=modal.getBoundingClientRect();
+    if(source&amp;&amp;!reducedMotion()) {
+      const faces=[...modal.querySelectorAll(&#x27;.sm-version-face&#x27;)];
+      if(faces.length) {
+        const tasks=faces.map((face,index)=&gt;{
+          const start=face.getBoundingClientRect();
+          const end={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
+          const flight=makeFlight(face,start,20-index);
+          face.closest(&#x27;.sm-version&#x27;).style.visibility=&#x27;hidden&#x27;;
+          return flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
+        });
+        modal.querySelectorAll(&#x27;.sm-modal-chrome,.sm-add-version&#x27;).forEach(el=&gt;el.animate([{opacity:1},{opacity:0}],{duration:140,fill:&#x27;forwards&#x27;}));
+        await Promise.all(tasks);
+      } else if(modal.querySelector(&#x27;.sm-expanded-card&#x27;)) {
+        const panel=modal.querySelector(&#x27;.sm-expanded-card&#x27;),start=panel.getBoundingClientRect();
+        const flight=makeFlight(collapsedFace(state.card),start,30);
+        if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+        const fromType=getComputedStyle(panel.querySelector(&#x27;.sm-evidence-claim&#x27;));
+        const toType=getComputedStyle(originCard().querySelector(&#x27;.sm-claim&#x27;));
+        flight.querySelector(&#x27;.sm-claim&#x27;).animate([{fontSize:fromType.fontSize,lineHeight:fromType.lineHeight},{fontSize:toType.fontSize,lineHeight:toType.lineHeight}],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;});
+        modal.querySelector(&#x27;.sm-reading&#x27;).style.visibility=&#x27;hidden&#x27;;
+        await flight.animate([boxKeyframe(start,parent),boxKeyframe(source,parent)],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
+      } else {
+        const panel=modal.querySelector(&#x27;.sm-detail&#x27;);const box=panel.getBoundingClientRect();
+        await panel.animate([{transform:&#x27;translate(0,0) scale(1)&#x27;,opacity:1},{transform:`translate(${source.left-box.left}px,${source.top-box.top}px) scale(${source.width/box.width},${source.height/box.height})`,opacity:.25}],{duration:350,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
+      }
+    }
+    content.querySelector(&#x27;.sm-origin&#x27;)?.classList.remove(&#x27;sm-origin&#x27;);
+    syncBoardIndicators();
+    modal.close();modal.innerHTML=&#x27;&#x27;;modal.classList.remove(&#x27;sm-closing&#x27;);
+    scene.style.minHeight=&#x27;&#x27;;
+    state.view=&#x27;board&#x27;;closing=false;
+    content.querySelector(`[data-key=&quot;${returnKey}&quot;]`)?.focus({preventScroll:true});
+    announce(&#x27;Cards returned to their place in the diagram.&#x27;);animateWires();save();
+  }
+  function renderModal(focusKey,motion) {
+    const wasOpen=modal.open;
+    const previousView=modal.dataset.view;
+    const startingCard=motion===&#x27;detail&#x27;?snapshotFace(wasOpen?modal.querySelector(`[data-version=&quot;${state.card}&quot;] .sm-version-face`):originCard()):motion===&#x27;return&#x27;&amp;&amp;previousView===&#x27;evidence&#x27;?snapshotFace(modal.querySelector(&#x27;.sm-expanded-card&#x27;)):null;
+    const oldRow=wasOpen&amp;&amp;previousView===&#x27;alternatives&#x27;&amp;&amp;motion===&#x27;detail&#x27;?modal.querySelector(&#x27;.sm-detail&#x27;):null;
+    const ghost=oldRow?.cloneNode(true),ghostRect=oldRow?.getBoundingClientRect();
+    const startingStack=!wasOpen?originCard()?.getBoundingClientRect():null;
+    modal.dataset.view=state.view;
+    modal.setAttribute(&#x27;aria-label&#x27;,(state.view===&#x27;alternatives&#x27;?&#x27;Alternative articulations&#x27;:state.view===&#x27;evidence&#x27;?&#x27;Claim and evidence&#x27;:&#x27;Suggest an alternative articulation&#x27;)+&#x27;: &#x27;+optionName(ideas.find(i=&gt;i.id===state.idea).option));
+    modal.innerHTML=state.view===&#x27;alternatives&#x27;?alternatives():state.view===&#x27;evidence&#x27;?evidence():composer();
+    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+    if(!wasOpen){modal.showModal();focusCanvas(true,!!motion);}
+    placeModal();
+    content.querySelector(`[data-node=&quot;${originId}&quot;]`)?.classList.add(&#x27;sm-origin&#x27;);
+    (modal.querySelector(`[data-key=&quot;${focusKey}&quot;]`)||modal.querySelector(&#x27;[data-key=&quot;close&quot;]&#x27;))?.focus({preventScroll:true});
+    if(!wasOpen&amp;&amp;state.view===&#x27;alternatives&#x27;&amp;&amp;motion===&#x27;fan&#x27;)liftCards(startingStack);
+    else if(startingCard&amp;&amp;motion===&#x27;detail&#x27;){fadeRow(ghost,ghostRect);morphCard(startingCard,modal.querySelector(&#x27;.sm-expanded-card&#x27;),true);}
+    else if(startingCard&amp;&amp;motion===&#x27;return&#x27;)morphCard(startingCard,modal.querySelector(`[data-version=&quot;${state.card}&quot;] .sm-version-face`),false);
+    else if(!reducedMotion()&amp;&amp;motion){const panel=modal.querySelector(&#x27;.sm-detail&#x27;);panel.style.transformOrigin=&#x27;top left&#x27;;panel.animate([{transform:&#x27;translateY(12px)&#x27;,opacity:.6},{transform:&#x27;translateY(0)&#x27;,opacity:1}],{duration:230,easing:&#x27;ease-out&#x27;});}
+  }
+  let wireFrame=0,wireUntil=0;
+  function drawLinks() {
+    const sceneBox=scene.getBoundingClientRect();
+    const rect=element=&gt;{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
+    const question=rect(root.querySelector(&#x27;.sm-head&#x27;));
+    const qx=question.x+question.w/2,qy=question.y+question.h;
+    const line=(x1,y1,x2,y2)=&gt;`M${x1} ${y1}L${x2} ${y2}`;
+    const path=d=&gt;`&lt;path d=&quot;${d}&quot;/&gt;`;
+    const port=(x,y)=&gt;`&lt;circle cx=&quot;${x}&quot; cy=&quot;${y}&quot; r=&quot;3&quot;/&gt;`;
+    const columns=[...content.querySelectorAll(&#x27;.sm-column&#x27;)];
+    const narrow=window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
+    let markup=port(qx,qy);
+    columns.forEach((column,index)=&gt;{
+      const head=rect(column.querySelector(&#x27;.sm-column-head&#x27;));
+      const hx=head.x+head.w/2,hy=head.y;
+      if(narrow&amp;&amp;index&gt;0) markup+=path(`M${qx} ${qy}V${qy+18}H8V${hy-17}H${hx}V${hy}`);
+      else markup+=path(`M${qx} ${qy}V${qy+24}H${hx}V${hy}`);
+      markup+=port(hx,hy);
+      const rows=[...column.querySelectorAll(&#x27;.sm-card&#x27;)].map(rect);
+      const spine=head.x+12;
+      if(rows.length) markup+=path(line(spine,head.y+head.h,spine,Math.max(...rows.map(r=&gt;r.y+16))));
+      rows.forEach(card=&gt;{markup+=path(line(spine,card.y+16,card.x,card.y+16))+port(card.x,card.y+16);});
+    });
+    links.setAttribute(&#x27;viewBox&#x27;,`0 0 ${sceneBox.width} ${sceneBox.height}`);
+    links.innerHTML=markup;
+  }
+  function animateWires(duration=0) {
+    wireUntil=Math.max(wireUntil,performance.now()+duration);
+    if(wireFrame)return;
+    const tick=()=&gt;{drawLinks();if(performance.now()&lt;wireUntil)wireFrame=requestAnimationFrame(tick);else wireFrame=0;};
+    wireFrame=requestAnimationFrame(tick);
+  }
+  function render(focusKey, motion=&#x27;&#x27;) {
+    root.dataset.indicator=design.indicator; root.dataset.density=design.density; root.dataset.type=design.type;
+    if(!content.children.length)content.innerHTML=board();
+    if(state.view!==&#x27;board&#x27;){renderModal(focusKey,motion);animateWires();return;}
+    const before=new Map([...content.querySelectorAll(&#x27;[data-node]&#x27;)].map(el=&gt;[el.dataset.node,el.getBoundingClientRect().top]));
+    content.innerHTML=board();
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
+    const reduced=window.matchMedia(&#x27;(prefers-reduced-motion:reduce)&#x27;).matches;
+    if(!reduced&amp;&amp;motion===&#x27;reorder&#x27;) content.querySelectorAll(&#x27;[data-node]&#x27;).forEach(el=&gt;{const from=before.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;el.animate([{transform:`translateY(${delta}px)`},{transform:&#x27;translateY(0)&#x27;}],{duration:650,easing:&#x27;cubic-bezier(.2,.75,.2,1)&#x27;});}});
+    animateWires(motion&amp;&amp;!reduced?700:0);
+  }
+  root.addEventListener(&#x27;input&#x27;,event=&gt;{
+    if(event.target.id===&#x27;sm-draft&#x27;) state.draftClaim=event.target.value;
+    if(event.target.id===&#x27;sm-reason&#x27;) state.draftReason=event.target.value;
+    if(state.preview &amp;&amp; [&#x27;sm-draft&#x27;,&#x27;sm-reason&#x27;].includes(event.target.id)) {state.preview=false;modal.querySelector(&#x27;.sm-preview&#x27;)?.remove();}
+  });
+  root.addEventListener(&#x27;submit&#x27;,event=&gt;event.preventDefault());
+  root.addEventListener(&#x27;click&#x27;,event=&gt;{
+    const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger))return;
+    const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;;
+    if(action===&#x27;close&#x27;){closeModal();return;}
+    if(closing||opening)return;
+    if(action===&#x27;alternatives&#x27;||action===&#x27;evidence&#x27;)rememberOrigin(trigger);
+    if(action===&#x27;importance&#x27;) {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?&#x27;Importance vote saved. The shared row order stays in place.&#x27;:&#x27;Importance vote withdrawn. The shared row order stays in place.&#x27;);}
+    if(action===&#x27;alternatives&#x27;) {state.view=&#x27;alternatives&#x27;;state.idea=id;focus=&#x27;back&#x27;;motion=&#x27;fan&#x27;;announce(&#x27;Compare versions of one idea. Browsing does not cast a vote.&#x27;);}
+    if(action===&#x27;evidence&#x27;) {state.from=state.view===&#x27;alternatives&#x27;?&#x27;alternatives&#x27;:&#x27;board&#x27;;state.view=&#x27;evidence&#x27;;state.card=id;state.idea=cards[id].idea;state.assessOpen=false;focus=&#x27;close&#x27;;motion=&#x27;detail&#x27;;announce(&#x27;Illustrative evidence packet. Opening it does not cast an assessment.&#x27;);}
+    if(action===&#x27;back&#x27;) {state.view=trigger.dataset.to;focus=&#x27;close&#x27;;motion=&#x27;return&#x27;;announce(&#x27;Alternative articulations in front of the diagram.&#x27;);}
+    if(action===&#x27;preference&#x27;) {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?&#x27;Version preference saved. The shared card order stays in place.&#x27;:&#x27;Version preference withdrawn.&#x27;);}
+    if(action===&#x27;assessment-toggle&#x27;) {state.assessOpen=!state.assessOpen;}
+    if(action===&#x27;assess&#x27;) {const value=trigger.dataset.value;state.assessments[state.card]=value===&#x27;skip&#x27;||state.assessments[state.card]===value?null:value;announce(state.assessments[state.card]?&#x27;Your one active assessment is included in the support percentage.&#x27;:value===&#x27;skip&#x27;?&#x27;No active assessment. Skipping adds nothing to the denominator.&#x27;:&#x27;Assessment withdrawn.&#x27;);}
+    if(action===&#x27;compose&#x27;) {state.view=&#x27;compose&#x27;;state.preview=false;focus=&#x27;back&#x27;;announce(&#x27;Your suggestion will remain in this prototype.&#x27;);}
+    if(action===&#x27;preview&#x27;) {if(!state.draftClaim.trim()||!state.draftReason.trim()){modal.querySelector(&#x27;#sm-error&#x27;).textContent=&#x27;Add a claim and a short explanation to preview your version.&#x27;;return;}state.preview=true;focus=null;announce(&#x27;Preview ready. This version has no inherited preference or credibility assessments.&#x27;);}
+    if(action===&#x27;add&#x27;) {if(state.added.length&gt;=5)return;state.added.push({idea:state.idea,claim:state.draftClaim.trim(),reason:state.draftReason.trim()});syncAdded();state.view=&#x27;alternatives&#x27;;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;state.preview=false;focus=&#x27;back&#x27;;announce(&#x27;Your version was added locally. The idea keeps its importance; the new card starts unreviewed.&#x27;);}
+    if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
+    render(focus,motion);save();
+  });
+  root.addEventListener(&#x27;click&#x27;,event=&gt;{
+    const summary=event.target.closest(&#x27;.sm-source-row summary&#x27;);if(!summary)return;
+    const detail=summary.parentElement;
+    requestAnimationFrame(()=&gt;{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;placeModal();save();});
+  });
+  modal.addEventListener(&#x27;cancel&#x27;,event=&gt;{event.preventDefault();closeModal();});
+  modal.addEventListener(&#x27;click&#x27;,event=&gt;{if(event.target===modal)closeModal();});
+  restore(window.openai?.widgetState);
+  originId=state.idea;
+  render();
+  window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);originId=state.idea;render();}});
+  new ResizeObserver(()=&gt;animateWires()).observe(scene);
+  window.addEventListener(&#x27;resize&#x27;,()=&gt;{if(modal.open&amp;&amp;!opening&amp;&amp;!closing)placeModal();});
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=&gt;render()});tweak.addSelect(design,&#x27;type&#x27;,{label:&#x27;Argument typography&#x27;,options:[{label:&#x27;Graphics sans&#x27;,value:&#x27;sans&#x27;},{label:&#x27;Editorial serif&#x27;,value:&#x27;serif&#x27;}]});tweak.addSelect(design,&#x27;indicator&#x27;,{label:&#x27;Evidence metaphor&#x27;,options:[{label:&#x27;Paper dossier&#x27;,value:&#x27;dossier&#x27;},{label:&#x27;Open book&#x27;,value:&#x27;books&#x27;},{label:&#x27;Review checklist&#x27;,value:&#x27;checklist&#x27;}]});tweak.addSelect(design,&#x27;density&#x27;,{label:&#x27;Card density&#x27;,options:[{label:&#x27;Comfortable&#x27;,value:&#x27;comfortable&#x27;},{label:&#x27;Compact&#x27;,value:&#x27;compact&#x27;}]});}
+})();
+&lt;/script&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (event) =&gt; {
+    for (const target of event.composedPath()) {
+      if (target?.nodeType === Node.ELEMENT_NODE) {
+        const trigger = target.closest(&quot;[data-tooltip]&quot;);
+        if (trigger) return trigger;
+      }
+    }
+    return null;
+  };
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handlers = {
+    pointerover: handlePointerOpen,
+    pointerdown: handlePointer,
+    pointercancel: handlePointer,
+    click: handleTouchClick,
+    pointerout: handleLeave,
+    focusin: handleFocusIn,
+    focusout: handleLeave,
+    keydown: handleKeyDown,
+    contextmenu: handleContextMenu,
+  };
+  const roots = new Map();
+  const handledEvents = new WeakSet();
+  const handleEvent = (event) =&gt; {
+    if (handledEvents.has(event)) return;
+    handledEvents.add(event);
+    handlers[event.type](event);
+  };
+  const discoverRoots = (node) =&gt; {
+    if (node.shadowRoot) listen(node.shadowRoot);
+    for (const element of node.querySelectorAll(&quot;*&quot;)) {
+      if (element.shadowRoot) listen(element.shadowRoot);
+    }
+  };
+  const listen = (root) =&gt; {
+    if (roots.has(root)) return;
+    for (const type of Object.keys(handlers)) root.addEventListener(type, handleEvent);
+    const observer = new window.MutationObserver((records) =&gt; {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) discoverRoots(node);
+        }
+      }
+      for (const [root, cleanup] of roots) {
+        if (root.host &amp;&amp; !root.host.isConnected) {
+          cleanup();
+          roots.delete(root);
+        }
+      }
+      if (activeTrigger &amp;&amp; !activeTrigger.isConnected) closeTooltip(false);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    roots.set(root, () =&gt; {
+      observer.disconnect();
+      for (const type of Object.keys(handlers)) root.removeEventListener(type, handleEvent);
+    });
+    discoverRoots(root);
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    for (const cleanup of roots.values()) cleanup();
+    roots.clear();
+    tooltip = null;
+  };
+
+  // Events between children of one shadow root never reach the document.
+  listen(document);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-carousel&quot;&gt;
+  (() =&gt; {
+    for (const root of document.querySelectorAll(&quot;.viz-carousel&quot;)) {
+      const panels = Array.from(
+        root.querySelectorAll(&quot;:scope &gt; [data-variant]&quot;),
+      );
+      if (panels.length === 0) {
+        continue;
+      }
+      root.setAttribute(&quot;role&quot;, &quot;group&quot;);
+      panels.forEach((panel, index) =&gt; {
+        panel.hidden = index !== 0;
+        panel.setAttribute(&quot;role&quot;, &quot;group&quot;);
+        if (!panel.hasAttribute(&quot;aria-label&quot;)) {
+          panel.setAttribute(&quot;aria-label&quot;, panel.dataset.variant);
+        }
+      });
+      root.dataset.activeVariant = panels[0].dataset.variant;
+      if (panels.length === 1) {
+        continue;
+      }
+
+      const controls = document.createElement(&quot;div&quot;);
+      controls.className = &quot;viz-carousel-controls&quot;;
+      // Portable copy of the settings dropdown&#x27;s legacy glyph; no 14px icon-package preset matches it.
+      // https://github.com/openai/openai/blob/master/codex/codex-apps/webview/src/icons/chevron.svg
+      controls.innerHTML = `
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-previous cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+      &lt;details class=&quot;viz-carousel-picker&quot;&gt;
+        &lt;summary class=&quot;cursor-interaction&quot;&gt;
+          &lt;span class=&quot;viz-carousel-count tabular-nums&quot;&gt;&lt;/span&gt;
+          &lt;span class=&quot;viz-carousel-name&quot;&gt;&lt;/span&gt;
+          &lt;svg class=&quot;viz-carousel-caret&quot; width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 20 21&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;
+            &lt;path d=&quot;M15.2793 7.71101C15.539 7.45131 15.961 7.45131 16.2207 7.71101C16.4804 7.97071 16.4804 8.39272 16.2207 8.65242L10.4707 14.4024C10.211 14.6621 9.78902 14.6621 9.52932 14.4024L3.77932 8.65242L3.69436 8.54792C3.52385 8.28979 3.55205 7.93828 3.77932 7.71101C4.00659 7.48374 4.3581 7.45554 4.61623 7.62605L4.72073 7.71101L10 12.9903L15.2793 7.71101Z&quot; fill=&quot;currentColor&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;0.6&quot; /&gt;
+          &lt;/svg&gt;
+        &lt;/summary&gt;
+        &lt;div class=&quot;viz-carousel-options&quot;&gt;&lt;/div&gt;
+      &lt;/details&gt;
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-next cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;`;
+      const previous = controls.querySelector(&quot;.viz-carousel-previous&quot;);
+      const next = controls.querySelector(&quot;.viz-carousel-next&quot;);
+      const picker = controls.querySelector(&quot;.viz-carousel-picker&quot;);
+      const summary = picker.querySelector(&quot;summary&quot;);
+      const count = controls.querySelector(&quot;.viz-carousel-count&quot;);
+      const name = controls.querySelector(&quot;.viz-carousel-name&quot;);
+      const options = controls.querySelector(&quot;.viz-carousel-options&quot;);
+      const status = document.createElement(&quot;span&quot;);
+      status.className = &quot;sr-only&quot;;
+      status.setAttribute(&quot;role&quot;, &quot;status&quot;);
+      status.setAttribute(&quot;aria-live&quot;, &quot;polite&quot;);
+      status.setAttribute(&quot;aria-atomic&quot;, &quot;true&quot;);
+      previous.setAttribute(
+        &quot;aria-label&quot;,
+        root.dataset.previousLabel ?? &quot;Previous variant&quot;,
+      );
+      next.setAttribute(&quot;aria-label&quot;, root.dataset.nextLabel ?? &quot;Next variant&quot;);
+
+      let active = 0;
+      let mousePointerId = null;
+      let summaryPointerHandled = false;
+      summary.addEventListener(&quot;pointerdown&quot;, (event) =&gt; {
+        summaryPointerHandled =
+          event.pointerType === &quot;mouse&quot; &amp;&amp; event.button === 0 &amp;&amp; !event.ctrlKey;
+        if (!summaryPointerHandled) {
+          return;
+        }
+        event.preventDefault();
+        summary.focus({ preventScroll: true });
+        picker.open = !picker.open;
+        mousePointerId = picker.open ? event.pointerId : null;
+      });
+      summary.addEventListener(&quot;click&quot;, (event) =&gt; {
+        if (summaryPointerHandled &amp;&amp; event.detail &gt; 0) {
+          event.preventDefault();
+        }
+      });
+      const choices = panels.map((panel, index) =&gt; {
+        const choice = document.createElement(&quot;button&quot;);
+        choice.type = &quot;button&quot;;
+        choice.className = &quot;cursor-interaction&quot;;
+        choice.textContent = panel.dataset.variant;
+        choice.addEventListener(&quot;click&quot;, () =&gt; {
+          select(index);
+          summary.focus();
+        });
+        choice.addEventListener(&quot;pointerup&quot;, (event) =&gt; {
+          if (
+            picker.open &amp;&amp;
+            event.pointerType === &quot;mouse&quot; &amp;&amp;
+            event.button === 0 &amp;&amp;
+            event.pointerId === mousePointerId
+          ) {
+            choice.click();
+          }
+        });
+        options.appendChild(choice);
+        return choice;
+      });
+      const select = (index) =&gt; {
+        const changed = active !== index;
+        active = index;
+        panels.forEach((panel, position) =&gt; {
+          panel.hidden = position !== active;
+          choices[position].setAttribute(
+            &quot;aria-current&quot;,
+            String(position === active),
+          );
+        });
+        root.dataset.activeVariant = panels[active].dataset.variant;
+        count.textContent = `${active + 1} / ${panels.length}`;
+        name.textContent = panels[active].dataset.variant;
+        picker.open = false;
+        mousePointerId = null;
+        if (changed) {
+          status.textContent = `${count.textContent}: ${name.textContent}`;
+        }
+      };
+      previous.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + panels.length - 1) % panels.length),
+      );
+      next.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + 1) % panels.length),
+      );
+      picker.addEventListener(&quot;keydown&quot;, (event) =&gt; {
+        if (event.key === &quot;Escape&quot; &amp;&amp; picker.open) {
+          event.preventDefault();
+          picker.open = false;
+          mousePointerId = null;
+          summary.focus();
+          return;
+        }
+        if (event.altKey || event.ctrlKey || event.metaKey) {
+          return;
+        }
+        const index = choices.indexOf(document.activeElement);
+        let nextIndex;
+        if (event.key === &quot;ArrowDown&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + 1) % choices.length;
+        } else if (event.key === &quot;ArrowUp&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + choices.length - 1) % choices.length;
+        } else if (picker.open &amp;&amp; event.key === &quot;Home&quot;) {
+          nextIndex = 0;
+        } else if (picker.open &amp;&amp; event.key === &quot;End&quot;) {
+          nextIndex = choices.length - 1;
+        } else {
+          return;
+        }
+        event.preventDefault();
+        picker.open = true;
+        choices[nextIndex].focus();
+      });
+      picker.addEventListener(&quot;focusout&quot;, (event) =&gt; {
+        if (!picker.contains(event.relatedTarget)) {
+          picker.open = false;
+          mousePointerId = null;
+        }
+      });
+      const dismiss = (event) =&gt; {
+        if (!summary.contains(event.target)) {
+          mousePointerId = null;
+        }
+        if (!picker.contains(event.target)) {
+          picker.open = false;
+        }
+      };
+      const endPointerSelection = () =&gt; {
+        mousePointerId = null;
+      };
+      const sizePicker = () =&gt; {
+        root.style.setProperty(
+          &quot;--viz-carousel-picker-height&quot;,
+          `${picker.open ? options.offsetHeight : 0}px`,
+        );
+      };
+      picker.addEventListener(&quot;toggle&quot;, sizePicker);
+      window.addEventListener(&quot;resize&quot;, sizePicker);
+      document.addEventListener(&quot;pointerdown&quot;, dismiss);
+      document.addEventListener(&quot;pointerup&quot;, endPointerSelection);
+      document.addEventListener(&quot;pointercancel&quot;, endPointerSelection);
+      window.addEventListener(&quot;blur&quot;, endPointerSelection);
+      window.addEventListener(
+        &quot;pagehide&quot;,
+        () =&gt; {
+          document.removeEventListener(&quot;pointerdown&quot;, dismiss);
+          document.removeEventListener(&quot;pointerup&quot;, endPointerSelection);
+          document.removeEventListener(&quot;pointercancel&quot;, endPointerSelection);
+          window.removeEventListener(&quot;blur&quot;, endPointerSelection);
+          window.removeEventListener(&quot;resize&quot;, sizePicker);
+        },
+        { once: true },
+      );
+      root.append(controls, status);
+      select(0);
+    }
+  })();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  const isShare = document.documentElement.classList.contains(
+    "visualization-share-root",
+  );
+  let viewportHeight = globalThis.innerHeight;
+  let sizeFingerprint = null;
+  let sizeWriteTimeout;
+  let lastSize = null;
+  let pendingSize = null;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const sizeStorageKey = `${storageKey}:share-size-v1`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const persistSize = () => {
+    globalThis.clearTimeout(sizeWriteTimeout);
+    if (pendingSize == null) {
+      return;
+    }
+    try {
+      storage?.setItem(sizeStorageKey, pendingSize);
+    } catch {
+      // A denied or full cache must not affect the visualization.
+    }
+    pendingSize = null;
+  };
+  if (isShare) {
+    globalThis.addEventListener("pagehide", persistSize);
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height !== "number" ||
+        !Number.isFinite(height) ||
+        height < 0
+      ) {
+        return;
+      }
+      if (height <= 10_000) {
+        const width = isShare && storage != null ? frame.clientWidth : null;
+        frame.style.height = Math.ceil(height) + "px";
+        if (isShare && storage != null) {
+          const size = JSON.stringify({
+            fingerprint: sizeFingerprint,
+            width,
+            viewportHeight: globalThis.innerHeight,
+            dark: globalThis.matchMedia("(prefers-color-scheme: dark)").matches,
+            scale: globalThis.devicePixelRatio,
+            height: Math.ceil(height),
+          });
+          if (size !== lastSize) {
+            lastSize = size;
+            pendingSize = size;
+            globalThis.clearTimeout(sizeWriteTimeout);
+            sizeWriteTimeout = globalThis.setTimeout(persistSize, 100);
+          }
+        }
+      }
+      if (isShare) {
+        // Keep unusually tall content accessible without accepting an unbounded height.
+        if (height > 10_000 && Number.parseFloat(frame.style.height) === 0) {
+          frame.style.removeProperty("height");
+        }
+        frame.scrolling = height > 10_000 ? "auto" : "no";
+        document.documentElement.classList.add("visualization-share-ready");
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!isShare && (!Number.isFinite(height) || height <= viewportHeight)) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  const frameHtml = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  if (isShare && storage != null) {
+    // Fingerprint the rendered document, including restored widget state, without
+    // storing its content. This is a layout cache, not a security identity.
+    let hash = 5381;
+    for (let index = 0; index < frameHtml.length; index += 1) {
+      hash = (hash * 33 + frameHtml.charCodeAt(index)) % 4_294_967_296;
+    }
+    sizeFingerprint = hash.toString(36);
+    try {
+      const size = JSON.parse(storage.getItem(sizeStorageKey) ?? "null");
+      if (
+        size?.fingerprint === sizeFingerprint &&
+        size.width === frame.clientWidth &&
+        size.viewportHeight === globalThis.innerHeight &&
+        size.dark ===
+          globalThis.matchMedia("(prefers-color-scheme: dark)").matches &&
+        size.scale === globalThis.devicePixelRatio &&
+        typeof size.height === "number" &&
+        Number.isFinite(size.height) &&
+        size.height >= 0 &&
+        size.height <= 10_000
+      ) {
+        frame.style.height = size.height + "px";
+      }
+    } catch {
+      // Ignore missing or invalid cache entries and measure the live frame.
+    }
+  }
+  frame.srcdoc = frameHtml;
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>
