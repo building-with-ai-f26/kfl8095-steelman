@@ -34,6 +34,12 @@ See `tests/build-1-manual.md`. Agent browser checks are functional checks, not p
 
 Kieran requested much less explanatory text and a sparse black-and-white design matching the prototype. Reduced the page to about 220 words, retaining the required user, before/after workflow, core workflow, three non-goals, screenshot, and build log. Removed colored panels and explanatory sections. Kept the original prototype intact.
 
+## November 6 — Card disclosure revision
+
+Kieran asked for expanded cards to retain their identity and keep neighboring versions visible. Replaced the separate reading panel with a disclosure below the same claim and footer, with a visible expand/collapse chevron. Version rows stay horizontal on narrow screens. Added subtle grayscale paper grain, rounded corners, and layered shadows. Updated the screenshot and added a source-to-export sync script. The original supplied prototype remains in Git history; the long PRD is unchanged.
+
+Browser checks covered fixed card-face geometry, neighboring cards, keyboard collapse/return, source details, assessment/preference withdrawal, suggestion validation and addition, browser-local persistence, and layouts at 1280, 390, and 320 px. These are agent checks, not participant research. Builder time for this revision has not been tallied.
+
 ## Remaining builder tasks
 
 - [ ] Create a PostHog account; install and verify analytics in Build 2.

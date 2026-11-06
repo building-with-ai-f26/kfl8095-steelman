@@ -26,7 +26,7 @@ Open http://127.0.0.1:8000/ for the page, or http://127.0.0.1:8000/prototype/ fo
 
 1. Read the two cases for “Should our library open on Sundays?”
 2. Open the stack beside the first argument and compare its three wordings.
-3. Prefer a wording, then open a claim and inspect its source finding and limitation.
+3. Prefer a wording, then expand its card with the chevron and inspect its source finding and limitation. Other versions remain alongside it.
 4. Assess whether the evidence supports the wording; change or withdraw the assessment.
 5. Suggest a qualified version, preview it, and add it to the same idea.
 6. Return to the diagram. Importance voting leaves the order stable; “Preview update” applies a simulated shared-order change.
@@ -39,7 +39,8 @@ The claims, sources, and aggregate votes are illustrative. The export saves vote
 | --- | --- |
 | `docs/index.html` | Canonical class PRD v1, Product Page, and Build 1 log |
 | `docs/styles.css` | Product Page layout and responsive styling |
-| `docs/prototype/` | Original supplied prototype and editable source fragment, preserved unchanged |
+| `docs/prototype/` | Current runnable prototype and editable source fragment; the original is preserved in Git history |
+| `scripts/sync-prototype.py` | Copies source changes into the standalone prototype export |
 | `docs/assets/` | Actual browser screenshots for the Product Page |
 | `docs/reference/steelman-prd-v0.4.md` | Original detailed PRD, unchanged; background vision rather than class scope |
 | `tests/build-1-manual.md` | Browser checks, results, and limits |

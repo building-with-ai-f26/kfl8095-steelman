@@ -1786,59 +1786,68 @@ html&gt;body{padding:0}&lt;/style&gt;
   syncTheme();
 })();
 &lt;/script&gt;
+&lt;!-- steelman-source:start --&gt;
 &lt;style&gt;
   @import url(&#x27;https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap&#x27;);
-  #steelman-study { --sm-paper:light-dark(#fafafa,#202020); --sm-card:light-dark(#ffffff,#2b2b2b); --sm-ink:light-dark(#242424,#f2f2f2); --sm-muted:light-dark(#6b6b6b,#b3b3b3); --sm-line:light-dark(#d5d5d5,#505050); --sm-wire:light-dark(#b2b2b2,#777777); --sm-soft:light-dark(#f1f1f1,#373737); --sm-green:light-dark(#33765a,#91c3a3); --sm-amber:light-dark(#a36436,#d4aa7f); --sm-selected:light-dark(#292929,#eeeeee); --sm-on-selected:light-dark(#ffffff,#242424); --sm-shadow:light-dark(#0000000b,#00000026); --sm-grid:light-dark(#ececec,#2d2d2d); --sm-question:light-dark(#ffffff,#2b2b2b); --sm-question-text:var(--sm-ink); --sm-serif:&quot;Source Serif 4&quot;,Georgia,&quot;Times New Roman&quot;,serif; --sm-sans:&quot;Libre Franklin&quot;,&quot;Helvetica Neue&quot;,Arial,sans-serif; font-family:var(--sm-sans); color:var(--sm-ink); background:transparent; }
-  #steelman-study, #steelman-study .sm-modal::backdrop { color-scheme:light; }
+  #steelman-study {
+    --sm-paper:#f4f4f4; --sm-card:#fdfdfd; --sm-ink:#242424; --sm-muted:#686868; --sm-line:#d1d1d1; --sm-wire:#aaa; --sm-soft:#eee; --sm-selected:#292929; --sm-on-selected:#fff;
+    --sm-grain:url(&quot;data:image/svg+xml,%3Csvg viewBox=&#x27;0 0 180 180&#x27; xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%3E%3Cfilter id=&#x27;grain&#x27;%3E%3CfeTurbulence type=&#x27;fractalNoise&#x27; baseFrequency=&#x27;.85&#x27; numOctaves=&#x27;3&#x27; stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix type=&#x27;saturate&#x27; values=&#x27;0&#x27;/%3E%3CfeComponentTransfer%3E%3CfeFuncA type=&#x27;linear&#x27; slope=&#x27;.085&#x27;/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cpath fill=&#x27;%23fff&#x27; filter=&#x27;url(%23grain)&#x27; d=&#x27;M0 0h180v180H0z&#x27;/%3E%3C/svg%3E&quot;);
+    --sm-serif:&quot;Source Serif 4&quot;,Georgia,&quot;Times New Roman&quot;,serif; --sm-sans:&quot;Libre Franklin&quot;,&quot;Helvetica Neue&quot;,Arial,sans-serif;
+    font-family:var(--sm-sans); color:var(--sm-ink); color-scheme:light; background:transparent;
+  }
   #steelman-study * { box-sizing:border-box; }
   #steelman-study button, #steelman-study textarea { font:inherit; color:inherit; }
-  #steelman-study button { -webkit-tap-highlight-color:transparent; }
-  #steelman-study button:disabled { opacity:.5; cursor:default; }
-  #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:var(--sm-card); border-bottom:1px solid var(--sm-ink); }
-  #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font-family:var(--sm-serif); font-size:23px; font-weight:700; letter-spacing:-1px; }
-  #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:1px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
-  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:radial-gradient(circle,var(--sm-grid) .8px,transparent .9px); background-size:18px 18px; }
+  #steelman-study button { -webkit-tap-highlight-color:transparent; cursor:pointer; }
+  #steelman-study button:disabled { opacity:.45; cursor:default; }
+  #steelman-study :is(button,textarea,summary,[tabindex]):focus-visible { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study button svg { flex:none; }
+  #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:#fff; border-bottom:1px solid var(--sm-ink); }
+  #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font:700 23px var(--sm-serif); letter-spacing:-1px; }
+  #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:3px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
+  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-grain),radial-gradient(circle,#d8d8d8 .65px,transparent .8px); background-size:180px 180px,18px 18px; }
   #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
   #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
   #steelman-study .sm-links path { fill:none; stroke:var(--sm-wire); stroke-width:1.3; stroke-linejoin:round; }
   #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
-  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-question); color:var(--sm-question-text); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:1px; box-shadow:0 2px 4px var(--sm-shadow); }
+  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
   #steelman-study .sm-board { display:grid; grid-template-columns:1fr 1fr; gap:56px; padding-top:56px; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
-  #steelman-study .sm-column::before { content:&quot;&quot;; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:1px; background:var(--sm-paper); z-index:-1; }
-  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:1px; box-shadow:none; margin-bottom:28px; }
+  #steelman-study .sm-column::before { content:&quot;&quot;; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) #f0f0f0; z-index:-1; }
+  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:7px; margin-bottom:28px; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:25px minmax(0,1fr); gap:10px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
   #steelman-study .sm-idea:last-child { margin-bottom:0; }
   #steelman-study .sm-importance { display:flex; align-items:center; flex-direction:column; padding-top:35px; gap:2px; color:var(--sm-muted); }
-  #steelman-study .sm-arrow { display:grid; place-items:center; border:0; border-radius:5px; background:var(--sm-paper); padding:4px; width:25px; height:25px; }
+  #steelman-study .sm-arrow { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
   #steelman-study .sm-arrow:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-arrow[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); color:var(--sm-on-selected); }
-  #steelman-study .sm-vote-number { background:var(--sm-paper); font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-vote-number { font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
-  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:6px; box-shadow:0 3px 7px var(--sm-shadow); transition:transform 180ms ease,box-shadow 180ms ease; }
-  #steelman-study .sm-card:hover { transform:translateY(-2px); box-shadow:0 7px 13px var(--sm-shadow); }
-  #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:5px 5px 0 0; }
+  /* The same face, type, and footer are used on the diagram and in the version row. */
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:0 2px 3px #00000007,0 8px 18px #00000009,inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; }
+  #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:0 3px 5px #00000009,0 11px 24px #00000010,inset 0 1px 0 #fff; }
+  #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
-  #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:3px 10px; border-top:1px solid var(--sm-line); flex-wrap:wrap; }
-  #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:26px; padding:3px; line-height:16px; }
-  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:4px; font-size:11px; text-align:left; min-width:0; }
-  #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
+  #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
+  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
+  #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
-  #steelman-study .sm-percentage { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
   #steelman-study .sm-few { border-bottom:1px dotted var(--sm-muted); }
-  #steelman-study .sm-evidence-symbol { display:grid; place-items:center; position:relative; width:17px; height:18px; flex:none; color:var(--sm-green); }
+  #steelman-study .sm-evidence-symbol { display:grid; place-items:center; position:relative; width:17px; height:18px; flex:none; color:var(--sm-ink); }
   #steelman-study .sm-evidence-symbol svg { width:16px; height:16px; stroke-width:1.6; }
-  #steelman-study .sm-evidence-symbol.sm-uncertain { color:var(--sm-amber); }
-  #steelman-study .sm-evidence-symbol.sm-unreviewed { color:var(--sm-muted); opacity:.7; }
+  #steelman-study .sm-evidence-symbol.sm-unreviewed { color:var(--sm-muted); }
   #steelman-study .sm-evidence-symbol .sm-stamp { position:absolute; bottom:-1px; right:-3px; background:var(--sm-card); border-radius:50%; width:12px; height:12px; }
   #steelman-study .sm-evidence-symbol .sm-stamp svg { width:12px; height:12px; stroke-width:2.3; }
-  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; border-radius:4px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; min-height:28px; border-radius:5px; font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-source-button svg { width:13px; height:13px; }
-  #steelman-study .sm-stack-button { position:absolute; top:7px; bottom:7px; right:0; width:33px; padding:0; border:0; background:transparent; z-index:1; border-radius:5px; }
-  #steelman-study .sm-stack-button span { position:absolute; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:5px; width:28px; pointer-events:none; transition:transform 220ms cubic-bezier(.2,.8,.2,1); }
+  #steelman-study .sm-expand { display:grid; place-items:center; width:30px; height:28px; padding:6px; border:0; border-left:1px solid var(--sm-line); border-radius:0 4px 4px 0; background:transparent; }
+  #steelman-study .sm-expand svg { width:16px; height:16px; stroke-width:1.8; }
+  #steelman-study .sm-stack-button { position:absolute; top:7px; bottom:7px; right:0; width:33px; padding:0; border:0; background:transparent; z-index:1; border-radius:8px; }
+  #steelman-study .sm-stack-button span { position:absolute; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:8px; width:28px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button span:first-child { right:0; top:5px; bottom:5px; }
   #steelman-study .sm-stack-button span:last-child { right:10px; top:0; bottom:0; }
   #steelman-study .sm-stack-button:hover span:first-child { transform:translateX(5px); }
@@ -1846,140 +1855,107 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
-  #steelman-study .sm-detail { position:relative; padding:23px; margin:30px auto 0; max-width:850px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-paper); }
-  #steelman-study .sm-breadcrumb { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:22px; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:5px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
   #steelman-study .sm-text-button svg { width:14px; height:14px; }
-  #steelman-study .sm-section-title { font-size:21px; font-weight:500; line-height:1.3; letter-spacing:-.4px; margin:0 0 18px; }
-  #steelman-study .sm-caption { font-size:12px; line-height:1.6; color:var(--sm-muted); margin:0 0 18px; }
-  #steelman-study .sm-alternatives { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:stretch; gap:16px; }
-  #steelman-study .sm-version { display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; min-width:0; box-shadow:0 3px 7px var(--sm-shadow); }
-  #steelman-study .sm-version .sm-claim-button { flex:1; }
-  #steelman-study .sm-version .sm-claim { font-size:16px; }
-  #steelman-study .sm-version .sm-card-meta { padding:3px 10px; margin:0; }
-  #steelman-study .sm-preference { border-top:1px solid var(--sm-line); padding:12px; }
-  #steelman-study .sm-preference-label { display:flex; align-items:center; justify-content:space-between; gap:6px; color:var(--sm-muted); font-size:11px; margin-bottom:8px; }
-  #steelman-study .sm-preference-label strong { font-size:12px; font-weight:500; color:var(--sm-ink); }
-  #steelman-study .sm-preference-actions { display:flex; gap:5px; flex-wrap:wrap; }
-  #steelman-study .sm-button { display:inline-flex; justify-content:center; align-items:center; gap:6px; border:1px solid var(--sm-line); background:var(--sm-card); padding:8px 10px; border-radius:5px; font-size:11px; line-height:1.4; }
+  #steelman-study .sm-button { display:inline-flex; justify-content:center; align-items:center; gap:6px; border:1px solid var(--sm-line); background:var(--sm-card); padding:8px 10px; border-radius:6px; font-size:11px; line-height:1.4; }
   #steelman-study .sm-button svg { width:14px; height:14px; }
   #steelman-study .sm-button:hover { background:var(--sm-soft); }
   #steelman-study .sm-button[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
-  #steelman-study .sm-selected-note { display:block; color:var(--sm-muted); font-size:11px; line-height:1.5; margin-top:8px; min-height:16px; }
-  #steelman-study .sm-compare-footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:18px; }
-  #steelman-study .sm-evidence-claim { margin:0 0 20px; font-size:23px; font-weight:400; line-height:1.4; letter-spacing:-.45px; }
-  #steelman-study .sm-evidence-intro { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--sm-line); }
-  #steelman-study .sm-meta { font-size:12px; line-height:1.5; color:var(--sm-muted); }
-  #steelman-study .sm-prose { font-size:13px; line-height:1.65; margin:17px 0; }
-  #steelman-study .sm-kicker { font-size:11px; line-height:1.5; color:var(--sm-muted); }
-  #steelman-study .sm-source { background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; padding:17px 19px; margin-top:12px; }
-  #steelman-study .sm-source h3 { font-size:13px; line-height:1.5; font-weight:500; margin:5px 0 12px; }
-  #steelman-study .sm-source dl { display:grid; grid-template-columns:85px minmax(0,1fr); gap:9px 14px; margin:0; font-size:12px; line-height:1.65; }
-  #steelman-study .sm-source dt { color:var(--sm-muted); }
-  #steelman-study .sm-source dd { margin:0; }
-  #steelman-study .sm-assess { border-top:1px solid var(--sm-line); padding-top:20px; margin-top:24px; }
-  #steelman-study .sm-assess h3 { font-size:14px; font-weight:500; margin:0 0 7px; }
-  #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
-  #steelman-study .sm-form label { display:block; font-size:12px; font-weight:500; margin:16px 0 7px; }
-  #steelman-study textarea { width:100%; min-height:100px; resize:vertical; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); padding:12px; font-size:16px; line-height:1.5; }
-  #steelman-study .sm-preview { margin-top:20px; }
-  #steelman-study .sm-error { color:var(--sm-amber); font-size:12px; }
-  #steelman-study .sm-reading .sm-modal-chrome { margin-bottom:15px; }
-  #steelman-study .sm-reading .sm-evidence-claim { font-size:21px; line-height:1.4; margin:0 0 13px; }
-  #steelman-study .sm-brief { font-size:14px; line-height:1.6; color:var(--sm-muted); margin:0 0 23px; }
+  #steelman-study .sm-modal { position:absolute; margin:0; padding:0; border:0; max-width:none; max-height:none; overflow:visible; background:transparent; color:var(--sm-ink); }
+  #steelman-study .sm-modal::backdrop { background:#f4f4f4b8; backdrop-filter:blur(2px); }
+  #steelman-study .sm-detail { padding:24px; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) var(--sm-card); box-shadow:0 20px 60px #00000022; }
+  #steelman-study .sm-card-row { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+  #steelman-study .sm-modal-chrome { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; min-height:36px; }
+  #steelman-study .sm-row-context { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:9px 12px; background:var(--sm-grain) var(--sm-card); border:1px solid #c8c8c8; border-radius:8px; font-size:13px; line-height:1.4; }
+  #steelman-study .sm-row-context strong { font-weight:600; }
+  #steelman-study .sm-row-context span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-row-actions { display:flex; align-items:center; gap:8px; flex:none; }
+  #steelman-study .sm-close { display:grid; place-items:center; width:36px; height:36px; padding:8px; background:var(--sm-card); border:1px solid #c8c8c8; border-radius:8px; }
+  #steelman-study .sm-close:hover { background:var(--sm-soft); }
+  #steelman-study .sm-alternatives { display:grid; grid-auto-flow:column; grid-auto-columns:min(360px,calc(100vw - 80px)); align-items:start; justify-content:start; gap:18px; overflow-x:auto; padding:4px 4px 26px; scrollbar-width:thin; scrollbar-color:#777 #ddd; scroll-padding:4px; overscroll-behavior-x:contain; }
+  #steelman-study .sm-version { min-width:0; }
+  #steelman-study .sm-version-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; height:34px; margin-bottom:8px; padding-left:4px; font-size:11px; font-weight:500; }
+  #steelman-study .sm-preference { display:flex; align-items:center; justify-content:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); }
+  #steelman-study .sm-preference-score { display:grid; place-items:center; min-width:24px; min-height:25px; font-size:11px; font-weight:500; color:var(--sm-muted); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-version-face { box-shadow:0 2px 3px #0000000a,0 12px 24px #00000017; }
+  #steelman-study .sm-expanded { border-color:#929292; box-shadow:0 2px 4px #0000000d,0 18px 32px #00000020; }
+  #steelman-study .sm-origin .sm-card, #steelman-study .sm-origin .sm-stack-button { visibility:hidden; }
+  #steelman-study .sm-origin .sm-card-wrap::after { content:&quot;&quot;; position:absolute; inset:0 24px 0 0; border:1px dashed var(--sm-wire); border-radius:11px; background:var(--sm-paper); opacity:.6; }
+  #steelman-study .sm-card-reveal { overflow:hidden; border-radius:0 0 10px 10px; }
+  #steelman-study .sm-card-context { padding:17px 18px 19px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font-size:11px; line-height:1.5; font-weight:600; }
+  #steelman-study .sm-brief { font-size:13px; line-height:1.65; color:var(--sm-muted); margin:0; }
+  #steelman-study .sm-evidence-group { padding:16px 18px 18px; background:var(--sm-grain) #f2f2f2; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-source-list { margin:0; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-source-row { border-bottom:1px solid var(--sm-line); }
-  #steelman-study .sm-source-row summary { display:flex; align-items:center; gap:9px; min-height:45px; padding:11px 0; list-style:none; font-size:12px; line-height:1.5; }
+  #steelman-study .sm-source-row summary { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 0; list-style:none; font-size:12px; line-height:1.5; cursor:pointer; }
   #steelman-study .sm-source-row summary::-webkit-details-marker { display:none; }
   #steelman-study .sm-source-row summary&gt;svg { flex:none; color:var(--sm-muted); }
   #steelman-study .sm-source-row summary span:first-of-type { flex:1; }
   #steelman-study .sm-source-row summary .sm-chevron { width:14px; height:14px; transition:transform 160ms ease; }
   #steelman-study .sm-source-row[open] summary .sm-chevron { transform:rotate(90deg); }
-  #steelman-study .sm-source-row summary:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-source-row summary:hover { background:#e9e9e9; }
   #steelman-study .sm-source-note { font-size:11px; color:var(--sm-muted); }
-  #steelman-study .sm-source-packet { padding:0 0 16px 25px; font-size:12px; line-height:1.6; }
+  #steelman-study .sm-source-packet { padding:0 0 16px; font-size:12px; line-height:1.6; }
   #steelman-study .sm-source-packet p { margin:8px 0 0; }
-  #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:58px minmax(0,1fr); gap:8px 10px; margin:12px 0 0; }
+  #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:54px minmax(0,1fr); gap:8px; margin:12px 0 0; }
   #steelman-study .sm-source-packet dt { color:var(--sm-muted); }
   #steelman-study .sm-source-packet dd { margin:0; }
-  #steelman-study .sm-reading-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:19px; }
-  #steelman-study .sm-reading-footer .sm-text-button { font-size:12px; }
-  #steelman-study .sm-assessment-drawer { border-top:1px solid var(--sm-line); margin-top:17px; padding-top:15px; }
-  #steelman-study .sm-assessment-drawer h3 { font-size:12px; line-height:1.5; font-weight:400; margin:0 0 11px; }
-  #steelman-study .sm-assessment-drawer .sm-assess-actions { margin-top:0; }
-  #steelman-study .sm-preference { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  #steelman-study .sm-preference-score { font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; color:var(--sm-muted); }
-  #steelman-study .sm-modal { position:absolute; margin:0; padding:0; border:0; max-width:none; max-height:none; overflow:visible; background:transparent; color:var(--sm-ink); }
-  #steelman-study .sm-modal::backdrop { background:light-dark(#20202026,#00000055); animation:sm-backdrop-in 380ms ease both; }
-  #steelman-study .sm-modal.sm-closing::backdrop { animation:sm-backdrop-out 420ms ease both; }
-  #steelman-study .sm-modal .sm-detail { margin:0; max-width:none; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); transform-origin:top left; }
-  #steelman-study .sm-modal[data-view=&quot;alternatives&quot;] .sm-detail { border:0; border-radius:0; background:transparent; padding:0; box-shadow:none; }
-  #steelman-study .sm-modal-chrome { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; min-height:36px; }
-  #steelman-study .sm-option-context { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; font-size:12px; color:var(--sm-muted); }
-  #steelman-study .sm-close { display:grid; place-items:center; width:36px; height:36px; padding:8px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px; box-shadow:0 3px 8px var(--sm-shadow); }
-  #steelman-study .sm-close:hover { background:var(--sm-soft); }
-  #steelman-study .sm-modal .sm-version { box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
-  #steelman-study .sm-version-face { display:flex; flex:1; flex-direction:column; min-width:0; }
-  #steelman-study .sm-version .sm-claim-button { display:flex; align-items:flex-start; }
-  #steelman-study .sm-origin .sm-card, #steelman-study .sm-origin .sm-stack-button { visibility:hidden; }
-  #steelman-study .sm-origin .sm-card-wrap::after { content:&quot;&quot;; position:absolute; inset:0 24px 0 0; border:1px dashed var(--sm-wire); border-radius:6px; background:var(--sm-soft); opacity:.45; }
-  #steelman-study .sm-flight { position:absolute; margin:0; display:flex; flex-direction:column; overflow:hidden; pointer-events:none; box-shadow:0 16px 38px light-dark(#0000002b,#00000055); transform:none; transition:none; }
-  #steelman-study .sm-flight .sm-claim-button { flex:1; display:flex; align-items:flex-start; }
-  #steelman-study .sm-flight .sm-card-meta { flex:none; }
-  #steelman-study .sm-card, #steelman-study .sm-version, #steelman-study .sm-detail, #steelman-study .sm-stack-button, #steelman-study .sm-stack-button span, #steelman-study .sm-origin .sm-card-wrap::after { border-radius:2px; }
-  #steelman-study .sm-button, #steelman-study .sm-close, #steelman-study .sm-option-context, #steelman-study textarea { border-radius:2px; }
-  #steelman-study .sm-claim-button { border-radius:1px 1px 0 0; }
-  #steelman-study .sm-section-title { font-family:var(--sm-serif); font-weight:600; }
-  #steelman-study .sm-reading .sm-evidence-claim { font-family:var(--sm-sans); font-weight:500; }
-  #steelman-study .sm-percentage { font-weight:600; }
-  #steelman-study .sm-evidence-symbol:not(.sm-unreviewed)+.sm-cred-copy .sm-percentage { color:var(--sm-green); }
-  #steelman-study .sm-evidence-symbol.sm-uncertain+.sm-cred-copy .sm-percentage { color:var(--sm-amber); }
-  #steelman-study[data-type=&quot;serif&quot;] .sm-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; letter-spacing:-.15px; }
-  #steelman-study[data-type=&quot;serif&quot;] .sm-reading .sm-evidence-claim { font-family:var(--sm-serif); font-size:24px; line-height:1.3; font-weight:400; }
-  #steelman-study .sm-board { transform-origin:50% 0; }
-  #steelman-study .sm-focused .sm-board { transform:translateY(16px) scale(.97); }
-  #steelman-study .sm-row-context { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; font-size:13px; line-height:1.4; padding:9px 12px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:2px; }
-  #steelman-study .sm-row-context strong { font-weight:600; }
-  #steelman-study .sm-row-context span { color:var(--sm-muted); font-size:11px; }
-  #steelman-study .sm-row-body { display:grid; grid-template-columns:minmax(0,1fr) 100px; gap:18px; align-items:start; }
-  #steelman-study .sm-modal .sm-version { background:transparent; border:0; box-shadow:none; }
-  #steelman-study .sm-version-face { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 14px 34px light-dark(#00000026,#00000055); }
-  #steelman-study .sm-preference { justify-content:center; align-self:center; border:1px solid var(--sm-line); border-radius:2px; gap:0; padding:2px; margin-top:8px; background:var(--sm-card); }
-  #steelman-study .sm-preference .sm-arrow, #steelman-study .sm-preference-score { background:var(--sm-card); }
-  #steelman-study .sm-preference .sm-arrow[aria-pressed=&quot;true&quot;] { background:var(--sm-selected); }
-  #steelman-study .sm-preference-score { display:grid; place-items:center; min-width:24px; min-height:25px; font-size:11px; font-weight:500; color:var(--sm-muted); }
-  #steelman-study .sm-add-version { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:9px; padding:15px 8px; margin-top:20px; min-height:108px; width:100%; border:1px dashed var(--sm-wire); border-radius:2px; background:var(--sm-card); color:var(--sm-muted); font-size:12px; line-height:1.5; }
-  #steelman-study .sm-add-version svg { width:19px; height:19px; }
-  #steelman-study .sm-add-version:hover { color:var(--sm-ink); background:var(--sm-soft); }
-  #steelman-study .sm-modal .sm-reading { padding:0; background:transparent; border:0; box-shadow:none; }
-  #steelman-study .sm-reading .sm-modal-chrome&gt;.sm-text-button { padding:8px 10px; border:1px solid var(--sm-line); background:var(--sm-card); border-radius:2px; }
-  #steelman-study .sm-expanded-card { border:1px solid var(--sm-line); border-radius:2px; background:var(--sm-card); box-shadow:0 24px 70px light-dark(#00000029,#00000066); overflow:hidden; }
-  #steelman-study .sm-reading-body { padding:22px; }
-  #steelman-study .sm-reading .sm-evidence-claim { font-weight:400; }
-  #steelman-study .sm-reading .sm-brief { margin:0; }
-  #steelman-study .sm-evidence-group { padding:16px 22px; background:var(--sm-soft); border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-evidence-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-  #steelman-study .sm-evidence-heading h3 { margin:0; font-size:12px; font-weight:600; line-height:1.5; }
-  #steelman-study .sm-evidence-group .sm-source-row summary { min-height:40px; padding:9px 0; }
-  #steelman-study .sm-evidence-group .sm-stamp { background:var(--sm-soft); }
-  #steelman-study .sm-evidence-vote { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  #steelman-study .sm-evidence-vote { display:flex; flex-direction:column; align-items:start; gap:10px; margin-top:16px; }
   #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
-  #steelman-study .sm-evidence-vote .sm-assess-actions { margin:0; gap:6px; }
-  #steelman-study .sm-value-note { padding:12px 22px; border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-transition-ghost { position:absolute; pointer-events:none; transform-origin:center top; }
-  @media(max-width:640px) { #steelman-study .sm-row-body { grid-template-columns:1fr; gap:12px; } #steelman-study .sm-add-version { flex-direction:row; min-height:44px; margin:0; padding:12px; } #steelman-study .sm-reading-body { padding:18px; } #steelman-study .sm-evidence-group { padding:14px 18px; } #steelman-study .sm-row-context { gap:4px; } #steelman-study .sm-row-context strong { font-size:12px; } #steelman-study .sm-row-context span { width:100%; } }
-  @keyframes sm-backdrop-in { from {opacity:0} to {opacity:1} }
-  @keyframes sm-backdrop-out { from {opacity:1} to {opacity:0} }
+  #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-value-note { padding:0 18px 18px; }
+  #steelman-study .sm-section-title { font:600 23px/1.3 var(--sm-serif); letter-spacing:-.4px; margin:0 0 14px; }
+  #steelman-study .sm-caption, #steelman-study .sm-meta { font-size:12px; line-height:1.6; color:var(--sm-muted); }
+  #steelman-study .sm-form label { display:block; font-size:12px; font-weight:500; margin:16px 0 7px; }
+  #steelman-study textarea { width:100%; min-height:100px; resize:vertical; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-card); padding:12px; font-size:16px; line-height:1.5; }
+  #steelman-study .sm-compare-footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:18px; }
+  #steelman-study .sm-preview { margin-top:20px; }
+  #steelman-study .sm-source { background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; padding:18px; }
+  #steelman-study .sm-kicker { font-size:11px; line-height:1.5; color:var(--sm-muted); margin-bottom:10px; }
+  #steelman-study .sm-prose { font-size:13px; line-height:1.65; margin:17px 0; }
+  #steelman-study .sm-error { font-size:12px; }
+  #steelman-study[data-type=&quot;serif&quot;] .sm-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
   #steelman-study[data-density=&quot;compact&quot;] .sm-claim-button { padding:13px; }
   #steelman-study[data-density=&quot;compact&quot;] .sm-claim { font-size:15px; }
   #steelman-study [hidden] { display:none !important; }
-  @media(max-width:800px) { #steelman-study .sm-scene { padding:24px 14px 20px; } #steelman-study .sm-board { gap:30px; } #steelman-study .sm-column { padding:0 9px 13px; } #steelman-study .sm-claim-button { padding:15px; } #steelman-study .sm-claim { font-size:15px; } #steelman-study .sm-column-head { padding:13px; } #steelman-study .sm-alternatives { gap:10px; } }
-  @media(max-width:640px) { #steelman-study .sm-scene { padding:20px 10px; } #steelman-study .sm-head { width:100%; padding:18px; } #steelman-study h1 { font-size:23px; } #steelman-study .sm-board { grid-template-columns:1fr; padding-top:38px; gap:30px; padding-left:12px; } #steelman-study .sm-column { padding:0 8px 15px; } #steelman-study .sm-alternatives { grid-template-columns:1fr; gap:18px; } #steelman-study .sm-detail { padding:15px; } #steelman-study .sm-breadcrumb { align-items:flex-start; } #steelman-study .sm-source { padding:15px; } #steelman-study .sm-source dl { grid-template-columns:1fr; gap:3px; } #steelman-study .sm-source dd { margin-bottom:10px; } #steelman-study .sm-claim { font-size:16px; } }
-  @media(pointer:coarse) { #steelman-study .sm-arrow { height:44px; width:30px; } #steelman-study .sm-idea { grid-template-columns:30px minmax(0,1fr); gap:6px; } #steelman-study .sm-importance { padding-top:25px; } #steelman-study .sm-card-wrap { padding-right:44px; } #steelman-study .sm-stack-button { width:44px; } #steelman-study .sm-stack-button span { width:40px; } #steelman-study .sm-stack-button span:last-child { right:18px; } #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; } #steelman-study .sm-source-button { min-width:44px; } }
-  @media(pointer:coarse) { #steelman-study .sm-close { width:44px; height:44px; } #steelman-study .sm-origin .sm-card-wrap::after { right:44px; } }
-  @media(pointer:coarse) { #steelman-study .sm-card-meta .sm-cred, #steelman-study .sm-card-meta .sm-source-button { min-height:44px; } }
-  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } #steelman-study .sm-card:hover { transform:none; } #steelman-study .sm-modal::backdrop { animation:none; } }
+  @media(max-width:800px) {
+    #steelman-study .sm-scene { padding:24px 14px 20px; }
+    #steelman-study .sm-board { gap:30px; }
+    #steelman-study .sm-column { padding:0 9px 13px; }
+    #steelman-study .sm-claim-button { padding:15px; }
+    #steelman-study .sm-column-head { padding:13px; }
+    #steelman-study .sm-alternatives { gap:14px; }
+  }
+  @media(max-width:640px) {
+    #steelman-study .sm-scene { padding:20px 10px; }
+    #steelman-study .sm-head { width:100%; padding:18px; }
+    #steelman-study h1 { font-size:23px; }
+    #steelman-study .sm-board { grid-template-columns:1fr; padding-top:38px; gap:30px; padding-left:12px; }
+    #steelman-study .sm-column { padding:0 8px 15px; }
+    #steelman-study .sm-detail:not(.sm-card-row) { padding:16px; }
+    #steelman-study .sm-row-context { gap:2px; padding:7px 9px; }
+    #steelman-study .sm-row-context strong { font-size:12px; }
+    #steelman-study .sm-row-context span { width:100%; }
+    #steelman-study .sm-row-actions { gap:5px; }
+    #steelman-study .sm-row-actions .sm-button { max-width:102px; font-size:10px; padding:7px; }
+    #steelman-study .sm-version-heading { height:40px; }
+  }
+  @media(pointer:coarse) {
+    #steelman-study .sm-arrow { height:44px; width:30px; }
+    #steelman-study .sm-idea { grid-template-columns:30px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-importance { padding-top:25px; }
+    #steelman-study .sm-card-wrap { padding-right:44px; }
+    #steelman-study .sm-stack-button { width:44px; }
+    #steelman-study .sm-stack-button span { width:40px; }
+    #steelman-study .sm-stack-button span:last-child { right:18px; }
+    #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
+    #steelman-study .sm-close, #steelman-study .sm-expand { width:44px; height:44px; }
+    #steelman-study .sm-origin .sm-card-wrap::after { right:44px; }
+    #steelman-study .sm-version-heading { height:52px; }
+  }
+  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
 &lt;/style&gt;
 &lt;div id=&quot;steelman-study&quot; aria-label=&quot;Steelman canvas prototype&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
   &lt;header class=&quot;sm-site&quot;&gt;&lt;div class=&quot;sm-wordmark&quot;&gt;&lt;span class=&quot;sm-logo&quot; aria-hidden=&quot;true&quot;&gt;s&lt;/span&gt;steelman.&lt;/div&gt;&lt;/header&gt;
@@ -2028,7 +2004,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     {id:&#x27;evenings&#x27;,option:&#x27;keep&#x27;,title:&#x27;Reaching more people&#x27;,score:25,versions:[&#x27;evenings&#x27;]},
     {id:&#x27;services&#x27;,option:&#x27;keep&#x27;,title:&#x27;Building operations&#x27;,score:8,versions:[&#x27;services&#x27;]}
   ];
-  let state = {view:&#x27;board&#x27;,idea:&#x27;access&#x27;,card:&#x27;access&#x27;,from:&#x27;board&#x27;,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,preview:false,added:[],updated:false,assessOpen:false,openSources:{}};
+  let state = {view:&#x27;board&#x27;,idea:&#x27;access&#x27;,card:&#x27;access&#x27;,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,preview:false,added:[],updated:false,openSources:{}};
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
   const validViews = [&#x27;board&#x27;,&#x27;alternatives&#x27;,&#x27;evidence&#x27;,&#x27;compose&#x27;];
   function restore(raw) {
@@ -2079,19 +2055,28 @@ html&gt;body{padding:0}&lt;/style&gt;
     const score=idea.score+vote+(state.updated&amp;&amp;[&#x27;study&#x27;,&#x27;evenings&#x27;].includes(idea.id)?20:0);
     return `&lt;div class=&quot;sm-importance&quot; role=&quot;group&quot; aria-label=&quot;Importance of ${escape(idea.title)}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;importance&quot; data-id=&quot;${idea.id}&quot; data-vote=&quot;1&quot; data-key=&quot;up-${idea.id}&quot; aria-label=&quot;More important if true: ${escape(idea.title)}&quot; aria-pressed=&quot;${vote===1}&quot; data-tooltip=&quot;More important if true&quot;&gt;${icon(&#x27;chevron-up&#x27;)}&lt;/button&gt;&lt;span class=&quot;sm-vote-number&quot; aria-label=&quot;Net importance ${score}&quot;&gt;${score}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;importance&quot; data-id=&quot;${idea.id}&quot; data-vote=&quot;-1&quot; data-key=&quot;down-${idea.id}&quot; aria-label=&quot;Less important if true: ${escape(idea.title)}&quot; aria-pressed=&quot;${vote===-1}&quot; data-tooltip=&quot;Less important if true&quot;&gt;${icon(&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
+  function cardMeta(id, expanded=false, inRow=false) {
+    return `${credibility(id)}&lt;div class=&quot;sm-card-tools&quot;&gt;${sourceButton(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;${expanded?&#x27;collapse&#x27;:&#x27;evidence&#x27;}&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} ${escape(cards[id].version||cards[id].label)} card&quot; aria-expanded=&quot;${expanded}&quot; ${inRow?`aria-controls=&quot;sm-reveal-${id}&quot;`:&#x27;aria-haspopup=&quot;dialog&quot;&#x27;}&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+  }
+  function cardFace(id, expanded=false, inRow=false) {
+    return `&lt;article class=&quot;sm-card ${inRow?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;${expanded?&#x27;collapse&#x27;:&#x27;evidence&#x27;}&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} claim: ${escape(cards[id].claim)}&quot; aria-expanded=&quot;${expanded}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id,expanded,inRow)}&lt;/div&gt;${inRow?`&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
+  }
   function row(idea) {
-    const id=idea.versions[0],card=cards[id],stack=idea.versions.length&gt;1;
-    return `&lt;section class=&quot;sm-idea&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(idea.title)}&quot;&gt;${importance(idea)}&lt;div class=&quot;sm-card-wrap ${stack?&#x27;sm-stacked&#x27;:&#x27;&#x27;}&quot;&gt;${stack?`&lt;button type=&quot;button&quot; class=&quot;sm-stack-button cursor-interaction&quot; data-action=&quot;alternatives&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;Compare ${idea.versions.length} versions of this argument&quot; data-tooltip=&quot;Alternative articulations&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;}&lt;article class=&quot;sm-card&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;Open claim and evidence: ${escape(card.claim)}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(card.claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id)}${sourceButton(id)}&lt;/div&gt;&lt;/article&gt;&lt;/div&gt;&lt;/section&gt;`;
+    const id=idea.versions[0],stack=idea.versions.length&gt;1;
+    return `&lt;section class=&quot;sm-idea&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(idea.title)}&quot;&gt;${importance(idea)}&lt;div class=&quot;sm-card-wrap ${stack?&#x27;sm-stacked&#x27;:&#x27;&#x27;}&quot;&gt;${stack?`&lt;button type=&quot;button&quot; class=&quot;sm-stack-button cursor-interaction&quot; data-action=&quot;alternatives&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;Compare ${idea.versions.length} versions of this argument&quot; data-tooltip=&quot;Alternative articulations&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;}${cardFace(id)}&lt;/div&gt;&lt;/section&gt;`;
   }
   function board() { return `&lt;div class=&quot;sm-board&quot;&gt;${[&#x27;open&#x27;,&#x27;keep&#x27;].map(option=&gt;{const rows=ideas.filter(i=&gt;i.option===option);if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];return `&lt;section class=&quot;sm-column&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;div class=&quot;sm-column-head&quot;&gt;&lt;h2&gt;${optionName(option)}&lt;/h2&gt;&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}&lt;/section&gt;`;}).join(&#x27;&#x27;)}&lt;/div&gt;`; }
   function breadcrumb(back=&#x27;board&#x27;) { return `&lt;div class=&quot;sm-modal-chrome&quot;&gt;${back===&#x27;alternatives&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;back&quot; data-to=&quot;alternatives&quot; data-key=&quot;back&quot;&gt;${icon(&#x27;arrow-left&#x27;)}Back to versions&lt;/button&gt;`:&#x27;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-close cursor-interaction&quot; data-action=&quot;close&quot; data-key=&quot;close&quot; aria-label=&quot;Return cards to the diagram&quot; autofocus&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`; }
   function preference(id) {
     const vote=state.preference[id]||0;
-    return `&lt;div class=&quot;sm-preference&quot; role=&quot;group&quot; aria-label=&quot;Wording preference&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;1&quot; data-key=&quot;prefer-${id}&quot; aria-pressed=&quot;${vote===1}&quot; aria-label=&quot;Prefer this wording: ${escape(cards[id].version||&#x27;Your&#x27;)} version&quot; data-tooltip=&quot;More preferred wording · toward the left&quot;&gt;${icon(&#x27;chevron-left&#x27;)}&lt;/button&gt;&lt;span class=&quot;sm-preference-score&quot; data-tooltip=&quot;Net wording preference&quot; aria-label=&quot;Net wording preference ${cards[id].pref+vote}&quot;&gt;${cards[id].pref+vote}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;-1&quot; data-key=&quot;less-${id}&quot; aria-pressed=&quot;${vote===-1}&quot; aria-label=&quot;Less preferred wording: ${escape(cards[id].version||&#x27;Your&#x27;)} version&quot; data-tooltip=&quot;Less preferred wording · toward the right&quot;&gt;${icon(&#x27;chevron-right&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+    return `&lt;div class=&quot;sm-preference&quot; role=&quot;group&quot; aria-label=&quot;Wording preference&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;1&quot; data-key=&quot;prefer-${id}&quot; aria-pressed=&quot;${vote===1}&quot; aria-label=&quot;Prefer this wording: ${escape(cards[id].version||&#x27;Original&#x27;)}&quot; data-tooltip=&quot;More preferred wording · toward the left&quot;&gt;${icon(&#x27;chevron-left&#x27;)}&lt;/button&gt;&lt;span class=&quot;sm-preference-score&quot; data-tooltip=&quot;Net wording preference&quot; aria-label=&quot;Net wording preference ${cards[id].pref+vote}&quot;&gt;${cards[id].pref+vote}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-arrow cursor-interaction&quot; data-action=&quot;preference&quot; data-id=&quot;${id}&quot; data-vote=&quot;-1&quot; data-key=&quot;less-${id}&quot; aria-pressed=&quot;${vote===-1}&quot; aria-label=&quot;Less preferred wording: ${escape(cards[id].version||&#x27;Original&#x27;)}&quot; data-tooltip=&quot;Less preferred wording · toward the right&quot;&gt;${icon(&#x27;chevron-right&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
-  function alternatives() { const idea=ideas.find(i=&gt;i.id===state.idea); return `&lt;section class=&quot;sm-detail&quot;&gt;&lt;div class=&quot;sm-modal-chrome&quot;&gt;&lt;div class=&quot;sm-row-context&quot;&gt;&lt;strong&gt;One idea. Different articulations.&lt;/strong&gt;&lt;span&gt;← More preferred wording&lt;/span&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-close cursor-interaction&quot; data-action=&quot;close&quot; data-key=&quot;close&quot; aria-label=&quot;Return cards to the diagram&quot; autofocus&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;sm-row-body&quot;&gt;&lt;div class=&quot;sm-alternatives&quot;&gt;${idea.versions.map((id,index)=&gt;`&lt;article class=&quot;sm-version ${index===0?&#x27;sm-lead&#x27;:&#x27;&#x27;}&quot; data-version=&quot;${id}&quot; aria-label=&quot;${escape(cards[id].version||&#x27;Your&#x27;)} version&quot;&gt;&lt;div class=&quot;sm-version-face&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;evidence&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;Open claim and evidence: ${escape(cards[id].claim)}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id)}${sourceButton(id)}&lt;/div&gt;&lt;/div&gt;${preference(id)}&lt;/article&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-version cursor-interaction&quot; data-action=&quot;compose&quot; data-key=&quot;suggest&quot; ${state.added.length&gt;=5?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Suggest a&lt;br&gt;version&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;`; }
-  function evidence() {
-    const card=cards[state.card],assessment=state.assessments[state.card];
+  function alternatives() {
+    const idea=ideas.find(i=&gt;i.id===state.idea);
+    return `&lt;section class=&quot;sm-detail sm-card-row&quot;&gt;&lt;div class=&quot;sm-modal-chrome&quot;&gt;&lt;div class=&quot;sm-row-context&quot;&gt;&lt;strong&gt;${escape(idea.title)}&lt;/strong&gt;&lt;span&gt;${idea.versions.length} ${idea.versions.length===1?&#x27;version&#x27;:&#x27;versions&#x27;}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-row-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;compose&quot; data-key=&quot;suggest&quot; ${state.added.length&gt;=5?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${icon(&#x27;plus&#x27;)}Suggest a version&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-close cursor-interaction&quot; data-action=&quot;close&quot; data-key=&quot;close&quot; aria-label=&quot;Return cards to the diagram&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;sm-alternatives&quot; tabindex=&quot;0&quot; role=&quot;region&quot; aria-label=&quot;Argument versions; scroll horizontally for more&quot;&gt;${idea.versions.map(id=&gt;`&lt;section class=&quot;sm-version&quot; data-version=&quot;${id}&quot; aria-label=&quot;Version: ${escape(cards[id].version||&#x27;Original&#x27;)}&quot;&gt;&lt;div class=&quot;sm-version-heading&quot;&gt;&lt;span&gt;${escape(cards[id].version||&#x27;Original&#x27;)}&lt;/span&gt;${preference(id)}&lt;/div&gt;${cardFace(id,state.view===&#x27;evidence&#x27;&amp;&amp;state.card===id,true)}&lt;/section&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;&lt;/section&gt;`;
+  }
+  function evidenceContent(cardId) {
+    const card=cards[cardId],assessment=state.assessments[cardId];
     const brief={
       access:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;,
       accessBold:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;,
@@ -2101,13 +2086,14 @@ html&gt;body{padding:0}&lt;/style&gt;
       staffing:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;,
       evenings:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;,
       services:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;
-    }[state.card]||card.explanation;
+    }[cardId]||card.explanation;
     const sourceRows=card.sources.map(id=&gt;{
-      const source=sources[id],key=state.card+&#x27;/&#x27;+id;
+      const source=sources[id],key=cardId+&#x27;/&#x27;+id;
       return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;&lt;p&gt;${escape(source.finding)}&lt;/p&gt;&lt;dl&gt;&lt;dt&gt;Supports&lt;/dt&gt;&lt;dd&gt;${escape(source.premise)}&lt;/dd&gt;&lt;dt&gt;Limit&lt;/dt&gt;&lt;dd&gt;${escape(source.limit)}&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
-    return `&lt;section class=&quot;sm-detail sm-reading&quot;&gt;${breadcrumb(state.from===&#x27;alternatives&#x27;?&#x27;alternatives&#x27;:&#x27;board&#x27;)}&lt;article class=&quot;sm-expanded-card&quot;&gt;&lt;div class=&quot;sm-reading-body&quot;&gt;&lt;h2 class=&quot;sm-evidence-claim&quot;&gt;${escape(card.claim)}&lt;/h2&gt;&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;&lt;/div&gt;${card.value?`&lt;div class=&quot;sm-value-note&quot;&gt;${credibility(state.card,false)}&lt;/div&gt;`:`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;div class=&quot;sm-evidence-heading&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${credibility(state.card,false)}&lt;/div&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}&lt;/article&gt;&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;&lt;/section&gt;${card.value?&#x27;&lt;p class=&quot;sm-value-note sm-meta&quot;&gt;A value judgment, rather than a factual claim.&lt;/p&gt;&#x27;:`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
+
   function composer() {
     const idea=ideas.find(i=&gt;i.id===state.idea);
     return `&lt;section class=&quot;sm-detail&quot;&gt;${breadcrumb(&#x27;alternatives&#x27;)}&lt;h2 class=&quot;sm-section-title&quot;&gt;Suggest a version&lt;/h2&gt;&lt;p class=&quot;sm-caption&quot;&gt;Keep the underlying reason. A different reason would belong in its own row.&lt;/p&gt;&lt;form class=&quot;sm-form&quot; id=&quot;sm-form&quot;&gt;&lt;label for=&quot;sm-draft&quot;&gt;Your version&lt;/label&gt;&lt;textarea id=&quot;sm-draft&quot; name=&quot;claim&quot; maxlength=&quot;500&quot; required placeholder=&quot;State the claim, including any qualifications.&quot;&gt;${escape(state.draftClaim)}&lt;/textarea&gt;&lt;label for=&quot;sm-reason&quot;&gt;What does this improve?&lt;/label&gt;&lt;textarea id=&quot;sm-reason&quot; name=&quot;reason&quot; maxlength=&quot;700&quot; required placeholder=&quot;Explain what is clearer, more precise, or better supported.&quot;&gt;${escape(state.draftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-compare-footer&quot;&gt;${button(&#x27;preview&#x27;,&#x27;Preview card&#x27;)}&lt;span class=&quot;sm-meta&quot;&gt;Same idea · Fresh preference and support assessments&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-error&quot; id=&quot;sm-error&quot; role=&quot;alert&quot;&gt;&lt;/div&gt;&lt;/form&gt;${state.preview?`&lt;div class=&quot;sm-preview&quot;&gt;&lt;article class=&quot;sm-source&quot;&gt;&lt;div class=&quot;sm-kicker&quot;&gt;Your version · Preview&lt;/div&gt;&lt;p class=&quot;sm-claim&quot;&gt;${escape(state.draftClaim)}&lt;/p&gt;&lt;p class=&quot;sm-prose&quot;&gt;${escape(state.draftReason)}&lt;/p&gt;&lt;div class=&quot;sm-meta&quot;&gt;Unreviewed · No sources attached&lt;/div&gt;&lt;/article&gt;&lt;div class=&quot;sm-compare-footer&quot;&gt;${button(&#x27;add&#x27;,&#x27;Add to this idea&#x27;,state.added.length&gt;=5?&#x27;disabled&#x27;:&#x27;&#x27;)}&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;/section&gt;`;
@@ -2115,31 +2101,9 @@ html&gt;body{padding:0}&lt;/style&gt;
   const scene=root.querySelector(&#x27;.sm-scene&#x27;);
   const links=root.querySelector(&#x27;.sm-links&#x27;);
   const modal=root.querySelector(&#x27;#sm-modal&#x27;);
-  let returnKey=&#x27;stack-access&#x27;, originId=&#x27;access&#x27;, opening=false, closing=false, closeQueued=false;
+  let returnKey=&#x27;stack-access&#x27;, originId=&#x27;access&#x27;;
   const reducedMotion=()=&gt;window.matchMedia(&#x27;(prefers-reduced-motion:reduce)&#x27;).matches;
   const originCard=()=&gt;content.querySelector(`[data-node=&quot;${originId}&quot;] .sm-card`);
-  function focusCanvas(focused,animate=true) {
-    const board=content.querySelector(&#x27;.sm-board&#x27;);
-    const from=getComputedStyle(board).transform;
-    board.getAnimations().forEach(animation=&gt;animation.cancel());
-    scene.classList.toggle(&#x27;sm-focused&#x27;,focused);
-    const to=getComputedStyle(board).transform;
-    const destination=originCard()?.getBoundingClientRect();
-    if(animate&amp;&amp;!reducedMotion())board.animate([{transform:from},{transform:to}],{duration:focused?600:420,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;});
-    animateWires(650);
-    return destination;
-  }
-  function snapshotFace(face) {
-    if(!face)return null;
-    const claim=face.querySelector(&#x27;.sm-claim,.sm-evidence-claim&#x27;);
-    const type=claim?getComputedStyle(claim):null;
-    return {face:face.cloneNode(true),rect:face.getBoundingClientRect(),fontSize:type?.fontSize,lineHeight:type?.lineHeight};
-  }
-  function collapsedFace(id) {
-    const face=document.createElement(&#x27;div&#x27;);
-    face.innerHTML=`&lt;div class=&quot;sm-claim-button&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id,false)}${sourceButton(id)}&lt;/div&gt;`;
-    return face;
-  }
   function rememberOrigin(trigger) {
     if(modal.open)return;
     returnKey=trigger.dataset.key||&#x27;&#x27;;
@@ -2149,8 +2113,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(!modal.open)return;
     const rootBox=root.getBoundingClientRect(),source=originCard()?.getBoundingClientRect();
     const question=root.querySelector(&#x27;.sm-head&#x27;).getBoundingClientRect();
-    const width=Math.min(rootBox.width-32,state.view===&#x27;alternatives&#x27;?940:state.view===&#x27;evidence&#x27;?600:760);
-    const top=Math.max(question.bottom+26,(source?.top||question.bottom+60)-20);
+    const width=Math.min(rootBox.width-24,state.view===&#x27;compose&#x27;?680:1160);
+    const top=Math.max(question.bottom+24,(source?.top||question.bottom+60)-58);
     modal.style.width=width+&#x27;px&#x27;;
     modal.style.left=(rootBox.left+(rootBox.width-width)/2+window.scrollX)+&#x27;px&#x27;;
     modal.style.top=(top+window.scrollY)+&#x27;px&#x27;;
@@ -2158,130 +2122,74 @@ html&gt;body{padding:0}&lt;/style&gt;
     const requiredBottom=top+modal.offsetHeight+30;
     scene.style.minHeight=Math.max(naturalBottom-scene.getBoundingClientRect().top,requiredBottom-scene.getBoundingClientRect().top)+&#x27;px&#x27;;
   }
-  function makeFlight(face, rect, z) {
-    const shell=document.createElement(&#x27;article&#x27;);
-    shell.className=&#x27;sm-card sm-flight&#x27;;shell.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);shell.inert=true;
-    shell.innerHTML=face.innerHTML;
-    shell.querySelectorAll(&#x27;[data-key],[id]&#x27;).forEach(el=&gt;{el.removeAttribute(&#x27;data-key&#x27;);el.removeAttribute(&#x27;id&#x27;);});
-    const parent=modal.getBoundingClientRect();
-    Object.assign(shell.style,{left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,height:rect.height+&#x27;px&#x27;,zIndex:String(z)});
-    modal.appendChild(shell);return shell;
-  }
-  function boxKeyframe(rect,parent) {return {left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,height:rect.height+&#x27;px&#x27;};}
-  async function liftCards(startRect) {
-    if(reducedMotion())return;
-    opening=true;
-    const source=startRect||originCard().getBoundingClientRect(),parent=modal.getBoundingClientRect();
-    const versions=[...modal.querySelectorAll(&#x27;.sm-version&#x27;)];
-    const tasks=versions.map((version,index)=&gt;{
-      const face=version.querySelector(&#x27;.sm-version-face&#x27;),end=face.getBoundingClientRect();
-      const start={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
-      const flight=makeFlight(face,start,20-index);
-      version.style.visibility=&#x27;hidden&#x27;;
-      const animation=flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:520+index*45,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;});
-      return animation.finished.catch(()=&gt;{}).then(()=&gt;{
-        version.style.visibility=&#x27;&#x27;;flight.remove();
-        version.querySelector(&#x27;.sm-preference&#x27;).animate([{opacity:0,transform:&#x27;translateY(-6px)&#x27;},{opacity:1,transform:&#x27;translateY(0)&#x27;}],{duration:180,easing:&#x27;ease-out&#x27;});
-      });
-    });
-    modal.querySelectorAll(&#x27;.sm-modal-chrome,.sm-add-version&#x27;).forEach(el=&gt;el.animate([{opacity:0},{opacity:1}],{duration:250,delay:180,fill:&#x27;backwards&#x27;}));
-    await Promise.all(tasks);opening=false;
-    if(closeQueued){closeQueued=false;closeModal();}
-  }
-  async function morphCard(snapshot,target,expanding) {
-    if(!snapshot||!target||reducedMotion())return;
-    opening=true;
-    const destination=target.getBoundingClientRect(),parent=modal.getBoundingClientRect();
-    const flight=makeFlight(expanding?snapshot.face:target,snapshot.rect,30);
-    const finalClaim=target.querySelector(&#x27;.sm-claim,.sm-evidence-claim&#x27;);
-    const finalType=getComputedStyle(finalClaim);
-    const claim=flight.querySelector(&#x27;.sm-claim&#x27;);
-    target.style.visibility=&#x27;hidden&#x27;;
-    if(claim)claim.animate([{fontSize:snapshot.fontSize,lineHeight:snapshot.lineHeight},{fontSize:finalType.fontSize,lineHeight:finalType.lineHeight}],{duration:520,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;});
-    await flight.animate([boxKeyframe(snapshot.rect,parent),boxKeyframe(destination,parent)],{duration:520,easing:&#x27;cubic-bezier(.22,.78,.18,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
-    target.style.visibility=&#x27;&#x27;;flight.remove();
-    if(expanding)target.querySelectorAll(&#x27;.sm-brief,.sm-evidence-group,.sm-value-note&#x27;).forEach(el=&gt;el.animate([{opacity:0,transform:&#x27;translateY(5px)&#x27;},{opacity:1,transform:&#x27;translateY(0)&#x27;}],{duration:200,easing:&#x27;ease-out&#x27;}));
-    opening=false;
-    if(closeQueued){closeQueued=false;closeModal();}
-  }
-  function fadeRow(ghost,rect) {
-    if(!ghost||reducedMotion())return;
-    const parent=modal.getBoundingClientRect();
-    ghost.classList.add(&#x27;sm-transition-ghost&#x27;);ghost.inert=true;ghost.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
-    ghost.querySelectorAll(&#x27;[data-key],[id]&#x27;).forEach(el=&gt;{el.removeAttribute(&#x27;data-key&#x27;);el.removeAttribute(&#x27;id&#x27;);});
-    ghost.querySelector(`[data-version=&quot;${state.card}&quot;]`)?.style.setProperty(&#x27;visibility&#x27;,&#x27;hidden&#x27;);
-    Object.assign(ghost.style,{left:(rect.left-parent.left)+&#x27;px&#x27;,top:(rect.top-parent.top)+&#x27;px&#x27;,width:rect.width+&#x27;px&#x27;,padding:&#x27;0&#x27;,border:&#x27;0&#x27;,background:&#x27;transparent&#x27;,boxShadow:&#x27;none&#x27;});
-    modal.appendChild(ghost);
-    ghost.animate([{opacity:1,transform:&#x27;translateY(0) scale(1)&#x27;},{opacity:0,transform:&#x27;translateY(12px) scale(.97)&#x27;}],{duration:340,easing:&#x27;ease-out&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{}).then(()=&gt;ghost.remove());
-  }
-  function syncBoardIndicators() {
-    ideas.forEach(idea=&gt;{
-      const node=content.querySelector(`[data-node=&quot;${idea.id}&quot;]`);if(!node)return;
-      const id=idea.versions[0];
-      node.querySelector(&#x27;.sm-card-meta&#x27;).innerHTML=credibility(id)+sourceButton(id);
-      node.querySelector(&#x27;.sm-stack-button&#x27;)?.setAttribute(&#x27;aria-label&#x27;,`Compare ${idea.versions.length} versions of this argument`);
-    });
-    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
-  }
-  async function closeModal() {
-    if(!modal.open||closing)return;
-    if(opening){closeQueued=true;return;}
-    closing=true;
-    modal.classList.add(&#x27;sm-closing&#x27;);
-    const source=focusCanvas(false),parent=modal.getBoundingClientRect();
-    if(source&amp;&amp;!reducedMotion()) {
-      const faces=[...modal.querySelectorAll(&#x27;.sm-version-face&#x27;)];
-      if(faces.length) {
-        const tasks=faces.map((face,index)=&gt;{
-          const start=face.getBoundingClientRect();
-          const end={left:source.left+index*9,top:source.top+index*4,width:source.width,height:source.height-index*4};
-          const flight=makeFlight(face,start,20-index);
-          face.closest(&#x27;.sm-version&#x27;).style.visibility=&#x27;hidden&#x27;;
-          return flight.animate([boxKeyframe(start,parent),boxKeyframe(end,parent)],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
-        });
-        modal.querySelectorAll(&#x27;.sm-modal-chrome,.sm-add-version&#x27;).forEach(el=&gt;el.animate([{opacity:1},{opacity:0}],{duration:140,fill:&#x27;forwards&#x27;}));
-        await Promise.all(tasks);
-      } else if(modal.querySelector(&#x27;.sm-expanded-card&#x27;)) {
-        const panel=modal.querySelector(&#x27;.sm-expanded-card&#x27;),start=panel.getBoundingClientRect();
-        const flight=makeFlight(collapsedFace(state.card),start,30);
-        if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
-        const fromType=getComputedStyle(panel.querySelector(&#x27;.sm-evidence-claim&#x27;));
-        const toType=getComputedStyle(originCard().querySelector(&#x27;.sm-claim&#x27;));
-        flight.querySelector(&#x27;.sm-claim&#x27;).animate([{fontSize:fromType.fontSize,lineHeight:fromType.lineHeight},{fontSize:toType.fontSize,lineHeight:toType.lineHeight}],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;});
-        modal.querySelector(&#x27;.sm-reading&#x27;).style.visibility=&#x27;hidden&#x27;;
-        await flight.animate([boxKeyframe(start,parent),boxKeyframe(source,parent)],{duration:420,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
-      } else {
-        const panel=modal.querySelector(&#x27;.sm-detail&#x27;);const box=panel.getBoundingClientRect();
-        await panel.animate([{transform:&#x27;translate(0,0) scale(1)&#x27;,opacity:1},{transform:`translate(${source.left-box.left}px,${source.top-box.top}px) scale(${source.width/box.width},${source.height/box.height})`,opacity:.25}],{duration:350,easing:&#x27;cubic-bezier(.4,0,.3,1)&#x27;,fill:&#x27;forwards&#x27;}).finished.catch(()=&gt;{});
-      }
-    }
+  function closeModal() {
+    if(!modal.open)return;
     content.querySelector(&#x27;.sm-origin&#x27;)?.classList.remove(&#x27;sm-origin&#x27;);
-    syncBoardIndicators();
-    modal.close();modal.innerHTML=&#x27;&#x27;;modal.classList.remove(&#x27;sm-closing&#x27;);
+    modal.close();modal.innerHTML=&#x27;&#x27;;
     scene.style.minHeight=&#x27;&#x27;;
-    state.view=&#x27;board&#x27;;closing=false;
-    content.querySelector(`[data-key=&quot;${returnKey}&quot;]`)?.focus({preventScroll:true});
-    announce(&#x27;Cards returned to their place in the diagram.&#x27;);animateWires();save();
+    state.view=&#x27;board&#x27;;
+    render(returnKey);
+    announce(&#x27;Cards returned to their place in the diagram.&#x27;);save();
   }
   function renderModal(focusKey,motion) {
     const wasOpen=modal.open;
-    const previousView=modal.dataset.view;
-    const startingCard=motion===&#x27;detail&#x27;?snapshotFace(wasOpen?modal.querySelector(`[data-version=&quot;${state.card}&quot;] .sm-version-face`):originCard()):motion===&#x27;return&#x27;&amp;&amp;previousView===&#x27;evidence&#x27;?snapshotFace(modal.querySelector(&#x27;.sm-expanded-card&#x27;)):null;
-    const oldRow=wasOpen&amp;&amp;previousView===&#x27;alternatives&#x27;&amp;&amp;motion===&#x27;detail&#x27;?modal.querySelector(&#x27;.sm-detail&#x27;):null;
-    const ghost=oldRow?.cloneNode(true),ghostRect=oldRow?.getBoundingClientRect();
-    const startingStack=!wasOpen?originCard()?.getBoundingClientRect():null;
+    const rowExists=wasOpen&amp;&amp;modal.querySelector(&#x27;.sm-card-row&#x27;);
+    const isRow=state.view===&#x27;alternatives&#x27;||state.view===&#x27;evidence&#x27;;
+    const oldHeights=new Map([...modal.querySelectorAll(&#x27;.sm-version-face&#x27;)].map(face=&gt;[face.dataset.card,face.querySelector(&#x27;.sm-card-reveal&#x27;).offsetHeight]));
+    const track=modal.querySelector(&#x27;.sm-alternatives&#x27;);
+    const scrollLeft=track?.scrollLeft||0;
     modal.dataset.view=state.view;
-    modal.setAttribute(&#x27;aria-label&#x27;,(state.view===&#x27;alternatives&#x27;?&#x27;Alternative articulations&#x27;:state.view===&#x27;evidence&#x27;?&#x27;Claim and evidence&#x27;:&#x27;Suggest an alternative articulation&#x27;)+&#x27;: &#x27;+optionName(ideas.find(i=&gt;i.id===state.idea).option));
-    modal.innerHTML=state.view===&#x27;alternatives&#x27;?alternatives():state.view===&#x27;evidence&#x27;?evidence():composer();
+    modal.setAttribute(&#x27;aria-label&#x27;,(isRow?&#x27;Argument versions&#x27;:&#x27;Suggest a version&#x27;)+&#x27;: &#x27;+ideas.find(i=&gt;i.id===state.idea).title);
+    // Keep the actual card faces mounted while expanding, voting, and collapsing.
+    const sameCards=isRow&amp;&amp;rowExists&amp;&amp;ideas.find(i=&gt;i.id===state.idea).versions.join(&#x27;,&#x27;)===[...modal.querySelectorAll(&#x27;[data-version]&#x27;)].map(el=&gt;el.dataset.version).join(&#x27;,&#x27;);
+    if(sameCards) {
+      modal.querySelectorAll(&#x27;.sm-version&#x27;).forEach(version=&gt;{
+        const id=version.dataset.version,expanded=state.view===&#x27;evidence&#x27;&amp;&amp;state.card===id;
+        const face=version.querySelector(&#x27;.sm-card&#x27;),claim=face.querySelector(&#x27;.sm-claim-button&#x27;);
+        face.classList.toggle(&#x27;sm-expanded&#x27;,expanded);
+        claim.dataset.action=expanded?&#x27;collapse&#x27;:&#x27;evidence&#x27;;
+        claim.setAttribute(&#x27;aria-expanded&#x27;,String(expanded));
+        claim.setAttribute(&#x27;aria-label&#x27;,`${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} claim: ${cards[id].claim}`);
+        face.querySelector(&#x27;.sm-card-meta&#x27;).innerHTML=cardMeta(id,expanded,true);
+        version.querySelector(&#x27;.sm-preference&#x27;).outerHTML=preference(id);
+        const reveal=face.querySelector(&#x27;.sm-card-reveal&#x27;);
+        reveal.getAnimations().forEach(animation=&gt;animation.cancel());
+        reveal.hidden=!expanded;
+        // Keep the previous content until the collapse animation completes.
+        if(expanded)reveal.innerHTML=evidenceContent(id);
+      });
+    } else modal.innerHTML=isRow?alternatives():composer();
     if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
-    if(!wasOpen){modal.showModal();focusCanvas(true,!!motion);}
+    if(!wasOpen)modal.showModal();
     placeModal();
     content.querySelector(`[data-node=&quot;${originId}&quot;]`)?.classList.add(&#x27;sm-origin&#x27;);
+    const nextTrack=modal.querySelector(&#x27;.sm-alternatives&#x27;);
+    if(nextTrack)nextTrack.scrollLeft=scrollLeft;
     (modal.querySelector(`[data-key=&quot;${focusKey}&quot;]`)||modal.querySelector(&#x27;[data-key=&quot;close&quot;]&#x27;))?.focus({preventScroll:true});
-    if(!wasOpen&amp;&amp;state.view===&#x27;alternatives&#x27;&amp;&amp;motion===&#x27;fan&#x27;)liftCards(startingStack);
-    else if(startingCard&amp;&amp;motion===&#x27;detail&#x27;){fadeRow(ghost,ghostRect);morphCard(startingCard,modal.querySelector(&#x27;.sm-expanded-card&#x27;),true);}
-    else if(startingCard&amp;&amp;motion===&#x27;return&#x27;)morphCard(startingCard,modal.querySelector(`[data-version=&quot;${state.card}&quot;] .sm-version-face`),false);
-    else if(!reducedMotion()&amp;&amp;motion){const panel=modal.querySelector(&#x27;.sm-detail&#x27;);panel.style.transformOrigin=&#x27;top left&#x27;;panel.animate([{transform:&#x27;translateY(12px)&#x27;,opacity:.6},{transform:&#x27;translateY(0)&#x27;,opacity:1}],{duration:230,easing:&#x27;ease-out&#x27;});}
+    if(nextTrack&amp;&amp;(!wasOpen||motion===&#x27;detail&#x27;||motion===&#x27;added&#x27;)) {
+      const selected=modal.querySelector(`[data-version=&quot;${state.card}&quot;]`);
+      if(selected) {
+        // Center the selected card when the row overflows, leaving neighboring cards visible.
+        const cardBox=selected.getBoundingClientRect(),trackBox=nextTrack.getBoundingClientRect();
+        if(cardBox.left&lt;trackBox.left||cardBox.right&gt;trackBox.right)
+          nextTrack.scrollLeft+=cardBox.left-trackBox.left-(trackBox.width-cardBox.width)/2;
+      }
+    }
+    if(!reducedMotion()&amp;&amp;sameCards&amp;&amp;[&#x27;detail&#x27;,&#x27;collapse&#x27;].includes(motion)) {
+      modal.querySelectorAll(&#x27;.sm-version-face&#x27;).forEach(face=&gt;{
+        const reveal=face.querySelector(&#x27;.sm-card-reveal&#x27;),from=oldHeights.get(face.dataset.card)||0,to=reveal.offsetHeight;
+        if(from===to)return;
+        const collapsed=reveal.hidden;
+        reveal.hidden=false;
+        reveal.animate([{height:from+&#x27;px&#x27;,opacity:from?1:0},{height:to+&#x27;px&#x27;,opacity:to?1:0}],{duration:260,easing:&#x27;cubic-bezier(.2,.7,.2,1)&#x27;}).finished.then(()=&gt;{
+          reveal.hidden=collapsed;
+          if(collapsed)reveal.innerHTML=&#x27;&#x27;;
+          placeModal();
+        }).catch(()=&gt;{});
+      });
+    } else if(!wasOpen&amp;&amp;!reducedMotion()) {
+      modal.querySelector(&#x27;.sm-detail&#x27;).animate([{transform:&#x27;translateY(10px)&#x27;,opacity:0},{transform:&#x27;translateY(0)&#x27;,opacity:1}],{duration:220,easing:&#x27;ease-out&#x27;});
+    }
   }
   let wireFrame=0,wireUntil=0;
   function drawLinks() {
@@ -2337,18 +2245,17 @@ html&gt;body{padding:0}&lt;/style&gt;
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger))return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;;
     if(action===&#x27;close&#x27;){closeModal();return;}
-    if(closing||opening)return;
     if(action===&#x27;alternatives&#x27;||action===&#x27;evidence&#x27;)rememberOrigin(trigger);
     if(action===&#x27;importance&#x27;) {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?&#x27;Importance vote saved. The shared row order stays in place.&#x27;:&#x27;Importance vote withdrawn. The shared row order stays in place.&#x27;);}
-    if(action===&#x27;alternatives&#x27;) {state.view=&#x27;alternatives&#x27;;state.idea=id;focus=&#x27;back&#x27;;motion=&#x27;fan&#x27;;announce(&#x27;Compare versions of one idea. Browsing does not cast a vote.&#x27;);}
-    if(action===&#x27;evidence&#x27;) {state.from=state.view===&#x27;alternatives&#x27;?&#x27;alternatives&#x27;:&#x27;board&#x27;;state.view=&#x27;evidence&#x27;;state.card=id;state.idea=cards[id].idea;state.assessOpen=false;focus=&#x27;close&#x27;;motion=&#x27;detail&#x27;;announce(&#x27;Illustrative evidence packet. Opening it does not cast an assessment.&#x27;);}
+    if(action===&#x27;alternatives&#x27;) {state.view=&#x27;alternatives&#x27;;state.idea=id;state.card=ideas.find(i=&gt;i.id===id).versions[0];focus=&#x27;expand-&#x27;+state.card;motion=&#x27;fan&#x27;;announce(&#x27;Compare versions of one idea. Browsing does not cast a vote.&#x27;);}
+    if(action===&#x27;evidence&#x27;) {state.view=&#x27;evidence&#x27;;state.card=id;state.idea=cards[id].idea;focus=&#x27;expand-&#x27;+id;motion=&#x27;detail&#x27;;announce(&#x27;Illustrative evidence packet. Opening it does not cast an assessment.&#x27;);}
+    if(action===&#x27;collapse&#x27;) {state.view=&#x27;alternatives&#x27;;focus=&#x27;expand-&#x27;+id;motion=&#x27;collapse&#x27;;announce(&#x27;Card collapsed. Other versions remain in place.&#x27;);}
     if(action===&#x27;back&#x27;) {state.view=trigger.dataset.to;focus=&#x27;close&#x27;;motion=&#x27;return&#x27;;announce(&#x27;Alternative articulations in front of the diagram.&#x27;);}
     if(action===&#x27;preference&#x27;) {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?&#x27;Version preference saved. The shared card order stays in place.&#x27;:&#x27;Version preference withdrawn.&#x27;);}
-    if(action===&#x27;assessment-toggle&#x27;) {state.assessOpen=!state.assessOpen;}
     if(action===&#x27;assess&#x27;) {const value=trigger.dataset.value;state.assessments[state.card]=value===&#x27;skip&#x27;||state.assessments[state.card]===value?null:value;announce(state.assessments[state.card]?&#x27;Your one active assessment is included in the support percentage.&#x27;:value===&#x27;skip&#x27;?&#x27;No active assessment. Skipping adds nothing to the denominator.&#x27;:&#x27;Assessment withdrawn.&#x27;);}
     if(action===&#x27;compose&#x27;) {state.view=&#x27;compose&#x27;;state.preview=false;focus=&#x27;back&#x27;;announce(&#x27;Your suggestion will remain in this prototype.&#x27;);}
     if(action===&#x27;preview&#x27;) {if(!state.draftClaim.trim()||!state.draftReason.trim()){modal.querySelector(&#x27;#sm-error&#x27;).textContent=&#x27;Add a claim and a short explanation to preview your version.&#x27;;return;}state.preview=true;focus=null;announce(&#x27;Preview ready. This version has no inherited preference or credibility assessments.&#x27;);}
-    if(action===&#x27;add&#x27;) {if(state.added.length&gt;=5)return;state.added.push({idea:state.idea,claim:state.draftClaim.trim(),reason:state.draftReason.trim()});syncAdded();state.view=&#x27;alternatives&#x27;;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;state.preview=false;focus=&#x27;back&#x27;;announce(&#x27;Your version was added locally. The idea keeps its importance; the new card starts unreviewed.&#x27;);}
+    if(action===&#x27;add&#x27;) {if(state.added.length&gt;=5)return;state.added.push({idea:state.idea,claim:state.draftClaim.trim(),reason:state.draftReason.trim()});syncAdded();state.view=&#x27;alternatives&#x27;;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;state.preview=false;state.card=&#x27;local&#x27;+(state.added.length-1);focus=&#x27;expand-&#x27;+state.card;motion=&#x27;added&#x27;;announce(&#x27;Your version was added locally. The idea keeps its importance; the new card starts unreviewed.&#x27;);}
     if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     render(focus,motion);save();
   });
@@ -2361,14 +2268,17 @@ html&gt;body{padding:0}&lt;/style&gt;
   modal.addEventListener(&#x27;click&#x27;,event=&gt;{if(event.target===modal)closeModal();});
   restore(window.openai?.widgetState);
   originId=state.idea;
+  returnKey=&#x27;expand-&#x27;+ideas.find(i=&gt;i.id===state.idea).versions[0];
   render();
   window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);originId=state.idea;render();}});
   new ResizeObserver(()=&gt;animateWires()).observe(scene);
-  window.addEventListener(&#x27;resize&#x27;,()=&gt;{if(modal.open&amp;&amp;!opening&amp;&amp;!closing)placeModal();});
+  new ResizeObserver(()=&gt;{if(modal.open)placeModal();}).observe(modal);
+  window.addEventListener(&#x27;resize&#x27;,()=&gt;{if(modal.open)placeModal();});
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=&gt;render()});tweak.addSelect(design,&#x27;type&#x27;,{label:&#x27;Argument typography&#x27;,options:[{label:&#x27;Graphics sans&#x27;,value:&#x27;sans&#x27;},{label:&#x27;Editorial serif&#x27;,value:&#x27;serif&#x27;}]});tweak.addSelect(design,&#x27;indicator&#x27;,{label:&#x27;Evidence metaphor&#x27;,options:[{label:&#x27;Paper dossier&#x27;,value:&#x27;dossier&#x27;},{label:&#x27;Open book&#x27;,value:&#x27;books&#x27;},{label:&#x27;Review checklist&#x27;,value:&#x27;checklist&#x27;}]});tweak.addSelect(design,&#x27;density&#x27;,{label:&#x27;Card density&#x27;,options:[{label:&#x27;Comfortable&#x27;,value:&#x27;comfortable&#x27;},{label:&#x27;Compact&#x27;,value:&#x27;compact&#x27;}]});}
 })();
 &lt;/script&gt;
 
+&lt;!-- steelman-source:end --&gt;
 &lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
