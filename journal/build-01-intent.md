@@ -30,6 +30,10 @@ Known limits: fonts/icons load externally; the export stores state locally in th
 
 See `tests/build-1-manual.md`. Agent browser checks are functional checks, not pod critique or real-user research.
 
+## November 6 — Product Page revision
+
+Kieran requested much less explanatory text and a sparse black-and-white design matching the prototype. Reduced the page to about 220 words, retaining the required user, before/after workflow, core workflow, three non-goals, screenshot, and build log. Removed colored panels and explanatory sections. Kept the original prototype intact.
+
 ## Remaining builder tasks
 
 - [ ] Create a PostHog account; install and verify analytics in Build 2.
