@@ -1818,8 +1818,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   --sm-wire:#767676;         /* connectors between question, options, and arguments */
 
   /* Axes (importance and articulation) */
-  --sm-axis:#555;            /* axis labels */
-  --sm-axis-line:#8a8a8a;    /* axis hairline and arrowheads */
+  --sm-axis:#2e2e2e;         /* axis labels */
+  --sm-axis-line:#5c5c5c;    /* axis hairline and arrowheads */
 
   /* Meaning colors. Color is reserved for these; everything else is grayscale. */
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
@@ -2007,7 +2007,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-axis[data-axis=&quot;v&quot;] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
   #steelman-study .sm-axis[data-axis=&quot;v&quot;] .sm-axis-label { writing-mode:vertical-rl; transform:rotate(180deg); }
   /* Map-style halos: labels, line, and arrowheads knock out whatever texture sits behind them. */
-  #steelman-study .sm-axis-label { font-weight:400; color:#444; text-shadow:0 0 2px var(--sm-panel),0 0 2px var(--sm-panel),0 0 3px var(--sm-panel),0 0 5px var(--sm-panel); }
+  #steelman-study .sm-axis-label { font-weight:400; color:var(--sm-axis); text-shadow:0 0 2px var(--sm-panel),0 0 2px var(--sm-panel),0 0 3px var(--sm-panel),0 0 5px var(--sm-panel); }
   #steelman-study .sm-axis-line { box-shadow:0 0 0 2.5px var(--sm-panel); }
   #steelman-study .sm-axis-head { filter:drop-shadow(0 0 1.5px var(--sm-panel)) drop-shadow(0 0 1.5px var(--sm-panel)); }
 

@@ -298,6 +298,8 @@ Cool slate canvas: `--sm-paper` #e7e6e3 → #d8dde0, so the canvas separates fro
 
 Warm stone and quieter cells: after trying cool slate in context, the canvas is warm stone (`--sm-paper` #dcd8cf). The darkest hex cells drop from 6% to 4% ink (`--sm-hex-fill` .06 → .04) so the texture stays in the background; density and articulation fading are unchanged. Checked at 800 px; no console errors.
 
+Darker axes: labels `--sm-axis` #555 → #2e2e2e (the prototype's hard-coded #444 label color now uses the token) and line and arrowheads `--sm-axis-line` #8a8a8a → #5c5c5c, for both the importance and articulation axes and the phone "more important" label. Checked at 800 px with a row unfolded; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

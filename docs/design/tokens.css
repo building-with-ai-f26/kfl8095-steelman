@@ -25,8 +25,8 @@
   --sm-wire:#767676;         /* connectors between question, options, and arguments */
 
   /* Axes (importance and articulation) */
-  --sm-axis:#555;            /* axis labels */
-  --sm-axis-line:#8a8a8a;    /* axis hairline and arrowheads */
+  --sm-axis:#2e2e2e;         /* axis labels */
+  --sm-axis-line:#5c5c5c;    /* axis hairline and arrowheads */
 
   /* Meaning colors. Color is reserved for these; everything else is grayscale. */
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
