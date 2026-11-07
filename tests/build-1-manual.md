@@ -138,6 +138,26 @@ The honeycomb mark replaced the black "s" square on the product page, the protot
 
 Saved state from the previous build (version 2) restores votes and added versions but starts with every stack folded.
 
+## November 7 — Editing foundations (batches 0 and 1)
+
+Checked by the coding agent at 1280 px and 390 px. Most interactions were scripted on an unsandboxed copy of the synced page; settings persistence was checked with pointer clicks on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| One saved document | The question, options, arguments, versions, and sources load from a single saved document (state version 4); the board renders as before |
+| Add a version (regression) | Adding to the study idea produces card `v1`, expanded, at the end of the row; importance stays 31. The old five-version limit is gone |
+| Version 3 migration | Saved state with two added versions restores them as `v1`/`v2`; the articulation vote (1), the No assessment, the expanded card, and the access importance vote (43) all follow them |
+| Question details | "Posted by Kieran LaMee · Nov 5, 2026 · Pod 6 · Building with AI · Organization" in light type under the title |
+| Settings drawer | The cog opens a right-hand panel; on desktop the board reflows beside it; focus moves to the question field |
+| Rename question | Typing updates the title live; an empty question shows a red edge, keeps the last title, and reverts when the field loses focus |
+| Organization rule | Choosing Personal makes the question Private and disables Organization visibility |
+| Persistence | Choosing "Anyone with the link" survived a reload of the standalone page; the drawer starts closed |
+| Escape | Escape closes the drawer first and returns focus to the cog |
+| Reset | The first click arms the button; the second restores the example question, ideas, and votes |
+| Narrow | At 390 px the drawer covers the full width; no horizontal overflow with it open or closed |
+| Browser errors | No prototype errors in the console |
+
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

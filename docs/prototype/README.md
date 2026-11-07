@@ -18,6 +18,7 @@ Colors, type, and texture come from [`../design/tokens.css`](../design/tokens.cs
 - Vote on articulation with the arrows beneath each version, and on importance with the arrows beside the row.
 - Click a card's chevron to reveal context and evidence inside the card; click it again to collapse.
 - Click the dashed card at the end of a row to write a better version directly in the row. A dashed paper edge means an argument has only one version so far.
-- Fold the row with the button at the end of the articulation axis, or press Escape (Escape first closes a draft or an expanded card).
+- Fold the row with the button at the end of the articulation axis, or press Escape (Escape first closes the settings panel, a draft, or an expanded card).
+- Under the question, a light line shows who posted it, when, the organization, and who can see it. The cog opens settings beside the board: rename the question, choose the organization and visibility, and decide who can contribute and vote. **Reset to the original example** (click twice) restores the example board.
 
-The claims, sources, and votes are illustrative. Interactions are local to the prototype; there is no shared backend.
+Everything a contributor can edit (the question, options, arguments, versions, and sources) is saved as one document in the browser, so later edits can change any part of it. The claims, sources, and votes are illustrative. Interactions are local to the prototype; there is no shared backend.
