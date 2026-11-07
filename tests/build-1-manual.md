@@ -262,6 +262,28 @@ Known limit: three or more options at about 1000 px squeeze cards to roughly 100
 
 Question details restyle: each detail now has its own treatment: an initials avatar with "Posted by **name**", an italic serif date with a calendar icon, the organization in tracked capitals ("POD 6") with its course name muted beside it, and visibility as an outlined pill with its icon (hover shows what it means). Hairlines replace the dots on desktop; on phones the line wraps without dividers. Checked at 800 px and 390 px; no horizontal overflow, no console errors.
 
+## November 7 — Clarity and concision pass
+
+From a review of every feature. Checked by the coding agent at 800, 1024, and 390 px on an unsandboxed copy (scripted); vote labels were checked by freezing their animation midway.
+
+| Change | Observed result |
+| --- | --- |
+| One way to expand | The meter and source count are information only (with titles); a card's buttons are ⋯, its wording, comments, and the chevron. A card with no sources shows no paperclip |
+| Quiet empty comments | On pointer devices, a card's comment button is hidden until hover or focus when it has no comments |
+| Version count | Stacks with more versions show a small count (3 on "Sunday hours…") |
+| Permissions | The two permission selects are gone; Settings shows "Who can contribute and vote" with a Coming soon tag |
+| Question line | "Posted by" dropped; organization is "POD 6"; the pill reads "POD 6 only" when visible to the organization, otherwise the line shows "POD 6" and "Private" or "Anyone with link"; Personal shows only "Private" |
+| Backs up | Source label "Backs up"; vote heading "Does the evidence back this wording?"; form field "What it backs up" |
+| Source form | Shows Source, Where to find it, What it shows; "Backs up & limits" reveals the other two and focuses the first. Editing a source that has them shows them |
+| Source actions | Edit · Remove · Can't open it? · Undo report; your sources carry a "You" tag |
+| Menus | Others' versions: one note and "Suggest a revised version". Yours: Edit wording and context, Combine with another argument, Make it a separate argument (only with more than one version), Delete argument ("Removes the row.") or Delete version. The option menu has no note |
+| Short text | Move banner "Pick the argument it belongs with."; empty comments "No comments yet."; the shortcut moved to the Comment button's tooltip; settings footer "Saved in this browser only."; toolbar "Simulate a reorder"; add option reads "+ Option" (full "Add an option" on phones) |
+| Articulation votes on top | In an unfolded row each version's vote sits above it, under the axis; the importance vote stays level with the lead card (11 px below its top, as before) |
+| Vote labels | "Important." above / "Less important." below the importance control; "Well articulated." left / "Weaker articulation." right of the articulation control; "Vote withdrawn." when undone. They fade after about 1.4 seconds |
+| Widths | Versions in an unfolded row keep at least 210 px (200 px below 800 px) and the row scrolls; while a row is unfolded, the other column keeps 260 px with two options (200 px with three). At 1024 px: 563 / 260 px columns, other cards 172 px (previously about 140 px) |
+| Phone | No horizontal overflow at 390 px |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
