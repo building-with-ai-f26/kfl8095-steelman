@@ -12,7 +12,8 @@
   #steelman-study button svg { flex:none; }
   #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:#fff; border-bottom:1px solid var(--sm-ink); }
   #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font:700 23px var(--sm-serif); letter-spacing:-1px; }
-  #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:3px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
+  /* Logo: honeycomb diamond. Solid (strongest) top-left, two outlines, a dashed cell (weakest) bottom-right. */
+  #steelman-study .sm-logo { display:block; height:24px; width:auto; color:var(--sm-ink); flex:none; }
   #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
   #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
@@ -199,7 +200,7 @@
   @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
 </style>
 <div id="steelman-study" aria-label="Steelman canvas prototype" data-indicator="dossier" data-density="comfortable">
-  <header class="sm-site"><div class="sm-wordmark"><span class="sm-logo" aria-hidden="true">s</span>steelman.</div></header>
+  <header class="sm-site"><div class="sm-wordmark"><svg class="sm-logo" viewBox="0 0 55.95 44.65" aria-hidden="true" focusable="false"><polygon points="10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75" fill="currentColor"/><polygon points="33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter" stroke-linecap="butt" pathLength="18" stroke-dasharray=".5 .5" stroke-dashoffset=".25"/></svg>steelman.</div></header>
   <div class="sm-surface">
     <div class="sm-scene">
       <svg class="sm-links" aria-hidden="true"></svg>

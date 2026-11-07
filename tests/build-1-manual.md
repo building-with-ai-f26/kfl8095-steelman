@@ -132,6 +132,10 @@ Interactions were scripted on a direct copy of the synced source; the sandboxed 
 
 Follow-up: connector wires darkened (`#aaa` → `#767676`); the canvas briefly used a graph-paper background, then a mottled paper texture, and now quiet white topographic contours on warm gray (tightened to a 480 px tile with 22 levels for a denser map), then softened twice: background `#d9d8d4` → `#e0dfdb` → `#e7e6e3` and line opacity 0.8 → 0.6 → 0.45 (a seamless generated tile embedded as a token; axis halos and column panels share a new panel color) from shared tokens, on the prototype and the specimen. Checked at 1280 px; no console errors. Drop shadows added from elevation tokens to headers, option columns, cards, vote controls, and the fold button; the unfolded row's scroll area got extra padding so card shadows are not cut off at its edges. Shadows were later strengthened (roughly double the opacity) so they read on the contour canvas. Checked on the standalone page at 1280 px; no console errors.
 
+### Logo
+
+The honeycomb mark replaced the black "s" square on the product page, the prototype header, and the specimen header, and is the favicon on all three (as a data URI, which the prototype's security rules allow). Checked at 1280 px: the mark sits beside the wordmark on each page, the dashed cell's corners are even, and there are no console errors.
+
 Saved state from the previous build (version 2) restores votes and added versions but starts with every stack folded.
 
 ## Limits

@@ -20,7 +20,7 @@ p, h1, h2, dl, dd, figure { margin: 0; }
 .masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 27px 0 23px; border-bottom: 1px solid var(--ink); }
 .wordmark { display: inline-flex; align-items: center; gap: 8px; font: 700 31px/1 var(--serif); letter-spacing: -1.4px; text-decoration: none; }
 .wordmark:hover { text-decoration: none; }
-.wordmark span { display: grid; place-items: center; width: 25px; height: 27px; color: #fff; background: var(--ink); font-size: 25px; letter-spacing: 0; }
+.wordmark .logo { display: block; height: 30px; width: auto; color: var(--ink); flex: none; }
 nav { display: flex; gap: 26px; font-size: 12px; }
 nav a { text-decoration: none; }
 .intro { padding: 49px 0 37px; }
@@ -48,7 +48,7 @@ footer > div { display: flex; gap: 22px; }
   .page { padding-inline: 20px; }
   .masthead { padding-block: 22px 18px; gap: 16px; }
   .wordmark { font-size: 26px; }
-  .wordmark span { width: 22px; height: 24px; font-size: 22px; }
+  .wordmark .logo { height: 25px; }
   nav { gap: 15px; font-size: 11px; }
   .intro { padding-block: 34px 30px; }
   h1 { font-size: 40px; letter-spacing: -1.4px; margin-top: 17px; }
