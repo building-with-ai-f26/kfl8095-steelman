@@ -29,7 +29,18 @@
   #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded="true"] { background:#ffffff1f; color:#fff; }
   #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
   #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
-  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-column-tools { display:flex; gap:2px; margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-option-input { flex:1; min-width:0; margin:-4px 8px -4px -6px; padding:3px 6px; border:1px solid #ffffff66; border-radius:5px; background:#ffffff14; color:#fff; font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-option-input::placeholder { color:#ffffff80; }
+  #steelman-study .sm-option-input:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  #steelman-study .sm-option-input[aria-invalid="true"] { border-color:var(--sm-cred-weak); }
+  /* Add an option: a dashed slot level with the option headers, after the last column. */
+  #steelman-study .sm-add-option { display:inline-flex; align-items:center; justify-content:center; gap:6px; width:44px; height:58px; margin-top:17px; padding:0; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#777; font-size:13px; }
+  #steelman-study .sm-add-option:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-add-option svg { width:18px; height:18px; }
+  #steelman-study .sm-add-option span { display:none; }
+  #steelman-study .sm-board-undo { grid-column:1/-1; }
+  #steelman-study .sm-board-undo .sm-undo { margin:0 auto 24px; max-width:420px; }
   #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
   /* What the open comments are about: a ring around that question, option, or version. */
@@ -92,11 +103,10 @@
   #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
   #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
-  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
-  #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
-  #steelman-study .sm-board[data-open="keep"] { grid-template-columns:minmax(0,1fr) 32px minmax(0,2.6fr); }
+  /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
+  #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
   /* The importance axis runs down the left column's left edge, mirroring the articulation axis above an unfolded row. */
-  #steelman-study .sm-column[data-option="open"] { padding-left:40px; }
+  #steelman-study .sm-column:first-of-type { padding-left:40px; }
   #steelman-study .sm-col-vaxis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
   #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
@@ -292,9 +302,12 @@
     #steelman-study .sm-scene { padding:20px 10px; }
     #steelman-study .sm-head { width:100%; padding:18px; }
     #steelman-study h1 { font-size:23px; }
-    #steelman-study .sm-board, #steelman-study .sm-board[data-open] { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
+    #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
-    #steelman-study .sm-column[data-option="open"] { padding-left:8px; }
+    #steelman-study .sm-column:first-of-type { padding-left:8px; }
+    #steelman-study .sm-col-gap { display:none; }
+    #steelman-study .sm-add-option { width:100%; height:48px; }
+    #steelman-study .sm-add-option span { display:inline; }
     #steelman-study .sm-column { padding:0 8px 15px; }
     #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
     #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
@@ -390,7 +403,7 @@
   });
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -410,7 +423,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -446,7 +459,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -506,9 +519,15 @@
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
+    const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
+    if(id.startsWith('option:')) {
+      const option=id.slice(7),rows=ideas.filter(i=>i.option===option).length,few=doc.options.length<=2;
+      return `<p class="sm-menu-note">You started this question, so you can change its options.</p>`
+        +item('rename-option','pencil','Rename option')
+        +item('delete-option','trash-2','Delete option',few?'A question needs at least two options.':rows?'Move or delete its arguments first.':'It has no arguments.',few||rows>0);
+    }
     const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
-    const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
     return `<p class="sm-menu-note">${mine?'You wrote this version.':'Written by another contributor.'}</p>`
       +(mine
         ?item('edit-card','pencil','Edit wording and context')
@@ -554,6 +573,11 @@
     if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
     return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
   }
+  // An option's name, or the field for renaming it.
+  function optionTitle(option) {
+    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}</h2>`;
+    return `<input id="sm-option-name" class="sm-option-input" type="text" data-key="option-name" data-select maxlength="80" placeholder="Name this option" aria-label="Option name" value="${escape(state.optionDraft)}">`;
+  }
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
     if(state.updated&&rows.length>1)[rows[0],rows[1]]=[rows[1],rows[0]];
@@ -564,9 +588,19 @@
     if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
     rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&&!undoShown) rowsHtml+=undo;
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rowsHtml}${addArgument(option)}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rowsHtml}${addArgument(option)}</section>`;
   }
-  function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
+  const MAX_OPTIONS=4;
+  function boardMarkup() {
+    // A deleted option has no column to hold its Undo bar, so it spans the board instead.
+    const orphanUndo=state.undo&&!doc.options.some(o=>o.id===state.undo.option)?`<div class="sm-board-undo">${undoMarkup()}</div>`:'';
+    const add=doc.options.length<MAX_OPTIONS?`<div class="sm-col-gap" aria-hidden="true"></div><div class="sm-add-option-col"><button type="button" class="sm-add-option cursor-interaction" data-action="add-option" data-key="add-option" aria-label="Add an option" data-tooltip="Add an option">${icon('plus')}<span>Add an option</span></button></div>`:'';
+    return orphanUndo+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+  }
+  function boardColumns() {
+    const wide=state.open?ideaOf(state.open)?.option:null;
+    return doc.options.map(o=>o.id===wide?'minmax(0,2.6fr)':'minmax(0,1fr)').join(' 32px ')+(doc.options.length<MAX_OPTIONS?' 20px 44px':'');
+  }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
     const brief=card.brief||card.explanation;
@@ -683,7 +717,8 @@
 
   const menuEl=root.querySelector('.sm-menu');
   function renderMenu() {
-    const open=!!state.menu&&!!cards[state.menu];
+    const open=!!state.menu&&(!!cards[state.menu]||doc.options.some(o=>'option:'+o.id===state.menu));
+    menuEl.setAttribute('aria-label',state.menu?.startsWith('option:')?'Option settings':'Version options');
     if(!open) state.menu=null;
     menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):'';
   }
@@ -771,6 +806,29 @@
     if(state.expanded===card&&state.open===old.id) state.expanded=null;
     startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:'Split into its own argument.',card,idea:old.id});
     return ideaId;
+  }
+  // Options. Renaming happens in the column header; a new option starts as an empty name field.
+  function commitOptionName() {
+    const option=state.renamingOption; if(!option) return null;
+    const name=state.optionDraft.replace(/\s+/g,' ').trim().slice(0,80),isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(name) {doc.options.find(o=>o.id===option).name=name;announce(isNew?`Option “${name}” added. Add its first argument at the bottom of its column.`:'Option renamed.');return isNew?'compose-idea-'+option:'menu-option:'+option;}
+    if(isNew) {doc.options=doc.options.filter(o=>o.id!==option);announce('Empty option removed.');return 'add-option';}
+    announce('An option needs a name; the old name was kept.');return 'menu-option:'+option;
+  }
+  function cancelOptionName() {
+    const option=state.renamingOption,isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(isNew){doc.options=doc.options.filter(o=>o.id!==option);return 'add-option';}
+    return 'menu-option:'+option;
+  }
+  function deleteOption(option) {
+    const snapshot=takeSnapshot();
+    doc.options=doc.options.filter(o=>o.id!==option);
+    doc.comments=doc.comments.filter(c=>c.target!=='option:'+option);
+    if(state.drawer==='comments'&&state.commentTarget==='option:'+option) state.drawer=null;
+    if(state.composingIdea===option) state.composingIdea=null;
+    startUndo(snapshot,{option,afterIdea:null,label:'Option deleted.',focus:'menu-option:'+option});
   }
   function deleteVersion(id) {
     const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
@@ -903,7 +961,7 @@
     const beforeFaces=new Map([...board.querySelectorAll('.sm-card[data-card]')].map(el=>[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
-    board.dataset.open=state.open?ideaOf(state.open).option:'';
+    board.style.setProperty('--sm-cols',boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup();headEl.classList.toggle('sm-commenting',commenting('question'));
     renderDrawer();renderMenu();
@@ -911,7 +969,7 @@
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
-    if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
+    if(focusKey){const el=root.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});if(el?.matches('input[data-select]'))el.select();}
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
       if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:340});
@@ -970,6 +1028,7 @@
     if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
     if(event.target.closest('#sm-source-form')&&event.target.dataset.field) {state.sourceDraft[event.target.dataset.field]=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-option-name') {state.optionDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
@@ -994,6 +1053,11 @@
     if(state.menu&&!event.target.closest('.sm-menu')&&!event.target.closest(`[data-key="menu-${state.menu}"]`)) closeMenu();
   },true);
   root.addEventListener('scroll',()=>closeMenu(),true);
+  // Leaving the name field keeps what was typed (or drops a new option left unnamed).
+  root.addEventListener('focusout',event=>{
+    if(event.target.id!=='sm-option-name'||!state.renamingOption||!event.target.isConnected) return;
+    setTimeout(()=>{if(!state.renamingOption)return;commitOptionName();render();save();});
+  });
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
@@ -1007,6 +1071,14 @@
     if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
     // Any other action leaves pick mode.
     if(state.moving&&!['move-here','cancel-move'].includes(action)) state.moving=null;
+    if(action==='add-option') {
+      if(doc.options.length>=MAX_OPTIONS) return;
+      const option='o'+(doc.nextId++);doc.options.push({id:option,name:''});
+      state.renamingOption=option;state.newOption=option;state.optionDraft='';focus='option-name';
+      announce('New option added at the end. Type its name, then press Enter.');
+    }
+    if(action==='rename-option') {const option=id.slice(7);state.renamingOption=option;state.newOption=null;state.optionDraft=optionName(option);focus='option-name';announce('Rename the option, then press Enter. Escape keeps the old name.');}
+    if(action==='delete-option') {deleteOption(id.slice(7));focus='undo';announce('Option deleted. Undo is available for ten seconds.');}
     if(action==='move-card') {state.moving=id;state.expanded=null;const first=ideas.find(i=>i.option===ideaOf(cards[id].idea).option&&i.id!==cards[id].idea);focus='move-here-'+first.id;announce('Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.');}
     if(action==='cancel-move') {const card=state.moving;state.moving=null;focus='menu-'+card;announce('Move cancelled.');}
     if(action==='move-here') {
@@ -1134,6 +1206,8 @@
     render(focus,motion);save();
   });
   root.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
+    if(event.key==='Escape'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=cancelOptionName();render(focus);save();announce('Rename cancelled.');return;}
     if(event.key==='Enter'&&event.target.matches?.('#sm-source-form input')){event.preventDefault();root.querySelector('[data-action="save-source"]')?.click();return;}
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
     // Menu keys: arrows move between items, Tab leaves and closes it.

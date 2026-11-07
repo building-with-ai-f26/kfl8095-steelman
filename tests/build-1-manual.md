@@ -242,6 +242,24 @@ Checked by the coding agent at 1280 px on an unsandboxed copy (scripted). Moves 
 | Split | From the four-version row, the version becomes a new row at the bottom (importance 0), keeping its comment; the Undo bar sits under the new row; Undo puts it back in the row |
 | Browser errors | No prototype errors in the console |
 
+## November 7 — Add, rename, and remove options (batch 7)
+
+Checked by the coding agent at 1280 px, about 1000 px, and 390 px; scripted on an unsandboxed copy, with add-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Layout | The board builds its columns from the options (2–4, with 32 px gaps) instead of assuming two. The importance axis stays on the first column; wires reach every option header |
+| Add | The dashed + after the last column adds an option with its name field focused; Enter saves and moves focus to its "Add an argument" slot. Escape, or leaving it empty, removes the new option. At four options the + disappears |
+| Rename | ⋯ → Rename option selects the current name in place. Enter saves; Escape and an empty name keep the old name |
+| Delete rules | "Delete option" is unavailable for options with arguments ("Move or delete its arguments first.") and when only two options remain ("A question needs at least two options.") |
+| Delete and undo | Deleting an empty option shows "Option deleted. Undo" across the board (its column is gone) and brings the + back; Undo restores it and focuses its ⋯ |
+| Unfold | With four options, an unfolded row widens its column (about 405 px versus 156 px for the others) |
+| Phone | At 390 px, options stack full width with no gap columns; "Add an option" is a full-width dashed bar; no horizontal overflow |
+| Persistence | An option added on the standalone page survived a reload |
+| Browser errors | No prototype errors in the console |
+
+Known limit: three or more options at about 1000 px squeeze cards to roughly 100 px of text. Horizontal board scrolling (with wires following) would be the likely fix.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

@@ -1885,7 +1885,18 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded=&quot;true&quot;] { background:#ffffff1f; color:#fff; }
   #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
   #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
-  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-column-tools { display:flex; gap:2px; margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-option-input { flex:1; min-width:0; margin:-4px 8px -4px -6px; padding:3px 6px; border:1px solid #ffffff66; border-radius:5px; background:#ffffff14; color:#fff; font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-option-input::placeholder { color:#ffffff80; }
+  #steelman-study .sm-option-input:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  #steelman-study .sm-option-input[aria-invalid=&quot;true&quot;] { border-color:var(--sm-cred-weak); }
+  /* Add an option: a dashed slot level with the option headers, after the last column. */
+  #steelman-study .sm-add-option { display:inline-flex; align-items:center; justify-content:center; gap:6px; width:44px; height:58px; margin-top:17px; padding:0; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#777; font-size:13px; }
+  #steelman-study .sm-add-option:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-add-option svg { width:18px; height:18px; }
+  #steelman-study .sm-add-option span { display:none; }
+  #steelman-study .sm-board-undo { grid-column:1/-1; }
+  #steelman-study .sm-board-undo .sm-undo { margin:0 auto 24px; max-width:420px; }
   #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
   /* What the open comments are about: a ring around that question, option, or version. */
@@ -1948,11 +1959,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
   #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
-  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
-  #steelman-study .sm-board[data-open=&quot;open&quot;] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
-  #steelman-study .sm-board[data-open=&quot;keep&quot;] { grid-template-columns:minmax(0,1fr) 32px minmax(0,2.6fr); }
+  /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
+  #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
   /* The importance axis runs down the left column&#x27;s left edge, mirroring the articulation axis above an unfolded row. */
-  #steelman-study .sm-column[data-option=&quot;open&quot;] { padding-left:40px; }
+  #steelman-study .sm-column:first-of-type { padding-left:40px; }
   #steelman-study .sm-col-vaxis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
   #steelman-study .sm-column &gt; .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
@@ -2148,9 +2158,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-scene { padding:20px 10px; }
     #steelman-study .sm-head { width:100%; padding:18px; }
     #steelman-study h1 { font-size:23px; }
-    #steelman-study .sm-board, #steelman-study .sm-board[data-open] { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
+    #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
-    #steelman-study .sm-column[data-option=&quot;open&quot;] { padding-left:8px; }
+    #steelman-study .sm-column:first-of-type { padding-left:8px; }
+    #steelman-study .sm-col-gap { display:none; }
+    #steelman-study .sm-add-option { width:100%; height:48px; }
+    #steelman-study .sm-add-option span { display:inline; }
     #steelman-study .sm-column { padding:0 8px 15px; }
     #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
     #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
@@ -2246,7 +2259,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
       &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
@@ -2266,7 +2279,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
+  const freshState = () =&gt; ({renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -2302,7 +2315,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -2362,9 +2375,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
+    const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
+    if(id.startsWith(&#x27;option:&#x27;)) {
+      const option=id.slice(7),rows=ideas.filter(i=&gt;i.option===option).length,few=doc.options.length&lt;=2;
+      return `&lt;p class=&quot;sm-menu-note&quot;&gt;You started this question, so you can change its options.&lt;/p&gt;`
+        +item(&#x27;rename-option&#x27;,&#x27;pencil&#x27;,&#x27;Rename option&#x27;)
+        +item(&#x27;delete-option&#x27;,&#x27;trash-2&#x27;,&#x27;Delete option&#x27;,few?&#x27;A question needs at least two options.&#x27;:rows?&#x27;Move or delete its arguments first.&#x27;:&#x27;It has no arguments.&#x27;,few||rows&gt;0);
+    }
     const card=cards[id],mine=card.by===&#x27;you&#x27;,idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
-    const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
     return `&lt;p class=&quot;sm-menu-note&quot;&gt;${mine?&#x27;You wrote this version.&#x27;:&#x27;Written by another contributor.&#x27;}&lt;/p&gt;`
       +(mine
         ?item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit wording and context&#x27;)
@@ -2410,6 +2429,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.composingIdea===option) return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-idea-form&quot; aria-label=&quot;New argument for ${name}&quot;&gt;&lt;textarea id=&quot;sm-idea-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;idea-claim&quot; maxlength=&quot;500&quot; placeholder=&quot;A new argument for “${name}”&quot; aria-label=&quot;Your argument&quot;&gt;${escape(state.ideaDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-idea-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;idea-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context: why it matters (optional)&quot; aria-label=&quot;Context for your argument (optional)&quot;&gt;${escape(state.ideaDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;cancel-idea&quot; aria-label=&quot;Close draft&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;add-idea&quot; aria-label=&quot;Add your argument&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;&lt;/div&gt;`;
     return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-card sm-add-idea cursor-interaction&quot; data-action=&quot;compose-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;compose-idea-${option}&quot; aria-label=&quot;Add an argument for ${name}&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Add an argument&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`;
   }
+  // An option&#x27;s name, or the field for renaming it.
+  function optionTitle(option) {
+    if(state.renamingOption!==option) return `&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;`;
+    return `&lt;input id=&quot;sm-option-name&quot; class=&quot;sm-option-input&quot; type=&quot;text&quot; data-key=&quot;option-name&quot; data-select maxlength=&quot;80&quot; placeholder=&quot;Name this option&quot; aria-label=&quot;Option name&quot; value=&quot;${escape(state.optionDraft)}&quot;&gt;`;
+  }
   function column(option) {
     const rows=ideas.filter(i=&gt;i.option===option);
     if(state.updated&amp;&amp;rows.length&gt;1)[rows[0],rows[1]]=[rows[1],rows[0]];
@@ -2420,9 +2444,19 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(undo&amp;&amp;!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
     rows.forEach(r=&gt;{rowsHtml+=row(r);if(undo&amp;&amp;state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&amp;&amp;!undoShown) rowsHtml+=undo;
-    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
   }
-  function boardMarkup() { return doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;); }
+  const MAX_OPTIONS=4;
+  function boardMarkup() {
+    // A deleted option has no column to hold its Undo bar, so it spans the board instead.
+    const orphanUndo=state.undo&amp;&amp;!doc.options.some(o=&gt;o.id===state.undo.option)?`&lt;div class=&quot;sm-board-undo&quot;&gt;${undoMarkup()}&lt;/div&gt;`:&#x27;&#x27;;
+    const add=doc.options.length&lt;MAX_OPTIONS?`&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-add-option-col&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-option cursor-interaction&quot; data-action=&quot;add-option&quot; data-key=&quot;add-option&quot; aria-label=&quot;Add an option&quot; data-tooltip=&quot;Add an option&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Add an option&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
+    return orphanUndo+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+  }
+  function boardColumns() {
+    const wide=state.open?ideaOf(state.open)?.option:null;
+    return doc.options.map(o=&gt;o.id===wide?&#x27;minmax(0,2.6fr)&#x27;:&#x27;minmax(0,1fr)&#x27;).join(&#x27; 32px &#x27;)+(doc.options.length&lt;MAX_OPTIONS?&#x27; 20px 44px&#x27;:&#x27;&#x27;);
+  }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
     const brief=card.brief||card.explanation;
@@ -2539,7 +2573,8 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   const menuEl=root.querySelector(&#x27;.sm-menu&#x27;);
   function renderMenu() {
-    const open=!!state.menu&amp;&amp;!!cards[state.menu];
+    const open=!!state.menu&amp;&amp;(!!cards[state.menu]||doc.options.some(o=&gt;&#x27;option:&#x27;+o.id===state.menu));
+    menuEl.setAttribute(&#x27;aria-label&#x27;,state.menu?.startsWith(&#x27;option:&#x27;)?&#x27;Option settings&#x27;:&#x27;Version options&#x27;);
     if(!open) state.menu=null;
     menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):&#x27;&#x27;;
   }
@@ -2627,6 +2662,29 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.expanded===card&amp;&amp;state.open===old.id) state.expanded=null;
     startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:&#x27;Split into its own argument.&#x27;,card,idea:old.id});
     return ideaId;
+  }
+  // Options. Renaming happens in the column header; a new option starts as an empty name field.
+  function commitOptionName() {
+    const option=state.renamingOption; if(!option) return null;
+    const name=state.optionDraft.replace(/\s+/g,&#x27; &#x27;).trim().slice(0,80),isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(name) {doc.options.find(o=&gt;o.id===option).name=name;announce(isNew?`Option “${name}” added. Add its first argument at the bottom of its column.`:&#x27;Option renamed.&#x27;);return isNew?&#x27;compose-idea-&#x27;+option:&#x27;menu-option:&#x27;+option;}
+    if(isNew) {doc.options=doc.options.filter(o=&gt;o.id!==option);announce(&#x27;Empty option removed.&#x27;);return &#x27;add-option&#x27;;}
+    announce(&#x27;An option needs a name; the old name was kept.&#x27;);return &#x27;menu-option:&#x27;+option;
+  }
+  function cancelOptionName() {
+    const option=state.renamingOption,isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(isNew){doc.options=doc.options.filter(o=&gt;o.id!==option);return &#x27;add-option&#x27;;}
+    return &#x27;menu-option:&#x27;+option;
+  }
+  function deleteOption(option) {
+    const snapshot=takeSnapshot();
+    doc.options=doc.options.filter(o=&gt;o.id!==option);
+    doc.comments=doc.comments.filter(c=&gt;c.target!==&#x27;option:&#x27;+option);
+    if(state.drawer===&#x27;comments&#x27;&amp;&amp;state.commentTarget===&#x27;option:&#x27;+option) state.drawer=null;
+    if(state.composingIdea===option) state.composingIdea=null;
+    startUndo(snapshot,{option,afterIdea:null,label:&#x27;Option deleted.&#x27;,focus:&#x27;menu-option:&#x27;+option});
   }
   function deleteVersion(id) {
     const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
@@ -2759,7 +2817,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const beforeFaces=new Map([...board.querySelectorAll(&#x27;.sm-card[data-card]&#x27;)].map(el=&gt;[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector(&#x27;.sm-track&#x27;), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest(&#x27;[data-node]&#x27;)?.dataset.node;
-    board.dataset.open=state.open?ideaOf(state.open).option:&#x27;&#x27;;
+    board.style.setProperty(&#x27;--sm-cols&#x27;,boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup();headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
     renderDrawer();renderMenu();
@@ -2767,7 +2825,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
     if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;motion!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
-    if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
+    if(focusKey){const el=root.querySelector(`[data-key=&quot;${focusKey}&quot;]`);el?.focus({preventScroll:true});if(el?.matches(&#x27;input[data-select]&#x27;))el.select();}
     if(!reduced&amp;&amp;motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
       if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:340});
@@ -2826,6 +2884,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.target.id===&#x27;sm-idea-claim&#x27;) {state.ideaDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-idea-reason&#x27;) {state.ideaDraftReason=event.target.value;}
     if(event.target.closest(&#x27;#sm-source-form&#x27;)&amp;&amp;event.target.dataset.field) {state.sourceDraft[event.target.dataset.field]=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-option-name&#x27;) {state.optionDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-claim&#x27;) {state.editDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-reason&#x27;) {state.editDraftReason=event.target.value;}
     if(event.target.id===&#x27;sm-draft&#x27;) {state.draftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
@@ -2850,6 +2909,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.menu&amp;&amp;!event.target.closest(&#x27;.sm-menu&#x27;)&amp;&amp;!event.target.closest(`[data-key=&quot;menu-${state.menu}&quot;]`)) closeMenu();
   },true);
   root.addEventListener(&#x27;scroll&#x27;,()=&gt;closeMenu(),true);
+  // Leaving the name field keeps what was typed (or drops a new option left unnamed).
+  root.addEventListener(&#x27;focusout&#x27;,event=&gt;{
+    if(event.target.id!==&#x27;sm-option-name&#x27;||!state.renamingOption||!event.target.isConnected) return;
+    setTimeout(()=&gt;{if(!state.renamingOption)return;commitOptionName();render();save();});
+  });
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;;
@@ -2863,6 +2927,14 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.menu&amp;&amp;trigger.closest(&#x27;.sm-menu&#x27;)) state.menu=null;
     // Any other action leaves pick mode.
     if(state.moving&amp;&amp;![&#x27;move-here&#x27;,&#x27;cancel-move&#x27;].includes(action)) state.moving=null;
+    if(action===&#x27;add-option&#x27;) {
+      if(doc.options.length&gt;=MAX_OPTIONS) return;
+      const option=&#x27;o&#x27;+(doc.nextId++);doc.options.push({id:option,name:&#x27;&#x27;});
+      state.renamingOption=option;state.newOption=option;state.optionDraft=&#x27;&#x27;;focus=&#x27;option-name&#x27;;
+      announce(&#x27;New option added at the end. Type its name, then press Enter.&#x27;);
+    }
+    if(action===&#x27;rename-option&#x27;) {const option=id.slice(7);state.renamingOption=option;state.newOption=null;state.optionDraft=optionName(option);focus=&#x27;option-name&#x27;;announce(&#x27;Rename the option, then press Enter. Escape keeps the old name.&#x27;);}
+    if(action===&#x27;delete-option&#x27;) {deleteOption(id.slice(7));focus=&#x27;undo&#x27;;announce(&#x27;Option deleted. Undo is available for ten seconds.&#x27;);}
     if(action===&#x27;move-card&#x27;) {state.moving=id;state.expanded=null;const first=ideas.find(i=&gt;i.option===ideaOf(cards[id].idea).option&amp;&amp;i.id!==cards[id].idea);focus=&#x27;move-here-&#x27;+first.id;announce(&#x27;Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.&#x27;);}
     if(action===&#x27;cancel-move&#x27;) {const card=state.moving;state.moving=null;focus=&#x27;menu-&#x27;+card;announce(&#x27;Move cancelled.&#x27;);}
     if(action===&#x27;move-here&#x27;) {
@@ -2990,6 +3062,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     render(focus,motion);save();
   });
   root.addEventListener(&#x27;keydown&#x27;,event=&gt;{
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-option-name&#x27;){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;event.target.id===&#x27;sm-option-name&#x27;){event.preventDefault();const focus=cancelOptionName();render(focus);save();announce(&#x27;Rename cancelled.&#x27;);return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.matches?.(&#x27;#sm-source-form input&#x27;)){event.preventDefault();root.querySelector(&#x27;[data-action=&quot;save-source&quot;]&#x27;)?.click();return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;(event.metaKey||event.ctrlKey)&amp;&amp;[&#x27;sm-comment&#x27;,&#x27;sm-reply&#x27;].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id===&#x27;sm-comment&#x27;?&#x27;[data-action=&quot;comment-add&quot;]&#x27;:&#x27;[data-action=&quot;reply-add&quot;]&#x27;)?.click();return;}
     // Menu keys: arrows move between items, Tab leaves and closes it.
