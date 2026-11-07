@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
-  --ink: #242424;
-  --muted: #686868;
+  --ink: var(--sm-ink);
+  --muted: var(--sm-muted);
   --rule: #d7d7d7;
   --accent: #33765a;
   --serif: Georgia, 'Times New Roman', serif;

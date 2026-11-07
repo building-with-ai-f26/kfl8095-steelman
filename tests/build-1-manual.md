@@ -53,6 +53,37 @@ The source and standalone export are now intentionally revised together. Initial
 
 JavaScript syntax and `git diff --check` passed. The embedded source matches the editable fragment exactly, and running the sync script again produces no changes.
 
+## November 7 — Articulation axis revision
+
+Checked by the coding agent at 1280 px and 390 px. Clicks were driven with scripted DOM events on a direct copy of the source fragment, because pointer clicks through the sandboxed standalone wrapper did not reach the iframe reliably in the agent's browser pane.
+
+| Check | Observed result |
+| --- | --- |
+| Generated labels removed | No version labels (Qualified, Broader claim, More specific) or idea titles appear; screen-reader labels use the claim text |
+| Unfold in place | Stack opens inside its column; column widens, the other column narrows; the lead card stays first and wires stay connected; no dialog or backdrop |
+| Articulation axis | Versions ordered by shared preference (26, 8, 4); “best articulation ↔ weaker” arrow above the row; it opens with the row, and the importance vote stays level with the lead card |
+| Shared vote control | Importance (vertical) and articulation (horizontal) use the same element; articulation vote 26 → 27, own vote does not reorder cards |
+| Importance axis | “more important ↕ less important” arrow between columns; on phones, “↑ more important” under each column head. Both axes use light lowercase italic serif labels and swept hairline arrowheads |
+| Expand in row | Only the chosen card shows context and evidence; assessment 0%/8 → 0%/9 → 0%/8 |
+| Suggest a version | Dashed + card opens an inline draft; empty submit marks both fields and announces the requirement; adding produces a fourth card with preference 0, unreviewed, no sources; idea keeps importance 42 |
+| Single-version ideas | Dashed stack edge opens the row with the draft card focused; Escape folds it back |
+| Escape order | Draft → expanded card → fold; focus returns to the paper stack |
+| Explicit order update | Study moves above access and back |
+| Narrow | At 390 px the row scrolls sideways with the next card peeking; no horizontal page overflow |
+| Browser errors | No console errors |
+
+### Design tokens and specimen
+
+| Check | Observed result |
+| --- | --- |
+| Revert | After removing the topography and palette work, the regenerated export matched the earlier export byte-for-byte |
+| Shared tokens | `docs/design/tokens.css` holds all prototype color, type, and texture values; the sync script inlines it and is idempotent |
+| Prototype | Renders as before at 1280 px; no console errors |
+| Product page | Links the tokens; ink and muted text resolve to the same colors as before |
+| Specimen | `docs/design/` loads the prototype's own stylesheet; axes, vote states, credibility marks, and cards render. Changing a swatch recolors components live and lists the override; Reset restores the original values |
+
+Saved state from the previous build (version 2) restores votes and added versions but starts with every stack folded.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
@@ -63,4 +94,4 @@ JavaScript syntax and `git diff --check` passed. The embedded source matches the
 
 ## Re-run manually
 
-Serve `docs/`, open `/prototype/`, and follow the workflow in `README.md`. Check changing and withdrawing all three judgments, empty suggestion validation, adding a local version, Escape return, unavailable-source behavior, explicit order updates, and local-state restoration on reload. Check the Product Page at wide and narrow widths, including anchor navigation, image loading, and prototype/source links.
+Serve `docs/`, open `/prototype/`, and follow the workflow in `README.md`. Check changing and withdrawing all three judgments, unfolding and folding a stack in place, empty suggestion validation, adding a local version, Escape order, unavailable-source behavior, explicit order updates, and local-state restoration on reload. Check the Product Page at wide and narrow widths, including anchor navigation, image loading, and prototype/source links.

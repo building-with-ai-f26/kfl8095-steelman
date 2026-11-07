@@ -1,0 +1,36 @@
+/*
+  Steelman design tokens: the one place for color, type, and texture.
+
+  - The product page links this file directly (docs/index.html).
+  - The prototype runs in a sandboxed frame that cannot load local files, so
+    scripts/sync-prototype.py copies this file into docs/prototype/index.html.
+    After editing, run:  python3 scripts/sync-prototype.py
+  - See every token and component together at docs/design/index.html.
+*/
+:root {
+  /* Surfaces */
+  --sm-paper:#f4f4f4;        /* canvas behind the diagram */
+  --sm-card:#fdfdfd;         /* argument cards, headers, controls */
+  --sm-soft:#eee;            /* hover fill */
+
+  /* Ink */
+  --sm-ink:#242424;          /* text and strong rules */
+  --sm-muted:#686868;        /* secondary text */
+  --sm-selected:#292929;     /* pressed controls */
+  --sm-on-selected:#fff;     /* icon or text on a pressed control */
+
+  /* Lines */
+  --sm-line:#d1d1d1;         /* card borders and dividers */
+  --sm-wire:#aaa;            /* connectors between question, options, and arguments */
+
+  /* Axes (importance and articulation) */
+  --sm-axis:#8e8e8e;         /* axis labels */
+  --sm-axis-line:#c2c2c2;    /* axis hairline and arrowheads */
+
+  /* Texture: grayscale paper grain laid over surfaces */
+  --sm-grain:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.085'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+
+  /* Type */
+  --sm-serif:"Source Serif 4",Georgia,"Times New Roman",serif;      /* questions, headings, axis labels */
+  --sm-sans:"Libre Franklin","Helvetica Neue",Arial,sans-serif;     /* claims and interface */
+}
