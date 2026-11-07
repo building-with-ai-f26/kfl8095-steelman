@@ -241,6 +241,22 @@
   #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
   #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
   #steelman-study[data-density="compact"] .sm-claim { font-size:15px; }
+  /* Card options: a quiet ⋯ in the top-right corner; the claim leaves room for it. */
+  #steelman-study .sm-card .sm-claim-button { padding-right:40px; }
+  #steelman-study .sm-card-menu-button { position:absolute; top:8px; right:7px; z-index:1; display:grid; place-items:center; width:28px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:#a0a0a0; }
+  #steelman-study .sm-card-menu-button:hover, #steelman-study .sm-card-menu-button[aria-expanded="true"] { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-card-menu-button svg { width:16px; height:16px; }
+  #steelman-study .sm-menu { position:absolute; z-index:40; width:250px; padding:6px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:9px; box-shadow:var(--sm-shadow-lg),0 10px 28px #00000024; }
+  #steelman-study .sm-menu-note { margin:4px 8px 6px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item { display:flex; align-items:flex-start; gap:10px; width:100%; padding:8px; border:0; border-radius:6px; background:transparent; text-align:left; font-size:13px; line-height:1.4; }
+  #steelman-study .sm-menu-item svg { width:15px; height:15px; margin-top:2px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item small { display:block; margin-top:2px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item:not([aria-disabled]):hover { background:var(--sm-soft); }
+  #steelman-study .sm-menu-item[aria-disabled="true"] { opacity:.5; cursor:default; }
+  #steelman-study .sm-menu-item[data-action="delete-card"]:not([aria-disabled]) svg { color:var(--sm-cred-weak); }
+  /* Undo bar: where the deleted card was, in the card lane. */
+  #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:8px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
   #steelman-study [hidden] { display:none !important; }
   @media(max-width:800px) {
     #steelman-study .sm-scene { padding:24px 14px 20px; }
@@ -271,6 +287,8 @@
     #steelman-study .sm-card-wrap { padding-right:44px; }
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
+    #steelman-study .sm-undo { margin:-10px 44px 24px 48px; }
+    #steelman-study .sm-card-menu-button { width:40px; height:40px; top:2px; right:2px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -292,6 +310,7 @@
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
   <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
+  <div class="sm-menu" role="menu" aria-label="Version options" hidden></div>
 </div>
 <script>
 (() => {
@@ -367,7 +386,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -403,7 +422,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:''},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -456,8 +475,21 @@
   }
   function cardFace(id, inTrack=false) {
     const expanded=state.expanded===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    // Your own version, edited in place with the same draft card used to write it.
+    if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
+    const menuOpen=state.menu===id;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
+  // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
+  function menuMarkup(id) {
+    const card=cards[id],mine=card.by==='you',last=ideaOf(card.idea).versions.length===1;
+    const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
+    return `<p class="sm-menu-note">${mine?'You wrote this version.':'Written by another contributor.'}</p>`
+      +(mine
+        ?item('edit-card','pencil','Edit wording and context')+item('delete-card','trash-2',last?'Delete argument':'Delete version',last?'It is the only version, so the row goes too.':'')
+        :item('revise-card','pen-line','Suggest a revised version','Starts a new version from this wording.')+item('edit-card','pencil','Edit','Only the author can edit.',true)+item('delete-card','trash-2','Delete','Only the author can delete.',true));
+  }
+  const undoMarkup = () => `<div class="sm-undo" role="status"><span>${state.undo.label}</span><button type="button" class="sm-link-button cursor-interaction" data-action="undo" data-key="undo">Undo</button></div>`;
   function stack(idea) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
     const spans=(empty?[1]:Array.from({length:edges},(_,k)=>edges-k)).map(i=>`<span aria-hidden="true" style="right:${24-7*i}px;top:${3*i}px;bottom:${3*i}px"></span>`).join('');
@@ -487,8 +519,14 @@
   }
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
-    if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}${addArgument(option)}</section>`;
+    if(state.updated&&rows.length>1)[rows[0],rows[1]]=[rows[1],rows[0]];
+    // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
+    let rowsHtml='',undoShown=false;
+    const undo=state.undo?.option===option?undoMarkup():'';
+    if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
+    rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
+    if(undo&&!undoShown) rowsHtml+=undo;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rowsHtml}${addArgument(option)}</section>`;
   }
   function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
   function evidenceContent(cardId) {
@@ -593,6 +631,51 @@
   const headEl=root.querySelector('.sm-head');
   function renderHead() { headEl.innerHTML=headMarkup(); if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
 
+  const menuEl=root.querySelector('.sm-menu');
+  function renderMenu() {
+    const open=!!state.menu&&!!cards[state.menu];
+    if(!open) state.menu=null;
+    menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):'';
+  }
+  // The menu lives at the prototype root (so a scrolling row can't clip it), placed under its ⋯ button.
+  function positionMenu() {
+    if(!state.menu) return;
+    const trigger=root.querySelector(`[data-key="menu-${state.menu}"]`);
+    if(!trigger){state.menu=null;menuEl.hidden=true;return;}
+    const rootBox=root.getBoundingClientRect(),box=trigger.getBoundingClientRect();
+    menuEl.style.left=Math.max(8,Math.round(box.right-rootBox.left-menuEl.offsetWidth))+'px';
+    menuEl.style.top=Math.round(box.bottom-rootBox.top+4)+'px';
+  }
+  function closeMenu() { if(!state.menu) return; state.menu=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
+  // Deleting keeps a snapshot for a short Undo window; the snapshot is never saved.
+  let undoTimer=0;
+  function deleteVersion(id) {
+    const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
+    const rows=ideas.filter(i=>i.option===option),rowIndex=rows.indexOf(idea);
+    const snapshot=JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
+    idea.versions=idea.versions.filter(v=>v!==id);delete cards[id];
+    doc.comments=doc.comments.filter(c=>c.target!=='card:'+id);
+    delete state.preference[id];delete state.assessments[id];
+    const rowGone=!idea.versions.length;
+    if(rowGone){ideas.splice(ideas.indexOf(idea),1);delete state.importance[idea.id];if(state.open===idea.id){state.open=null;state.composing=false;}}
+    if(state.expanded===id) state.expanded=null;
+    if(state.drawer==='comments'&&state.commentTarget==='card:'+id) state.drawer=null;
+    clearTimeout(undoTimer);
+    state.undo={snapshot,card:id,idea:idea.id,option,label:rowGone?'Argument deleted.':'Version deleted.',afterIdea:rowGone?(rows[rowIndex-1]?.id||null):idea.id};
+    const current=state.undo;
+    // The bar leaves quietly after ten seconds, without re-rendering anything you might be typing in.
+    undoTimer=setTimeout(()=>{if(state.undo!==current)return;state.undo=null;board.querySelector('.sm-undo')?.remove();animateWires();},10000);
+    return rowGone;
+  }
+  function undoDelete() {
+    const snap=JSON.parse(state.undo.snapshot),{card,idea}=state.undo;
+    clearTimeout(undoTimer);state.undo=null;
+    useDoc(snap.doc);
+    for(const key of ['importance','preference','assessments','openSources']) state[key]=snap[key];
+    const face=state.open===idea||ordered(ideaOf(idea))[0]===card;
+    return face?'claim-'+card:'stack-'+idea;
+  }
+
   const scene=root.querySelector('.sm-scene');
   const links=root.querySelector('.sm-links');
   const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -661,7 +744,7 @@
     root.style.minHeight=(top+drawer.offsetHeight+16)+'px';
   }
   function drawLinks() {
-    drawTexture();positionDrawer();
+    drawTexture();positionDrawer();positionMenu();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector('.sm-head'));
@@ -703,11 +786,11 @@
     board.dataset.open=state.open?ideaOf(state.open).option:'';
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup();headEl.classList.toggle('sm-commenting',commenting('question'));
-    renderDrawer();
+    renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
-    positionDrawer();
+    positionDrawer();positionMenu();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -766,6 +849,8 @@
     if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
+    if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -783,9 +868,46 @@
     const key=el.dataset.key;renderHead();renderDrawer();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     root.querySelector(`[data-key="${key}"]`)?.focus();animateWires();save();
   });
+  // A click anywhere outside the open menu closes it (the clicked control still does its own job).
+  root.addEventListener('click',event=>{
+    if(state.menu&&!event.target.closest('.sm-menu')&&!event.target.closest(`[data-key="menu-${state.menu}"]`)) closeMenu();
+  },true);
+  root.addEventListener('scroll',()=>closeMenu(),true);
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
+    if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
+    if(action==='card-menu') {
+      if(state.menu===id){closeMenu();trigger.focus();return;}
+      state.menu=id;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
+      if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+      positionMenu();menuEl.querySelector('[role="menuitem"]:not([aria-disabled])')?.focus();return;
+    }
+    if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
+    if(action==='edit-card') {
+      const card=cards[id];state.editing=id;state.editDraftClaim=card.claim;state.editDraftReason=card.brief||card.explanation||'';
+      focus='edit-claim';announce('Editing your version in place.');
+    }
+    if(action==='cancel-edit') {state.editing=null;focus='menu-'+id;announce('Changes discarded.');}
+    if(action==='save-edit') {
+      const claim=state.editDraftClaim.replace(/\s+/g,' ').trim(),field=root.querySelector('#sm-edit-claim');
+      if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('A version needs wording.');return;}
+      const card=cards[id];card.claim=claim.slice(0,500);card.explanation=state.editDraftReason.trim().slice(0,700);delete card.brief;
+      state.editing=null;focus='claim-'+id;announce('Your version was updated.');
+    }
+    if(action==='revise-card') {
+      const ideaId=cards[id].idea,wasOpen=state.open===ideaId;
+      state.open=ideaId;lastToggled=ideaId;state.composing=true;state.composingIdea=null;
+      const kept=!!state.draftClaim.trim();
+      if(!kept){state.draftClaim=cards[id].claim;state.draftReason='';}
+      focus='draft';motion=wasOpen?'':'unfold';
+      announce(kept?'You already have a draft version in progress in this row; it was kept.':'A new version starts from this wording. Change it, then say what it improves.');
+    }
+    if(action==='delete-card') {
+      const rowGone=deleteVersion(id);focus='undo';
+      announce(rowGone?'Argument deleted. Undo is available for ten seconds.':'Version deleted. Undo is available for ten seconds.');
+    }
+    if(action==='undo') {if(!state.undo)return;focus=undoDelete();announce('Restored.');}
     if(action==='toggle') {
       if(state.expanded===id){collapse(id,key);return;}
       state.expanded=id;motion='detail';announce('Context and evidence shown. Opening it does not cast an assessment.');
@@ -866,9 +988,18 @@
   });
   root.addEventListener('keydown',event=>{
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
+    // Menu keys: arrows move between items, Tab leaves and closes it.
+    if(state.menu&&event.target.closest?.('.sm-menu')) {
+      const items=[...menuEl.querySelectorAll('[role="menuitem"]')],i=items.indexOf(event.target);
+      const to={ArrowDown:i+1,ArrowUp:i-1,Home:0,End:items.length-1}[event.key];
+      if(to!==undefined){event.preventDefault();items[(to+items.length)%items.length].focus();return;}
+      if(event.key==='Tab'){closeMenu();return;}
+    }
     if(event.key!=='Escape'||busy)return;
+    if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.editing){event.preventDefault();const id=state.editing;state.editing=null;render('menu-'+id);announce('Changes discarded.');return;}
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}

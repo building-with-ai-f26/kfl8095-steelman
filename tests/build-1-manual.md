@@ -192,6 +192,25 @@ Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed co
 | Narrow | At 390 px the draft card matches the cards' width and left edge; no horizontal overflow |
 | Browser errors | No prototype errors in the console |
 
+## November 7 — Card menu: edit, delete, undo (batch 4)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with edit-and-reload and delete-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Menu | A quiet ⋯ in each card's top-right corner opens a menu under it; it says who wrote the version. Arrow keys move and wrap, Escape closes and returns focus to ⋯, a click outside closes it |
+| Others' versions | "Suggest a revised version" is available; Edit and Delete appear unavailable ("Only the author can…") and do nothing when chosen |
+| Suggest a revised version | Unfolds the row with a draft prefilled from that wording and focus in it; an existing draft in that row is kept, not overwritten |
+| Edit (your version) | Opens in place with the wording and context; empty wording is refused; whitespace is tidied; saving updates the card and focus returns to it. Escape discards changes and returns focus to ⋯ |
+| Delete a version | In a two-version row, deletes only your version; the row stays open with an Undo bar under it |
+| Delete an argument | The menu says "Delete argument" for an only version; the row is removed and the Undo bar sits where it was; focus moves to Undo |
+| Undo | Restores the card, its row, its articulation vote (1), and its comment (count 1); the bar leaves after ten seconds without re-rendering the board |
+| Persistence | An edit and a later delete each survived a reload of the standalone page; the Undo bar does not persist |
+| Narrow | At 390 px the menu stays on screen (75–325 px); ⋯ grows to 40 px on touch screens; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
+Not reachable in this single-person prototype: editing or withdrawing a version that other people have voted on (example cards belong to others; your own cards have only your own votes). The intended rule, a revised version instead of an edit once others have voted, is described in the plan but not built.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
