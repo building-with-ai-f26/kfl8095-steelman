@@ -1877,6 +1877,76 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
   #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
+  /* Question details: quiet, light type under the title, with tools in the top-right corner. */
+  #steelman-study .sm-head { padding-right:62px; }
+  #steelman-study .sm-head :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-head-tools { position:absolute; top:12px; right:12px; display:flex; gap:2px; }
+  #steelman-study .sm-head-button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:#ffffff8c; }
+  #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded=&quot;true&quot;] { background:#ffffff1f; color:#fff; }
+  #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
+  #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
+  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
+  /* What the open comments are about: a ring around that question, option, or version. */
+  #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
+  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font:300 12px/1.4 var(--sm-sans); letter-spacing:.01em; color:#ffffff99; }
+  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:4px; }
+  #steelman-study .sm-question-meta li + li::before { content:&quot;·&quot;; margin:0 8px; opacity:.7; }
+  #steelman-study .sm-question-meta svg { width:12px; height:12px; stroke-width:1.6; }
+
+  /* Right-hand panel for settings and comments. Non-modal: the board stays usable beside it.
+     The standalone page grows its frame to fit the content, so the panel can&#x27;t be pinned to the screen;
+     positionDrawer() anchors it level with what it is about instead, like margin comments. */
+  #steelman-study { position:relative; }
+  #steelman-study .sm-drawer { position:absolute; top:0; right:12px; width:356px; z-index:30; display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  /* Wide screens make room beside the board. Narrower ones float the panel over the board without moving it,
+     on the side away from what it is about (data-side), so that item stays visible. */
+  @media(min-width:1200px) { #steelman-study[data-drawer] { padding-right:380px; } }
+  @media(max-width:1199px) { #steelman-study .sm-drawer[data-side=&quot;left&quot;] { right:auto; left:12px; } }
+  #steelman-study .sm-drawer-head { border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer-head h2 { font:600 18px/1.3 var(--sm-serif); }
+  #steelman-study .sm-drawer-body { display:grid; gap:24px; padding:20px 20px 28px; }
+  #steelman-study .sm-field { display:grid; gap:8px; min-width:0; margin:0; padding:0; border:0; }
+  #steelman-study .sm-field &gt; label, #steelman-study .sm-field &gt; legend { padding:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-field-hint { margin:0; font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-drawer :is(textarea,select) { width:100%; border:1px solid #c8c8c8; border-radius:6px; background:#fff; padding:8px 10px; font-size:14px; line-height:1.45; }
+  #steelman-study .sm-drawer textarea { resize:vertical; min-height:64px; font-family:var(--sm-serif); font-size:16px; }
+  #steelman-study .sm-drawer :is(textarea,select):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-drawer textarea[aria-invalid=&quot;true&quot;] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
+  #steelman-study .sm-choices { display:grid; gap:6px; }
+  #steelman-study .sm-choice { display:grid; grid-template-columns:16px 18px minmax(0,1fr); align-items:center; gap:2px 8px; padding:9px 11px; border:1px solid var(--sm-line); border-radius:7px; font-size:13px; cursor:pointer; }
+  #steelman-study .sm-choice input { margin:0; accent-color:var(--sm-ink); }
+  #steelman-study .sm-choice svg { width:15px; height:15px; color:var(--sm-muted); }
+  #steelman-study .sm-choice small { grid-column:3; font-size:11px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-choice:hover { border-color:#aaa; }
+  #steelman-study .sm-choice:has(input:checked) { border-color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-choice:has(input:disabled) { opacity:.5; cursor:default; }
+  #steelman-study .sm-choice:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
+  #steelman-study .sm-drawer-section { display:grid; gap:10px; padding-top:20px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer-section h3 { margin:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-button.sm-solid { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-comments-body { flex:1; align-content:start; gap:14px; }
+  #steelman-study .sm-comment-target { margin:0 0 4px; padding:10px 12px; border-left:3px solid var(--sm-ink); background:var(--sm-soft); border-radius:0 6px 6px 0; }
+  #steelman-study .sm-comment-target span { font-size:11px; font-weight:600; color:var(--sm-muted); }
+  #steelman-study .sm-comment-target p { margin:4px 0 0; font:400 14px/1.45 var(--sm-serif); }
+  #steelman-study .sm-thread { display:grid; gap:10px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; }
+  #steelman-study .sm-thread.sm-resolved { opacity:.7; border-style:dashed; }
+  #steelman-study .sm-comment header { display:flex; align-items:center; gap:7px; font-size:12px; }
+  #steelman-study .sm-comment time { color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--sm-ink); color:#fff; font-size:11px; font-weight:600; flex:none; }
+  #steelman-study .sm-comment p { margin:6px 0 0 29px; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+  #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-muted); font-style:italic; }
+  #steelman-study .sm-reply { margin-left:14px; padding-left:12px; border-left:1px solid var(--sm-line); }
+  #steelman-study .sm-comment-actions { display:flex; gap:12px; margin:6px 0 0 29px; }
+  #steelman-study .sm-link-button { border:0; background:transparent; padding:2px 0; font-size:11px; font-weight:500; color:var(--sm-muted); }
+  #steelman-study .sm-link-button:hover { color:var(--sm-ink); text-decoration:underline; }
+  #steelman-study .sm-reply-form { display:grid; gap:8px; margin-left:14px; }
+  #steelman-study .sm-comment-compose { display:grid; border-radius:0 0 10px 10px; gap:8px; padding:12px 20px 16px; background:var(--sm-card); border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer :is(.sm-comment-compose,.sm-reply-form) textarea { min-height:0; font:400 13px/1.5 var(--sm-sans); }
+  #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
   #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
   #steelman-study .sm-board[data-open=&quot;open&quot;] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
@@ -1895,7 +1965,6 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
-  #steelman-study .sm-idea:last-child { margin-bottom:0; }
   #steelman-study .sm-idea &gt; .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
@@ -1931,9 +2000,13 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
+  /* Narrow cards (a squeezed column) drop the secondary footer text; the meter and tooltip keep the meaning. */
+  #steelman-study .sm-card { container-type:inline-size; }
+  @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
+  @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
-  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
+  #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
   #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
   #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -1970,6 +2043,11 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
   #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
   #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  /* New argument: same dashed language as a new version, lined up with the cards (vote lane on the left, stack lane on the right). */
+  #steelman-study .sm-new-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; position:relative; z-index:1; }
+  #steelman-study .sm-new-idea &gt; :last-child { margin-right:24px; width:auto; }
+  #steelman-study .sm-add-idea { display:flex; align-items:center; justify-content:center; gap:8px; min-height:58px; font-size:13px; }
+  #steelman-study .sm-add-idea svg { width:18px; height:18px; }
   #steelman-study .sm-compose-card textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:14px 18px 6px; margin:0; }
   #steelman-study .sm-compose-card textarea:focus-visible { outline:none; background:#f6f6f6; }
   #steelman-study .sm-compose-card .sm-draft-claim { font:400 16px/1.5 var(--sm-sans); min-height:96px; }
@@ -2041,11 +2119,14 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-col-arrow::after { content:&quot;&quot;; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
     #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
     #steelman-study .sm-track { grid-auto-columns:84%; }
+    #steelman-study .sm-drawer, #steelman-study .sm-drawer[data-side=&quot;left&quot;] { left:8px; right:8px; width:auto; }
   }
   @media(pointer:coarse) {
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
+    #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-new-idea &gt; :last-child { margin-right:44px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -2060,12 +2141,13 @@ html&gt;body{padding:0}&lt;/style&gt;
   &lt;div class=&quot;sm-surface&quot;&gt;
     &lt;div class=&quot;sm-scene&quot;&gt;
       &lt;svg class=&quot;sm-links&quot; aria-hidden=&quot;true&quot;&gt;&lt;/svg&gt;
-      &lt;header class=&quot;sm-head&quot;&gt;&lt;h1&gt;Should our library open on Sundays?&lt;/h1&gt;&lt;/header&gt;
+      &lt;header class=&quot;sm-head&quot;&gt;&lt;/header&gt;
       &lt;main id=&quot;sm-content&quot;&gt;&lt;div class=&quot;sm-board&quot;&gt;&lt;/div&gt;&lt;/main&gt;
     &lt;/div&gt;
     &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;reorder&quot; data-key=&quot;reorder&quot; aria-label=&quot;Preview a shared-order update&quot;&gt;&lt;i data-lucide=&quot;arrow-down-up&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Preview update&lt;/button&gt;&lt;/div&gt;
     &lt;div id=&quot;sm-status&quot; class=&quot;sm-live&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
   &lt;/div&gt;
+  &lt;aside class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/aside&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (() =&gt; {
@@ -2075,18 +2157,19 @@ html&gt;body{padding:0}&lt;/style&gt;
   const icon = name =&gt; `&lt;i data-lucide=&quot;${name}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;`;
   const escape = text =&gt; String(text).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[c]));
   const EASE = &#x27;cubic-bezier(.2,.7,.2,1)&#x27;;
-  // Cards carry only what a contributor writes or voters produce: the claim, its sources, and the vote tallies.
-  const cards = {
-    access: {idea:&#x27;access&#x27;, claim:&#x27;Sunday hours would give some weekday workers their only practical time to visit.&#x27;, yes:24, no:8, pref:26, sources:[&#x27;survey&#x27;,&#x27;hours&#x27;], explanation:&#x27;The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.&#x27;},
-    accessBold: {idea:&#x27;access&#x27;, claim:&#x27;Opening on Sundays would make the library accessible to everyone who works during the week.&#x27;, yes:0, no:8, pref:8, sources:[&#x27;survey&#x27;], explanation:&#x27;This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.&#x27;},
-    accessNarrow: {idea:&#x27;access&#x27;, claim:&#x27;For 18 surveyed residents, Sunday was the only day they reported being able to visit.&#x27;, yes:3, no:1, pref:4, sources:[&#x27;survey&#x27;], explanation:&#x27;This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.&#x27;},
-    study: {idea:&#x27;study&#x27;, claim:&#x27;Sunday study space could improve outcomes for students without a quiet place at home.&#x27;, yes:2, no:4, pref:12, sources:[&#x27;study&#x27;], explanation:&#x27;If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.&#x27;},
-    purpose: {idea:&#x27;purpose&#x27;, claim:&#x27;A public library should be available on the day families can spend time together.&#x27;, yes:0, no:0, pref:7, sources:[], explanation:&#x27;This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.&#x27;},
-    staffing: {idea:&#x27;staffing&#x27;, claim:&#x27;Sunday opening would require additional staffing unless hours are reduced elsewhere.&#x27;, yes:10, no:10, pref:21, sources:[&#x27;roster&#x27;,&#x27;budget&#x27;], explanation:&#x27;The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.&#x27;},
-    evenings: {idea:&#x27;evenings&#x27;, claim:&#x27;Improving evening hours may reach more residents for the same budget.&#x27;, yes:0, no:0, pref:5, sources:[&#x27;unavailable&#x27;], explanation:&#x27;This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.&#x27;},
-    services: {idea:&#x27;services&#x27;, claim:&#x27;Sunday opening would add one more day of building services each week.&#x27;, yes:18, no:0, pref:9, sources:[&#x27;contract&#x27;], explanation:&#x27;The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.&#x27;}
+  // The example document. Everything a contributor can edit lives in one saved document (state.doc),
+  // seeded from these values; cards carry only what a contributor writes or voters produce.
+  const seedCards = {
+    access: {brief:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Sunday hours would give some weekday workers their only practical time to visit.&#x27;, yes:24, no:8, pref:26, sources:[&#x27;survey&#x27;,&#x27;hours&#x27;], explanation:&#x27;The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.&#x27;},
+    accessBold: {brief:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Opening on Sundays would make the library accessible to everyone who works during the week.&#x27;, yes:0, no:8, pref:8, sources:[&#x27;survey&#x27;], explanation:&#x27;This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.&#x27;},
+    accessNarrow: {brief:&#x27;This describes the survey respondents. It doesn’t tell us how common the need is across the community.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;For 18 surveyed residents, Sunday was the only day they reported being able to visit.&#x27;, yes:3, no:1, pref:4, sources:[&#x27;survey&#x27;], explanation:&#x27;This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.&#x27;},
+    study: {brief:&#x27;Students asked for quiet weekend space. The effect on learning hasn’t been measured.&#x27;, idea:&#x27;study&#x27;, claim:&#x27;Sunday study space could improve outcomes for students without a quiet place at home.&#x27;, yes:2, no:4, pref:12, sources:[&#x27;study&#x27;], explanation:&#x27;If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.&#x27;},
+    purpose: {brief:&#x27;This puts family access at the heart of the library’s public purpose.&#x27;, idea:&#x27;purpose&#x27;, claim:&#x27;A public library should be available on the day families can spend time together.&#x27;, yes:0, no:0, pref:7, sources:[], explanation:&#x27;This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.&#x27;},
+    staffing: {brief:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;, idea:&#x27;staffing&#x27;, claim:&#x27;Sunday opening would require additional staffing unless hours are reduced elsewhere.&#x27;, yes:10, no:10, pref:21, sources:[&#x27;roster&#x27;,&#x27;budget&#x27;], explanation:&#x27;The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.&#x27;},
+    evenings: {brief:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;, idea:&#x27;evenings&#x27;, claim:&#x27;Improving evening hours may reach more residents for the same budget.&#x27;, yes:0, no:0, pref:5, sources:[&#x27;unavailable&#x27;], explanation:&#x27;This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.&#x27;},
+    services: {brief:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;, idea:&#x27;services&#x27;, claim:&#x27;Sunday opening would add one more day of building services each week.&#x27;, yes:18, no:0, pref:9, sources:[&#x27;contract&#x27;], explanation:&#x27;The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.&#x27;}
   };
-  const sources = {
+  const seedSources = {
     survey: {name:&#x27;Resident access survey&#x27;,locator:&#x27;Example packet · p. 2, question 4&#x27;,finding:&#x27;18 of 80 respondents selected Sunday as their only available day to visit.&#x27;,premise:&#x27;Some respondents cannot visit during the current opening hours.&#x27;,limit:&#x27;Voluntary sample; not representative of all residents. Availability was self-reported.&#x27;},
     hours: {name:&#x27;Current opening schedule&#x27;,locator:&#x27;Example packet · p. 1&#x27;,finding:&#x27;The library opens Monday–Friday, 10–6, and Saturday, 10–2. It is closed on Sunday.&#x27;,premise:&#x27;A Sunday session would create access at a currently unavailable time.&#x27;,limit:&#x27;The schedule does not establish who would actually attend.&#x27;},
     study: {name:&#x27;Student listening session&#x27;,locator:&#x27;Example packet · p. 3, notes 6–9&#x27;,finding:&#x27;Seven of twelve participants asked for a quiet weekend study space.&#x27;,premise:&#x27;Some students report a need for more weekend study space.&#x27;,limit:&#x27;No academic outcomes were measured. A need for space does not establish an educational benefit.&#x27;},
@@ -2095,7 +2178,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     unavailable: {name:&#x27;Evening vs. Sunday cost estimate&#x27;,locator:&#x27;Example packet · attachment unavailable&#x27;,unavailable:true,finding:&#x27;The cited attachment cannot be opened.&#x27;,premise:&#x27;No comparison can be inspected from the available material.&#x27;,limit:&#x27;An unavailable source does not show the claim is false. You can skip assessment or challenge its support.&#x27;},
     contract: {name:&#x27;Building services agreement&#x27;,locator:&#x27;Example packet · p. 6, section 2&#x27;,finding:&#x27;Cleaning and closing services are provided for each day the building opens.&#x27;,premise:&#x27;Opening another day adds a day of services.&#x27;,limit:&#x27;This does not establish the size of the additional cost or its importance.&#x27;}
   };
-  const ideas = [
+  const seedIdeas = [
     {id:&#x27;access&#x27;,option:&#x27;open&#x27;,score:42,versions:[&#x27;access&#x27;,&#x27;accessBold&#x27;,&#x27;accessNarrow&#x27;]},
     {id:&#x27;study&#x27;,option:&#x27;open&#x27;,score:31,versions:[&#x27;study&#x27;]},
     {id:&#x27;purpose&#x27;,option:&#x27;open&#x27;,score:12,versions:[&#x27;purpose&#x27;]},
@@ -2103,21 +2186,69 @@ html&gt;body{padding:0}&lt;/style&gt;
     {id:&#x27;evenings&#x27;,option:&#x27;keep&#x27;,score:25,versions:[&#x27;evenings&#x27;]},
     {id:&#x27;services&#x27;,option:&#x27;keep&#x27;,score:8,versions:[&#x27;services&#x27;]}
   ];
-  // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing.
-  let state = {open:null,expanded:null,composing:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,added:[],updated:false,openSources:{}};
+  // Example comments. A target is &quot;question&quot;, &quot;option:&lt;id&gt;&quot;, or &quot;card:&lt;id&gt;&quot;; replies point to their thread&#x27;s first comment.
+  // by:&#x27;you&#x27; marks your own comments, which you can delete.
+  const seedComments = () =&gt; [
+    {id:&#x27;c-q1&#x27;,target:&#x27;question&#x27;,by:&#x27;Jordan&#x27;,at:&#x27;2026-11-05T16:10:00Z&#x27;,text:&#x27;Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.&#x27;},
+    {id:&#x27;c-q2&#x27;,target:&#x27;question&#x27;,parent:&#x27;c-q1&#x27;,by:&#x27;Maya&#x27;,at:&#x27;2026-11-05T17:02:00Z&#x27;,text:&#x27;Good catch. The survey only covered the branch, too.&#x27;},
+    {id:&#x27;c-o1&#x27;,target:&#x27;option:keep&#x27;,by:&#x27;Priya&#x27;,at:&#x27;2026-11-05T18:30:00Z&#x27;,text:&#x27;Rename this from “Stay closed” so it reads as a choice, not a refusal?&#x27;,resolved:true},
+    {id:&#x27;c-a1&#x27;,target:&#x27;card:access&#x27;,by:&#x27;Maya&#x27;,at:&#x27;2026-11-06T09:15:00Z&#x27;,text:&#x27;“Some” is carrying a lot here. Could we say roughly how many?&#x27;},
+    {id:&#x27;c-a2&#x27;,target:&#x27;card:access&#x27;,parent:&#x27;c-a1&#x27;,by:&#x27;Jordan&#x27;,at:&#x27;2026-11-06T10:40:00Z&#x27;,text:&#x27;The survey says 18 of 80 respondents. The narrower version in this row uses that number.&#x27;},
+    {id:&#x27;c-s1&#x27;,target:&#x27;card:staffing&#x27;,by:&#x27;Sam&#x27;,at:&#x27;2026-11-06T13:05:00Z&#x27;,text:&#x27;Has anyone asked staff whether a voluntary rota swap would cover Sundays?&#x27;}
+  ];
+  const seedDoc = () =&gt; structuredClone({
+    question:{text:&#x27;Should our library open on Sundays?&#x27;,author:&#x27;Kieran LaMee&#x27;,posted:&#x27;2026-11-05&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;},
+    options:[{id:&#x27;open&#x27;,name:&#x27;Open on Sundays&#x27;},{id:&#x27;keep&#x27;,name:&#x27;Keep current hours&#x27;}],
+    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
+  });
+  // Working aliases into state.doc; edits mutate the document directly and are saved with it.
+  let doc,cards,sources,ideas;
+  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function validDoc(d) {
+    return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
+      &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
+  }
+  // Each new card gets the next id from the document, so ids stay unique across reloads.
+  // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
+  function addIdea(option,claim,reason) {
+    const ideaId=&#x27;i&#x27;+(doc.nextId++),cardId=&#x27;v&#x27;+(doc.nextId++);
+    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:&#x27;you&#x27;});
+    return cardId;
+  }
+  function addVersion(ideaId,claim,reason) {
+    const idea=ideaOf(ideaId); if(!idea) return null;
+    const id=&#x27;v&#x27;+(doc.nextId++);
+    cards[id]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
+    idea.versions.push(id); return id;
+  }
+  // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
+  const freshState = () =&gt; ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
+  let state = freshState();
+  useDoc(seedDoc());
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
   function restore(raw) {
     const data = raw?.privateContent;
-    if (!data || ![2,3].includes(data.version)) return;
+    if (!data || ![2,3,4].includes(data.version)) return;
     const saved = data.state || {};
     for (const key of [&#x27;importance&#x27;,&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key] = saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27; ? saved[key] : {};
-    state.added = Array.isArray(saved.added) ? saved.added : [];
     state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim===&#x27;string&#x27; ? saved.draftClaim : &#x27;&#x27;;
     state.draftReason = typeof saved.draftReason===&#x27;string&#x27; ? saved.draftReason : &#x27;&#x27;;
-    syncAdded();
+    state.ideaDraftClaim = typeof saved.ideaDraftClaim===&#x27;string&#x27; ? saved.ideaDraftClaim : &#x27;&#x27;;
+    state.ideaDraftReason = typeof saved.ideaDraftReason===&#x27;string&#x27; ? saved.ideaDraftReason : &#x27;&#x27;;
+    if (data.version===4 &amp;&amp; validDoc(saved.doc)) useDoc(saved.doc);
+    else {
+      // Versions 2 and 3 stored only the added versions, as an overlay on the fixed example.
+      useDoc(seedDoc());
+      (Array.isArray(saved.added)?saved.added:[]).slice(0,5).forEach(item=&gt;addVersion(item?.idea,item?.claim??&#x27;&#x27;,item?.reason??&#x27;&#x27;));
+      // Their ids were local0…local4; votes, assessments, and open sources follow each card to its new id.
+      const renamed=key=&gt;key.replace(/^local(\d)/,(_,n)=&gt;&#x27;v&#x27;+(Number(n)+1));
+      for (const key of [&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=&gt;[renamed(k),v]));
+      if (typeof saved.expanded===&#x27;string&#x27;) saved.expanded=renamed(saved.expanded);
+    }
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
-    if (data.version===3) {
+    if (data.version&gt;=3) {
       state.open = ideas.some(i=&gt;i.id===saved.open) ? saved.open : null;
       state.expanded = cards[saved.expanded] ? saved.expanded : null;
       state.composing = !!saved.composing &amp;&amp; !!state.open;
@@ -2126,23 +2257,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     if ([&#x27;comfortable&#x27;,&#x27;compact&#x27;].includes(data.design?.density)) design.density=data.design.density;
     if ([&#x27;sans&#x27;,&#x27;serif&#x27;].includes(data.design?.type)) design.type=data.design.type;
   }
-  function syncAdded() {
-    for (const id of Object.keys(cards)) if (id.startsWith(&#x27;local&#x27;)) delete cards[id];
-    ideas.forEach(i=&gt;{i.versions=i.versions.filter(id=&gt;!id.startsWith(&#x27;local&#x27;));});
-    state.added.slice(0,5).forEach((item,index)=&gt;{
-      const idea=ideas.find(i=&gt;i.id===item.idea); if (!idea) return;
-      const id=&#x27;local&#x27;+index;
-      cards[id]={idea:item.idea,claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
-      idea.versions.push(id);
-    });
-  }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:3,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
-  const optionName = option =&gt; option===&#x27;open&#x27; ? &#x27;Open on Sundays&#x27; : &#x27;Keep current hours&#x27;;
+  const optionName = option =&gt; doc.options.find(o=&gt;o.id===option)?.name || &#x27;&#x27;;
   const short = id =&gt; { const c=cards[id].claim; return c.length&gt;60 ? c.slice(0,57)+&#x27;…&#x27; : c; };
   // Shared articulation order: the shared preference score, best first. Your own vote does not move cards.
   const ordered = idea =&gt; [...idea.versions].sort((a,b)=&gt;cards[b].pref-cards[a].pref);
@@ -2182,16 +2303,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     const s=stats(id);
     const attrs=`type=&quot;button&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;cred-${id}&quot;`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n&lt;5?&#x27;; few assessments&#x27;:&#x27;&#x27;}`:&#x27;Unreviewed; no assessments&#x27;;
-    return `&lt;button ${attrs} class=&quot;sm-cred cursor-interaction&quot; aria-label=&quot;${aria}&quot; data-tooltip=&quot;${aria}&quot;&gt;&lt;span class=&quot;sm-meter&quot;&gt;${meter(s)}&lt;/span&gt;&lt;span class=&quot;sm-cred-copy&quot;&gt;&lt;span class=&quot;sm-percentage&quot;&gt;${s.n?s.pct+&#x27;%&#x27;:&#x27;Unreviewed&#x27;}&lt;/span&gt;${s.n?`&lt;span class=&quot;sm-count ${s.n&lt;5?&#x27;sm-few&#x27;:&#x27;&#x27;}&quot;&gt;· ${s.n}${s.n&lt;5?&#x27; · few&#x27;:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
+    return `&lt;button ${attrs} class=&quot;sm-cred cursor-interaction&quot; aria-label=&quot;${aria}&quot; data-tooltip=&quot;${aria}&quot;&gt;&lt;span class=&quot;sm-meter&quot;&gt;${meter(s)}&lt;/span&gt;&lt;span class=&quot;sm-cred-copy&quot;&gt;&lt;span class=&quot;sm-percentage ${s.n?&#x27;&#x27;:&#x27;sm-unreviewed-copy&#x27;}&quot;&gt;${s.n?s.pct+&#x27;%&#x27;:&#x27;Unreviewed&#x27;}&lt;/span&gt;${s.n?`&lt;span class=&quot;sm-count ${s.n&lt;5?&#x27;sm-few&#x27;:&#x27;&#x27;}&quot;&gt;· ${s.n}${s.n&lt;5?&#x27; · few&#x27;:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
   }
   function sourceButton(id) { const n=cards[id].sources.length; return `&lt;button type=&quot;button&quot; class=&quot;sm-source-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;source-${id}&quot; aria-label=&quot;Inspect ${n} ${n===1?&#x27;source&#x27;:&#x27;sources&#x27;}&quot; data-tooltip=&quot;${n} linked ${n===1?&#x27;source&#x27;:&#x27;sources&#x27;}&quot;&gt;${icon(&#x27;paperclip&#x27;)} ${n}&lt;/button&gt;`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}&lt;div class=&quot;sm-card-tools&quot;&gt;${sourceButton(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+    return `${credibility(id)}&lt;div class=&quot;sm-card-tools&quot;&gt;${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceButton(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   function cardFace(id, inTrack=false) {
     const expanded=state.expanded===id;
-    return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
+    return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;} ${commenting(&#x27;card:&#x27;+id)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
   }
   function stack(idea) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
@@ -2200,7 +2321,6 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;button type=&quot;button&quot; class=&quot;sm-stack-button ${empty?&#x27;sm-empty&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;unfold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${empty?&#x27;Add a version&#x27;:idea.versions.length+&#x27; versions&#x27;}&quot;&gt;${spans}&lt;/button&gt;`;
   }
   function addSlot(idea) {
-    if(state.added.length&gt;=5) return &#x27;&#x27;;
     if(state.composing) return `&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-form&quot; aria-label=&quot;Suggest a version&quot;&gt;&lt;textarea id=&quot;sm-draft&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;draft&quot; maxlength=&quot;500&quot; placeholder=&quot;A better version of this argument&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.draftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;reason&quot; maxlength=&quot;700&quot; placeholder=&quot;What it improves&quot; aria-label=&quot;What your version improves&quot;&gt;${escape(state.draftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-compose&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;cancel-compose&quot; aria-label=&quot;Discard draft&quot; data-tooltip=&quot;Discard&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;add&quot; aria-label=&quot;Add your version&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;`;
     return `&lt;button type=&quot;button&quot; class=&quot;sm-add-card cursor-interaction&quot; data-action=&quot;compose&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;compose-${idea.id}&quot; aria-label=&quot;Suggest a better version&quot; data-tooltip=&quot;Suggest a version&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;/button&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;`;
   }
@@ -2215,30 +2335,119 @@ html&gt;body{padding:0}&lt;/style&gt;
     const open=state.open===idea.id;
     return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(ordered(idea)[0]))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}&lt;/div&gt;&lt;/section&gt;`;
   }
+  // The last row of each column: a dashed card that opens a draft argument in place.
+  function addArgument(option) {
+    const name=escape(optionName(option));
+    if(state.composingIdea===option) return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-idea-form&quot; aria-label=&quot;New argument for ${name}&quot;&gt;&lt;textarea id=&quot;sm-idea-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;idea-claim&quot; maxlength=&quot;500&quot; placeholder=&quot;A new argument for “${name}”&quot; aria-label=&quot;Your argument&quot;&gt;${escape(state.ideaDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-idea-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;idea-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context: why it matters (optional)&quot; aria-label=&quot;Context for your argument (optional)&quot;&gt;${escape(state.ideaDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;cancel-idea&quot; aria-label=&quot;Close draft&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;add-idea&quot; aria-label=&quot;Add your argument&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;&lt;/div&gt;`;
+    return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-card sm-add-idea cursor-interaction&quot; data-action=&quot;compose-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;compose-idea-${option}&quot; aria-label=&quot;Add an argument for ${name}&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Add an argument&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`;
+  }
   function column(option) {
     const rows=ideas.filter(i=&gt;i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===&#x27;open&#x27;?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head&quot;&gt;&lt;h2&gt;${optionName(option)}&lt;/h2&gt;&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}${addArgument(option)}&lt;/section&gt;`;
   }
-  function boardMarkup() { return column(&#x27;open&#x27;)+&#x27;&lt;div aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;+column(&#x27;keep&#x27;); }
+  function boardMarkup() { return doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;); }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
-    const brief={
-      access:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;,
-      accessBold:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;,
-      accessNarrow:&#x27;This describes the survey respondents. It doesn’t tell us how common the need is across the community.&#x27;,
-      study:&#x27;Students asked for quiet weekend space. The effect on learning hasn’t been measured.&#x27;,
-      purpose:&#x27;This puts family access at the heart of the library’s public purpose.&#x27;,
-      staffing:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;,
-      evenings:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;,
-      services:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;
-    }[cardId]||card.explanation;
+    const brief=card.brief||card.explanation;
     const sourceRows=card.sources.map(id=&gt;{
       const source=sources[id],key=cardId+&#x27;/&#x27;+id;
       return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;&lt;p&gt;${escape(source.finding)}&lt;/p&gt;&lt;dl&gt;&lt;dt&gt;Supports&lt;/dt&gt;&lt;dd&gt;${escape(source.premise)}&lt;/dd&gt;&lt;dt&gt;Limit&lt;/dt&gt;&lt;dd&gt;${escape(source.limit)}&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
-    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
+    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
+
+  // Question header and document settings.
+  const ORGS = {pod6:&#x27;Pod 6 · Building with AI&#x27;, none:&#x27;Personal&#x27;};
+  const VISIBILITY = {
+    private:{icon:&#x27;lock&#x27;,label:&#x27;Private&#x27;,hint:&#x27;Only you and people you invite.&#x27;},
+    org:{icon:&#x27;building-2&#x27;,label:&#x27;Organization&#x27;,hint:&#x27;Everyone in the organization can find and read it.&#x27;},
+    link:{icon:&#x27;link&#x27;,label:&#x27;Anyone with the link&#x27;,hint:&#x27;Anyone who has the link can read it, without signing in.&#x27;}
+  };
+  const PERMISSIONS = {viewers:&#x27;Anyone who can see it&#x27;,invited:&#x27;Invited contributors&#x27;,me:&#x27;Only me&#x27;};
+  const posted = iso =&gt; new Date(iso+&#x27;T12:00:00Z&#x27;).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,year:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
+  function headMarkup() {
+    const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer===&#x27;settings&#x27;;
+    const org=q.org!==&#x27;none&#x27;?`&lt;li&gt;${escape(ORGS[q.org]||&#x27;&#x27;)}&lt;/li&gt;`:&#x27;&#x27;;
+    return `&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;ul class=&quot;sm-question-meta&quot; aria-label=&quot;About this question&quot;&gt;&lt;li&gt;Posted by ${escape(q.author)}&lt;/li&gt;&lt;li&gt;&lt;time datetime=&quot;${q.posted}&quot;&gt;${posted(q.posted)}&lt;/time&gt;&lt;/li&gt;${org}&lt;li&gt;${icon(vis.icon)}${vis.label}&lt;/li&gt;&lt;/ul&gt;`
+      +`&lt;div class=&quot;sm-head-tools&quot;&gt;${commentButton(&#x27;question&#x27;,&#x27;sm-head-button&#x27;,&#x27;question&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;settings&quot; data-key=&quot;settings&quot; aria-label=&quot;Document settings&quot; aria-expanded=&quot;${settingsOpen}&quot; aria-controls=&quot;sm-drawer-body&quot; data-tooltip=&quot;Settings&quot;&gt;${icon(&#x27;settings&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+  }
+  function choice(name,value,current,label,hint,glyph,disabled=false) {
+    return `&lt;label class=&quot;sm-choice&quot;&gt;&lt;input type=&quot;radio&quot; name=&quot;${name}&quot; value=&quot;${value}&quot; data-key=&quot;${name}-${value}&quot; ${value===current?&#x27;checked&#x27;:&#x27;&#x27;} ${disabled?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${glyph?icon(glyph):&#x27;&lt;span&gt;&lt;/span&gt;&#x27;}&lt;span&gt;${label}&lt;/span&gt;${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/label&gt;`;
+  }
+  function select(id,options,current,label) {
+    return `&lt;div class=&quot;sm-field&quot;&gt;&lt;label for=&quot;sm-${id}&quot;&gt;${label}&lt;/label&gt;&lt;select id=&quot;sm-${id}&quot; data-setting=&quot;${id}&quot; data-key=&quot;setting-${id}&quot;&gt;${Object.entries(options).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${v===current?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/div&gt;`;
+  }
+  // Closing the drawer returns focus to the button that opened it.
+  function closeDrawer() {
+    const back=state.drawer===&#x27;comments&#x27;?&#x27;comments-&#x27;+state.commentTarget:&#x27;settings&#x27;;
+    announce(state.drawer===&#x27;comments&#x27;?&#x27;Comments closed.&#x27;:&#x27;Settings closed.&#x27;);
+    state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
+  }
+  function settingsMarkup() {
+    const q=doc.question, personal=q.org===&#x27;none&#x27;;
+    const visibility=Object.entries(VISIBILITY).map(([v,o])=&gt;choice(&#x27;visibility&#x27;,v,q.visibility,o.label,v===&#x27;org&#x27;&amp;&amp;personal?&#x27;Choose an organization first.&#x27;:o.hint,o.icon,v===&#x27;org&#x27;&amp;&amp;personal)).join(&#x27;&#x27;);
+    return `&lt;div class=&quot;sm-field&quot;&gt;&lt;label for=&quot;sm-question&quot;&gt;Question&lt;/label&gt;&lt;textarea id=&quot;sm-question&quot; data-key=&quot;q-text&quot; maxlength=&quot;200&quot; rows=&quot;2&quot; aria-describedby=&quot;sm-question-hint&quot;&gt;${escape(q.text)}&lt;/textarea&gt;&lt;p class=&quot;sm-field-hint&quot; id=&quot;sm-question-hint&quot;&gt;Ask it neutrally, so each option can make its strongest case.&lt;/p&gt;&lt;/div&gt;`
+      +select(&#x27;org&#x27;,ORGS,q.org,&#x27;Organization&#x27;)
+      +`&lt;fieldset class=&quot;sm-field&quot;&gt;&lt;legend&gt;Who can see it&lt;/legend&gt;&lt;div class=&quot;sm-choices&quot;&gt;${visibility}&lt;/div&gt;&lt;/fieldset&gt;`
+      +select(&#x27;contribute&#x27;,PERMISSIONS,q.contribute,&#x27;Who can add arguments, versions, and evidence&#x27;)
+      +select(&#x27;vote&#x27;,{viewers:PERMISSIONS.viewers,invited:PERMISSIONS.invited},q.vote,&#x27;Who can vote and assess evidence&#x27;)
+      +`&lt;section class=&quot;sm-drawer-section&quot; aria-labelledby=&quot;sm-reset-title&quot;&gt;&lt;h3 id=&quot;sm-reset-title&quot;&gt;Example board&lt;/h3&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Settings and edits are saved in this browser only; nothing is shared with anyone.&lt;/p&gt;&lt;div&gt;${button(&#x27;reset&#x27;,icon(&#x27;rotate-ccw&#x27;)+(state.confirmReset?&#x27; Click again to reset everything&#x27;:&#x27; Reset to the original example&#x27;),`data-key=&quot;reset&quot; ${state.confirmReset?&#x27;data-armed&#x27;:&#x27;&#x27;}`)}&lt;/div&gt;&lt;/section&gt;`;
+  }
+  // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
+  const commenting = target =&gt; state.drawer===&#x27;comments&#x27; &amp;&amp; state.commentTarget===target;
+  const threadsOn = target =&gt; doc.comments.filter(c=&gt;c.target===target &amp;&amp; !c.parent);
+  const repliesTo = id =&gt; doc.comments.filter(c=&gt;c.parent===id);
+  // Counts include replies, but not deleted comments or resolved threads.
+  const openCount = target =&gt; threadsOn(target).filter(c=&gt;!c.resolved).reduce((n,c)=&gt;n+(c.deleted?0:1)+repliesTo(c.id).filter(r=&gt;!r.deleted).length,0);
+  function commentButton(target,cls,noun) {
+    const n=openCount(target), label=n?`${n} ${n===1?&#x27;comment&#x27;:&#x27;comments&#x27;} on this ${noun}`:`Comment on this ${noun}`;
+    return `&lt;button type=&quot;button&quot; class=&quot;${cls} sm-comment-button cursor-interaction&quot; data-action=&quot;comments&quot; data-id=&quot;${target}&quot; data-key=&quot;comments-${target}&quot; aria-expanded=&quot;${commenting(target)}&quot; aria-controls=&quot;sm-drawer-body&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${n?label:&#x27;Comment&#x27;}&quot;&gt;${icon(&#x27;message-square&#x27;)}${n?`&lt;span class=&quot;sm-comment-count&quot;&gt;${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;`;
+  }
+  function describeTarget(target) {
+    const [kind,id]=target.split(&#x27;:&#x27;);
+    if(kind===&#x27;question&#x27;) return {kind:&#x27;Question&#x27;,text:doc.question.text};
+    if(kind===&#x27;option&#x27;) return {kind:&#x27;Option&#x27;,text:optionName(id)};
+    return {kind:&#x27;Version&#x27;,text:cards[id]?.claim||&#x27;This version was removed.&#x27;};
+  }
+  const commentDate = iso =&gt; { const d=new Date(iso),now=new Date(); return d.toDateString()===now.toDateString()?&#x27;Today&#x27;:d.toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,...(d.getFullYear()!==now.getFullYear()?{year:&#x27;numeric&#x27;}:{})}); };
+  const linkButton = (action,id,label,extra=&#x27;&#x27;) =&gt; `&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${extra}&gt;${label}&lt;/button&gt;`;
+  function commentItem(c,isReply) {
+    const who=c.by===&#x27;you&#x27;?&#x27;You&#x27;:c.by;
+    const actions=c.deleted?&#x27;&#x27;:[
+      !isReply&amp;&amp;!c.resolved?linkButton(&#x27;reply&#x27;,c.id,&#x27;Reply&#x27;):&#x27;&#x27;,
+      !isReply?linkButton(&#x27;resolve&#x27;,c.id,c.resolved?&#x27;Reopen&#x27;:&#x27;Resolve&#x27;):&#x27;&#x27;,
+      c.by===&#x27;you&#x27;?linkButton(&#x27;delete-comment&#x27;,c.id,&#x27;Delete&#x27;):&#x27;&#x27;
+    ].join(&#x27;&#x27;);
+    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(who[0])}&lt;/span&gt;&lt;strong&gt;${escape(who)}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot;&gt;${commentDate(c.at)}&lt;/time&gt;&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
+  }
+  function thread(c) {
+    const replying=state.replyTo===c.id;
+    const form=replying?`&lt;div class=&quot;sm-reply-form&quot;&gt;&lt;textarea id=&quot;sm-reply&quot; data-key=&quot;reply-text&quot; rows=&quot;2&quot; maxlength=&quot;1000&quot; placeholder=&quot;Reply&quot; aria-label=&quot;Your reply&quot;&gt;${escape(state.replyDraft)}&lt;/textarea&gt;&lt;div class=&quot;sm-comment-form-actions&quot;&gt;${linkButton(&#x27;reply-cancel&#x27;,c.id,&#x27;Cancel&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;reply-add&quot; data-id=&quot;${c.id}&quot; data-key=&quot;reply-add&quot;&gt;Reply&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+    return `&lt;div class=&quot;sm-thread ${c.resolved?&#x27;sm-resolved&#x27;:&#x27;&#x27;}&quot;&gt;${commentItem(c,false)}${repliesTo(c.id).map(r=&gt;commentItem(r,true)).join(&#x27;&#x27;)}${form}&lt;/div&gt;`;
+  }
+  function commentsMarkup() {
+    const target=state.commentTarget, about=describeTarget(target), threads=threadsOn(target);
+    const open=threads.filter(c=&gt;!c.resolved), resolved=threads.filter(c=&gt;c.resolved);
+    const resolvedToggle=resolved.length?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;show-resolved&quot; data-key=&quot;show-resolved&quot; aria-expanded=&quot;${state.showResolved}&quot;&gt;${icon(state.showResolved?&#x27;chevron-down&#x27;:&#x27;chevron-right&#x27;)}${resolved.length} resolved&lt;/button&gt;${state.showResolved?resolved.map(thread).join(&#x27;&#x27;):&#x27;&#x27;}`:&#x27;&#x27;;
+    return `&lt;div class=&quot;sm-drawer-body sm-comments-body&quot; id=&quot;sm-drawer-body&quot;&gt;&lt;blockquote class=&quot;sm-comment-target&quot;&gt;&lt;span&gt;${about.kind}&lt;/span&gt;&lt;p&gt;${escape(about.text)}&lt;/p&gt;&lt;/blockquote&gt;`
+      +(open.length?open.map(thread).join(&#x27;&#x27;):&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;No open comments. Ask a question, point out a gap, or suggest a change.&lt;/p&gt;&#x27;)
+      +resolvedToggle+`&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-comment-compose&quot;&gt;&lt;textarea id=&quot;sm-comment&quot; data-key=&quot;comment-text&quot; rows=&quot;2&quot; maxlength=&quot;1000&quot; placeholder=&quot;Add a comment&quot; aria-label=&quot;Add a comment on this ${about.kind.toLowerCase()}&quot;&gt;${escape(state.commentDraft)}&lt;/textarea&gt;&lt;div class=&quot;sm-comment-form-actions&quot;&gt;&lt;span class=&quot;sm-field-hint&quot;&gt;⌘/Ctrl + Enter&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;comment-add&quot; data-key=&quot;comment-add&quot;&gt;Comment&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
+  }
+  const drawer=root.querySelector(&#x27;.sm-drawer&#x27;);
+  function renderDrawer() {
+    const open=!!state.drawer;
+    drawer.hidden=!open; root.toggleAttribute(&#x27;data-drawer&#x27;,open);
+    if(!open){drawer.innerHTML=&#x27;&#x27;;return;}
+    const comments=state.drawer===&#x27;comments&#x27;,title=comments?&#x27;Comments&#x27;:&#x27;Settings&#x27;;
+    const scroll=drawer.scrollTop;
+    drawer.innerHTML=`&lt;div class=&quot;sm-drawer-head&quot;&gt;&lt;h2 id=&quot;sm-drawer-title&quot;&gt;${title}&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;close-drawer&quot; data-key=&quot;close-drawer&quot; aria-label=&quot;Close ${title.toLowerCase()}&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`
+      +(comments?commentsMarkup():`&lt;div class=&quot;sm-drawer-body&quot; id=&quot;sm-drawer-body&quot;&gt;${settingsMarkup()}&lt;/div&gt;`);
+    drawer.scrollTop=scroll;
+  }
+  const headEl=root.querySelector(&#x27;.sm-head&#x27;);
+  function renderHead() { headEl.innerHTML=headMarkup(); if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
 
   const scene=root.querySelector(&#x27;.sm-scene&#x27;);
   const links=root.querySelector(&#x27;.sm-links&#x27;);
@@ -2292,8 +2501,23 @@ html&gt;body{padding:0}&lt;/style&gt;
     });
   }
   let wireFrame=0,wireUntil=0;
+  function positionDrawer() {
+    if(!state.drawer){root.style.minHeight=&#x27;&#x27;;return;}
+    const anchor=(state.drawer===&#x27;comments&#x27;&amp;&amp;root.querySelector(`[data-key=&quot;comments-${state.commentTarget}&quot;]`)?.closest(&#x27;.sm-card,.sm-column-head,.sm-head&#x27;))||headEl;
+    const rootBox=root.getBoundingClientRect();
+    const box=anchor.getBoundingClientRect(),reserved=parseFloat(getComputedStyle(root).paddingRight)&gt;0;
+    // Floating panels sit opposite their subject. A subject too wide to sit beside (the question, or anything on a phone)
+    // gets the panel just below it instead.
+    const below=!reserved&amp;&amp;box.width&gt;rootBox.width/2;
+    drawer.dataset.side=box.left+box.width/2&gt;rootBox.left+rootBox.width/2?&#x27;left&#x27;:&#x27;right&#x27;;
+    const wanted=(below?box.bottom+8:box.top-8)-rootBox.top;
+    // Level with the anchor (or just below it on phones); the prototype grows if the panel runs past its end.
+    const top=Math.round(Math.max(0,wanted));
+    drawer.style.top=top+&#x27;px&#x27;;
+    root.style.minHeight=(top+drawer.offsetHeight+16)+&#x27;px&#x27;;
+  }
   function drawLinks() {
-    drawTexture();
+    drawTexture();positionDrawer();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=&gt;{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector(&#x27;.sm-head&#x27;));
@@ -2334,9 +2558,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     const oldTrack=board.querySelector(&#x27;.sm-track&#x27;), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest(&#x27;[data-node]&#x27;)?.dataset.node;
     board.dataset.open=state.open?ideaOf(state.open).option:&#x27;&#x27;;
     board.innerHTML=boardMarkup();
+    headEl.innerHTML=headMarkup();headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
+    renderDrawer();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
     if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;motion!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
+    positionDrawer();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
     if(!reduced&amp;&amp;motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -2385,10 +2612,33 @@ html&gt;body{padding:0}&lt;/style&gt;
     state.expanded=null; render(focus||&#x27;expand-&#x27;+id); announce(&#x27;Card collapsed.&#x27;);save();
   }
   root.addEventListener(&#x27;input&#x27;,event=&gt;{
+    if(event.target.id===&#x27;sm-question&#x27;) {
+      const text=event.target.value.replace(/\s+/g,&#x27; &#x27;).trim();
+      if(!text){event.target.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);announce(&#x27;A question is required.&#x27;);return;}
+      event.target.removeAttribute(&#x27;aria-invalid&#x27;);
+      doc.question.text=text;headEl.querySelector(&#x27;h1&#x27;).textContent=text;animateWires();save();
+    }
+    if(event.target.id===&#x27;sm-comment&#x27;) {state.commentDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-reply&#x27;) {state.replyDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-idea-claim&#x27;) {state.ideaDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-idea-reason&#x27;) {state.ideaDraftReason=event.target.value;}
     if(event.target.id===&#x27;sm-draft&#x27;) {state.draftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-reason&#x27;) {state.draftReason=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
   });
   root.addEventListener(&#x27;submit&#x27;,event=&gt;event.preventDefault());
+  // Settings selects and radios save as soon as they change.
+  root.addEventListener(&#x27;change&#x27;,event=&gt;{
+    const el=event.target,q=doc.question;
+    if(el.name===&#x27;visibility&#x27;) q.visibility=el.value;
+    else if(el.dataset.setting) q[el.dataset.setting]=el.value;
+    else if(el.id===&#x27;sm-question&#x27;) {el.value=q.text;el.removeAttribute(&#x27;aria-invalid&#x27;);return;}
+    else return;
+    if(q.org===&#x27;none&#x27;&amp;&amp;q.visibility===&#x27;org&#x27;) {q.visibility=&#x27;private&#x27;;announce(&#x27;Without an organization, the question is private.&#x27;);}
+    else announce(&#x27;Setting saved.&#x27;);
+    state.confirmReset=false;
+    const key=el.dataset.key;renderHead();renderDrawer();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    root.querySelector(`[data-key=&quot;${key}&quot;]`)?.focus();animateWires();save();
+  });
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;;
@@ -2398,15 +2648,60 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(action===&#x27;unfold&#x27;) {
       if(state.open&amp;&amp;state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
-      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1&amp;&amp;state.added.length&lt;5;
+      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?&#x27;draft&#x27;:&#x27;claim-&#x27;+ordered(ideaOf(id))[0];motion=&#x27;unfold&#x27;;
       announce(&#x27;Versions unfolded in place, best articulated first. Browsing does not cast a vote.&#x27;);
     }
     if(action===&#x27;fold&#x27;) {fold(id);return;}
+    if(action===&#x27;settings&#x27;) {state.drawer=state.drawer===&#x27;settings&#x27;?null:&#x27;settings&#x27;;state.confirmReset=false;focus=state.drawer?&#x27;q-text&#x27;:&#x27;settings&#x27;;announce(state.drawer?&#x27;Settings opened beside the board.&#x27;:&#x27;Settings closed.&#x27;);}
+    if(action===&#x27;close-drawer&#x27;) {focus=closeDrawer();}
+    if(action===&#x27;comments&#x27;) {
+      if(commenting(id)){focus=closeDrawer();}
+      else {state.drawer=&#x27;comments&#x27;;state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus=&#x27;comment-text&#x27;;announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
+    }
+    if(action===&#x27;comment-add&#x27;) {
+      const text=state.commentDraft.trim(),field=root.querySelector(&#x27;#sm-comment&#x27;);
+      if(!text){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;Write a comment first.&#x27;);return;}
+      doc.comments.push({id:&#x27;c&#x27;+(doc.nextId++),target:state.commentTarget,by:&#x27;you&#x27;,at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.commentDraft=&#x27;&#x27;;focus=&#x27;comment-text&#x27;;announce(&#x27;Comment added.&#x27;);
+    }
+    if(action===&#x27;reply&#x27;) {state.replyTo=id;state.replyDraft=&#x27;&#x27;;focus=&#x27;reply-text&#x27;;}
+    if(action===&#x27;reply-cancel&#x27;) {state.replyTo=null;state.replyDraft=&#x27;&#x27;;focus=&#x27;reply-&#x27;+id;}
+    if(action===&#x27;reply-add&#x27;) {
+      const text=state.replyDraft.trim(),field=root.querySelector(&#x27;#sm-reply&#x27;);
+      if(!text){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;Write a reply first.&#x27;);return;}
+      doc.comments.push({id:&#x27;c&#x27;+(doc.nextId++),target:state.commentTarget,parent:id,by:&#x27;you&#x27;,at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.replyTo=null;state.replyDraft=&#x27;&#x27;;focus=&#x27;reply-&#x27;+id;announce(&#x27;Reply added.&#x27;);
+    }
+    if(action===&#x27;resolve&#x27;) {
+      const c=doc.comments.find(x=&gt;x.id===id);c.resolved=!c.resolved;if(state.replyTo===id)state.replyTo=null;
+      focus=c.resolved?&#x27;comment-text&#x27;:&#x27;resolve-&#x27;+id;announce(c.resolved?&#x27;Thread resolved. It is under Resolved.&#x27;:&#x27;Thread reopened.&#x27;);
+    }
+    if(action===&#x27;delete-comment&#x27;) {
+      const c=doc.comments.find(x=&gt;x.id===id);
+      // A first comment with replies leaves a placeholder, so the replies keep their context.
+      if(!c.parent&amp;&amp;repliesTo(id).length) c.deleted=true; else doc.comments=doc.comments.filter(x=&gt;x.id!==id);
+      focus=&#x27;comment-text&#x27;;announce(&#x27;Comment deleted.&#x27;);
+    }
+    if(action===&#x27;show-resolved&#x27;) {state.showResolved=!state.showResolved;}
+    if(action===&#x27;reset&#x27;) {
+      if(!state.confirmReset){state.confirmReset=true;focus=&#x27;reset&#x27;;announce(&#x27;Click again to reset the board, your votes, and your edits to the original example.&#x27;);}
+      else {state=freshState();useDoc(seedDoc());state.drawer=&#x27;settings&#x27;;focus=&#x27;reset&#x27;;announce(&#x27;The example board was reset.&#x27;);}
+    }
     if(action===&#x27;importance&#x27;) {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?&#x27;Importance vote saved. The shared order stays in place.&#x27;:&#x27;Importance vote withdrawn.&#x27;);}
     if(action===&#x27;preference&#x27;) {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?&#x27;Articulation vote saved. The shared order stays in place.&#x27;:&#x27;Articulation vote withdrawn.&#x27;);}
     if(action===&#x27;assess&#x27;) {const value=trigger.dataset.value;state.assessments[id]=value===&#x27;skip&#x27;||state.assessments[id]===value?null:value;announce(state.assessments[id]?&#x27;Your one active assessment is included in the support percentage.&#x27;:&#x27;Assessment withdrawn.&#x27;);}
-    if(action===&#x27;compose&#x27;) {state.composing=true;focus=&#x27;draft&#x27;;announce(&#x27;Write your version in the empty card.&#x27;);}
+    if(action===&#x27;compose-idea&#x27;) {state.composingIdea=id;state.composing=false;focus=&#x27;idea-claim&#x27;;announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
+    if(action===&#x27;cancel-idea&#x27;) {state.composingIdea=null;focus=&#x27;compose-idea-&#x27;+id;announce(&#x27;Draft kept for later.&#x27;);}
+    if(action===&#x27;add-idea&#x27;) {
+      const claim=state.ideaDraftClaim.trim(),field=root.querySelector(&#x27;#sm-idea-claim&#x27;);
+      if(!claim){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;Write your argument first.&#x27;);return;}
+      const added=addIdea(id,claim,state.ideaDraftReason.trim());
+      state.composingIdea=null;state.ideaDraftClaim=&#x27;&#x27;;state.ideaDraftReason=&#x27;&#x27;;
+      state.expanded=added;focus=&#x27;claim-&#x27;+added;motion=&#x27;added&#x27;;
+      announce(`Your argument was added at the bottom of ${optionName(id)}. It starts with no importance votes, unreviewed, and with no sources.`);
+    }
+    if(action===&#x27;compose&#x27;) {state.composingIdea=null;state.composing=true;focus=&#x27;draft&#x27;;announce(&#x27;Write your version in the empty card.&#x27;);}
     if(action===&#x27;cancel-compose&#x27;) {state.composing=false;focus=&#x27;compose-&#x27;+id;if(ideaOf(id).versions.length===1){fold(id);return;}announce(&#x27;Draft kept for later.&#x27;);}
     if(action===&#x27;add&#x27;) {
       const form=root.querySelector(&#x27;#sm-form&#x27;),claim=state.draftClaim.trim(),reason=state.draftReason.trim();
@@ -2417,17 +2712,20 @@ html&gt;body{padding:0}&lt;/style&gt;
         form.querySelector(!claim?&#x27;#sm-draft&#x27;:&#x27;#sm-reason&#x27;).focus();
         announce(&#x27;Add your version and what it improves.&#x27;);return;
       }
-      if(state.added.length&gt;=5)return;
-      state.added.push({idea:id,claim,reason});syncAdded();
+      const added=addVersion(id,claim,reason);if(!added)return;
       state.composing=false;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;
-      state.expanded=&#x27;local&#x27;+(state.added.length-1);focus=&#x27;claim-&#x27;+state.expanded;motion=&#x27;added&#x27;;
+      state.expanded=added;focus=&#x27;claim-&#x27;+state.expanded;motion=&#x27;added&#x27;;
       announce(&#x27;Your version was added at the end of the row. It starts unreviewed, with no articulation votes.&#x27;);
     }
     if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     render(focus,motion);save();
   });
   root.addEventListener(&#x27;keydown&#x27;,event=&gt;{
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;(event.metaKey||event.ctrlKey)&amp;&amp;[&#x27;sm-comment&#x27;,&#x27;sm-reply&#x27;].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id===&#x27;sm-comment&#x27;?&#x27;[data-action=&quot;comment-add&quot;]&#x27;:&#x27;[data-action=&quot;reply-add&quot;]&#x27;)?.click();return;}
     if(event.key!==&#x27;Escape&#x27;||busy)return;
+    if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render(&#x27;reply-&#x27;+id);return;}
+    if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render(&#x27;compose-idea-&#x27;+option);save();announce(&#x27;Draft kept for later.&#x27;);return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render(&#x27;compose-&#x27;+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);}

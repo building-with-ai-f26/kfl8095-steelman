@@ -21,6 +21,76 @@
   #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
   #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
+  /* Question details: quiet, light type under the title, with tools in the top-right corner. */
+  #steelman-study .sm-head { padding-right:62px; }
+  #steelman-study .sm-head :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-head-tools { position:absolute; top:12px; right:12px; display:flex; gap:2px; }
+  #steelman-study .sm-head-button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:#ffffff8c; }
+  #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded="true"] { background:#ffffff1f; color:#fff; }
+  #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
+  #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
+  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
+  /* What the open comments are about: a ring around that question, option, or version. */
+  #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
+  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font:300 12px/1.4 var(--sm-sans); letter-spacing:.01em; color:#ffffff99; }
+  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:4px; }
+  #steelman-study .sm-question-meta li + li::before { content:"·"; margin:0 8px; opacity:.7; }
+  #steelman-study .sm-question-meta svg { width:12px; height:12px; stroke-width:1.6; }
+
+  /* Right-hand panel for settings and comments. Non-modal: the board stays usable beside it.
+     The standalone page grows its frame to fit the content, so the panel can't be pinned to the screen;
+     positionDrawer() anchors it level with what it is about instead, like margin comments. */
+  #steelman-study { position:relative; }
+  #steelman-study .sm-drawer { position:absolute; top:0; right:12px; width:356px; z-index:30; display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  /* Wide screens make room beside the board. Narrower ones float the panel over the board without moving it,
+     on the side away from what it is about (data-side), so that item stays visible. */
+  @media(min-width:1200px) { #steelman-study[data-drawer] { padding-right:380px; } }
+  @media(max-width:1199px) { #steelman-study .sm-drawer[data-side="left"] { right:auto; left:12px; } }
+  #steelman-study .sm-drawer-head { border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer-head h2 { font:600 18px/1.3 var(--sm-serif); }
+  #steelman-study .sm-drawer-body { display:grid; gap:24px; padding:20px 20px 28px; }
+  #steelman-study .sm-field { display:grid; gap:8px; min-width:0; margin:0; padding:0; border:0; }
+  #steelman-study .sm-field > label, #steelman-study .sm-field > legend { padding:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-field-hint { margin:0; font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-drawer :is(textarea,select) { width:100%; border:1px solid #c8c8c8; border-radius:6px; background:#fff; padding:8px 10px; font-size:14px; line-height:1.45; }
+  #steelman-study .sm-drawer textarea { resize:vertical; min-height:64px; font-family:var(--sm-serif); font-size:16px; }
+  #steelman-study .sm-drawer :is(textarea,select):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-drawer textarea[aria-invalid="true"] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
+  #steelman-study .sm-choices { display:grid; gap:6px; }
+  #steelman-study .sm-choice { display:grid; grid-template-columns:16px 18px minmax(0,1fr); align-items:center; gap:2px 8px; padding:9px 11px; border:1px solid var(--sm-line); border-radius:7px; font-size:13px; cursor:pointer; }
+  #steelman-study .sm-choice input { margin:0; accent-color:var(--sm-ink); }
+  #steelman-study .sm-choice svg { width:15px; height:15px; color:var(--sm-muted); }
+  #steelman-study .sm-choice small { grid-column:3; font-size:11px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-choice:hover { border-color:#aaa; }
+  #steelman-study .sm-choice:has(input:checked) { border-color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-choice:has(input:disabled) { opacity:.5; cursor:default; }
+  #steelman-study .sm-choice:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
+  #steelman-study .sm-drawer-section { display:grid; gap:10px; padding-top:20px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer-section h3 { margin:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-button.sm-solid { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-comments-body { flex:1; align-content:start; gap:14px; }
+  #steelman-study .sm-comment-target { margin:0 0 4px; padding:10px 12px; border-left:3px solid var(--sm-ink); background:var(--sm-soft); border-radius:0 6px 6px 0; }
+  #steelman-study .sm-comment-target span { font-size:11px; font-weight:600; color:var(--sm-muted); }
+  #steelman-study .sm-comment-target p { margin:4px 0 0; font:400 14px/1.45 var(--sm-serif); }
+  #steelman-study .sm-thread { display:grid; gap:10px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; }
+  #steelman-study .sm-thread.sm-resolved { opacity:.7; border-style:dashed; }
+  #steelman-study .sm-comment header { display:flex; align-items:center; gap:7px; font-size:12px; }
+  #steelman-study .sm-comment time { color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--sm-ink); color:#fff; font-size:11px; font-weight:600; flex:none; }
+  #steelman-study .sm-comment p { margin:6px 0 0 29px; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+  #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-muted); font-style:italic; }
+  #steelman-study .sm-reply { margin-left:14px; padding-left:12px; border-left:1px solid var(--sm-line); }
+  #steelman-study .sm-comment-actions { display:flex; gap:12px; margin:6px 0 0 29px; }
+  #steelman-study .sm-link-button { border:0; background:transparent; padding:2px 0; font-size:11px; font-weight:500; color:var(--sm-muted); }
+  #steelman-study .sm-link-button:hover { color:var(--sm-ink); text-decoration:underline; }
+  #steelman-study .sm-reply-form { display:grid; gap:8px; margin-left:14px; }
+  #steelman-study .sm-comment-compose { display:grid; border-radius:0 0 10px 10px; gap:8px; padding:12px 20px 16px; background:var(--sm-card); border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer :is(.sm-comment-compose,.sm-reply-form) textarea { min-height:0; font:400 13px/1.5 var(--sm-sans); }
+  #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
   #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
   #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
@@ -39,7 +109,6 @@
   #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
-  #steelman-study .sm-idea:last-child { margin-bottom:0; }
   #steelman-study .sm-idea > .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
@@ -75,9 +144,13 @@
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
+  /* Narrow cards (a squeezed column) drop the secondary footer text; the meter and tooltip keep the meaning. */
+  #steelman-study .sm-card { container-type:inline-size; }
+  @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
+  @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
-  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
+  #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
   #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
   #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -114,6 +187,11 @@
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
   #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
   #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  /* New argument: same dashed language as a new version, lined up with the cards (vote lane on the left, stack lane on the right). */
+  #steelman-study .sm-new-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; position:relative; z-index:1; }
+  #steelman-study .sm-new-idea > :last-child { margin-right:24px; width:auto; }
+  #steelman-study .sm-add-idea { display:flex; align-items:center; justify-content:center; gap:8px; min-height:58px; font-size:13px; }
+  #steelman-study .sm-add-idea svg { width:18px; height:18px; }
   #steelman-study .sm-compose-card textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:14px 18px 6px; margin:0; }
   #steelman-study .sm-compose-card textarea:focus-visible { outline:none; background:#f6f6f6; }
   #steelman-study .sm-compose-card .sm-draft-claim { font:400 16px/1.5 var(--sm-sans); min-height:96px; }
@@ -185,11 +263,14 @@
     #steelman-study .sm-col-arrow::after { content:""; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
     #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
     #steelman-study .sm-track { grid-auto-columns:84%; }
+    #steelman-study .sm-drawer, #steelman-study .sm-drawer[data-side="left"] { left:8px; right:8px; width:auto; }
   }
   @media(pointer:coarse) {
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
+    #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -204,12 +285,13 @@
   <div class="sm-surface">
     <div class="sm-scene">
       <svg class="sm-links" aria-hidden="true"></svg>
-      <header class="sm-head"><h1>Should our library open on Sundays?</h1></header>
+      <header class="sm-head"></header>
       <main id="sm-content"><div class="sm-board"></div></main>
     </div>
     <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Preview a shared-order update"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Preview update</button></div>
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
+  <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
 </div>
 <script>
 (() => {
@@ -219,18 +301,19 @@
   const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
   const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const EASE = 'cubic-bezier(.2,.7,.2,1)';
-  // Cards carry only what a contributor writes or voters produce: the claim, its sources, and the vote tallies.
-  const cards = {
-    access: {idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
-    accessBold: {idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
-    accessNarrow: {idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
-    study: {idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
-    purpose: {idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
-    staffing: {idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
-    evenings: {idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
-    services: {idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
+  // The example document. Everything a contributor can edit lives in one saved document (state.doc),
+  // seeded from these values; cards carry only what a contributor writes or voters produce.
+  const seedCards = {
+    access: {brief:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.', idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
+    accessBold: {brief:'The survey shows a need among some residents. It doesn’t establish access for everyone.', idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
+    accessNarrow: {brief:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.', idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
+    study: {brief:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.', idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
+    purpose: {brief:'This puts family access at the heart of the library’s public purpose.', idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
+    staffing: {brief:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.', idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
+    evenings: {brief:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.', idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
+    services: {brief:'The agreement provides cleaning and closing services for each day the building opens.', idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
   };
-  const sources = {
+  const seedSources = {
     survey: {name:'Resident access survey',locator:'Example packet · p. 2, question 4',finding:'18 of 80 respondents selected Sunday as their only available day to visit.',premise:'Some respondents cannot visit during the current opening hours.',limit:'Voluntary sample; not representative of all residents. Availability was self-reported.'},
     hours: {name:'Current opening schedule',locator:'Example packet · p. 1',finding:'The library opens Monday–Friday, 10–6, and Saturday, 10–2. It is closed on Sunday.',premise:'A Sunday session would create access at a currently unavailable time.',limit:'The schedule does not establish who would actually attend.'},
     study: {name:'Student listening session',locator:'Example packet · p. 3, notes 6–9',finding:'Seven of twelve participants asked for a quiet weekend study space.',premise:'Some students report a need for more weekend study space.',limit:'No academic outcomes were measured. A need for space does not establish an educational benefit.'},
@@ -239,7 +322,7 @@
     unavailable: {name:'Evening vs. Sunday cost estimate',locator:'Example packet · attachment unavailable',unavailable:true,finding:'The cited attachment cannot be opened.',premise:'No comparison can be inspected from the available material.',limit:'An unavailable source does not show the claim is false. You can skip assessment or challenge its support.'},
     contract: {name:'Building services agreement',locator:'Example packet · p. 6, section 2',finding:'Cleaning and closing services are provided for each day the building opens.',premise:'Opening another day adds a day of services.',limit:'This does not establish the size of the additional cost or its importance.'}
   };
-  const ideas = [
+  const seedIdeas = [
     {id:'access',option:'open',score:42,versions:['access','accessBold','accessNarrow']},
     {id:'study',option:'open',score:31,versions:['study']},
     {id:'purpose',option:'open',score:12,versions:['purpose']},
@@ -247,21 +330,69 @@
     {id:'evenings',option:'keep',score:25,versions:['evenings']},
     {id:'services',option:'keep',score:8,versions:['services']}
   ];
-  // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing.
-  let state = {open:null,expanded:null,composing:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',added:[],updated:false,openSources:{}};
+  // Example comments. A target is "question", "option:<id>", or "card:<id>"; replies point to their thread's first comment.
+  // by:'you' marks your own comments, which you can delete.
+  const seedComments = () => [
+    {id:'c-q1',target:'question',by:'Jordan',at:'2026-11-05T16:10:00Z',text:'Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.'},
+    {id:'c-q2',target:'question',parent:'c-q1',by:'Maya',at:'2026-11-05T17:02:00Z',text:'Good catch. The survey only covered the branch, too.'},
+    {id:'c-o1',target:'option:keep',by:'Priya',at:'2026-11-05T18:30:00Z',text:'Rename this from “Stay closed” so it reads as a choice, not a refusal?',resolved:true},
+    {id:'c-a1',target:'card:access',by:'Maya',at:'2026-11-06T09:15:00Z',text:'“Some” is carrying a lot here. Could we say roughly how many?'},
+    {id:'c-a2',target:'card:access',parent:'c-a1',by:'Jordan',at:'2026-11-06T10:40:00Z',text:'The survey says 18 of 80 respondents. The narrower version in this row uses that number.'},
+    {id:'c-s1',target:'card:staffing',by:'Sam',at:'2026-11-06T13:05:00Z',text:'Has anyone asked staff whether a voluntary rota swap would cover Sundays?'}
+  ];
+  const seedDoc = () => structuredClone({
+    question:{text:'Should our library open on Sundays?',author:'Kieran LaMee',posted:'2026-11-05',org:'pod6',visibility:'org',contribute:'viewers',vote:'viewers'},
+    options:[{id:'open',name:'Open on Sundays'},{id:'keep',name:'Keep current hours'}],
+    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
+  });
+  // Working aliases into state.doc; edits mutate the document directly and are saved with it.
+  let doc,cards,sources,ideas;
+  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function validDoc(d) {
+    return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
+      && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
+  }
+  // Each new card gets the next id from the document, so ids stay unique across reloads.
+  // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
+  function addIdea(option,claim,reason) {
+    const ideaId='i'+(doc.nextId++),cardId='v'+(doc.nextId++);
+    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:'you'});
+    return cardId;
+  }
+  function addVersion(ideaId,claim,reason) {
+    const idea=ideaOf(ideaId); if(!idea) return null;
+    const id='v'+(doc.nextId++);
+    cards[id]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
+    idea.versions.push(id); return id;
+  }
+  // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
+  const freshState = () => ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  let state = freshState();
+  useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
   function restore(raw) {
     const data = raw?.privateContent;
-    if (!data || ![2,3].includes(data.version)) return;
+    if (!data || ![2,3,4].includes(data.version)) return;
     const saved = data.state || {};
     for (const key of ['importance','preference','assessments','openSources']) state[key] = saved[key] && typeof saved[key]==='object' ? saved[key] : {};
-    state.added = Array.isArray(saved.added) ? saved.added : [];
     state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim==='string' ? saved.draftClaim : '';
     state.draftReason = typeof saved.draftReason==='string' ? saved.draftReason : '';
-    syncAdded();
+    state.ideaDraftClaim = typeof saved.ideaDraftClaim==='string' ? saved.ideaDraftClaim : '';
+    state.ideaDraftReason = typeof saved.ideaDraftReason==='string' ? saved.ideaDraftReason : '';
+    if (data.version===4 && validDoc(saved.doc)) useDoc(saved.doc);
+    else {
+      // Versions 2 and 3 stored only the added versions, as an overlay on the fixed example.
+      useDoc(seedDoc());
+      (Array.isArray(saved.added)?saved.added:[]).slice(0,5).forEach(item=>addVersion(item?.idea,item?.claim??'',item?.reason??''));
+      // Their ids were local0…local4; votes, assessments, and open sources follow each card to its new id.
+      const renamed=key=>key.replace(/^local(\d)/,(_,n)=>'v'+(Number(n)+1));
+      for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
+      if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
+    }
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
-    if (data.version===3) {
+    if (data.version>=3) {
       state.open = ideas.some(i=>i.id===saved.open) ? saved.open : null;
       state.expanded = cards[saved.expanded] ? saved.expanded : null;
       state.composing = !!saved.composing && !!state.open;
@@ -270,23 +401,13 @@
     if (['comfortable','compact'].includes(data.design?.density)) design.density=data.design.density;
     if (['sans','serif'].includes(data.design?.type)) design.type=data.design.type;
   }
-  function syncAdded() {
-    for (const id of Object.keys(cards)) if (id.startsWith('local')) delete cards[id];
-    ideas.forEach(i=>{i.versions=i.versions.filter(id=>!id.startsWith('local'));});
-    state.added.slice(0,5).forEach((item,index)=>{
-      const idea=ideas.find(i=>i.id===item.idea); if (!idea) return;
-      const id='local'+index;
-      cards[id]={idea:item.idea,claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
-      idea.versions.push(id);
-    });
-  }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:3,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:''},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
-  const optionName = option => option==='open' ? 'Open on Sundays' : 'Keep current hours';
+  const optionName = option => doc.options.find(o=>o.id===option)?.name || '';
   const short = id => { const c=cards[id].claim; return c.length>60 ? c.slice(0,57)+'…' : c; };
   // Shared articulation order: the shared preference score, best first. Your own vote does not move cards.
   const ordered = idea => [...idea.versions].sort((a,b)=>cards[b].pref-cards[a].pref);
@@ -326,16 +447,16 @@
     const s=stats(id);
     const attrs=`type="button" data-action="toggle" data-id="${id}" data-key="cred-${id}"`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
-    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
+    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
   }
   function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}<div class="sm-card-tools">${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    return `${credibility(id)}<div class="sm-card-tools">${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
   function cardFace(id, inTrack=false) {
     const expanded=state.expanded===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   function stack(idea) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
@@ -344,7 +465,6 @@
     return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}" data-tooltip="${empty?'Add a version':idea.versions.length+' versions'}">${spans}</button>`;
   }
   function addSlot(idea) {
-    if(state.added.length>=5) return '';
     if(state.composing) return `<form class="sm-card sm-compose-card" id="sm-form" aria-label="Suggest a version"><textarea id="sm-draft" class="sm-draft-claim" data-key="draft" maxlength="500" placeholder="A better version of this argument" aria-label="Your version">${escape(state.draftClaim)}</textarea><textarea id="sm-reason" class="sm-draft-reason" data-key="reason" maxlength="700" placeholder="What it improves" aria-label="What your version improves">${escape(state.draftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-compose" data-id="${idea.id}" data-key="cancel-compose" aria-label="Discard draft" data-tooltip="Discard">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add" data-id="${idea.id}" data-key="add" aria-label="Add your version" data-tooltip="Add">${icon('check')}</button></div></form><span aria-hidden="true"></span>`;
     return `<button type="button" class="sm-add-card cursor-interaction" data-action="compose" data-id="${idea.id}" data-key="compose-${idea.id}" aria-label="Suggest a better version" data-tooltip="Suggest a version">${icon('plus')}</button><span aria-hidden="true"></span>`;
   }
@@ -359,30 +479,119 @@
     const open=state.open===idea.id;
     return `<section class="sm-idea ${open?'sm-open':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}</div></section>`;
   }
+  // The last row of each column: a dashed card that opens a draft argument in place.
+  function addArgument(option) {
+    const name=escape(optionName(option));
+    if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
+    return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
+  }
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option==='open'?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head"><h2>${optionName(option)}</h2></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}${addArgument(option)}</section>`;
   }
-  function boardMarkup() { return column('open')+'<div aria-hidden="true"></div>'+column('keep'); }
+  function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
-    const brief={
-      access:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.',
-      accessBold:'The survey shows a need among some residents. It doesn’t establish access for everyone.',
-      accessNarrow:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.',
-      study:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.',
-      purpose:'This puts family access at the heart of the library’s public purpose.',
-      staffing:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.',
-      evenings:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.',
-      services:'The agreement provides cleaning and closing services for each day the building opens.'
-    }[cardId]||card.explanation;
+    const brief=card.brief||card.explanation;
     const sourceRows=card.sources.map(id=>{
       const source=sources[id],key=cardId+'/'+id;
       return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
+
+  // Question header and document settings.
+  const ORGS = {pod6:'Pod 6 · Building with AI', none:'Personal'};
+  const VISIBILITY = {
+    private:{icon:'lock',label:'Private',hint:'Only you and people you invite.'},
+    org:{icon:'building-2',label:'Organization',hint:'Everyone in the organization can find and read it.'},
+    link:{icon:'link',label:'Anyone with the link',hint:'Anyone who has the link can read it, without signing in.'}
+  };
+  const PERMISSIONS = {viewers:'Anyone who can see it',invited:'Invited contributors',me:'Only me'};
+  const posted = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+  function headMarkup() {
+    const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer==='settings';
+    const org=q.org!=='none'?`<li>${escape(ORGS[q.org]||'')}</li>`:'';
+    return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question"><li>Posted by ${escape(q.author)}</li><li><time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}<li>${icon(vis.icon)}${vis.label}</li></ul>`
+      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+  }
+  function choice(name,value,current,label,hint,glyph,disabled=false) {
+    return `<label class="sm-choice"><input type="radio" name="${name}" value="${value}" data-key="${name}-${value}" ${value===current?'checked':''} ${disabled?'disabled':''}>${glyph?icon(glyph):'<span></span>'}<span>${label}</span>${hint?`<small>${hint}</small>`:''}</label>`;
+  }
+  function select(id,options,current,label) {
+    return `<div class="sm-field"><label for="sm-${id}">${label}</label><select id="sm-${id}" data-setting="${id}" data-key="setting-${id}">${Object.entries(options).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select></div>`;
+  }
+  // Closing the drawer returns focus to the button that opened it.
+  function closeDrawer() {
+    const back=state.drawer==='comments'?'comments-'+state.commentTarget:'settings';
+    announce(state.drawer==='comments'?'Comments closed.':'Settings closed.');
+    state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
+  }
+  function settingsMarkup() {
+    const q=doc.question, personal=q.org==='none';
+    const visibility=Object.entries(VISIBILITY).map(([v,o])=>choice('visibility',v,q.visibility,o.label,v==='org'&&personal?'Choose an organization first.':o.hint,o.icon,v==='org'&&personal)).join('');
+    return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
+      +select('org',ORGS,q.org,'Organization')
+      +`<fieldset class="sm-field"><legend>Who can see it</legend><div class="sm-choices">${visibility}</div></fieldset>`
+      +select('contribute',PERMISSIONS,q.contribute,'Who can add arguments, versions, and evidence')
+      +select('vote',{viewers:PERMISSIONS.viewers,invited:PERMISSIONS.invited},q.vote,'Who can vote and assess evidence')
+      +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Settings and edits are saved in this browser only; nothing is shared with anyone.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
+  }
+  // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
+  const commenting = target => state.drawer==='comments' && state.commentTarget===target;
+  const threadsOn = target => doc.comments.filter(c=>c.target===target && !c.parent);
+  const repliesTo = id => doc.comments.filter(c=>c.parent===id);
+  // Counts include replies, but not deleted comments or resolved threads.
+  const openCount = target => threadsOn(target).filter(c=>!c.resolved).reduce((n,c)=>n+(c.deleted?0:1)+repliesTo(c.id).filter(r=>!r.deleted).length,0);
+  function commentButton(target,cls,noun) {
+    const n=openCount(target), label=n?`${n} ${n===1?'comment':'comments'} on this ${noun}`:`Comment on this ${noun}`;
+    return `<button type="button" class="${cls} sm-comment-button cursor-interaction" data-action="comments" data-id="${target}" data-key="comments-${target}" aria-expanded="${commenting(target)}" aria-controls="sm-drawer-body" aria-label="${label}" data-tooltip="${n?label:'Comment'}">${icon('message-square')}${n?`<span class="sm-comment-count">${n}</span>`:''}</button>`;
+  }
+  function describeTarget(target) {
+    const [kind,id]=target.split(':');
+    if(kind==='question') return {kind:'Question',text:doc.question.text};
+    if(kind==='option') return {kind:'Option',text:optionName(id)};
+    return {kind:'Version',text:cards[id]?.claim||'This version was removed.'};
+  }
+  const commentDate = iso => { const d=new Date(iso),now=new Date(); return d.toDateString()===now.toDateString()?'Today':d.toLocaleDateString('en-US',{month:'short',day:'numeric',...(d.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})}); };
+  const linkButton = (action,id,label,extra='') => `<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${extra}>${label}</button>`;
+  function commentItem(c,isReply) {
+    const who=c.by==='you'?'You':c.by;
+    const actions=c.deleted?'':[
+      !isReply&&!c.resolved?linkButton('reply',c.id,'Reply'):'',
+      !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
+      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
+    ].join('');
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0])}</span><strong>${escape(who)}</strong><time datetime="${c.at}">${commentDate(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+  }
+  function thread(c) {
+    const replying=state.replyTo===c.id;
+    const form=replying?`<div class="sm-reply-form"><textarea id="sm-reply" data-key="reply-text" rows="2" maxlength="1000" placeholder="Reply" aria-label="Your reply">${escape(state.replyDraft)}</textarea><div class="sm-comment-form-actions">${linkButton('reply-cancel',c.id,'Cancel')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="reply-add" data-id="${c.id}" data-key="reply-add">Reply</button></div></div>`:'';
+    return `<div class="sm-thread ${c.resolved?'sm-resolved':''}">${commentItem(c,false)}${repliesTo(c.id).map(r=>commentItem(r,true)).join('')}${form}</div>`;
+  }
+  function commentsMarkup() {
+    const target=state.commentTarget, about=describeTarget(target), threads=threadsOn(target);
+    const open=threads.filter(c=>!c.resolved), resolved=threads.filter(c=>c.resolved);
+    const resolvedToggle=resolved.length?`<button type="button" class="sm-text-button cursor-interaction" data-action="show-resolved" data-key="show-resolved" aria-expanded="${state.showResolved}">${icon(state.showResolved?'chevron-down':'chevron-right')}${resolved.length} resolved</button>${state.showResolved?resolved.map(thread).join(''):''}`:'';
+    return `<div class="sm-drawer-body sm-comments-body" id="sm-drawer-body"><blockquote class="sm-comment-target"><span>${about.kind}</span><p>${escape(about.text)}</p></blockquote>`
+      +(open.length?open.map(thread).join(''):'<p class="sm-field-hint">No open comments. Ask a question, point out a gap, or suggest a change.</p>')
+      +resolvedToggle+`</div>`
+      +`<div class="sm-comment-compose"><textarea id="sm-comment" data-key="comment-text" rows="2" maxlength="1000" placeholder="Add a comment" aria-label="Add a comment on this ${about.kind.toLowerCase()}">${escape(state.commentDraft)}</textarea><div class="sm-comment-form-actions"><span class="sm-field-hint">⌘/Ctrl + Enter</span><button type="button" class="sm-button sm-solid cursor-interaction" data-action="comment-add" data-key="comment-add">Comment</button></div></div>`;
+  }
+  const drawer=root.querySelector('.sm-drawer');
+  function renderDrawer() {
+    const open=!!state.drawer;
+    drawer.hidden=!open; root.toggleAttribute('data-drawer',open);
+    if(!open){drawer.innerHTML='';return;}
+    const comments=state.drawer==='comments',title=comments?'Comments':'Settings';
+    const scroll=drawer.scrollTop;
+    drawer.innerHTML=`<div class="sm-drawer-head"><h2 id="sm-drawer-title">${title}</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="close-drawer" data-key="close-drawer" aria-label="Close ${title.toLowerCase()}" data-tooltip="Close">${icon('x')}</button></div>`
+      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${settingsMarkup()}</div>`);
+    drawer.scrollTop=scroll;
+  }
+  const headEl=root.querySelector('.sm-head');
+  function renderHead() { headEl.innerHTML=headMarkup(); if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
 
   const scene=root.querySelector('.sm-scene');
   const links=root.querySelector('.sm-links');
@@ -436,8 +645,23 @@
     });
   }
   let wireFrame=0,wireUntil=0;
+  function positionDrawer() {
+    if(!state.drawer){root.style.minHeight='';return;}
+    const anchor=(state.drawer==='comments'&&root.querySelector(`[data-key="comments-${state.commentTarget}"]`)?.closest('.sm-card,.sm-column-head,.sm-head'))||headEl;
+    const rootBox=root.getBoundingClientRect();
+    const box=anchor.getBoundingClientRect(),reserved=parseFloat(getComputedStyle(root).paddingRight)>0;
+    // Floating panels sit opposite their subject. A subject too wide to sit beside (the question, or anything on a phone)
+    // gets the panel just below it instead.
+    const below=!reserved&&box.width>rootBox.width/2;
+    drawer.dataset.side=box.left+box.width/2>rootBox.left+rootBox.width/2?'left':'right';
+    const wanted=(below?box.bottom+8:box.top-8)-rootBox.top;
+    // Level with the anchor (or just below it on phones); the prototype grows if the panel runs past its end.
+    const top=Math.round(Math.max(0,wanted));
+    drawer.style.top=top+'px';
+    root.style.minHeight=(top+drawer.offsetHeight+16)+'px';
+  }
   function drawLinks() {
-    drawTexture();
+    drawTexture();positionDrawer();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector('.sm-head'));
@@ -478,9 +702,12 @@
     const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
     board.dataset.open=state.open?ideaOf(state.open).option:'';
     board.innerHTML=boardMarkup();
+    headEl.innerHTML=headMarkup();headEl.classList.toggle('sm-commenting',commenting('question'));
+    renderDrawer();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
+    positionDrawer();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -529,10 +756,33 @@
     state.expanded=null; render(focus||'expand-'+id); announce('Card collapsed.');save();
   }
   root.addEventListener('input',event=>{
+    if(event.target.id==='sm-question') {
+      const text=event.target.value.replace(/\s+/g,' ').trim();
+      if(!text){event.target.setAttribute('aria-invalid','true');announce('A question is required.');return;}
+      event.target.removeAttribute('aria-invalid');
+      doc.question.text=text;headEl.querySelector('h1').textContent=text;animateWires();save();
+    }
+    if(event.target.id==='sm-comment') {state.commentDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
   root.addEventListener('submit',event=>event.preventDefault());
+  // Settings selects and radios save as soon as they change.
+  root.addEventListener('change',event=>{
+    const el=event.target,q=doc.question;
+    if(el.name==='visibility') q.visibility=el.value;
+    else if(el.dataset.setting) q[el.dataset.setting]=el.value;
+    else if(el.id==='sm-question') {el.value=q.text;el.removeAttribute('aria-invalid');return;}
+    else return;
+    if(q.org==='none'&&q.visibility==='org') {q.visibility='private';announce('Without an organization, the question is private.');}
+    else announce('Setting saved.');
+    state.confirmReset=false;
+    const key=el.dataset.key;renderHead();renderDrawer();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    root.querySelector(`[data-key="${key}"]`)?.focus();animateWires();save();
+  });
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
@@ -542,15 +792,60 @@
     }
     if(action==='unfold') {
       if(state.open&&state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
-      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1&&state.added.length<5;
+      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?'draft':'claim-'+ordered(ideaOf(id))[0];motion='unfold';
       announce('Versions unfolded in place, best articulated first. Browsing does not cast a vote.');
     }
     if(action==='fold') {fold(id);return;}
+    if(action==='settings') {state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
+    if(action==='close-drawer') {focus=closeDrawer();}
+    if(action==='comments') {
+      if(commenting(id)){focus=closeDrawer();}
+      else {state.drawer='comments';state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus='comment-text';announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
+    }
+    if(action==='comment-add') {
+      const text=state.commentDraft.trim(),field=root.querySelector('#sm-comment');
+      if(!text){field.setAttribute('aria-invalid','true');field.focus();announce('Write a comment first.');return;}
+      doc.comments.push({id:'c'+(doc.nextId++),target:state.commentTarget,by:'you',at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.commentDraft='';focus='comment-text';announce('Comment added.');
+    }
+    if(action==='reply') {state.replyTo=id;state.replyDraft='';focus='reply-text';}
+    if(action==='reply-cancel') {state.replyTo=null;state.replyDraft='';focus='reply-'+id;}
+    if(action==='reply-add') {
+      const text=state.replyDraft.trim(),field=root.querySelector('#sm-reply');
+      if(!text){field.setAttribute('aria-invalid','true');field.focus();announce('Write a reply first.');return;}
+      doc.comments.push({id:'c'+(doc.nextId++),target:state.commentTarget,parent:id,by:'you',at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.replyTo=null;state.replyDraft='';focus='reply-'+id;announce('Reply added.');
+    }
+    if(action==='resolve') {
+      const c=doc.comments.find(x=>x.id===id);c.resolved=!c.resolved;if(state.replyTo===id)state.replyTo=null;
+      focus=c.resolved?'comment-text':'resolve-'+id;announce(c.resolved?'Thread resolved. It is under Resolved.':'Thread reopened.');
+    }
+    if(action==='delete-comment') {
+      const c=doc.comments.find(x=>x.id===id);
+      // A first comment with replies leaves a placeholder, so the replies keep their context.
+      if(!c.parent&&repliesTo(id).length) c.deleted=true; else doc.comments=doc.comments.filter(x=>x.id!==id);
+      focus='comment-text';announce('Comment deleted.');
+    }
+    if(action==='show-resolved') {state.showResolved=!state.showResolved;}
+    if(action==='reset') {
+      if(!state.confirmReset){state.confirmReset=true;focus='reset';announce('Click again to reset the board, your votes, and your edits to the original example.');}
+      else {state=freshState();useDoc(seedDoc());state.drawer='settings';focus='reset';announce('The example board was reset.');}
+    }
     if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
     if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
     if(action==='assess') {const value=trigger.dataset.value;state.assessments[id]=value==='skip'||state.assessments[id]===value?null:value;announce(state.assessments[id]?'Your one active assessment is included in the support percentage.':'Assessment withdrawn.');}
-    if(action==='compose') {state.composing=true;focus='draft';announce('Write your version in the empty card.');}
+    if(action==='compose-idea') {state.composingIdea=id;state.composing=false;focus='idea-claim';announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
+    if(action==='cancel-idea') {state.composingIdea=null;focus='compose-idea-'+id;announce('Draft kept for later.');}
+    if(action==='add-idea') {
+      const claim=state.ideaDraftClaim.trim(),field=root.querySelector('#sm-idea-claim');
+      if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('Write your argument first.');return;}
+      const added=addIdea(id,claim,state.ideaDraftReason.trim());
+      state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';
+      state.expanded=added;focus='claim-'+added;motion='added';
+      announce(`Your argument was added at the bottom of ${optionName(id)}. It starts with no importance votes, unreviewed, and with no sources.`);
+    }
+    if(action==='compose') {state.composingIdea=null;state.composing=true;focus='draft';announce('Write your version in the empty card.');}
     if(action==='cancel-compose') {state.composing=false;focus='compose-'+id;if(ideaOf(id).versions.length===1){fold(id);return;}announce('Draft kept for later.');}
     if(action==='add') {
       const form=root.querySelector('#sm-form'),claim=state.draftClaim.trim(),reason=state.draftReason.trim();
@@ -561,17 +856,20 @@
         form.querySelector(!claim?'#sm-draft':'#sm-reason').focus();
         announce('Add your version and what it improves.');return;
       }
-      if(state.added.length>=5)return;
-      state.added.push({idea:id,claim,reason});syncAdded();
+      const added=addVersion(id,claim,reason);if(!added)return;
       state.composing=false;state.draftClaim='';state.draftReason='';
-      state.expanded='local'+(state.added.length-1);focus='claim-'+state.expanded;motion='added';
+      state.expanded=added;focus='claim-'+state.expanded;motion='added';
       announce('Your version was added at the end of the row. It starts unreviewed, with no articulation votes.');
     }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     render(focus,motion);save();
   });
   root.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
     if(event.key!=='Escape'||busy)return;
+    if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
+    if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);}

@@ -138,6 +138,60 @@ The honeycomb mark replaced the black "s" square on the product page, the protot
 
 Saved state from the previous build (version 2) restores votes and added versions but starts with every stack folded.
 
+## November 7 — Editing foundations (batches 0 and 1)
+
+Checked by the coding agent at 1280 px and 390 px. Most interactions were scripted on an unsandboxed copy of the synced page; settings persistence was checked with pointer clicks on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| One saved document | The question, options, arguments, versions, and sources load from a single saved document (state version 4); the board renders as before |
+| Add a version (regression) | Adding to the study idea produces card `v1`, expanded, at the end of the row; importance stays 31. The old five-version limit is gone |
+| Version 3 migration | Saved state with two added versions restores them as `v1`/`v2`; the articulation vote (1), the No assessment, the expanded card, and the access importance vote (43) all follow them |
+| Question details | "Posted by Kieran LaMee · Nov 5, 2026 · Pod 6 · Building with AI · Organization" in light type under the title |
+| Settings drawer | The cog opens a right-hand panel; on desktop the board reflows beside it; focus moves to the question field |
+| Rename question | Typing updates the title live; an empty question shows a red edge, keeps the last title, and reverts when the field loses focus |
+| Organization rule | Choosing Personal makes the question Private and disables Organization visibility |
+| Persistence | Choosing "Anyone with the link" survived a reload of the standalone page; the drawer starts closed |
+| Escape | Escape closes the drawer first and returns focus to the cog |
+| Reset | The first click arms the button; the second restores the example question, ideas, and votes |
+| Narrow | At 390 px the drawer covers the full width; no horizontal overflow with it open or closed |
+| Browser errors | No prototype errors in the console |
+
+
+## November 7 — Comments (batch 2)
+
+Checked by the coding agent at 390, 1024, 1280 and 1400 px. Thread actions were scripted on an unsandboxed copy of the synced page; placement and persistence were also checked with pointer clicks on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Icons and counts | Question 2, "Sunday hours…" 2, staffing 1; Keep current hours shows none (its only thread is resolved). Counts include replies |
+| Open | Clicking an icon opens Comments with the item quoted at the top and a dark ring around it; focus moves to the comment box. Clicking the same icon closes it |
+| Add | An empty comment is refused with a red edge; ⌘/Ctrl + Enter posts as "You · Today"; count 2 → 3 |
+| Reply | Reply opens an inline box; Escape cancels it (panel stays open, focus returns to Reply); posting a reply raises the count to 4 |
+| Resolve and reopen | Resolve drops the count to 1 and folds the thread under "1 resolved"; Reopen restores 4 |
+| Delete | Only your comments offer Delete. Deleting a reply removes it; deleting your first comment that has replies leaves "Comment deleted." and keeps the reply |
+| Escape | Closes the panel and returns focus to the icon that opened it |
+| Persistence | A comment on Keep current hours survived a reload of the standalone page; saved state without comments gets the example comments |
+| Placement | The standalone page grows its frame to fit the content, so a screen-fixed panel was off-screen after scrolling. The panel now anchors level with its subject: beside the board at 1200 px and up; below that it floats on the opposite side (no overlap with the card, option, or question at 1024 px), or just below wide subjects and on phones (8 px gap at 390 px). The prototype grows if the panel runs past its end |
+| Narrow cards | Footer text no longer overlaps the comment icon; very narrow cards drop the count, then the percentage (meter and tooltip remain) |
+| Browser errors | No prototype errors in the console |
+
+## November 7 — Add an argument (batch 3)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with the add-and-reload flow repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Slot | Each column ends with a dashed "Add an argument" card, aligned with the cards above it (vote lane left, stack lane right) |
+| Draft | Clicking opens a draft card in place with the argument and optional context; focus moves to the argument field |
+| Validation | An empty argument is refused with a red edge and announced; context is optional |
+| Escape | Closes the draft, keeps its text, and returns focus to the dashed card; reopening restores the text |
+| Add | The new row joins the bottom of its column with importance 0, unreviewed, no sources, a dashed stack edge, expanded to show its context (or "No context yet."); the wire connects to it |
+| Follow-on | Importance vote 0 → 1 works; the dashed stack edge opens a version draft for the new row |
+| Persistence | A new Keep-current-hours argument with context survived a reload of the standalone page |
+| Narrow | At 390 px the draft card matches the cards' width and left edge; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
