@@ -1902,10 +1902,24 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* What the open comments are about: a ring around that question, option, or version. */
   #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
   #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
-  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font:300 12px/1.4 var(--sm-sans); letter-spacing:.01em; color:#ffffff99; }
-  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:4px; }
-  #steelman-study .sm-question-meta li + li::before { content:&quot;·&quot;; margin:0 8px; opacity:.7; }
-  #steelman-study .sm-question-meta svg { width:12px; height:12px; stroke-width:1.6; }
+  /* Each detail has its own voice: a person (avatar + name), a date (italic serif), a group (tracked caps),
+     and an access level (outlined pill). Hairlines separate them. */
+  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; row-gap:8px; margin:14px 0 0; padding:0; list-style:none; font:400 12px/1.4 var(--sm-sans); color:#ffffffa6; }
+  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:6px; }
+  #steelman-study .sm-question-meta li + li::before { content:&quot;&quot;; align-self:center; width:1px; height:13px; margin:0 7px 0 13px; background:#ffffff33; }
+  #steelman-study .sm-question-meta svg { width:13px; height:13px; stroke-width:1.5; opacity:.7; flex:none; }
+  #steelman-study .sm-meta-avatar { display:grid; place-items:center; width:21px; height:21px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); font:700 9px/1 var(--sm-sans); letter-spacing:.03em; }
+  #steelman-study .sm-meta-by { color:#ffffff80; }
+  #steelman-study .sm-meta-author strong { font-weight:600; color:#ffffffeb; }
+  #steelman-study .sm-meta-date time { font:italic 300 14px/1 var(--sm-serif); letter-spacing:.01em; color:#ffffffcc; }
+  #steelman-study .sm-meta-org-name { font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffdb; }
+  #steelman-study .sm-meta-org-sub { font:300 12px/1 var(--sm-sans); color:#ffffff80; }
+  #steelman-study .sm-meta-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px 3px 8px; border:1px solid #ffffff3d; border-radius:999px; font:500 11px/1.2 var(--sm-sans); letter-spacing:.02em; color:#ffffffd9; }
+  #steelman-study .sm-meta-pill svg { opacity:.85; }
+  @media(max-width:640px) {
+    #steelman-study .sm-question-meta { column-gap:14px; }
+    #steelman-study .sm-question-meta li + li::before { display:none; }
+  }
 
   /* Right-hand panel for settings and comments. Non-modal: the board stays usable beside it.
      The standalone page grows its frame to fit the content, so the panel can&#x27;t be pinned to the screen;
@@ -2490,8 +2504,13 @@ html&gt;body{padding:0}&lt;/style&gt;
   const posted = iso =&gt; new Date(iso+&#x27;T12:00:00Z&#x27;).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,year:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
   function headMarkup() {
     const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer===&#x27;settings&#x27;;
-    const org=q.org!==&#x27;none&#x27;?`&lt;li&gt;${escape(ORGS[q.org]||&#x27;&#x27;)}&lt;/li&gt;`:&#x27;&#x27;;
-    return `&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;ul class=&quot;sm-question-meta&quot; aria-label=&quot;About this question&quot;&gt;&lt;li&gt;Posted by ${escape(q.author)}&lt;/li&gt;&lt;li&gt;&lt;time datetime=&quot;${q.posted}&quot;&gt;${posted(q.posted)}&lt;/time&gt;&lt;/li&gt;${org}&lt;li&gt;${icon(vis.icon)}${vis.label}&lt;/li&gt;&lt;/ul&gt;`
+    const [orgName,orgSub]=(ORGS[q.org]||&#x27;&#x27;).split(&#x27; · &#x27;);
+    const org=q.org!==&#x27;none&#x27;?`&lt;li class=&quot;sm-meta-org&quot;&gt;${icon(&#x27;users&#x27;)}&lt;span class=&quot;sm-meta-org-name&quot;&gt;${escape(orgName)}&lt;/span&gt;${orgSub?`&lt;span class=&quot;sm-meta-org-sub&quot;&gt;${escape(orgSub)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/li&gt;`:&#x27;&#x27;;
+    const initials=q.author.split(/\s+/).map(w=&gt;w[0]).join(&#x27;&#x27;).slice(0,2).toUpperCase();
+    return `&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;ul class=&quot;sm-question-meta&quot; aria-label=&quot;About this question&quot;&gt;`
+      +`&lt;li class=&quot;sm-meta-author&quot;&gt;&lt;span class=&quot;sm-meta-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;span&gt;&lt;span class=&quot;sm-meta-by&quot;&gt;Posted by&lt;/span&gt; &lt;strong&gt;${escape(q.author)}&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;`
+      +`&lt;li class=&quot;sm-meta-date&quot;&gt;${icon(&#x27;calendar&#x27;)}&lt;time datetime=&quot;${q.posted}&quot;&gt;${posted(q.posted)}&lt;/time&gt;&lt;/li&gt;${org}`
+      +`&lt;li class=&quot;sm-meta-vis&quot;&gt;&lt;span class=&quot;sm-meta-pill&quot; title=&quot;${escape(vis.hint)}&quot;&gt;${icon(vis.icon)}${vis.label}&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;`
       +`&lt;div class=&quot;sm-head-tools&quot;&gt;${commentButton(&#x27;question&#x27;,&#x27;sm-head-button&#x27;,&#x27;question&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;settings&quot; data-key=&quot;settings&quot; aria-label=&quot;Document settings&quot; aria-expanded=&quot;${settingsOpen}&quot; aria-controls=&quot;sm-drawer-body&quot; data-tooltip=&quot;Settings&quot;&gt;${icon(&#x27;settings&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {

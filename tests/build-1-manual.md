@@ -260,6 +260,8 @@ Checked by the coding agent at 1280 px, about 1000 px, and 390 px; scripted on a
 
 Known limit: three or more options at about 1000 px squeeze cards to roughly 100 px of text. Horizontal board scrolling (with wires following) would be the likely fix.
 
+Question details restyle: each detail now has its own treatment: an initials avatar with "Posted by **name**", an italic serif date with a calendar icon, the organization in tracked capitals ("POD 6") with its course name muted beside it, and visibility as an outlined pill with its icon (hover shows what it means). Hairlines replace the dots on desktop; on phones the line wraps without dividers. Checked at 800 px and 390 px; no horizontal overflow, no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
