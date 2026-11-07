@@ -29,16 +29,39 @@
   #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded="true"] { background:#ffffff1f; color:#fff; }
   #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
   #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
-  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-column-tools { display:flex; gap:2px; margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-option-input { flex:1; min-width:0; margin:-4px 8px -4px -6px; padding:3px 6px; border:1px solid #ffffff66; border-radius:5px; background:#ffffff14; color:#fff; font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-option-input::placeholder { color:#ffffff80; }
+  #steelman-study .sm-option-input:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  #steelman-study .sm-option-input[aria-invalid="true"] { border-color:var(--sm-cred-weak); }
+  /* Add an option: a dashed slot level with the option headers, after the last column. */
+  #steelman-study .sm-add-option { display:inline-flex; align-items:center; justify-content:center; gap:6px; width:auto; padding:0 14px; height:58px; margin-top:17px; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#777; font-size:13px; }
+  #steelman-study .sm-add-option:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-add-option svg { width:18px; height:18px; }
+  #steelman-study .sm-add-option .sm-add-long { display:none; }
+  #steelman-study .sm-board-undo { grid-column:1/-1; }
+  #steelman-study .sm-board-undo .sm-undo { margin:0 auto 24px; max-width:420px; }
   #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
   /* What the open comments are about: a ring around that question, option, or version. */
   #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
   #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
-  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font:300 12px/1.4 var(--sm-sans); letter-spacing:.01em; color:#ffffff99; }
-  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:4px; }
-  #steelman-study .sm-question-meta li + li::before { content:"·"; margin:0 8px; opacity:.7; }
-  #steelman-study .sm-question-meta svg { width:12px; height:12px; stroke-width:1.6; }
+  /* Each detail has its own voice: a person (avatar + name), a date (italic serif), a group (tracked caps),
+     and an access level (outlined pill). Hairlines separate them. */
+  #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; row-gap:8px; margin:14px 0 0; padding:0; list-style:none; font:400 12px/1.4 var(--sm-sans); color:#ffffffa6; }
+  #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:6px; }
+  #steelman-study .sm-question-meta li + li::before { content:""; align-self:center; width:1px; height:13px; margin:0 7px 0 13px; background:#ffffff33; }
+  #steelman-study .sm-question-meta svg { width:13px; height:13px; stroke-width:1.5; opacity:.7; flex:none; }
+  #steelman-study .sm-meta-avatar { display:grid; place-items:center; width:21px; height:21px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); font:700 9px/1 var(--sm-sans); letter-spacing:.03em; }
+  #steelman-study .sm-meta-author strong { font-weight:600; color:#ffffffeb; }
+  #steelman-study .sm-meta-date time { font:italic 300 14px/1 var(--sm-serif); letter-spacing:.01em; color:#ffffffcc; }
+  #steelman-study .sm-meta-org-name { font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffdb; }
+  #steelman-study .sm-meta-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px 3px 8px; border:1px solid #ffffff3d; border-radius:999px; font:500 11px/1.2 var(--sm-sans); letter-spacing:.02em; color:#ffffffd9; }
+  #steelman-study .sm-meta-pill svg { opacity:.85; }
+  @media(max-width:640px) {
+    #steelman-study .sm-question-meta { column-gap:14px; }
+    #steelman-study .sm-question-meta li + li::before { display:none; }
+  }
 
   /* Right-hand panel for settings and comments. Non-modal: the board stays usable beside it.
      The standalone page grows its frame to fit the content, so the panel can't be pinned to the screen;
@@ -90,13 +113,14 @@
   #steelman-study .sm-comment-compose { display:grid; border-radius:0 0 10px 10px; gap:8px; padding:12px 20px 16px; background:var(--sm-card); border-top:1px solid var(--sm-line); }
   #steelman-study .sm-drawer :is(.sm-comment-compose,.sm-reply-form) textarea { min-height:0; font:400 13px/1.5 var(--sm-sans); }
   #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  #steelman-study .sm-coming-title { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--sm-muted); }
+  #steelman-study .sm-soon { padding:2px 7px; border:1px dashed #b9b9b9; border-radius:999px; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--sm-muted); }
   #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
-  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
-  #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
-  #steelman-study .sm-board[data-open="keep"] { grid-template-columns:minmax(0,1fr) 32px minmax(0,2.6fr); }
+  /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
+  #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
   /* The importance axis runs down the left column's left edge, mirroring the articulation axis above an unfolded row. */
-  #steelman-study .sm-column[data-option="open"] { padding-left:40px; }
+  #steelman-study .sm-column:first-of-type { padding-left:40px; }
   #steelman-study .sm-col-vaxis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
   #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
@@ -135,6 +159,8 @@
   #steelman-study .sm-vote-btn { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
   #steelman-study .sm-vote-btn:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-vote-btn[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  /* A word that confirms the direction of a vote, then fades. */
+  #steelman-study .sm-vote-toast { position:absolute; z-index:45; padding:3px 9px; border-radius:999px; background:var(--sm-ink); color:#fff; font:italic 400 13px/1.3 var(--sm-serif); white-space:nowrap; pointer-events:none; box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-vote-score { display:grid; place-items:center; min-width:24px; min-height:20px; font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
 
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
@@ -151,7 +177,9 @@
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
   #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
-  #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
+  #steelman-study button.sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
+  /* A card with no comments shows its comment button only on hover or focus (always on touch screens). */
+  @media(hover:hover) { #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-comment-button[data-empty] { opacity:0; } }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
   #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
@@ -172,13 +200,15 @@
   #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:9px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
+  #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:9px; background:var(--sm-card); color:var(--sm-muted); font:600 10px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
+  #steelman-study .sm-stack-button:hover .sm-stack-count { color:var(--sm-ink); border-color:#aaa; }
 
   /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
-  #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:calc((100% - 36px - 44px) / 3); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
+  #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:max(210px,calc((100% - 36px - 44px) / 3)); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
   #steelman-study .sm-version-vote { justify-self:center; }
   #steelman-study .sm-idea.sm-open { row-gap:0; }
   #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:24px; margin-bottom:10px; padding:0 2px; overflow:hidden; }
-  #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; }
+  #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; margin-top:calc(12px + var(--sm-hvote,31px) + 10px); }
   #steelman-study .sm-open > .sm-card-wrap { grid-column:2; grid-row:2; }
   #steelman-study .sm-track-axis .sm-axis { flex:1; }
   #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:7px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
@@ -233,6 +263,22 @@
   #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:54px minmax(0,1fr); gap:8px; margin:12px 0 0; }
   #steelman-study .sm-source-packet dt { color:var(--sm-muted); }
   #steelman-study .sm-source-packet dd { margin:0; }
+  #steelman-study .sm-source-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:12px; }
+  #steelman-study .sm-source-actions:empty { display:none; }
+  #steelman-study .sm-add-source { margin-top:10px; }
+  #steelman-study .sm-source-more { justify-self:start; padding:0; font-size:11px; }
+  #steelman-study .sm-you-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e2e2e2; color:var(--sm-muted); font-size:10px; font-weight:600; vertical-align:1px; }
+  #steelman-study .sm-evidence-changed { display:flex; gap:6px; align-items:flex-start; margin:0 0 10px; font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-evidence-changed svg { width:13px; height:13px; flex:none; margin-top:2px; }
+  #steelman-study .sm-source-form { display:grid; gap:10px; margin-top:12px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); }
+  #steelman-study .sm-source-form h4 { margin:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-source-field { display:grid; gap:4px; }
+  #steelman-study .sm-source-field label { font-size:11px; font-weight:600; }
+  #steelman-study .sm-source-field label span { font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-source-form :is(input,textarea) { width:100%; border:1px solid #c8c8c8; border-radius:6px; background:#fff; padding:7px 9px; font:400 13px/1.45 var(--sm-sans); color:var(--sm-ink); resize:vertical; }
+  #steelman-study .sm-source-form :is(input,textarea):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-source-form [aria-invalid="true"] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
+  #steelman-study .sm-source-form-actions { display:flex; justify-content:flex-end; align-items:center; gap:14px; }
   #steelman-study .sm-evidence-vote { display:flex; flex-direction:column; align-items:start; gap:10px; margin-top:16px; }
   #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
   #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
@@ -241,6 +287,30 @@
   #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
   #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
   #steelman-study[data-density="compact"] .sm-claim { font-size:15px; }
+  /* Card options: a quiet ⋯ in the top-right corner; the claim leaves room for it. */
+  #steelman-study .sm-card .sm-claim-button { padding-right:40px; }
+  #steelman-study .sm-card-menu-button { position:absolute; top:8px; right:7px; z-index:1; display:grid; place-items:center; width:28px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:#a0a0a0; }
+  #steelman-study .sm-card-menu-button:hover, #steelman-study .sm-card-menu-button[aria-expanded="true"] { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-card-menu-button svg { width:16px; height:16px; }
+  #steelman-study .sm-menu { position:absolute; z-index:40; width:250px; padding:6px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:9px; box-shadow:var(--sm-shadow-lg),0 10px 28px #00000024; }
+  #steelman-study .sm-menu-note { margin:4px 8px 6px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item { display:flex; align-items:flex-start; gap:10px; width:100%; padding:8px; border:0; border-radius:6px; background:transparent; text-align:left; font-size:13px; line-height:1.4; }
+  #steelman-study .sm-menu-item svg { width:15px; height:15px; margin-top:2px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item small { display:block; margin-top:2px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-menu-item:not([aria-disabled]):hover { background:var(--sm-soft); }
+  #steelman-study .sm-menu-item[aria-disabled="true"] { opacity:.5; cursor:default; }
+  #steelman-study .sm-menu-item[data-action="delete-card"]:not([aria-disabled]) svg { color:var(--sm-cred-weak); }
+  /* Pick mode for moving a version: other rows in the option offer "Move here"; the source row recedes. */
+  #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:8px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-move-source { opacity:.45; }
+  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:11px; background:#ffffffb8; font-size:13px; font-weight:600; }
+  #steelman-study .sm-open .sm-move-here { right:0; }
+  #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-move-here svg { width:14px; height:14px; }
+  #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
+  /* Undo bar: where the deleted card was, in the card lane. */
+  #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:8px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
   #steelman-study [hidden] { display:none !important; }
   @media(max-width:800px) {
     #steelman-study .sm-scene { padding:24px 14px 20px; }
@@ -248,15 +318,19 @@
     #steelman-study .sm-column { padding:0 9px 13px; }
     #steelman-study .sm-claim-button { padding:15px; }
     #steelman-study .sm-column-head { padding:13px; }
-    #steelman-study .sm-track { grid-auto-columns:calc((100% - 14px - 44px) / 2); gap:10px 14px; }
+    #steelman-study .sm-track { grid-auto-columns:max(200px,calc((100% - 14px - 44px) / 2)); gap:10px 14px; }
   }
   @media(max-width:640px) {
     #steelman-study .sm-scene { padding:20px 10px; }
     #steelman-study .sm-head { width:100%; padding:18px; }
     #steelman-study h1 { font-size:23px; }
-    #steelman-study .sm-board, #steelman-study .sm-board[data-open] { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
+    #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
-    #steelman-study .sm-column[data-option="open"] { padding-left:8px; }
+    #steelman-study .sm-column:first-of-type { padding-left:8px; }
+    #steelman-study .sm-col-gap { display:none; }
+    #steelman-study .sm-add-option { width:100%; height:48px; }
+    #steelman-study .sm-add-option .sm-add-long { display:inline; }
+    #steelman-study .sm-add-option .sm-add-short { display:none; }
     #steelman-study .sm-column { padding:0 8px 15px; }
     #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
     #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
@@ -267,10 +341,15 @@
   }
   @media(pointer:coarse) {
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
+    #steelman-study .sm-open > .sm-vote { --sm-hvote:42px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
+    #steelman-study .sm-undo { margin:-10px 44px 24px 48px; }
+    #steelman-study .sm-move-banner { margin:-12px 44px 18px 48px; }
+    #steelman-study .sm-move-here { right:44px; }
+    #steelman-study .sm-card-menu-button { width:40px; height:40px; top:2px; right:2px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -288,10 +367,11 @@
       <header class="sm-head"></header>
       <main id="sm-content"><div class="sm-board"></div></main>
     </div>
-    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Preview a shared-order update"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Preview update</button></div>
+    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Simulate a change in the shared order"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Simulate a reorder</button></div>
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
   <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
+  <div class="sm-menu" role="menu" aria-label="Version options" hidden></div>
 </div>
 <script>
 (() => {
@@ -347,7 +427,7 @@
   });
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -367,7 +447,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -403,7 +483,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:''},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -445,39 +525,69 @@
   }
   function credibility(id) {
     const s=stats(id);
-    const attrs=`type="button" data-action="toggle" data-id="${id}" data-key="cred-${id}"`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
-    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
+    return `<span class="sm-cred" role="img" aria-label="${aria}" title="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></span>`;
   }
-  function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
+  // Source count: information only, and absent when there are none.
+  function sourceCount(id) { const n=cards[id].sources.length; if(!n) return ''; const label=`${n} ${n===1?'source':'sources'}`; return `<span class="sm-source-button" role="img" aria-label="${label}" title="${label}">${icon('paperclip')} ${n}</span>`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}<div class="sm-card-tools">${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    return `${credibility(id)}<div class="sm-card-tools">${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
   function cardFace(id, inTrack=false) {
     const expanded=state.expanded===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    // Your own version, edited in place with the same draft card used to write it.
+    if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
+    const menuOpen=state.menu===id;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
+  // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
+  function menuMarkup(id) {
+    const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
+    if(id.startsWith('option:')) {
+      const option=id.slice(7),rows=ideas.filter(i=>i.option===option).length,few=doc.options.length<=2;
+      return item('rename-option','pencil','Rename option')
+        +item('delete-option','trash-2','Delete option',few?'A question needs at least two options.':rows?'Move or delete its arguments first.':'It has no arguments.',few||rows>0);
+    }
+    const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
+    const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
+    if(!mine) return `<p class="sm-menu-note">Written by another contributor. Only they can edit, move, or delete it.</p>`+item('revise-card','pen-line','Suggest a revised version');
+    return `<p class="sm-menu-note">You wrote this version.</p>`
+      +item('edit-card','pencil','Edit wording and context')
+      +item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)
+      +(last?'':item('split-card','split','Make it a separate argument'))
+      +item('delete-card','trash-2',last?'Delete argument':'Delete version',last?'Removes the row.':'');
+  }
+  const undoMarkup = () => `<div class="sm-undo" role="status"><span>${state.undo.label}</span><button type="button" class="sm-link-button cursor-interaction" data-action="undo" data-key="undo">Undo</button></div>`;
   function stack(idea) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
     const spans=(empty?[1]:Array.from({length:edges},(_,k)=>edges-k)).map(i=>`<span aria-hidden="true" style="right:${24-7*i}px;top:${3*i}px;bottom:${3*i}px"></span>`).join('');
     const label=empty?'Suggest another version of this argument':`Unfold ${idea.versions.length} versions of this argument`;
-    return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}" data-tooltip="${empty?'Add a version':idea.versions.length+' versions'}">${spans}</button>`;
+    return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}" data-tooltip="${empty?'Add a version':idea.versions.length+' versions'}">${spans}${empty?'':`<b class="sm-stack-count" aria-hidden="true">${idea.versions.length}</b>`}</button>`;
   }
   function addSlot(idea) {
-    if(state.composing) return `<form class="sm-card sm-compose-card" id="sm-form" aria-label="Suggest a version"><textarea id="sm-draft" class="sm-draft-claim" data-key="draft" maxlength="500" placeholder="A better version of this argument" aria-label="Your version">${escape(state.draftClaim)}</textarea><textarea id="sm-reason" class="sm-draft-reason" data-key="reason" maxlength="700" placeholder="What it improves" aria-label="What your version improves">${escape(state.draftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-compose" data-id="${idea.id}" data-key="cancel-compose" aria-label="Discard draft" data-tooltip="Discard">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add" data-id="${idea.id}" data-key="add" aria-label="Add your version" data-tooltip="Add">${icon('check')}</button></div></form><span aria-hidden="true"></span>`;
-    return `<button type="button" class="sm-add-card cursor-interaction" data-action="compose" data-id="${idea.id}" data-key="compose-${idea.id}" aria-label="Suggest a better version" data-tooltip="Suggest a version">${icon('plus')}</button><span aria-hidden="true"></span>`;
+    if(state.composing) return `<span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-form" aria-label="Suggest a version"><textarea id="sm-draft" class="sm-draft-claim" data-key="draft" maxlength="500" placeholder="A better version of this argument" aria-label="Your version">${escape(state.draftClaim)}</textarea><textarea id="sm-reason" class="sm-draft-reason" data-key="reason" maxlength="700" placeholder="What it improves" aria-label="What your version improves">${escape(state.draftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-compose" data-id="${idea.id}" data-key="cancel-compose" aria-label="Discard draft" data-tooltip="Discard">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add" data-id="${idea.id}" data-key="add" aria-label="Add your version" data-tooltip="Add">${icon('check')}</button></div></form>`;
+    return `<span aria-hidden="true"></span><button type="button" class="sm-add-card cursor-interaction" data-action="compose" data-id="${idea.id}" data-key="compose-${idea.id}" aria-label="Suggest a better version" data-tooltip="Suggest a version">${icon('plus')}</button>`;
   }
   function trackAxis(idea) {
     return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button></div>`;
   }
   function track(idea) {
     const versions=ordered(idea);
-    return `<div class="sm-track" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>cardFace(id,true)+`<div class="sm-version-vote" data-vote-for="${id}">${preferenceVote(id)}</div>`).join('')}${addSlot(idea)}</div>`;
+    return `<div class="sm-track" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>`<div class="sm-version-vote" data-vote-for="${id}">${preferenceVote(id)}</div>`+cardFace(id,true)).join('')}${addSlot(idea)}</div>`;
   }
+  // While moving a version, every other row in its option becomes a target.
+  const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea) {
-    const open=state.open===idea.id;
-    return `<section class="sm-idea ${open?'sm-open':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}</div></section>`;
+    const open=state.open===idea.id,from=movingFrom();
+    const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
+    const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="Move here: join “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}Move here</span></button>`:'';
+    return `<section class="sm-idea ${open?'sm-open':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}${here}</div></section>`;
+  }
+  function moveBanner(option) {
+    const from=movingFrom();
+    if(!from||from.option!==option) return '';
+    return `<div class="sm-move-banner" role="status"><span>Pick the argument it belongs with.</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
   function addArgument(option) {
@@ -485,35 +595,78 @@
     if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
     return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
   }
+  // An option's name, or the field for renaming it.
+  function optionTitle(option) {
+    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}</h2>`;
+    return `<input id="sm-option-name" class="sm-option-input" type="text" data-key="option-name" data-select maxlength="80" placeholder="Name this option" aria-label="Option name" value="${escape(state.optionDraft)}">`;
+  }
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
-    if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}${addArgument(option)}</section>`;
+    if(state.updated&&rows.length>1)[rows[0],rows[1]]=[rows[1],rows[0]];
+    // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
+    let rowsHtml='',undoShown=false;
+    const undo=state.undo?.option===option?undoMarkup():'';
+    rowsHtml+=moveBanner(option);
+    if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
+    rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
+    if(undo&&!undoShown) rowsHtml+=undo;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rowsHtml}${addArgument(option)}</section>`;
   }
-  function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
+  const MAX_OPTIONS=4;
+  function boardMarkup() {
+    // A deleted option has no column to hold its Undo bar, so it spans the board instead.
+    const orphanUndo=state.undo&&!doc.options.some(o=>o.id===state.undo.option)?`<div class="sm-board-undo">${undoMarkup()}</div>`:'';
+    const add=doc.options.length<MAX_OPTIONS?`<div class="sm-col-gap" aria-hidden="true"></div><div class="sm-add-option-col"><button type="button" class="sm-add-option cursor-interaction" data-action="add-option" data-key="add-option" aria-label="Add an option" data-tooltip="Add an option">${icon('plus')}<span class="sm-add-short">Option</span><span class="sm-add-long">Add an option</span></button></div>`:'';
+    return orphanUndo+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+  }
+  function boardColumns() {
+    const wide=state.open?ideaOf(state.open)?.option:null;
+    // While a row is unfolded, the other columns keep a readable width (when there is room for it).
+    const rest=!wide||doc.options.length>3?'minmax(0,1fr)':`minmax(${doc.options.length===2?260:200}px,1fr)`;
+    return doc.options.map(o=>o.id===wide?'minmax(0,2.6fr)':rest).join(' 32px ')+(doc.options.length<MAX_OPTIONS?' 20px max-content':'');
+  }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
     const brief=card.brief||card.explanation;
     const sourceRows=card.sources.map(id=>{
       const source=sources[id],key=cardId+'/'+id;
-      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
+      const mine=source.by==='you',ref=`data-id="${cardId}" data-source="${id}"`;
+      const actions=[
+        mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="edit-source" ${ref} data-key="edit-source-${key}">Edit</button>`:'',
+        mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="remove-source" ${ref} data-key="remove-source-${key}" aria-label="Remove from this version">Remove</button>`:'',
+        !source.unavailable?`<button type="button" class="sm-link-button cursor-interaction" data-action="report-source" ${ref} data-key="report-source-${key}" aria-label="Report that it can’t be opened">Can’t open it?</button>`:'',
+        source.reportedBy==='you'?`<button type="button" class="sm-link-button cursor-interaction" data-action="unreport-source" ${ref} data-key="unreport-source-${key}" aria-label="Withdraw your report">Undo report</button>`:''
+      ].join('');
+      const note=source.reportedBy==='you'?'You reported it can’t be opened.':'';
+      const rows=[['Backs up',source.premise],['Limit',source.limit]].filter(([,v])=>v).map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('');
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    const formHere=state.sourceForm?.card===cardId;
+    const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
+    const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
-  const ORGS = {pod6:'Pod 6 · Building with AI', none:'Personal'};
+  const ORGS = {pod6:'POD 6', none:'Personal'};
   const VISIBILITY = {
-    private:{icon:'lock',label:'Private',hint:'Only you and people you invite.'},
-    org:{icon:'building-2',label:'Organization',hint:'Everyone in the organization can find and read it.'},
-    link:{icon:'link',label:'Anyone with the link',hint:'Anyone who has the link can read it, without signing in.'}
+    private:{icon:'lock',label:'Private',short:'Private',hint:'Only you and people you invite.'},
+    org:{icon:'building-2',label:'Organization',short:'Organization',hint:'Everyone in the organization can find and read it.'},
+    link:{icon:'link',label:'Anyone with the link',short:'Anyone with link',hint:'Anyone who has the link can read it, without signing in.'}
   };
-  const PERMISSIONS = {viewers:'Anyone who can see it',invited:'Invited contributors',me:'Only me'};
   const posted = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
   function headMarkup() {
     const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer==='settings';
-    const org=q.org!=='none'?`<li>${escape(ORGS[q.org]||'')}</li>`:'';
-    return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question"><li>Posted by ${escape(q.author)}</li><li><time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}<li>${icon(vis.icon)}${vis.label}</li></ul>`
+    // Visible to the organization: the pill names it ("POD 6 only"). Otherwise the organization gets its own item.
+    const orgName=q.org!=='none'?ORGS[q.org]||'':'';
+    const orgOnly=q.visibility==='org'&&orgName;
+    const org=orgName&&!orgOnly?`<li class="sm-meta-org">${icon('users')}<span class="sm-meta-org-name">${escape(orgName)}</span></li>`:'';
+    const pill=orgOnly?`${escape(orgName)} only`:vis.short;
+    const initials=q.author.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
+      +`<li class="sm-meta-author"><span class="sm-meta-avatar" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
+      +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}`
+      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="${escape(vis.hint)}">${icon(vis.icon)}${pill}</span></li></ul>`
       +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {
@@ -534,9 +687,8 @@
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
       +select('org',ORGS,q.org,'Organization')
       +`<fieldset class="sm-field"><legend>Who can see it</legend><div class="sm-choices">${visibility}</div></fieldset>`
-      +select('contribute',PERMISSIONS,q.contribute,'Who can add arguments, versions, and evidence')
-      +select('vote',{viewers:PERMISSIONS.viewers,invited:PERMISSIONS.invited},q.vote,'Who can vote and assess evidence')
-      +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Settings and edits are saved in this browser only; nothing is shared with anyone.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
+      +`<div class="sm-field sm-coming"><span class="sm-coming-title">Who can contribute and vote <span class="sm-soon">Coming soon</span></span><p class="sm-field-hint">Limit adding, editing, and voting to invited people.</p></div>`
+      +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
   // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
   const commenting = target => state.drawer==='comments' && state.commentTarget===target;
@@ -546,7 +698,7 @@
   const openCount = target => threadsOn(target).filter(c=>!c.resolved).reduce((n,c)=>n+(c.deleted?0:1)+repliesTo(c.id).filter(r=>!r.deleted).length,0);
   function commentButton(target,cls,noun) {
     const n=openCount(target), label=n?`${n} ${n===1?'comment':'comments'} on this ${noun}`:`Comment on this ${noun}`;
-    return `<button type="button" class="${cls} sm-comment-button cursor-interaction" data-action="comments" data-id="${target}" data-key="comments-${target}" aria-expanded="${commenting(target)}" aria-controls="sm-drawer-body" aria-label="${label}" data-tooltip="${n?label:'Comment'}">${icon('message-square')}${n?`<span class="sm-comment-count">${n}</span>`:''}</button>`;
+    return `<button type="button" class="${cls} sm-comment-button cursor-interaction" ${n?'':'data-empty'} data-action="comments" data-id="${target}" data-key="comments-${target}" aria-expanded="${commenting(target)}" aria-controls="sm-drawer-body" aria-label="${label}" data-tooltip="${n?label:'Comment'}">${icon('message-square')}${n?`<span class="sm-comment-count">${n}</span>`:''}</button>`;
   }
   function describeTarget(target) {
     const [kind,id]=target.split(':');
@@ -575,9 +727,9 @@
     const open=threads.filter(c=>!c.resolved), resolved=threads.filter(c=>c.resolved);
     const resolvedToggle=resolved.length?`<button type="button" class="sm-text-button cursor-interaction" data-action="show-resolved" data-key="show-resolved" aria-expanded="${state.showResolved}">${icon(state.showResolved?'chevron-down':'chevron-right')}${resolved.length} resolved</button>${state.showResolved?resolved.map(thread).join(''):''}`:'';
     return `<div class="sm-drawer-body sm-comments-body" id="sm-drawer-body"><blockquote class="sm-comment-target"><span>${about.kind}</span><p>${escape(about.text)}</p></blockquote>`
-      +(open.length?open.map(thread).join(''):'<p class="sm-field-hint">No open comments. Ask a question, point out a gap, or suggest a change.</p>')
+      +(open.length?open.map(thread).join(''):'<p class="sm-field-hint">No comments yet.</p>')
       +resolvedToggle+`</div>`
-      +`<div class="sm-comment-compose"><textarea id="sm-comment" data-key="comment-text" rows="2" maxlength="1000" placeholder="Add a comment" aria-label="Add a comment on this ${about.kind.toLowerCase()}">${escape(state.commentDraft)}</textarea><div class="sm-comment-form-actions"><span class="sm-field-hint">⌘/Ctrl + Enter</span><button type="button" class="sm-button sm-solid cursor-interaction" data-action="comment-add" data-key="comment-add">Comment</button></div></div>`;
+      +`<div class="sm-comment-compose"><textarea id="sm-comment" data-key="comment-text" rows="2" maxlength="1000" placeholder="Add a comment" aria-label="Add a comment on this ${about.kind.toLowerCase()}">${escape(state.commentDraft)}</textarea><div class="sm-comment-form-actions"><button type="button" class="sm-button sm-solid cursor-interaction" data-action="comment-add" data-key="comment-add" title="Comment (⌘/Ctrl + Enter)">Comment</button></div></div>`;
   }
   const drawer=root.querySelector('.sm-drawer');
   function renderDrawer() {
@@ -593,6 +745,160 @@
   const headEl=root.querySelector('.sm-head');
   function renderHead() { headEl.innerHTML=headMarkup(); if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
 
+  const menuEl=root.querySelector('.sm-menu');
+  function renderMenu() {
+    const open=!!state.menu&&(!!cards[state.menu]||doc.options.some(o=>'option:'+o.id===state.menu));
+    menuEl.setAttribute('aria-label',state.menu?.startsWith('option:')?'Option settings':'Version options');
+    if(!open) state.menu=null;
+    menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):'';
+  }
+  // The menu lives at the prototype root (so a scrolling row can't clip it), placed under its ⋯ button.
+  function positionMenu() {
+    if(!state.menu) return;
+    const trigger=root.querySelector(`[data-key="menu-${state.menu}"]`);
+    if(!trigger){state.menu=null;menuEl.hidden=true;return;}
+    const rootBox=root.getBoundingClientRect(),box=trigger.getBoundingClientRect();
+    menuEl.style.left=Math.max(8,Math.round(box.right-rootBox.left-menuEl.offsetWidth))+'px';
+    menuEl.style.top=Math.round(box.bottom-rootBox.top+4)+'px';
+  }
+  function closeMenu() { if(!state.menu) return; state.menu=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
+  // Deleting keeps a snapshot for a short Undo window; the snapshot is never saved.
+  let undoTimer=0;
+  const takeSnapshot = () => JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
+  // Shows the Undo bar under a row (afterIdea) for ten seconds. focus: where focus goes after Undo, if not the card itself.
+  function startUndo(snapshot,details) {
+    clearTimeout(undoTimer);
+    state.undo={snapshot,...details};
+    const current=state.undo;
+    // The bar leaves quietly after ten seconds, without re-rendering anything you might be typing in.
+    undoTimer=setTimeout(()=>{if(state.undo!==current)return;state.undo=null;board.querySelector('.sm-undo')?.remove();animateWires();},10000);
+  }
+  // Evidence. A source is shared: several versions can cite it. Whoever added a source can edit it or remove it
+  // from a version; anyone can report that it can't be opened.
+  const SOURCE_FIELDS = [
+    ['name','Source','e.g. Library visitor counts, 2025',true,120],
+    ['locator','Where to find it','Link, page, or section',false,200],
+    ['finding','What it shows','The specific finding, in plain words',true,500],
+    ['premise','What it backs up','The part of this argument it backs up',false,300],
+    ['limit','Limits','What it does not show',false,300]
+  ];
+  // Changing the evidence after people assessed the wording is flagged, so earlier assessments are read in context.
+  function markEvidenceChanged(cardId) { if(stats(cardId).n) cards[cardId].evidenceChanged=true; }
+  function saveSource() {
+    const {card:cardId,source:sourceId}=state.sourceForm,draft=state.sourceDraft;
+    const clean=Object.fromEntries(SOURCE_FIELDS.map(([f,,,,max])=>[f,String(draft[f]||'').replace(/\s+/g,' ').trim().slice(0,max)]));
+    const missing=SOURCE_FIELDS.filter(([f,,,req])=>req&&!clean[f]).map(([f])=>f);
+    if(missing.length) return {missing};
+    let id=sourceId;
+    if(id) Object.assign(sources[id],clean);
+    else {id='s'+(doc.nextId++);sources[id]={...clean,by:'you'};cards[cardId].sources.push(id);}
+    markEvidenceChanged(cardId);
+    state.openSources[cardId+'/'+id]=true;
+    state.sourceForm=null;state.sourceDraft={};
+    return {id,added:!sourceId};
+  }
+  function removeSource(cardId,sourceId) {
+    const snapshot=takeSnapshot(),card=cards[cardId],idea=ideaOf(card.idea);
+    card.sources=card.sources.filter(x=>x!==sourceId);
+    if(!Object.values(cards).some(c=>c.sources.includes(sourceId))) delete sources[sourceId];
+    delete state.openSources[cardId+'/'+sourceId];
+    markEvidenceChanged(cardId);
+    startUndo(snapshot,{option:idea.option,afterIdea:idea.id,label:'Source removed.',focus:`src-${cardId}/${sourceId}`});
+  }
+  function sourceForm(cardId) {
+    const editing=state.sourceForm.source,d=state.sourceDraft;
+    const more=state.sourceMore,fields=SOURCE_FIELDS.filter(([f])=>more||!['premise','limit'].includes(f)).map(([f,label,hint,req,max])=>{
+      const id='sm-src-'+f,tag=f==='name'||f==='locator'?'input':'textarea';
+      const control=tag==='input'?`<input id="${id}" type="text" data-field="${f}" data-key="src-${f}" maxlength="${max}" placeholder="${hint}" value="${escape(d[f]||'')}">`:`<textarea id="${id}" data-field="${f}" data-key="src-${f}" maxlength="${max}" rows="2" placeholder="${hint}">${escape(d[f]||'')}</textarea>`;
+      return `<div class="sm-source-field"><label for="${id}">${label}${req?'':' <span>(optional)</span>'}</label>${control}</div>`;
+    }).join('');
+    return `<form class="sm-source-form" id="sm-source-form" aria-label="${editing?'Edit source':'Add a source'}"><h4>${editing?'Edit source':'Add a source'}</h4>${fields}${more?'':`<button type="button" class="sm-text-button sm-source-more cursor-interaction" data-action="source-more" data-id="${cardId}" data-key="source-more">${icon('plus')}Backs up &amp; limits</button>`}<div class="sm-source-form-actions"><button type="button" class="sm-text-button cursor-interaction" data-action="cancel-source" data-id="${cardId}" data-key="cancel-source">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="save-source" data-id="${cardId}" data-key="save-source">${editing?'Save source':'Add source'}</button></div></form>`;
+  }
+  // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
+  // Its articulation votes and comments travel with it. A row left empty is removed.
+  function detachVersion(card) {
+    const old=ideaOf(cards[card].idea);
+    old.versions=old.versions.filter(v=>v!==card);
+    if(!old.versions.length){ideas.splice(ideas.indexOf(old),1);delete state.importance[old.id];if(state.open===old.id){state.open=null;state.composing=false;}}
+  }
+  function moveVersion(card,targetId) {
+    const snapshot=takeSnapshot(),target=ideaOf(targetId),from=cards[card].idea;
+    detachVersion(card);
+    cards[card].idea=targetId;target.versions.push(card);
+    state.open=targetId;state.composing=false;state.expanded=card;
+    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:'Version moved.',card,idea:from});
+  }
+  function splitVersion(card) {
+    const snapshot=takeSnapshot(),old=ideaOf(cards[card].idea),ideaId='i'+(doc.nextId++);
+    detachVersion(card);
+    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:'you'});
+    cards[card].idea=ideaId;
+    if(state.expanded===card&&state.open===old.id) state.expanded=null;
+    startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:'Split into its own argument.',card,idea:old.id});
+    return ideaId;
+  }
+  // Options. Renaming happens in the column header; a new option starts as an empty name field.
+  function commitOptionName() {
+    const option=state.renamingOption; if(!option) return null;
+    const name=state.optionDraft.replace(/\s+/g,' ').trim().slice(0,80),isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(name) {doc.options.find(o=>o.id===option).name=name;announce(isNew?`Option “${name}” added. Add its first argument at the bottom of its column.`:'Option renamed.');return isNew?'compose-idea-'+option:'menu-option:'+option;}
+    if(isNew) {doc.options=doc.options.filter(o=>o.id!==option);announce('Empty option removed.');return 'add-option';}
+    announce('An option needs a name; the old name was kept.');return 'menu-option:'+option;
+  }
+  function cancelOptionName() {
+    const option=state.renamingOption,isNew=state.newOption===option;
+    state.renamingOption=null;state.newOption=null;
+    if(isNew){doc.options=doc.options.filter(o=>o.id!==option);return 'add-option';}
+    return 'menu-option:'+option;
+  }
+  function deleteOption(option) {
+    const snapshot=takeSnapshot();
+    doc.options=doc.options.filter(o=>o.id!==option);
+    doc.comments=doc.comments.filter(c=>c.target!=='option:'+option);
+    if(state.drawer==='comments'&&state.commentTarget==='option:'+option) state.drawer=null;
+    if(state.composingIdea===option) state.composingIdea=null;
+    startUndo(snapshot,{option,afterIdea:null,label:'Option deleted.',focus:'menu-option:'+option});
+  }
+  function deleteVersion(id) {
+    const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
+    const rows=ideas.filter(i=>i.option===option),rowIndex=rows.indexOf(idea);
+    const snapshot=takeSnapshot();
+    idea.versions=idea.versions.filter(v=>v!==id);delete cards[id];
+    doc.comments=doc.comments.filter(c=>c.target!=='card:'+id);
+    delete state.preference[id];delete state.assessments[id];
+    const rowGone=!idea.versions.length;
+    if(rowGone){ideas.splice(ideas.indexOf(idea),1);delete state.importance[idea.id];if(state.open===idea.id){state.open=null;state.composing=false;}}
+    if(state.expanded===id) state.expanded=null;
+    if(state.drawer==='comments'&&state.commentTarget==='card:'+id) state.drawer=null;
+    startUndo(snapshot,{card:id,idea:idea.id,option,label:rowGone?'Argument deleted.':'Version deleted.',afterIdea:rowGone?(rows[rowIndex-1]?.id||null):idea.id});
+    return rowGone;
+  }
+  function undoDelete() {
+    const snap=JSON.parse(state.undo.snapshot),{card,idea,focus}=state.undo;
+    clearTimeout(undoTimer);state.undo=null;
+    useDoc(snap.doc);
+    for(const key of ['importance','preference','assessments','openSources']) state[key]=snap[key];
+    if(focus) return focus;
+    const face=state.open===idea||ordered(ideaOf(idea))[0]===card;
+    return face?'claim-'+card:'stack-'+idea;
+  }
+
+  // Shows the meaning of a vote beside the arrow that was pressed: above or below for importance,
+  // left or right for articulation, matching the axes. It fades after about a second.
+  function voteToast({key,dir,text}) {
+    const btn=root.querySelector(`[data-key="${key}"]`),control=btn?.closest('.sm-vote');
+    if(!control) return;
+    root.querySelectorAll('.sm-vote-toast').forEach(t=>t.remove());
+    const t=document.createElement('div');t.className='sm-vote-toast';t.setAttribute('aria-hidden','true');t.textContent=text;root.appendChild(t);
+    const rb=root.getBoundingClientRect(),b=control.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight;
+    const pos={up:[b.left+b.width/2-w/2,b.top-h-6],down:[b.left+b.width/2-w/2,b.bottom+6],left:[b.left-w-6,b.top+b.height/2-h/2],right:[b.right+6,b.top+b.height/2-h/2]}[dir];
+    t.style.left=Math.round(Math.max(rb.left+4,pos[0])-rb.left)+'px';t.style.top=Math.round(pos[1]-rb.top)+'px';
+    const nudge={up:'0,4px',down:'0,-4px',left:'4px,0',right:'-4px,0'}[dir];
+    const from=reducedMotion()?'none':`translate(${nudge})`;
+    t.animate([{opacity:0,transform:from},{opacity:1,transform:'none',offset:.15},{opacity:1,offset:.7},{opacity:0}],{duration:1400,easing:'ease-out',fill:'forwards'});
+    setTimeout(()=>t.remove(),1500);
+  }
   const scene=root.querySelector('.sm-scene');
   const links=root.querySelector('.sm-links');
   const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -661,7 +967,7 @@
     root.style.minHeight=(top+drawer.offsetHeight+16)+'px';
   }
   function drawLinks() {
-    drawTexture();positionDrawer();
+    drawTexture();positionDrawer();positionMenu();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector('.sm-head'));
@@ -700,15 +1006,15 @@
     const beforeFaces=new Map([...board.querySelectorAll('.sm-card[data-card]')].map(el=>[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
-    board.dataset.open=state.open?ideaOf(state.open).option:'';
+    board.style.setProperty('--sm-cols',boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup();headEl.classList.toggle('sm-commenting',commenting('question'));
-    renderDrawer();
+    renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
-    positionDrawer();
-    if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
+    positionDrawer();positionMenu();
+    if(focusKey){const el=root.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});if(el?.matches('input[data-select]'))el.select();}
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
       if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:340});
@@ -753,7 +1059,7 @@
   }
   async function collapse(id, focus) {
     busy=true; await collapseOut(id); busy=false;
-    state.expanded=null; render(focus||'expand-'+id); announce('Card collapsed.');save();
+    state.expanded=null;state.sourceForm=null;state.sourceDraft={}; render(focus||'expand-'+id); announce('Card collapsed.');save();
   }
   root.addEventListener('input',event=>{
     if(event.target.id==='sm-question') {
@@ -766,6 +1072,10 @@
     if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
+    if(event.target.closest('#sm-source-form')&&event.target.dataset.field) {state.sourceDraft[event.target.dataset.field]=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-option-name') {state.optionDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -783,11 +1093,88 @@
     const key=el.dataset.key;renderHead();renderDrawer();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     root.querySelector(`[data-key="${key}"]`)?.focus();animateWires();save();
   });
+  // A click anywhere outside the open menu closes it (the clicked control still does its own job).
+  root.addEventListener('click',event=>{
+    if(state.menu&&!event.target.closest('.sm-menu')&&!event.target.closest(`[data-key="menu-${state.menu}"]`)) closeMenu();
+  },true);
+  root.addEventListener('scroll',()=>closeMenu(),true);
+  // Leaving the name field keeps what was typed (or drops a new option left unnamed).
+  root.addEventListener('focusout',event=>{
+    if(event.target.id!=='sm-option-name'||!state.renamingOption||!event.target.isConnected) return;
+    setTimeout(()=>{if(!state.renamingOption)return;commitOptionName();render();save();});
+  });
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
+    if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
+    if(action==='card-menu') {
+      if(state.menu===id){closeMenu();trigger.focus();return;}
+      state.menu=id;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
+      if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+      positionMenu();menuEl.querySelector('[role="menuitem"]:not([aria-disabled])')?.focus();return;
+    }
+    if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
+    // Any other action leaves pick mode.
+    if(state.moving&&!['move-here','cancel-move'].includes(action)) state.moving=null;
+    if(action==='add-option') {
+      if(doc.options.length>=MAX_OPTIONS) return;
+      const option='o'+(doc.nextId++);doc.options.push({id:option,name:''});
+      state.renamingOption=option;state.newOption=option;state.optionDraft='';focus='option-name';
+      announce('New option added at the end. Type its name, then press Enter.');
+    }
+    if(action==='rename-option') {const option=id.slice(7);state.renamingOption=option;state.newOption=null;state.optionDraft=optionName(option);focus='option-name';announce('Rename the option, then press Enter. Escape keeps the old name.');}
+    if(action==='delete-option') {deleteOption(id.slice(7));focus='undo';announce('Option deleted. Undo is available for ten seconds.');}
+    if(action==='move-card') {state.moving=id;state.expanded=null;const first=ideas.find(i=>i.option===ideaOf(cards[id].idea).option&&i.id!==cards[id].idea);focus='move-here-'+first.id;announce('Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.');}
+    if(action==='cancel-move') {const card=state.moving;state.moving=null;focus='menu-'+card;announce('Move cancelled.');}
+    if(action==='move-here') {
+      const card=state.moving;state.moving=null;moveVersion(card,id);focus='undo';motion='unfold';lastToggled=id;
+      announce('Moved. It now sits with the other versions of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+    }
+    if(action==='split-card') {splitVersion(id);focus='undo';announce('Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.');}
+    if(action==='edit-card') {
+      const card=cards[id];state.editing=id;state.editDraftClaim=card.claim;state.editDraftReason=card.brief||card.explanation||'';
+      focus='edit-claim';announce('Editing your version in place.');
+    }
+    if(action==='cancel-edit') {state.editing=null;focus='menu-'+id;announce('Changes discarded.');}
+    if(action==='save-edit') {
+      const claim=state.editDraftClaim.replace(/\s+/g,' ').trim(),field=root.querySelector('#sm-edit-claim');
+      if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('A version needs wording.');return;}
+      const card=cards[id];card.claim=claim.slice(0,500);card.explanation=state.editDraftReason.trim().slice(0,700);delete card.brief;
+      state.editing=null;focus='claim-'+id;announce('Your version was updated.');
+    }
+    if(action==='revise-card') {
+      const ideaId=cards[id].idea,wasOpen=state.open===ideaId;
+      state.open=ideaId;lastToggled=ideaId;state.composing=true;state.composingIdea=null;
+      const kept=!!state.draftClaim.trim();
+      if(!kept){state.draftClaim=cards[id].claim;state.draftReason='';}
+      focus='draft';motion=wasOpen?'':'unfold';
+      announce(kept?'You already have a draft version in progress in this row; it was kept.':'A new version starts from this wording. Change it, then say what it improves.');
+    }
+    if(action==='delete-card') {
+      const rowGone=deleteVersion(id);focus='undo';
+      announce(rowGone?'Argument deleted. Undo is available for ten seconds.':'Version deleted. Undo is available for ten seconds.');
+    }
+    if(action==='source-more') {state.sourceMore=true;focus='src-premise';}
+    if(action==='add-source') {state.sourceMore=false;state.sourceForm={card:id,source:null};state.sourceDraft={};focus='src-name';announce('Add a source in the form below the evidence list.');}
+    if(action==='edit-source') {const sid=trigger.dataset.source;state.sourceForm={card:id,source:sid};state.sourceDraft={...sources[sid]};state.sourceMore=!!(sources[sid].premise||sources[sid].limit);focus='src-name';announce('Editing your source.');}
+    if(action==='cancel-source') {const sid=state.sourceForm?.source;state.sourceForm=null;state.sourceDraft={};focus=sid?`src-${id}/${sid}`:'add-source-'+id;}
+    if(action==='save-source') {
+      const result=saveSource();
+      if(result.missing){
+        const form=root.querySelector('#sm-source-form');
+        form.querySelectorAll('[data-field]').forEach(el=>el.toggleAttribute('aria-invalid',result.missing.includes(el.dataset.field)));
+        form.querySelectorAll('[aria-invalid]').forEach(el=>el.setAttribute('aria-invalid','true'));
+        form.querySelector('[aria-invalid]').focus();announce('Name the source and say what it shows.');return;
+      }
+      focus=`src-${id}/${result.id}`;announce(result.added?'Source added. It is open below so you can check it.':'Source updated.');
+    }
+    if(action==='remove-source') {removeSource(id,trigger.dataset.source);focus='undo';announce('Source removed from this version. Undo is available for ten seconds.');}
+    if(action==='report-source') {const src=sources[trigger.dataset.source];src.unavailable=true;src.reportedBy='you';focus=`src-${id}/${trigger.dataset.source}`;announce('Reported as unavailable for every version that cites it. An unavailable source does not make the claim false.');}
+    if(action==='unreport-source') {const src=sources[trigger.dataset.source];delete src.unavailable;delete src.reportedBy;focus=`src-${id}/${trigger.dataset.source}`;announce('Report withdrawn.');}
+    if(action==='undo') {if(!state.undo)return;focus=undoDelete();announce('Restored.');}
     if(action==='toggle') {
       if(state.expanded===id){collapse(id,key);return;}
+      if(state.sourceForm&&state.sourceForm.card!==id){state.sourceForm=null;state.sourceDraft={};}
       state.expanded=id;motion='detail';announce('Context and evidence shown. Opening it does not cast an assessment.');
     }
     if(action==='unfold') {
@@ -832,8 +1219,9 @@
       if(!state.confirmReset){state.confirmReset=true;focus='reset';announce('Click again to reset the board, your votes, and your edits to the original example.');}
       else {state=freshState();useDoc(seedDoc());state.drawer='settings';focus='reset';announce('The example board was reset.');}
     }
-    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
-    if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
+    let toast=null;
+    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'up':'down',text:state.importance[id]?(Number(vote)>0?'Important.':'Less important.'):'Vote withdrawn.'};announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
+    if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'left':'right',text:state.preference[id]?(Number(vote)>0?'Well articulated.':'Weaker articulation.'):'Vote withdrawn.'};announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
     if(action==='assess') {const value=trigger.dataset.value;state.assessments[id]=value==='skip'||state.assessments[id]===value?null:value;announce(state.assessments[id]?'Your one active assessment is included in the support percentage.':'Assessment withdrawn.');}
     if(action==='compose-idea') {state.composingIdea=id;state.composing=false;focus='idea-claim';announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
     if(action==='cancel-idea') {state.composingIdea=null;focus='compose-idea-'+id;announce('Draft kept for later.');}
@@ -863,12 +1251,27 @@
     }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     render(focus,motion);save();
+    if(toast) voteToast(toast);
   });
   root.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
+    if(event.key==='Escape'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=cancelOptionName();render(focus);save();announce('Rename cancelled.');return;}
+    if(event.key==='Enter'&&event.target.matches?.('#sm-source-form input')){event.preventDefault();root.querySelector('[data-action="save-source"]')?.click();return;}
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
+    // Menu keys: arrows move between items, Tab leaves and closes it.
+    if(state.menu&&event.target.closest?.('.sm-menu')) {
+      const items=[...menuEl.querySelectorAll('[role="menuitem"]')],i=items.indexOf(event.target);
+      const to={ArrowDown:i+1,ArrowUp:i-1,Home:0,End:items.length-1}[event.key];
+      if(to!==undefined){event.preventDefault();items[(to+items.length)%items.length].focus();return;}
+      if(event.key==='Tab'){closeMenu();return;}
+    }
     if(event.key!=='Escape'||busy)return;
+    if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.moving){event.preventDefault();const card=state.moving;state.moving=null;render('menu-'+card);announce('Move cancelled.');return;}
+    if(state.sourceForm){event.preventDefault();const {card,source}=state.sourceForm;state.sourceForm=null;state.sourceDraft={};render(source?`src-${card}/${source}`:'add-source-'+card);announce('Source form closed.');return;}
+    if(state.editing){event.preventDefault();const id=state.editing;state.editing=null;render('menu-'+id);announce('Changes discarded.');return;}
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}

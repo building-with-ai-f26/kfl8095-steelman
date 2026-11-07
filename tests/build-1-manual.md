@@ -192,6 +192,98 @@ Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed co
 | Narrow | At 390 px the draft card matches the cards' width and left edge; no horizontal overflow |
 | Browser errors | No prototype errors in the console |
 
+## November 7 — Card menu: edit, delete, undo (batch 4)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with edit-and-reload and delete-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Menu | A quiet ⋯ in each card's top-right corner opens a menu under it; it says who wrote the version. Arrow keys move and wrap, Escape closes and returns focus to ⋯, a click outside closes it |
+| Others' versions | "Suggest a revised version" is available; Edit and Delete appear unavailable ("Only the author can…") and do nothing when chosen |
+| Suggest a revised version | Unfolds the row with a draft prefilled from that wording and focus in it; an existing draft in that row is kept, not overwritten |
+| Edit (your version) | Opens in place with the wording and context; empty wording is refused; whitespace is tidied; saving updates the card and focus returns to it. Escape discards changes and returns focus to ⋯ |
+| Delete a version | In a two-version row, deletes only your version; the row stays open with an Undo bar under it |
+| Delete an argument | The menu says "Delete argument" for an only version; the row is removed and the Undo bar sits where it was; focus moves to Undo |
+| Undo | Restores the card, its row, its articulation vote (1), and its comment (count 1); the bar leaves after ten seconds without re-rendering the board |
+| Persistence | An edit and a later delete each survived a reload of the standalone page; the Undo bar does not persist |
+| Narrow | At 390 px the menu stays on screen (75–325 px); ⋯ grows to 40 px on touch screens; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
+Not reachable in this single-person prototype: editing or withdrawing a version that other people have voted on (example cards belong to others; your own cards have only your own votes). The intended rule, a revised version instead of an edit once others have voted, is described in the plan but not built.
+
+## November 7 — Evidence: add, edit, remove, report (batch 5)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with add-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Add a source | "Add a source" under the evidence list opens a form (source, where to find it, what it shows; supports and limits optional) with focus on the first field. Empty submit marks the two required fields. Enter in a one-line field saves |
+| After adding | The source is listed and open, marked "Added by you", with Edit, Remove from this version, and Report as unavailable; the paperclip count goes 0 → 1; "Yes" becomes available on a card that had no sources |
+| Edit | The form opens prefilled; adding a limit shows it under the source |
+| Others' sources | Only "Report as unavailable" is offered |
+| Report and withdraw | Reporting marks the source Unavailable; on a card with another available source, "Yes" stays enabled. Reporting the shared survey from one card marks it on every version citing it and disables "Yes" on a version whose only source it is; "It opens again" restores both |
+| Evidence changed | Adding a source to the staffing card (20 assessments) shows "The evidence changed after some people assessed this wording." |
+| Remove and undo | Removing your source drops the count 3 → 2, keeps the card expanded, and shows "Source removed. Undo" under the row; Undo restores it and focuses the source |
+| Escape | Closes the source form first; collapsing the card or opening another closes it too |
+| Persistence | A source added on the standalone page survived a reload, still open |
+| Narrow | At 390 px the form stays inside the card; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
+## November 7 — Move and split versions (batch 6)
+
+Checked by the coding agent at 1280 px on an unsandboxed copy (scripted). Moves and splits change the same saved document as earlier batches; they were not separately reloaded on the standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Menu | Your version's menu adds "Move to another argument" and "Split into its own argument"; Split is unavailable for an only version. Others' versions show "Move or split" as unavailable ("Suggest it in a comment") |
+| Pick mode | A banner explains the choice; the three other Open-on-Sundays rows show "Move here"; the source row recedes; the other option shows no targets; focus goes to the first target |
+| Escape | Leaves pick mode and returns focus to ⋯ |
+| Move | The version joins "Sunday hours…" (now four versions), which unfolds with the moved card expanded; its now-empty row disappears; the target keeps importance 42; Undo restores both rows and focuses the card |
+| Split | From the four-version row, the version becomes a new row at the bottom (importance 0), keeping its comment; the Undo bar sits under the new row; Undo puts it back in the row |
+| Browser errors | No prototype errors in the console |
+
+## November 7 — Add, rename, and remove options (batch 7)
+
+Checked by the coding agent at 1280 px, about 1000 px, and 390 px; scripted on an unsandboxed copy, with add-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Layout | The board builds its columns from the options (2–4, with 32 px gaps) instead of assuming two. The importance axis stays on the first column; wires reach every option header |
+| Add | The dashed + after the last column adds an option with its name field focused; Enter saves and moves focus to its "Add an argument" slot. Escape, or leaving it empty, removes the new option. At four options the + disappears |
+| Rename | ⋯ → Rename option selects the current name in place. Enter saves; Escape and an empty name keep the old name |
+| Delete rules | "Delete option" is unavailable for options with arguments ("Move or delete its arguments first.") and when only two options remain ("A question needs at least two options.") |
+| Delete and undo | Deleting an empty option shows "Option deleted. Undo" across the board (its column is gone) and brings the + back; Undo restores it and focuses its ⋯ |
+| Unfold | With four options, an unfolded row widens its column (about 405 px versus 156 px for the others) |
+| Phone | At 390 px, options stack full width with no gap columns; "Add an option" is a full-width dashed bar; no horizontal overflow |
+| Persistence | An option added on the standalone page survived a reload |
+| Browser errors | No prototype errors in the console |
+
+Known limit: three or more options at about 1000 px squeeze cards to roughly 100 px of text. Horizontal board scrolling (with wires following) would be the likely fix.
+
+Question details restyle: each detail now has its own treatment: an initials avatar with "Posted by **name**", an italic serif date with a calendar icon, the organization in tracked capitals ("POD 6") with its course name muted beside it, and visibility as an outlined pill with its icon (hover shows what it means). Hairlines replace the dots on desktop; on phones the line wraps without dividers. Checked at 800 px and 390 px; no horizontal overflow, no console errors.
+
+## November 7 — Clarity and concision pass
+
+From a review of every feature. Checked by the coding agent at 800, 1024, and 390 px on an unsandboxed copy (scripted); vote labels were checked by freezing their animation midway.
+
+| Change | Observed result |
+| --- | --- |
+| One way to expand | The meter and source count are information only (with titles); a card's buttons are ⋯, its wording, comments, and the chevron. A card with no sources shows no paperclip |
+| Quiet empty comments | On pointer devices, a card's comment button is hidden until hover or focus when it has no comments |
+| Version count | Stacks with more versions show a small count (3 on "Sunday hours…") |
+| Permissions | The two permission selects are gone; Settings shows "Who can contribute and vote" with a Coming soon tag |
+| Question line | "Posted by" dropped; organization is "POD 6"; the pill reads "POD 6 only" when visible to the organization, otherwise the line shows "POD 6" and "Private" or "Anyone with link"; Personal shows only "Private" |
+| Backs up | Source label "Backs up"; vote heading "Does the evidence back this wording?"; form field "What it backs up" |
+| Source form | Shows Source, Where to find it, What it shows; "Backs up & limits" reveals the other two and focuses the first. Editing a source that has them shows them |
+| Source actions | Edit · Remove · Can't open it? · Undo report; your sources carry a "You" tag |
+| Menus | Others' versions: one note and "Suggest a revised version". Yours: Edit wording and context, Combine with another argument, Make it a separate argument (only with more than one version), Delete argument ("Removes the row.") or Delete version. The option menu has no note |
+| Short text | Move banner "Pick the argument it belongs with."; empty comments "No comments yet."; the shortcut moved to the Comment button's tooltip; settings footer "Saved in this browser only."; toolbar "Simulate a reorder"; add option reads "+ Option" (full "Add an option" on phones) |
+| Articulation votes on top | In an unfolded row each version's vote sits above it, under the axis; the importance vote stays level with the lead card (11 px below its top, as before) |
+| Vote labels | "Important." above / "Less important." below the importance control; "Well articulated." left / "Weaker articulation." right of the articulation control; "Vote withdrawn." when undone. They fade after about 1.4 seconds |
+| Widths | Versions in an unfolded row keep at least 210 px (200 px below 800 px) and the row scrolls; while a row is unfolded, the other column keeps 260 px with two options (200 px with three). At 1024 px: 563 / 260 px columns, other cards 172 px (previously about 140 px) |
+| Phone | No horizontal overflow at 390 px |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
