@@ -2,13 +2,13 @@
 
 Open **index.html** in a modern browser. No installation or server is required. An internet connection loads the fonts and supporting browser assets.
 
-Argument cards use a grayscale paper texture, rounded corners, and soft shadows. Each card is judged on three axes: credibility (the evidence mark in its footer), importance (the vertical vote beside it), and articulation (the horizontal vote under each version). Importance and articulation share one vote control, turned a quarter turn. A hairline arrow with light lowercase labels marks each axis: between the columns for importance, above an unfolded row for articulation.
+Argument cards use a grayscale paper texture, rounded corners, and soft shadows; the question and option headers are inverted (near-black boxes, white serif). Each card is judged on three axes:
 
-## Files
+- **Credibility:** a four-segment support meter in the card's footer. Filled segments are the share of assessments that find the wording supported, colored red (unsupported) → gray (contested) → green (supported). Dashed empty segments mean fewer than five assessments; an empty gray meter means unreviewed.
+- **Importance:** the vertical vote beside each row, with an axis down the left column's edge.
+- **Articulation:** the horizontal vote under each version, with an axis above an unfolded row.
 
-- `index.html` — runnable standalone prototype.
-- [`../reference/steelman-prd-v0.4.md`](../reference/steelman-prd-v0.4.md) — the original PRD, unchanged.
-- `source/steelman-refined.html` — editable source fragment used for the inline prototype.
+Importance and articulation share one vote control, turned a quarter turn, and their axes use map-style halos. Behind each column, a faint outlined hex texture carries the same two votes: cell size follows importance, and darkness fades across an unfolded row from the best-articulated version.
 
 Colors, type, and texture come from [`../design/tokens.css`](../design/tokens.css). After editing the source or the tokens, run `python3 scripts/sync-prototype.py` from the repository root to update the standalone export; the script copies the tokens in, because the sandboxed prototype cannot load local files. The original supplied prototype remains in Git history.
 

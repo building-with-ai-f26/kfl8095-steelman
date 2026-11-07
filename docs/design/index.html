@@ -8,7 +8,7 @@
   <style>
     /* Page chrome only. Components are styled by the prototype's own stylesheet, loaded below. */
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--sm-paper); background-image:var(--sm-grain); color:var(--sm-ink); font:14px/1.6 var(--sm-sans); }
+    body { margin:0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); color:var(--sm-ink); font:14px/1.6 var(--sm-sans); }
     .page { max-width:1060px; margin:auto; padding:0 32px 64px; }
     .masthead { display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding:26px 0 20px; border-bottom:1px solid var(--sm-ink); }
     .masthead strong { font:700 26px/1 var(--sm-serif); letter-spacing:-1px; }
@@ -36,6 +36,42 @@
     .v-axis-demo { height:320px; display:flex; }
     .h-axis-demo { width:min(560px,100%); }
     #steelman-study { display:block; }
+    /* Board study */
+    #steelman-study .study-controls { display:flex; flex-wrap:wrap; gap:18px 28px; align-items:center; margin-bottom:22px; font-size:12px; }
+    #steelman-study .study-controls .seg { display:inline-flex; border:1px solid var(--sm-line); border-radius:7px; overflow:hidden; background:var(--sm-card); }
+    #steelman-study .study-controls .seg button { border:0; background:transparent; padding:6px 11px; font-size:11px; cursor:pointer; }
+    #steelman-study .study-controls .seg button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+    #steelman-study .study-controls label { display:flex; align-items:center; gap:8px; color:var(--sm-muted); }
+    #steelman-study .board-study { position:relative; isolation:isolate; padding:4px 0 8px; }
+    #steelman-study .board-study .sm-board { padding-top:40px; }
+    /* Importance axis sits inside the left column's left edge, mirroring the articulation axis above a row. */
+    #steelman-study .board-study .sm-board { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
+    #steelman-study .board-study .sm-column[data-option="open"] { padding-left:40px; }
+    #steelman-study .board-study .col-axis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
+    #steelman-study .board-study .sm-column > canvas { position:absolute; left:0; right:0; top:17px; bottom:0; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
+    #steelman-study .board-study .sm-column-head, #steelman-study .board-study .sm-idea { z-index:1; }
+    /* Header variants */
+    #steelman-study .board-study[data-header="inverted"] .sm-head, #steelman-study .board-study[data-header="inverted"] .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:0 2px 3px #0000000d,0 10px 22px #00000014; }
+    #steelman-study .board-study[data-header="inverted"] .sm-head h1 { color:#fff; }
+    #steelman-study .board-study[data-header="inverted"] .sm-column-head h2 { font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+    /* Credibility icon options */
+    .icon-grid { display:grid; grid-template-columns:minmax(150px,1.3fr) repeat(7,minmax(64px,1fr)); border-top:1px solid var(--sm-line); font-size:11px; }
+    .icon-grid > div { display:flex; align-items:center; gap:7px; padding:12px 6px; border-bottom:1px solid var(--sm-line); min-width:0; }
+    .icon-grid .head { color:var(--sm-muted); }
+    .icon-grid .opt { flex-direction:column; align-items:flex-start; gap:2px; }
+    .icon-grid .opt strong { font-size:12px; font-weight:600; }
+    .icon-grid .opt span { color:var(--sm-muted); }
+    .icon-grid i.ph-fill, .icon-grid i.ph { font-size:17px; line-height:1; }
+    .icon-grid .pct { font-weight:600; font-variant-numeric:tabular-nums; }
+    @media(max-width:760px) { .icon-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .icon-grid .head { display:none; } .icon-grid .opt { grid-column:1 / -1; } }
+    /* Credibility scale */
+    .ramp { height:10px; width:min(520px,100%); border-radius:5px; background:linear-gradient(to right,var(--sm-cred-weak),var(--sm-cred-mid) 50%,var(--sm-cred-strong)); }
+    .ramp-labels { display:flex; justify-content:space-between; width:min(520px,100%); font:italic 300 13px/1 var(--sm-serif); color:var(--sm-muted); margin-top:6px; text-transform:lowercase; }
+    /* AI suggestion: ochre plus a dotted treatment, never color alone */
+    #steelman-study .ai-card.sm-card { border:1.5px dashed var(--sm-ai); background-color:var(--sm-card); background-image:radial-gradient(circle,color-mix(in srgb,var(--sm-ai) 22%,transparent) .9px,transparent 1.2px); background-size:9px 9px; box-shadow:none; }
+    .ai-tag { display:inline-flex; align-items:center; gap:6px; margin:14px 18px 0; padding:2px 8px 2px 6px; border:1px dotted var(--sm-ai); border-radius:20px; color:var(--sm-ai-ink); font-size:11px; background:var(--sm-card); }
+    .ai-tag i, .ai-tag svg { width:13px; height:13px; color:var(--sm-ai); }
+    .ai-mark { text-decoration:underline dotted var(--sm-ai) 2px; text-underline-offset:4px; }
     @media(max-width:640px) {
       .page { padding:0 18px 48px; }
       .type-sample { grid-template-columns:1fr; gap:4px; }
@@ -78,6 +114,19 @@
         </div>
       </section>
 
+      <section class="spec" aria-labelledby="board-title">
+        <div class="spec-head"><h2 id="board-title">Board study</h2><span>Study · not yet in the prototype</span></div>
+        <p class="note">Each column has one hex grid. <strong>Cell size</strong> follows the row's importance score; <strong>darkness</strong> follows each version's articulation score across an unfolded row. Headers are inverted (decided). Votes here are live: use the arrows and the texture redraws. <em>Articulation range</em> sets how light the weakest version can get; the best version always matches a single-version row, so having alternatives never makes an idea look weaker. Credibility stays on the cards.</p>
+        <div class="study-controls">
+          <span>Hexagons <span class="seg" id="hex-style"><button type="button" data-style="outline" aria-pressed="true">Outlined</button><button type="button" data-style="filled" aria-pressed="false">Filled</button></span></span>
+          <label>Cell size <input type="range" id="hex-cell" min="5" max="16" step="1"></label>
+          <label>Contrast <input type="range" id="hex-contrast" min="0.04" max="0.6" step="0.01"></label>
+          <label>Importance curve <input type="range" id="hex-curve" min="0.5" max="3" step="0.1"></label>
+          <label>Articulation range <input type="range" id="hex-floor" min="0" max="1" step="0.05"></label>
+        </div>
+        <div class="board-study" id="board-study" data-header="inverted" data-hex="outline"></div>
+      </section>
+
       <section class="spec" aria-labelledby="vote-title">
         <div class="spec-head"><h2 id="vote-title">Vote control</h2><span>Same element, a quarter turn apart</span></div>
         <div class="row">
@@ -87,7 +136,9 @@
       </section>
 
       <section class="spec" aria-labelledby="cred-title">
-        <div class="spec-head"><h2 id="cred-title">Credibility mark</h2><span>Supported as worded</span></div>
+        <div class="spec-head"><h2 id="cred-title">Credibility mark</h2><span>Study · red ↔ green · support meter</span></div>
+        <p class="note">The support meter fills one segment per quarter of assessments that find the wording supported, colored on a diverging scale: red when unsupported, neutral gray when contested, green when supported. Because the number of filled segments carries the value too, the mark still reads for people who can't tell red from green. Dashed empty segments mean fewer than five assessments; unreviewed is an empty gray meter.</p>
+        <div class="item" style="margin-bottom:22px"><div class="ramp"></div><div class="ramp-labels"><span>not supported</span><span>contested</span><span>supported</span></div></div>
         <div class="row" id="cred-row"></div>
       </section>
 
@@ -95,10 +146,24 @@
         <div class="spec-head"><h2 id="card-title">Argument card</h2><span>With its paper stack</span></div>
         <div class="row" id="card-row"></div>
       </section>
+
+      <section class="spec" aria-labelledby="icon-title">
+        <div class="spec-head"><h2 id="icon-title">Credibility icon options</h2><span>Filled, so the color carries</span></div>
+        <p class="note">Each option shown at card-footer size across the scale. A and B are drawn from the data; C–E are filled icons from Phosphor. "Few" means fewer than five assessments.</p>
+        <div class="icon-grid" id="icon-grid"></div>
+      </section>
+
+      <section class="spec" aria-labelledby="ai-title">
+        <div class="spec-head"><h2 id="ai-title">AI contribution</h2><span>Study · ochre + dotted</span></div>
+        <p class="note">Anything AI drafted or suggested uses ochre together with dotted lines, so it reads as a suggestion and never relies on color alone. Accepting it makes it an ordinary card with fresh votes.</p>
+        <div class="row" id="ai-row"></div>
+      </section>
     </main>
   </div>
 
   <script src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <script>
   (async () => {
     const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
@@ -109,10 +174,19 @@
       const btn = (v, glyph) => `<button type="button" class="sm-vote-btn" data-vote="${v}" aria-pressed="${value === v}" aria-label="${v > 0 ? 'Up' : 'Down'}">${icon(glyph)}</button>`;
       return `<div class="sm-vote" data-axis="${dir}" role="group" aria-label="Example vote">${btn(1, 'chevron-up')}<span class="sm-vote-score">${score}</span>${btn(-1, 'chevron-down')}</div>`;
     };
-    const cred = ({pct, n, value}) => {
-      if (value) return `<span class="sm-cred">${icon('scale')}<span>Value judgment</span></span>`;
-      const mark = n === 0 ? 'circle-help' : pct === 100 ? 'check' : pct === 0 ? 'x' : null;
-      return `<span class="sm-cred"><span class="sm-evidence-symbol ${n ? '' : 'sm-unreviewed'}">${icon('files')}${mark ? `<span class="sm-stamp">${icon(mark)}</span>` : ''}</span><span class="sm-cred-copy"><span class="sm-percentage">${n ? pct + '%' : 'Unreviewed'}</span>${n ? `<span class="sm-count ${n < 5 ? 'sm-few' : ''}">· ${n}${n < 5 ? ' · few' : ''}</span>` : ''}</span></span>`;
+    // Diverging evidence color: red (0%) → neutral (50%) → green (100%), from the tokens.
+    const tokenColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+    const credColor = pct => pct <= 50 ? mixHex(tokenColor('--sm-cred-weak'), tokenColor('--sm-cred-mid'), pct / 50) : mixHex(tokenColor('--sm-cred-mid'), tokenColor('--sm-cred-strong'), (pct - 50) / 50);
+    const unreviewedGray = '#9a9a9a';
+    // Support meter (chosen): four segments; filled segments = share supported, colored on the red → green scale. Dashed empty cells when assessments are few.
+    const meter = ({pct, n}) => {
+      const w = 22, h = 8, cells = 4, gap = 1.5, cw = (w - gap * (cells - 1)) / cells;
+      const color = n ? credColor(pct) : unreviewedGray, lit = n ? Math.round(pct / 100 * cells) : 0;
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${Array.from({length: cells}, (_, i) => `<rect x="${(i * (cw + gap)).toFixed(2)}" y="0" width="${cw.toFixed(2)}" height="${h}" rx="1.5" fill="${i < lit ? color : 'none'}" ${i < lit ? '' : `stroke="${color}" stroke-width="1" ${n && n >= 5 ? '' : 'stroke-dasharray="1.6 1.4"'}`}/>`).join('')}</svg>`;
+    };
+    const cred = ({pct, n}) => {
+      return `<span class="sm-cred"><span class="sm-meter" style="display:inline-flex">${meter({pct, n})}</span><span class="sm-cred-copy"><span class="sm-percentage">${n ? pct + '%' : 'Unreviewed'}</span>${n ? `<span class="sm-count ${n < 5 ? 'sm-few' : ''}">· ${n}${n < 5 ? ' · few' : ''}</span>` : ''}</span></span>`;
     };
     const stack = edges => {
       const empty = edges === 0;
@@ -135,18 +209,142 @@
     document.querySelectorAll('.axis-slot').forEach(el => { el.innerHTML = axis(el.dataset.axis, el.dataset.start, el.dataset.end); });
     document.querySelectorAll('.vote-slot').forEach(el => { el.innerHTML = vote(el.dataset.axis, Number(el.dataset.value), el.dataset.score); });
     document.getElementById('cred-row').innerHTML = [
-      {pct: 100, n: 18, label: '100% · well assessed'}, {pct: 75, n: 32, label: '75%'}, {pct: 75, n: 4, label: 'Few assessments'},
-      {pct: 0, n: 8, label: '0%'}, {n: 0, label: 'Unreviewed'}, {value: true, label: 'Value judgment'}
+      {pct: 0, n: 8, label: '0%'}, {pct: 25, n: 12, label: '25%'}, {pct: 50, n: 20, label: '50% · contested'}, {pct: 75, n: 32, label: '75%'},
+      {pct: 100, n: 18, label: '100%'}, {pct: 75, n: 4, label: 'Few assessments'}, {n: 0, label: 'Unreviewed'}
     ].map(c => `<div class="item"><span class="label">${c.label}</span>${cred(c)}</div>`).join('');
     document.getElementById('card-row').innerHTML = [
-      ['One version', 'A public library should be available on the day families can spend time together.', {value: true}, 0, 0],
+      ['One version', 'A public library should be available on the day families can spend time together.', {n: 0}, 0, 0],
       ['Two versions', 'Sunday study space could improve outcomes for students without a quiet place at home.', {pct: 33, n: 6}, 1, 1],
       ['Three or more', 'Sunday hours would give some weekday workers their only practical time to visit.', {pct: 75, n: 32}, 3, 2]
     ].map(([label, claim, c, edges, sources]) => `<div class="item"><span class="label">${label}</span>${card(claim, c, edges, sources)}</div>`).join('');
 
+    // Credibility icon options.
+    const states = [{pct: 0, n: 8, label: '0%'}, {pct: 25, n: 12, label: '25%'}, {pct: 50, n: 20, label: '50%'}, {pct: 75, n: 32, label: '75%'}, {pct: 100, n: 18, label: '100%'}, {pct: 75, n: 4, label: 'Few'}, {n: 0, label: 'Unreviewed'}];
+    // A: a filled pie whose wedge is the share of "supported" assessments.
+    const pie = ({pct, n}) => {
+      const size = 17, c = size / 2, r = 7.2;
+      if (!n) return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${unreviewedGray}" stroke-width="1.4" stroke-dasharray="2.2 2"/></svg>`;
+      const color = credColor(pct), few = n < 5, a = 2 * Math.PI * pct / 100 - Math.PI / 2;
+      const wedge = pct >= 100 ? `<circle cx="${c}" cy="${c}" r="${r}" fill="${color}"/>` : pct <= 0 ? '' : `<path d="M${c} ${c}L${c} ${c - r}A${r} ${r} 0 ${pct > 50 ? 1 : 0} 1 ${(c + r * Math.cos(a)).toFixed(2)} ${(c + r * Math.sin(a)).toFixed(2)}Z" fill="${color}"/>`;
+      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="${color}" fill-opacity=".14" stroke="${color}" stroke-width="1.4" ${few ? 'stroke-dasharray="2.2 2"' : ''}/>${wedge}</svg>`;
+    };
+    // Below 50% the glyph switches to its "not supported" twin, so a check never appears in red.
+    const phosphor = (filled, weak, empty) => ({pct, n}) => {
+      if (!n) return `<i class="ph ph-${empty}" style="color:${unreviewedGray}" aria-hidden="true"></i>`;
+      return `<i class="ph-fill ph-${pct < 50 ? weak : filled}" style="color:${credColor(pct)}${n < 5 ? ';opacity:.55' : ''}" aria-hidden="true"></i>`;
+    };
+    const options = [
+      ['A · Support pie', 'Wedge = share supported', pie],
+      ['B · Support meter (chosen)', 'Four segments, like a signal', meter],
+      ['C · Seal check', 'Certified, verified', phosphor('seal-check', 'seal-warning', 'seal-question')],
+      ['D · Shield check', 'Protected, vetted', phosphor('shield-check', 'shield-warning', 'shield')],
+      ['E · Check circle', 'Plain "supported"', phosphor('check-circle', 'x-circle', 'question')]
+    ];
+    document.getElementById('icon-grid').innerHTML = `<div class="head">Option</div>${states.map(st => `<div class="head">${st.label}</div>`).join('')}` +
+      options.map(([name, sub, draw]) => `<div class="opt"><strong>${name}</strong><span>${sub}</span></div>${states.map(st => `<div>${draw(st)}<span class="pct">${st.n ? st.pct + '%' : ''}</span></div>`).join('')}`).join('');
+
+    // AI contribution study.
+    document.getElementById('ai-row').innerHTML = `
+      <div class="item"><span class="label">Suggested version</span><div class="sm-card-wrap demo-card" style="padding-right:0"><article class="sm-card ai-card"><span class="ai-tag">${icon('sparkle')}Suggested</span><div class="sm-claim-button" style="padding-top:10px"><span class="sm-claim">Sunday hours would give some weekday workers, about one in five survey respondents, their only practical time to visit.</span></div><div class="sm-card-meta"><span class="sm-cred"><span class="sm-evidence-symbol sm-unreviewed">${icon('files')}<span class="sm-stamp">${icon('circle-help')}</span></span><span class="sm-percentage">Unreviewed</span></span><div class="sm-card-tools"><span class="sm-source-button">${icon('x')}</span><span class="sm-source-button" style="color:var(--sm-ai-ink)">${icon('check')}</span></div></div></article></div></div>
+      <div class="item" style="max-width:420px"><span class="label">AI-written phrase inside human text</span><div class="sm-card"><div class="sm-claim-button"><span class="sm-claim">Opening on Sundays would help <span class="ai-mark">the roughly 22% of surveyed residents</span> who said Sunday was their only option.</span></div></div></div>`;
+
+    // Board study: one hex grid per column. Size = importance (per row), darkness = articulation (per version).
+    const ideas = {
+      open: [
+        {imp: 42, versions: [['Sunday hours would give some weekday workers their only practical time to visit.', 26, {pct: 75, n: 32}], ['Opening on Sundays would make the library accessible to everyone who works during the week.', 8, {pct: 0, n: 8}], ['For 18 surveyed residents, Sunday was the only day they reported being able to visit.', 4, {pct: 75, n: 4}]]},
+        {imp: 31, versions: [['Sunday study space could improve outcomes for students without a quiet place at home.', 12, {pct: 33, n: 6}]]},
+        {imp: 12, versions: [['A public library should be available on the day families can spend time together.', 7, {n: 0}]]}
+      ],
+      keep: [
+        {imp: 39, versions: [['Sunday opening would require additional staffing unless hours are reduced elsewhere.', 21, {pct: 50, n: 20}]]},
+        {imp: 25, versions: [['Improving evening hours may reach more residents for the same budget.', 5, {n: 0}]]},
+        {imp: 8, versions: [['Sunday opening would add one more day of building services each week.', 9, {pct: 100, n: 18}]]}
+      ]
+    };
+    const face = (claim, c) => `<article class="sm-card"><div class="sm-claim-button"><span class="sm-claim">${claim}</span></div><div class="sm-card-meta">${cred(c)}<div class="sm-card-tools"><span class="sm-expand">${icon('chevron-down')}</span></div></div></article>`;
+    const row = (idea, option, index) => {
+      const id = option + index;
+      if (idea.versions.length === 1) return `<section class="sm-idea" data-row="${id}" data-importance="${idea.imp}">${vote('v', 0, idea.imp)}<div class="sm-card-wrap">${stack(0)}<div data-art="${idea.versions[0][1]}">${face(idea.versions[0][0], idea.versions[0][2])}</div></div></section>`;
+      return `<section class="sm-idea sm-open" data-row="${id}" data-importance="${idea.imp}"><div class="sm-track-axis">${axis('h', 'best articulation', 'weaker')}</div>${vote('v', 0, idea.imp)}<div class="sm-card-wrap"><div class="sm-track">${idea.versions.map(([claim, art, c]) => `<div data-art="${art}">${face(claim, c)}</div><div class="sm-version-vote">${vote('h', 0, art)}</div>`).join('')}</div></div></section>`;
+    };
+    const column = option => `<section class="sm-column" data-option="${option}"><canvas aria-hidden="true"></canvas>${option === 'open' ? `<div class="col-axis">${axis('v', 'more important', 'less important')}</div>` : ''}<div class="sm-column-head"><h2>${option === 'open' ? 'Open on Sundays' : 'Keep current hours'}</h2></div>${ideas[option].map((idea, i) => row(idea, option, i)).join('')}</section>`;
+    const study = document.getElementById('board-study');
+    study.innerHTML = `<header class="sm-head"><h1>Should our library open on Sundays?</h1></header><div class="sm-board" data-open="open">${column('open')}<div aria-hidden="true"></div>${column('keep')}</div>`;
+
+    const hexPath = (ctx, cx, cy, r) => { ctx.moveTo(cx + r * Math.cos(Math.PI / 6), cy + r * Math.sin(Math.PI / 6)); for (let k = 1; k <= 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a)); } };
+    function drawHex() {
+      const R = parseFloat(tokenColor('--sm-hex-cell')) || 9, contrast = parseFloat(tokenColor('--sm-hex-contrast')) || .3, ink = tokenColor('--sm-hex-ink') || '#242424';
+      // The weakest version never drops below this share of the row's tone.
+      const floor = Math.min(1, Math.max(0, parseFloat(tokenColor('--sm-hex-art-floor')) || 0));
+      const outline = study.dataset.hex !== 'filled';
+      // Importance curve: higher values exaggerate the gap between strong and weak rows.
+      const curve = Math.max(.5, parseFloat(tokenColor('--sm-hex-curve')) || 1.8);
+      const allRows = [...study.querySelectorAll('[data-importance]')];
+      const imps = allRows.map(r => Number(r.dataset.importance));
+      const maxImp = Math.max(1, ...imps), minImp = Math.min(...imps);
+      study.querySelectorAll('.sm-column').forEach(col => {
+        const canvas = col.querySelector('canvas'), box = canvas.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.round(box.width * dpr); canvas.height = Math.round(box.height * dpr);
+        const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, box.width, box.height);
+        const rows = [...col.querySelectorAll('[data-importance]')].map(r => {
+          const b = r.getBoundingClientRect();
+          const versions = [...r.querySelectorAll('[data-art]')].map(v => { const vb = v.getBoundingClientRect(); return {l: vb.left - box.left, r: vb.right - box.left, art: Number(v.dataset.art)}; });
+          const maxArt = Math.max(1, ...versions.map(v => v.art));
+          // Normalize between the least and most important ideas on the board, then curve it.
+          const t = maxImp === minImp ? 1 : (Number(r.dataset.importance) - minImp) / (maxImp - minImp);
+          return {mid: (b.top + b.bottom) / 2 - box.top, imp: Math.pow(Math.max(0, t), curve), versions, maxArt};
+        });
+        if (!rows.length) return;
+        const dx = R * Math.sqrt(3), dy = R * 1.5;
+        ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineWidth = .9; ctx.lineJoin = 'round';
+        for (let j = 0; j * dy < box.height + R; j++) for (let i = -1; i * dx < box.width + R; i++) {
+          const cx = i * dx + (j % 2 ? dx / 2 : 0), cy = j * dy;
+          // Nearest row decides size; nearest version (by x) decides darkness.
+          const rowAt = rows.reduce((a, b) => Math.abs(b.mid - cy) < Math.abs(a.mid - cy) ? b : a);
+          let art = 1;
+          if (rowAt.versions.length > 1) {
+            const v = rowAt.versions.reduce((a, b) => { const da = cx < a.l ? a.l - cx : cx > a.r ? cx - a.r : 0, db = cx < b.l ? b.l - cx : cx > b.r ? cx - b.r : 0; return db < da ? b : a; });
+            art = v.art / rowAt.maxArt;
+          }
+          // Size runs from a pinpoint (least important) to touching cells (most important); tone follows a little too.
+          const r = R * (0.1 + 0.85 * rowAt.imp);
+          ctx.globalAlpha = contrast * (outline ? 1 : .55) * (0.45 + 0.55 * rowAt.imp) * (floor + (1 - floor) * Math.max(0, art));
+          ctx.beginPath(); hexPath(ctx, cx, cy, r); ctx.closePath();
+          if (outline) ctx.stroke(); else ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      });
+    }
+    // Live votes in the study: change the score, then redraw the texture (no animation).
+    study.addEventListener('click', event => {
+      const btn = event.target.closest('.sm-vote-btn'); if (!btn) return;
+      const group = btn.closest('.sm-vote'), scoreEl = group.querySelector('.sm-vote-score');
+      const v = Number(btn.dataset.vote), was = Number(group.dataset.mine || 0), next = was === v ? 0 : v;
+      scoreEl.textContent = Number(scoreEl.textContent) - was + next; group.dataset.mine = next;
+      group.querySelectorAll('.sm-vote-btn').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.vote) === next)));
+      const target = group.dataset.axis === 'v' ? group.closest('[data-importance]') : group.closest('.sm-version-vote').previousElementSibling;
+      if (group.dataset.axis === 'v') target.dataset.importance = scoreEl.textContent; else target.dataset.art = scoreEl.textContent;
+      drawHex();
+    });
+    document.getElementById('hex-style').addEventListener('click', event => {
+      const b = event.target.closest('button'); if (!b) return;
+      study.dataset.hex = b.dataset.style;
+      event.currentTarget.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      drawHex();
+    });
+    const cellInput = document.getElementById('hex-cell'), contrastInput = document.getElementById('hex-contrast'), floorInput = document.getElementById('hex-floor'), curveInput = document.getElementById('hex-curve');
+    const syncSliders = () => { cellInput.value = parseFloat(tokenColor('--sm-hex-cell')); contrastInput.value = parseFloat(tokenColor('--sm-hex-contrast')); floorInput.value = parseFloat(tokenColor('--sm-hex-art-floor')); curveInput.value = parseFloat(tokenColor('--sm-hex-curve')); };
+    syncSliders();
+    const tune = (token, value, unit = '') => { document.documentElement.style.setProperty(token, value + unit); changed[token] = value + unit; showOverrides(); drawHex(); };
+    cellInput.addEventListener('input', () => tune('--sm-hex-cell', cellInput.value, 'px'));
+    contrastInput.addEventListener('input', () => tune('--sm-hex-contrast', contrastInput.value));
+    floorInput.addEventListener('input', () => tune('--sm-hex-art-floor', floorInput.value));
+    curveInput.addEventListener('input', () => tune('--sm-hex-curve', curveInput.value));
+    new ResizeObserver(() => drawHex()).observe(study);
+
     // Live color tokens: read the current values from tokens.css, edit them in place.
     const root = document.documentElement;
-    const colorTokens = ['--sm-paper', '--sm-card', '--sm-soft', '--sm-ink', '--sm-muted', '--sm-selected', '--sm-on-selected', '--sm-line', '--sm-wire', '--sm-axis', '--sm-axis-line'];
+    const colorTokens = ['--sm-paper', '--sm-card', '--sm-soft', '--sm-ink', '--sm-muted', '--sm-selected', '--sm-on-selected', '--sm-line', '--sm-wire', '--sm-axis', '--sm-axis-line', '--sm-cred-weak', '--sm-cred-mid', '--sm-cred-strong', '--sm-ai', '--sm-ai-ink', '--sm-hex-ink'];
     const toHex = value => {
       const probe = document.createElement('span'); probe.style.color = value; document.body.append(probe);
       const [r, g, b] = getComputedStyle(probe).color.match(/\d+/g).map(Number); probe.remove();
@@ -167,10 +365,11 @@
       if (v === original[t]) delete changed[t]; else changed[t] = v;
       const value = event.target.closest('.swatch').querySelector('.value');
       value.textContent = v; value.classList.toggle('changed', t in changed);
-      showOverrides();
+      showOverrides(); drawHex();
     });
     document.getElementById('reset-overrides').addEventListener('click', () => {
       for (const t of Object.keys(changed)) { root.style.removeProperty(t); delete changed[t]; }
+      syncSliders(); drawHex();
       swatches.querySelectorAll('input').forEach(input => { input.value = original[input.dataset.token]; const v = input.closest('.swatch').querySelector('.value'); v.textContent = input.value; v.classList.remove('changed'); });
       showOverrides();
     });
@@ -180,6 +379,8 @@
     });
 
     if (window.lucide) lucide.createIcons({attrs: {width: 16, height: 16}});
+    document.fonts?.ready.then(drawHex);
+    drawHex();
   })();
   </script>
 </body>
