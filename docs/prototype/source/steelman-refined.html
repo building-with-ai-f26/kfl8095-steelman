@@ -1,9 +1,7 @@
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,300&display=swap');
+  /* @tokens: docs/design/tokens.css is inserted here by scripts/sync-prototype.py */
   #steelman-study {
-    --sm-paper:#f4f4f4; --sm-card:#fdfdfd; --sm-ink:#242424; --sm-muted:#686868; --sm-line:#d1d1d1; --sm-wire:#aaa; --sm-soft:#eee; --sm-selected:#292929; --sm-on-selected:#fff;
-    --sm-grain:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.085'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
-    --sm-serif:"Source Serif 4",Georgia,"Times New Roman",serif; --sm-sans:"Libre Franklin","Helvetica Neue",Arial,sans-serif;
     font-family:var(--sm-sans); color:var(--sm-ink); color-scheme:light; background:transparent;
   }
   #steelman-study * { box-sizing:border-box; }
@@ -22,21 +20,46 @@
   #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
   #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
-  #steelman-study .sm-board { display:grid; grid-template-columns:1fr 1fr; gap:56px; padding-top:56px; }
+  /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
+  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr); padding-top:56px; }
+  #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 56px minmax(0,1fr); }
+  #steelman-study .sm-board[data-open="keep"] { grid-template-columns:minmax(0,1fr) 56px minmax(0,2.6fr); }
+  #steelman-study .sm-axis-cell { display:flex; justify-content:center; padding:100px 0 22px; min-width:0; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
   #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) #f0f0f0; z-index:-1; }
   #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:7px; margin-bottom:28px; }
+  #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
-  #steelman-study .sm-idea { display:grid; grid-template-columns:25px minmax(0,1fr); gap:10px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
+  #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
   #steelman-study .sm-idea:last-child { margin-bottom:0; }
-  #steelman-study .sm-importance { display:flex; align-items:center; flex-direction:column; padding-top:35px; gap:2px; color:var(--sm-muted); }
-  #steelman-study .sm-arrow { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
-  #steelman-study .sm-arrow:hover { background:var(--sm-soft); color:var(--sm-ink); }
-  #steelman-study .sm-arrow[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
-  #steelman-study .sm-vote-number { font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-idea > .sm-vote { margin-top:12px; justify-self:center; }
+
+  /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
+  #steelman-study .sm-axis { display:flex; align-items:center; gap:10px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); letter-spacing:.01em; text-transform:lowercase; white-space:nowrap; min-width:0; }
+  #steelman-study .sm-axis-line { position:relative; flex:1; height:1px; min-width:24px; background:var(--sm-axis-line); }
+  #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; color:var(--sm-axis-line); overflow:visible; }
+  #steelman-study .sm-axis-head path { fill:none; stroke:currentColor; stroke-width:1; stroke-linecap:round; }
+  #steelman-study .sm-axis[data-axis="h"] .sm-axis-head { top:-3.5px; left:-1px; }
+  #steelman-study .sm-axis[data-axis="h"] .sm-axis-head + .sm-axis-head { left:auto; right:-1px; transform:scaleX(-1); }
+  #steelman-study .sm-axis[data-axis="v"] { flex-direction:column; height:100%; gap:12px; }
+  #steelman-study .sm-axis[data-axis="v"] .sm-axis-line { width:1px; min-width:0; height:auto; min-height:24px; }
+  #steelman-study .sm-axis[data-axis="v"] .sm-axis-head { top:1px; left:-5.5px; transform:rotate(90deg); }
+  #steelman-study .sm-axis[data-axis="v"] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
+  #steelman-study .sm-axis[data-axis="v"] .sm-axis-label { writing-mode:vertical-rl; transform:rotate(180deg); }
+
+  /* One vote component for both axes. The horizontal one is the same element turned a quarter turn. */
+  #steelman-study .sm-vote { display:inline-flex; flex-direction:column; align-items:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); color:var(--sm-muted); }
+  #steelman-study .sm-vote[data-axis="h"] { flex-direction:row; }
+  #steelman-study .sm-vote[data-axis="h"] .sm-vote-btn svg { transform:rotate(-90deg); }
+  #steelman-study .sm-vote-btn { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
+  #steelman-study .sm-vote-btn:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-vote-btn[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-vote-score { display:grid; place-items:center; min-width:24px; min-height:20px; font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
+
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
-  /* The same face, type, and footer are used on the diagram and in the version row. */
-  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:0 2px 3px #00000007,0 8px 18px #00000009,inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; }
+  #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
+  /* The same face, type, and footer are used on the board and in an unfolded row. */
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:0 2px 3px #00000007,0 8px 18px #00000009,inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:0 3px 5px #00000009,0 11px 24px #00000010,inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
@@ -57,12 +80,39 @@
   #steelman-study .sm-source-button svg { width:13px; height:13px; }
   #steelman-study .sm-expand { display:grid; place-items:center; width:30px; height:28px; padding:6px; border:0; border-left:1px solid var(--sm-line); border-radius:0 4px 4px 0; background:transparent; }
   #steelman-study .sm-expand svg { width:16px; height:16px; stroke-width:1.8; }
-  #steelman-study .sm-stack-button { position:absolute; top:7px; bottom:7px; right:0; width:33px; padding:0; border:0; background:transparent; z-index:1; border-radius:8px; }
-  #steelman-study .sm-stack-button span { position:absolute; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:8px; width:28px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
-  #steelman-study .sm-stack-button span:first-child { right:0; top:5px; bottom:5px; }
-  #steelman-study .sm-stack-button span:last-child { right:10px; top:0; bottom:0; }
-  #steelman-study .sm-stack-button:hover span:first-child { transform:translateX(5px); }
-  #steelman-study .sm-stack-button:hover span:last-child { transform:translateX(2px); }
+  #steelman-study .sm-expanded { border-color:#929292; box-shadow:0 2px 4px #0000000d,0 18px 32px #00000020; }
+
+  /* Paper stack: one edge per hidden version (up to three). A dashed edge means no other version yet. */
+  #steelman-study .sm-stack-button { position:absolute; top:0; bottom:0; right:0; width:40px; padding:0; border:0; background:transparent; z-index:1; border-radius:8px; }
+  #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:9px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
+  #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
+  #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
+
+  /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
+  #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:calc((100% - 36px - 44px) / 3); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:2px 8px 10px; margin:-2px -8px -6px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
+  #steelman-study .sm-version-vote { justify-self:center; }
+  #steelman-study .sm-idea.sm-open { row-gap:0; }
+  #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:24px; margin-bottom:10px; padding:0 2px; overflow:hidden; }
+  #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; }
+  #steelman-study .sm-open > .sm-card-wrap { grid-column:2; grid-row:2; }
+  #steelman-study .sm-track-axis .sm-axis { flex:1; }
+  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:7px; background:var(--sm-card); color:var(--sm-muted); }
+  #steelman-study .sm-fold:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-fold svg { width:14px; height:14px; }
+  #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
+  #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
+  #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  #steelman-study .sm-compose-card textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:14px 18px 6px; margin:0; }
+  #steelman-study .sm-compose-card textarea:focus-visible { outline:none; background:#f6f6f6; }
+  #steelman-study .sm-compose-card .sm-draft-claim { font:400 16px/1.5 var(--sm-sans); min-height:96px; }
+  #steelman-study .sm-compose-card .sm-draft-reason { font-size:12px; line-height:1.5; color:var(--sm-muted); min-height:52px; border-top:1px dashed var(--sm-line); padding-top:10px; }
+  #steelman-study .sm-compose-card textarea[aria-invalid="true"] { box-shadow:inset 3px 0 0 var(--sm-ink); }
+  #steelman-study .sm-compose-card .sm-card-meta { justify-content:flex-end; }
+  #steelman-study .sm-icon-button { display:grid; place-items:center; width:30px; height:28px; padding:5px; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-icon-button:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-icon-button.sm-primary { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-icon-button svg { width:16px; height:16px; }
+
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
@@ -73,26 +123,6 @@
   #steelman-study .sm-button svg { width:14px; height:14px; }
   #steelman-study .sm-button:hover { background:var(--sm-soft); }
   #steelman-study .sm-button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
-  #steelman-study .sm-modal { position:absolute; margin:0; padding:0; border:0; max-width:none; max-height:none; overflow:visible; background:transparent; color:var(--sm-ink); }
-  #steelman-study .sm-modal::backdrop { background:#f4f4f4b8; backdrop-filter:blur(2px); }
-  #steelman-study .sm-detail { padding:24px; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) var(--sm-card); box-shadow:0 20px 60px #00000022; }
-  #steelman-study .sm-card-row { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
-  #steelman-study .sm-modal-chrome { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; min-height:36px; }
-  #steelman-study .sm-row-context { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:9px 12px; background:var(--sm-grain) var(--sm-card); border:1px solid #c8c8c8; border-radius:8px; font-size:13px; line-height:1.4; }
-  #steelman-study .sm-row-context strong { font-weight:600; }
-  #steelman-study .sm-row-context span { font-size:11px; color:var(--sm-muted); }
-  #steelman-study .sm-row-actions { display:flex; align-items:center; gap:8px; flex:none; }
-  #steelman-study .sm-close { display:grid; place-items:center; width:36px; height:36px; padding:8px; background:var(--sm-card); border:1px solid #c8c8c8; border-radius:8px; }
-  #steelman-study .sm-close:hover { background:var(--sm-soft); }
-  #steelman-study .sm-alternatives { display:grid; grid-auto-flow:column; grid-auto-columns:min(360px,calc(100vw - 80px)); align-items:start; justify-content:start; gap:18px; overflow-x:auto; padding:4px 4px 26px; scrollbar-width:thin; scrollbar-color:#777 #ddd; scroll-padding:4px; overscroll-behavior-x:contain; }
-  #steelman-study .sm-version { min-width:0; }
-  #steelman-study .sm-version-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; height:34px; margin-bottom:8px; padding-left:4px; font-size:11px; font-weight:500; }
-  #steelman-study .sm-preference { display:flex; align-items:center; justify-content:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); }
-  #steelman-study .sm-preference-score { display:grid; place-items:center; min-width:24px; min-height:25px; font-size:11px; font-weight:500; color:var(--sm-muted); font-variant-numeric:tabular-nums; }
-  #steelman-study .sm-version-face { box-shadow:0 2px 3px #0000000a,0 12px 24px #00000017; }
-  #steelman-study .sm-expanded { border-color:#929292; box-shadow:0 2px 4px #0000000d,0 18px 32px #00000020; }
-  #steelman-study .sm-origin .sm-card, #steelman-study .sm-origin .sm-stack-button { visibility:hidden; }
-  #steelman-study .sm-origin .sm-card-wrap::after { content:""; position:absolute; inset:0 24px 0 0; border:1px dashed var(--sm-wire); border-radius:11px; background:var(--sm-paper); opacity:.6; }
   #steelman-study .sm-card-reveal { overflow:hidden; border-radius:0 0 10px 10px; }
   #steelman-study .sm-card-context { padding:17px 18px 19px; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font-size:11px; line-height:1.5; font-weight:600; }
@@ -117,54 +147,42 @@
   #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
   #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
   #steelman-study .sm-value-note { padding:0 18px 18px; }
-  #steelman-study .sm-section-title { font:600 23px/1.3 var(--sm-serif); letter-spacing:-.4px; margin:0 0 14px; }
-  #steelman-study .sm-caption, #steelman-study .sm-meta { font-size:12px; line-height:1.6; color:var(--sm-muted); }
-  #steelman-study .sm-form label { display:block; font-size:12px; font-weight:500; margin:16px 0 7px; }
-  #steelman-study textarea { width:100%; min-height:100px; resize:vertical; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-card); padding:12px; font-size:16px; line-height:1.5; }
-  #steelman-study .sm-compare-footer { display:flex; gap:12px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:18px; }
-  #steelman-study .sm-preview { margin-top:20px; }
-  #steelman-study .sm-source { background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; padding:18px; }
-  #steelman-study .sm-kicker { font-size:11px; line-height:1.5; color:var(--sm-muted); margin-bottom:10px; }
-  #steelman-study .sm-prose { font-size:13px; line-height:1.65; margin:17px 0; }
-  #steelman-study .sm-error { font-size:12px; }
-  #steelman-study[data-type="serif"] .sm-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
+  #steelman-study .sm-meta { font-size:12px; line-height:1.6; color:var(--sm-muted); }
+  #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
   #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
   #steelman-study[data-density="compact"] .sm-claim { font-size:15px; }
   #steelman-study [hidden] { display:none !important; }
   @media(max-width:800px) {
     #steelman-study .sm-scene { padding:24px 14px 20px; }
-    #steelman-study .sm-board { gap:30px; }
+    #steelman-study .sm-board { grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr); }
     #steelman-study .sm-column { padding:0 9px 13px; }
     #steelman-study .sm-claim-button { padding:15px; }
     #steelman-study .sm-column-head { padding:13px; }
-    #steelman-study .sm-alternatives { gap:14px; }
+    #steelman-study .sm-track { grid-auto-columns:calc((100% - 14px - 44px) / 2); gap:10px 14px; }
   }
   @media(max-width:640px) {
     #steelman-study .sm-scene { padding:20px 10px; }
     #steelman-study .sm-head { width:100%; padding:18px; }
     #steelman-study h1 { font-size:23px; }
-    #steelman-study .sm-board { grid-template-columns:1fr; padding-top:38px; gap:30px; padding-left:12px; }
+    #steelman-study .sm-board, #steelman-study .sm-board[data-open] { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
+    #steelman-study .sm-axis-cell { display:none; }
     #steelman-study .sm-column { padding:0 8px 15px; }
-    #steelman-study .sm-detail:not(.sm-card-row) { padding:16px; }
-    #steelman-study .sm-row-context { gap:2px; padding:7px 9px; }
-    #steelman-study .sm-row-context strong { font-size:12px; }
-    #steelman-study .sm-row-context span { width:100%; }
-    #steelman-study .sm-row-actions { gap:5px; }
-    #steelman-study .sm-row-actions .sm-button { max-width:102px; font-size:10px; padding:7px; }
-    #steelman-study .sm-version-heading { height:40px; }
+    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
+    #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
+    #steelman-study .sm-col-arrow::after { content:""; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
+    #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
+    #steelman-study .sm-track { grid-auto-columns:84%; }
   }
   @media(pointer:coarse) {
-    #steelman-study .sm-arrow { height:44px; width:30px; }
-    #steelman-study .sm-idea { grid-template-columns:30px minmax(0,1fr); gap:6px; }
-    #steelman-study .sm-importance { padding-top:25px; }
+    #steelman-study .sm-vote-btn { width:36px; height:36px; }
+    #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
-    #steelman-study .sm-stack-button { width:44px; }
-    #steelman-study .sm-stack-button span { width:40px; }
-    #steelman-study .sm-stack-button span:last-child { right:18px; }
+    #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
+    #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
-    #steelman-study .sm-close, #steelman-study .sm-expand { width:44px; height:44px; }
-    #steelman-study .sm-origin .sm-card-wrap::after { right:44px; }
-    #steelman-study .sm-version-heading { height:52px; }
+    #steelman-study .sm-expand, #steelman-study .sm-icon-button { width:44px; height:44px; }
+    #steelman-study .sm-fold { width:36px; height:36px; }
+    #steelman-study .sm-open > .sm-track-axis { height:36px; }
   }
   @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
 </style>
@@ -174,29 +192,30 @@
     <div class="sm-scene">
       <svg class="sm-links" aria-hidden="true"></svg>
       <header class="sm-head"><h1>Should our library open on Sundays?</h1></header>
-      <main id="sm-content"></main>
+      <main id="sm-content"><div class="sm-board"></div></main>
     </div>
     <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Preview a shared-order update"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Preview update</button></div>
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
-  <dialog class="sm-modal" id="sm-modal" aria-label="Alternative articulations"></dialog>
 </div>
 <script>
 (() => {
   const root = document.getElementById('steelman-study');
-  const content = document.getElementById('sm-content');
+  const board = root.querySelector('.sm-board');
   const status = document.getElementById('sm-status');
   const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
   const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  // Cards carry only what a contributor writes or voters produce: the claim, its sources, and the vote tallies.
   const cards = {
-    access: {idea:'access', label:'Weekday workers', version:'Qualified', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
-    accessBold: {idea:'access', label:'Weekday workers', version:'Broader claim', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
-    accessNarrow: {idea:'access', label:'Weekday workers', version:'More specific', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
-    study: {idea:'study',label:'A place to learn',claim:'Sunday study space could improve outcomes for students without a quiet place at home.',yes:2,no:4,pref:12,sources:['study'],explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
-    purpose: {idea:'purpose',label:'Public purpose',claim:'A public library should be available on the day families can spend time together.',value:true,pref:7,sources:[],explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
-    staffing: {idea:'staffing',label:'Staffing tradeoffs',claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.',yes:10,no:10,pref:21,sources:['roster','budget'],explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
-    evenings: {idea:'evenings',label:'Reaching more people',claim:'Improving evening hours may reach more residents for the same budget.',yes:0,no:0,pref:5,sources:['unavailable'],explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
-    services: {idea:'services',label:'Building operations',claim:'Sunday opening would add one more day of building services each week.',yes:18,no:0,pref:9,sources:['contract'],explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
+    access: {idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
+    accessBold: {idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
+    accessNarrow: {idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
+    study: {idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
+    purpose: {idea:'purpose', claim:'A public library should be available on the day families can spend time together.', value:true, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
+    staffing: {idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
+    evenings: {idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
+    services: {idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
   };
   const sources = {
     survey: {name:'Resident access survey',locator:'Example packet · p. 2, question 4',finding:'18 of 80 respondents selected Sunday as their only available day to visit.',premise:'Some respondents cannot visit during the current opening hours.',limit:'Voluntary sample; not representative of all residents. Availability was self-reported.'},
@@ -208,26 +227,32 @@
     contract: {name:'Building services agreement',locator:'Example packet · p. 6, section 2',finding:'Cleaning and closing services are provided for each day the building opens.',premise:'Opening another day adds a day of services.',limit:'This does not establish the size of the additional cost or its importance.'}
   };
   const ideas = [
-    {id:'access',option:'open',title:'Weekday workers',score:42,versions:['access','accessBold','accessNarrow']},
-    {id:'study',option:'open',title:'A place to learn',score:31,versions:['study']},
-    {id:'purpose',option:'open',title:'Public purpose',score:12,versions:['purpose']},
-    {id:'staffing',option:'keep',title:'Staffing tradeoffs',score:39,versions:['staffing']},
-    {id:'evenings',option:'keep',title:'Reaching more people',score:25,versions:['evenings']},
-    {id:'services',option:'keep',title:'Building operations',score:8,versions:['services']}
+    {id:'access',option:'open',score:42,versions:['access','accessBold','accessNarrow']},
+    {id:'study',option:'open',score:31,versions:['study']},
+    {id:'purpose',option:'open',score:12,versions:['purpose']},
+    {id:'staffing',option:'keep',score:39,versions:['staffing']},
+    {id:'evenings',option:'keep',score:25,versions:['evenings']},
+    {id:'services',option:'keep',score:8,versions:['services']}
   ];
-  let state = {view:'board',idea:'access',card:'access',importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',preview:false,added:[],updated:false,openSources:{}};
+  // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing.
+  let state = {open:null,expanded:null,composing:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',added:[],updated:false,openSources:{}};
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
-  const validViews = ['board','alternatives','evidence','compose'];
   function restore(raw) {
     const data = raw?.privateContent;
-    if (!data || data.version !== 2) return;
-    const selected = data.state || {};
-    state = {...state,...selected,view:validViews.includes(selected.view) ? selected.view : 'board'};
-    for (const key of ['importance','preference','assessments']) if (!state[key] || typeof state[key] !== 'object') state[key] = {};
-    if (!Array.isArray(state.added)) state.added=[];
-    if (!ideas.some(i=>i.id===state.idea)) state.idea='access';
+    if (!data || ![2,3].includes(data.version)) return;
+    const saved = data.state || {};
+    for (const key of ['importance','preference','assessments','openSources']) state[key] = saved[key] && typeof saved[key]==='object' ? saved[key] : {};
+    state.added = Array.isArray(saved.added) ? saved.added : [];
+    state.updated = !!saved.updated;
+    state.draftClaim = typeof saved.draftClaim==='string' ? saved.draftClaim : '';
+    state.draftReason = typeof saved.draftReason==='string' ? saved.draftReason : '';
     syncAdded();
-    if (!cards[state.card]) state.card='access';
+    // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
+    if (data.version===3) {
+      state.open = ideas.some(i=>i.id===saved.open) ? saved.open : null;
+      state.expanded = cards[saved.expanded] ? saved.expanded : null;
+      state.composing = !!saved.composing && !!state.open;
+    }
     if (['dossier','books','checklist'].includes(data.design?.indicator)) design.indicator=data.design.indicator;
     if (['comfortable','compact'].includes(data.design?.density)) design.density=data.design.density;
     if (['sans','serif'].includes(data.design?.type)) design.type=data.design.type;
@@ -238,54 +263,88 @@
     state.added.slice(0,5).forEach((item,index)=>{
       const idea=ideas.find(i=>i.id===item.idea); if (!idea) return;
       const id='local'+index;
-      cards[id]={idea:item.idea,label:idea.title,version:'Your version',claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
+      cards[id]={idea:item.idea,claim:String(item.claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(item.reason).slice(0,700)};
       idea.versions.push(id);
     });
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:2,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
-    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',view:state.view,selectedIdea:state.idea,selectedCard:state.card,design},privateContent}).catch(()=>{});
+    const privateContent={version:3,state,design};lastSavedSnapshot=JSON.stringify(privateContent);
+    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
   const optionName = option => option==='open' ? 'Open on Sundays' : 'Keep current hours';
+  const short = id => { const c=cards[id].claim; return c.length>60 ? c.slice(0,57)+'…' : c; };
+  // Shared articulation order: the shared preference score, best first. Your own vote does not move cards.
+  const ordered = idea => [...idea.versions].sort((a,b)=>cards[b].pref-cards[a].pref);
+  const ideaOf = id => ideas.find(i=>i.id===id);
   const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
   function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote==='yes'?1:0), no=(card.no||0)+(vote==='no'?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
-  function credibility(id, interactive=true) {
-    const card=cards[id],s=stats(id); const tag=interactive?'button':'div';
-    const attrs=interactive?`type="button" data-action="evidence" data-id="${id}" data-key="cred-${id}"`:'';
-    if(card.value) return `<${tag} ${attrs} class="sm-cred cursor-interaction" aria-label="Value judgment; no factual credibility score">${icon('scale')}<span>Value judgment</span></${tag}>`;
+
+  // A slim, swept arrowhead pointing left; CSS mirrors or rotates it for the other ends.
+  const head = '<svg class="sm-axis-head" viewBox="0 0 12 8" aria-hidden="true"><path d="M11.5 .6C7 2.7 3.4 3.7 .5 4c2.9.3 6.5 1.3 11 3.4"/></svg>';
+  function axis(kind,start,end) {
+    return `<div class="sm-axis" data-axis="${kind}" aria-hidden="true"><span class="sm-axis-label">${start}</span><span class="sm-axis-line">${head}${head}</span><span class="sm-axis-label">${end}</span></div>`;
+  }
+  // One control for importance (vertical) and articulation (horizontal).
+  function vote({axis:dir,action,id,value,score,group,forward,back}) {
+    const btn=(v,glyph,label)=>`<button type="button" class="sm-vote-btn cursor-interaction" data-action="${action}" data-id="${id}" data-vote="${v}" data-key="${action}-${v>0?'up':'down'}-${id}" aria-pressed="${value===v}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
+    return `<div class="sm-vote" data-axis="${dir}" role="group" aria-label="${escape(group)}">${btn(1,'chevron-up',forward)}<span class="sm-vote-score" aria-label="Net ${score}">${score}</span>${btn(-1,'chevron-down',back)}</div>`;
+  }
+  function importanceScore(idea) { return idea.score+(state.importance[idea.id]||0)+(state.updated&&['study','evenings'].includes(idea.id)?20:0); }
+  function importanceVote(idea) {
+    return vote({axis:'v',action:'importance',id:idea.id,value:state.importance[idea.id]||0,score:importanceScore(idea),group:`Importance: ${short(idea.versions[0])}`,forward:'More important if true',back:'Less important if true'});
+  }
+  function preferenceVote(id) {
+    const value=state.preference[id]||0;
+    return vote({axis:'h',action:'preference',id,value,score:cards[id].pref+value,group:`Articulation: ${short(id)}`,forward:'Better articulated',back:'Less well articulated'});
+  }
+  function credibility(id) {
+    const card=cards[id],s=stats(id);
+    const attrs=`type="button" data-action="toggle" data-id="${id}" data-key="cred-${id}"`;
+    if(card.value) return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="Value judgment; no factual credibility score">${icon('scale')}<span>Value judgment</span></button>`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
     const symbol={dossier:'files',books:'book-open-text',checklist:'clipboard-list'}[design.indicator];
     const mark=s.n===0?'circle-help':s.pct===100?'check':s.pct===0?'x':null;
-    return `<${tag} ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-evidence-symbol ${!s.n?'sm-unreviewed':s.pct<60?'sm-uncertain':''}">${icon(symbol)}${mark?`<span class="sm-stamp">${icon(mark)}</span>`:''}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></${tag}>`;
+    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-evidence-symbol ${!s.n?'sm-unreviewed':s.pct<60?'sm-uncertain':''}">${icon(symbol)}${mark?`<span class="sm-stamp">${icon(mark)}</span>`:''}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
   }
-  function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="evidence" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'} for ${escape(cards[id].label)}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
-  function importance(idea) {
-    const vote=state.importance[idea.id]||0;
-    const score=idea.score+vote+(state.updated&&['study','evenings'].includes(idea.id)?20:0);
-    return `<div class="sm-importance" role="group" aria-label="Importance of ${escape(idea.title)}"><button type="button" class="sm-arrow cursor-interaction" data-action="importance" data-id="${idea.id}" data-vote="1" data-key="up-${idea.id}" aria-label="More important if true: ${escape(idea.title)}" aria-pressed="${vote===1}" data-tooltip="More important if true">${icon('chevron-up')}</button><span class="sm-vote-number" aria-label="Net importance ${score}">${score}</span><button type="button" class="sm-arrow cursor-interaction" data-action="importance" data-id="${idea.id}" data-vote="-1" data-key="down-${idea.id}" aria-label="Less important if true: ${escape(idea.title)}" aria-pressed="${vote===-1}" data-tooltip="Less important if true">${icon('chevron-down')}</button></div>`;
+  function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
+  function cardMeta(id) {
+    const expanded=state.expanded===id;
+    return `${credibility(id)}<div class="sm-card-tools">${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
-  function cardMeta(id, expanded=false, inRow=false) {
-    return `${credibility(id)}<div class="sm-card-tools">${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="${expanded?'collapse':'evidence'}" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} ${escape(cards[id].version||cards[id].label)} card" aria-expanded="${expanded}" ${inRow?`aria-controls="sm-reveal-${id}"`:'aria-haspopup="dialog"'}>${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+  function cardFace(id, inTrack=false) {
+    const expanded=state.expanded===id;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
-  function cardFace(id, expanded=false, inRow=false) {
-    return `<article class="sm-card ${inRow?'sm-version-face':''} ${expanded?'sm-expanded':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="${expanded?'collapse':'evidence'}" data-id="${id}" data-key="claim-${id}" aria-label="${expanded?'Collapse':'Expand'} claim: ${escape(cards[id].claim)}" aria-expanded="${expanded}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id,expanded,inRow)}</div>${inRow?`<div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div>`:''}</article>`;
+  function stack(idea) {
+    const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
+    const spans=(empty?[1]:Array.from({length:edges},(_,k)=>edges-k)).map(i=>`<span aria-hidden="true" style="right:${24-7*i}px;top:${3*i}px;bottom:${3*i}px"></span>`).join('');
+    const label=empty?'Suggest another version of this argument':`Unfold ${idea.versions.length} versions of this argument`;
+    return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}" data-tooltip="${empty?'Add a version':idea.versions.length+' versions'}">${spans}</button>`;
+  }
+  function addSlot(idea) {
+    if(state.added.length>=5) return '';
+    if(state.composing) return `<form class="sm-card sm-compose-card" id="sm-form" aria-label="Suggest a version"><textarea id="sm-draft" class="sm-draft-claim" data-key="draft" maxlength="500" placeholder="A better version of this argument" aria-label="Your version">${escape(state.draftClaim)}</textarea><textarea id="sm-reason" class="sm-draft-reason" data-key="reason" maxlength="700" placeholder="What it improves" aria-label="What your version improves">${escape(state.draftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-compose" data-id="${idea.id}" data-key="cancel-compose" aria-label="Discard draft" data-tooltip="Discard">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add" data-id="${idea.id}" data-key="add" aria-label="Add your version" data-tooltip="Add">${icon('check')}</button></div></form><span aria-hidden="true"></span>`;
+    return `<button type="button" class="sm-add-card cursor-interaction" data-action="compose" data-id="${idea.id}" data-key="compose-${idea.id}" aria-label="Suggest a better version" data-tooltip="Suggest a version">${icon('plus')}</button><span aria-hidden="true"></span>`;
+  }
+  function trackAxis(idea) {
+    return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button></div>`;
+  }
+  function track(idea) {
+    const versions=ordered(idea);
+    return `<div class="sm-track" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>cardFace(id,true)+`<div class="sm-version-vote" data-vote-for="${id}">${preferenceVote(id)}</div>`).join('')}${addSlot(idea)}</div>`;
   }
   function row(idea) {
-    const id=idea.versions[0],stack=idea.versions.length>1;
-    return `<section class="sm-idea" data-node="${idea.id}" aria-label="${escape(idea.title)}">${importance(idea)}<div class="sm-card-wrap ${stack?'sm-stacked':''}">${stack?`<button type="button" class="sm-stack-button cursor-interaction" data-action="alternatives" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="Compare ${idea.versions.length} versions of this argument" data-tooltip="Alternative articulations"><span aria-hidden="true"></span><span aria-hidden="true"></span></button>`:''}${cardFace(id)}</div></section>`;
+    const open=state.open===idea.id;
+    return `<section class="sm-idea ${open?'sm-open':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}</div></section>`;
   }
-  function board() { return `<div class="sm-board">${['open','keep'].map(option=>{const rows=ideas.filter(i=>i.option===option);if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];return `<section class="sm-column" aria-label="${optionName(option)}"><div class="sm-column-head"><h2>${optionName(option)}</h2></div>${rows.map(row).join('')}</section>`;}).join('')}</div>`; }
-  function breadcrumb(back='board') { return `<div class="sm-modal-chrome">${back==='alternatives'?`<button type="button" class="sm-text-button cursor-interaction" data-action="back" data-to="alternatives" data-key="back">${icon('arrow-left')}Back to versions</button>`:'<span aria-hidden="true"></span>'}<button type="button" class="sm-close cursor-interaction" data-action="close" data-key="close" aria-label="Return cards to the diagram" autofocus>${icon('x')}</button></div>`; }
-  function preference(id) {
-    const vote=state.preference[id]||0;
-    return `<div class="sm-preference" role="group" aria-label="Wording preference"><button type="button" class="sm-arrow cursor-interaction" data-action="preference" data-id="${id}" data-vote="1" data-key="prefer-${id}" aria-pressed="${vote===1}" aria-label="Prefer this wording: ${escape(cards[id].version||'Original')}" data-tooltip="More preferred wording · toward the left">${icon('chevron-left')}</button><span class="sm-preference-score" data-tooltip="Net wording preference" aria-label="Net wording preference ${cards[id].pref+vote}">${cards[id].pref+vote}</span><button type="button" class="sm-arrow cursor-interaction" data-action="preference" data-id="${id}" data-vote="-1" data-key="less-${id}" aria-pressed="${vote===-1}" aria-label="Less preferred wording: ${escape(cards[id].version||'Original')}" data-tooltip="Less preferred wording · toward the right">${icon('chevron-right')}</button></div>`;
+  function column(option) {
+    const rows=ideas.filter(i=>i.option===option);
+    if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><div class="sm-column-head"><h2>${optionName(option)}</h2></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
   }
-  function alternatives() {
-    const idea=ideas.find(i=>i.id===state.idea);
-    return `<section class="sm-detail sm-card-row"><div class="sm-modal-chrome"><div class="sm-row-context"><strong>${escape(idea.title)}</strong><span>${idea.versions.length} ${idea.versions.length===1?'version':'versions'}</span></div><div class="sm-row-actions"><button type="button" class="sm-button cursor-interaction" data-action="compose" data-key="suggest" ${state.added.length>=5?'disabled':''}>${icon('plus')}Suggest a version</button><button type="button" class="sm-close cursor-interaction" data-action="close" data-key="close" aria-label="Return cards to the diagram">${icon('x')}</button></div></div><div class="sm-alternatives" tabindex="0" role="region" aria-label="Argument versions; scroll horizontally for more">${idea.versions.map(id=>`<section class="sm-version" data-version="${id}" aria-label="Version: ${escape(cards[id].version||'Original')}"><div class="sm-version-heading"><span>${escape(cards[id].version||'Original')}</span>${preference(id)}</div>${cardFace(id,state.view==='evidence'&&state.card===id,true)}</section>`).join('')}</div></section>`;
-  }
+  function boardMarkup() { return column('open')+`<div class="sm-axis-cell">${axis('v','more important','less important')}</div>`+column('keep'); }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
     const brief={
@@ -302,105 +361,28 @@
       const source=sources[id],key=cardId+'/'+id;
       return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${card.value?'<p class="sm-value-note sm-meta">A value judgment, rather than a factual claim.</p>':`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${card.value?'<p class="sm-value-note sm-meta">A value judgment, rather than a factual claim.</p>':`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
-  function composer() {
-    const idea=ideas.find(i=>i.id===state.idea);
-    return `<section class="sm-detail">${breadcrumb('alternatives')}<h2 class="sm-section-title">Suggest a version</h2><p class="sm-caption">Keep the underlying reason. A different reason would belong in its own row.</p><form class="sm-form" id="sm-form"><label for="sm-draft">Your version</label><textarea id="sm-draft" name="claim" maxlength="500" required placeholder="State the claim, including any qualifications.">${escape(state.draftClaim)}</textarea><label for="sm-reason">What does this improve?</label><textarea id="sm-reason" name="reason" maxlength="700" required placeholder="Explain what is clearer, more precise, or better supported.">${escape(state.draftReason)}</textarea><div class="sm-compare-footer">${button('preview','Preview card')}<span class="sm-meta">Same idea · Fresh preference and support assessments</span></div><div class="sm-error" id="sm-error" role="alert"></div></form>${state.preview?`<div class="sm-preview"><article class="sm-source"><div class="sm-kicker">Your version · Preview</div><p class="sm-claim">${escape(state.draftClaim)}</p><p class="sm-prose">${escape(state.draftReason)}</p><div class="sm-meta">Unreviewed · No sources attached</div></article><div class="sm-compare-footer">${button('add','Add to this idea',state.added.length>=5?'disabled':'')}</div></div>`:''}</section>`;
-  }
   const scene=root.querySelector('.sm-scene');
   const links=root.querySelector('.sm-links');
-  const modal=root.querySelector('#sm-modal');
-  let returnKey='stack-access', originId='access';
   const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const originCard=()=>content.querySelector(`[data-node="${originId}"] .sm-card`);
-  function rememberOrigin(trigger) {
-    if(modal.open)return;
-    returnKey=trigger.dataset.key||'';
-    originId=trigger.closest('[data-node]')?.dataset.node||state.idea;
+  let busy=false;
+  function play(el,frames,options={}) { return el.animate(frames,{duration:260,easing:EASE,...options}).finished.catch(()=>{}); }
+  // Exit motion runs before the board re-renders, so folding and collapsing read as physical.
+  function foldOut(ideaId) {
+    const node=board.querySelector(`[data-node="${ideaId}"]`), first=node?.querySelector('.sm-version-face');
+    if(!node||!first||reducedMotion()) return Promise.resolve();
+    const x=first.getBoundingClientRect().left;
+    const leaving=[...node.querySelectorAll('.sm-track > *')].slice(2);
+    const bar=node.querySelector('.sm-track-axis');
+    if(bar) play(bar,[{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1},{height:'0px',marginBottom:'0px',opacity:0}],{duration:220,fill:'forwards'});
+    return Promise.all(leaving.map(el=>play(el,[{transform:'none',opacity:1},{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0}],{duration:220,fill:'forwards'})));
   }
-  function placeModal() {
-    if(!modal.open)return;
-    const rootBox=root.getBoundingClientRect(),source=originCard()?.getBoundingClientRect();
-    const question=root.querySelector('.sm-head').getBoundingClientRect();
-    const width=Math.min(rootBox.width-24,state.view==='compose'?680:1160);
-    const top=Math.max(question.bottom+24,(source?.top||question.bottom+60)-58);
-    modal.style.width=width+'px';
-    modal.style.left=(rootBox.left+(rootBox.width-width)/2+window.scrollX)+'px';
-    modal.style.top=(top+window.scrollY)+'px';
-    const naturalBottom=content.getBoundingClientRect().bottom+24;
-    const requiredBottom=top+modal.offsetHeight+30;
-    scene.style.minHeight=Math.max(naturalBottom-scene.getBoundingClientRect().top,requiredBottom-scene.getBoundingClientRect().top)+'px';
-  }
-  function closeModal() {
-    if(!modal.open)return;
-    content.querySelector('.sm-origin')?.classList.remove('sm-origin');
-    modal.close();modal.innerHTML='';
-    scene.style.minHeight='';
-    state.view='board';
-    render(returnKey);
-    announce('Cards returned to their place in the diagram.');save();
-  }
-  function renderModal(focusKey,motion) {
-    const wasOpen=modal.open;
-    const rowExists=wasOpen&&modal.querySelector('.sm-card-row');
-    const isRow=state.view==='alternatives'||state.view==='evidence';
-    const oldHeights=new Map([...modal.querySelectorAll('.sm-version-face')].map(face=>[face.dataset.card,face.querySelector('.sm-card-reveal').offsetHeight]));
-    const track=modal.querySelector('.sm-alternatives');
-    const scrollLeft=track?.scrollLeft||0;
-    modal.dataset.view=state.view;
-    modal.setAttribute('aria-label',(isRow?'Argument versions':'Suggest a version')+': '+ideas.find(i=>i.id===state.idea).title);
-    // Keep the actual card faces mounted while expanding, voting, and collapsing.
-    const sameCards=isRow&&rowExists&&ideas.find(i=>i.id===state.idea).versions.join(',')===[...modal.querySelectorAll('[data-version]')].map(el=>el.dataset.version).join(',');
-    if(sameCards) {
-      modal.querySelectorAll('.sm-version').forEach(version=>{
-        const id=version.dataset.version,expanded=state.view==='evidence'&&state.card===id;
-        const face=version.querySelector('.sm-card'),claim=face.querySelector('.sm-claim-button');
-        face.classList.toggle('sm-expanded',expanded);
-        claim.dataset.action=expanded?'collapse':'evidence';
-        claim.setAttribute('aria-expanded',String(expanded));
-        claim.setAttribute('aria-label',`${expanded?'Collapse':'Expand'} claim: ${cards[id].claim}`);
-        face.querySelector('.sm-card-meta').innerHTML=cardMeta(id,expanded,true);
-        version.querySelector('.sm-preference').outerHTML=preference(id);
-        const reveal=face.querySelector('.sm-card-reveal');
-        reveal.getAnimations().forEach(animation=>animation.cancel());
-        reveal.hidden=!expanded;
-        // Keep the previous content until the collapse animation completes.
-        if(expanded)reveal.innerHTML=evidenceContent(id);
-      });
-    } else modal.innerHTML=isRow?alternatives():composer();
-    if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
-    if(!wasOpen)modal.showModal();
-    placeModal();
-    content.querySelector(`[data-node="${originId}"]`)?.classList.add('sm-origin');
-    const nextTrack=modal.querySelector('.sm-alternatives');
-    if(nextTrack)nextTrack.scrollLeft=scrollLeft;
-    (modal.querySelector(`[data-key="${focusKey}"]`)||modal.querySelector('[data-key="close"]'))?.focus({preventScroll:true});
-    if(nextTrack&&(!wasOpen||motion==='detail'||motion==='added')) {
-      const selected=modal.querySelector(`[data-version="${state.card}"]`);
-      if(selected) {
-        // Center the selected card when the row overflows, leaving neighboring cards visible.
-        const cardBox=selected.getBoundingClientRect(),trackBox=nextTrack.getBoundingClientRect();
-        if(cardBox.left<trackBox.left||cardBox.right>trackBox.right)
-          nextTrack.scrollLeft+=cardBox.left-trackBox.left-(trackBox.width-cardBox.width)/2;
-      }
-    }
-    if(!reducedMotion()&&sameCards&&['detail','collapse'].includes(motion)) {
-      modal.querySelectorAll('.sm-version-face').forEach(face=>{
-        const reveal=face.querySelector('.sm-card-reveal'),from=oldHeights.get(face.dataset.card)||0,to=reveal.offsetHeight;
-        if(from===to)return;
-        const collapsed=reveal.hidden;
-        reveal.hidden=false;
-        reveal.animate([{height:from+'px',opacity:from?1:0},{height:to+'px',opacity:to?1:0}],{duration:260,easing:'cubic-bezier(.2,.7,.2,1)'}).finished.then(()=>{
-          reveal.hidden=collapsed;
-          if(collapsed)reveal.innerHTML='';
-          placeModal();
-        }).catch(()=>{});
-      });
-    } else if(!wasOpen&&!reducedMotion()) {
-      modal.querySelector('.sm-detail').animate([{transform:'translateY(10px)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:220,easing:'ease-out'});
-    }
+  function collapseOut(id) {
+    const reveal=board.querySelector(`#sm-reveal-${id}`);
+    if(!reveal||reveal.hidden||reducedMotion()) return Promise.resolve();
+    return play(reveal,[{height:reveal.offsetHeight+'px',opacity:1},{height:'0px',opacity:0}],{duration:220,fill:'forwards'});
   }
   let wireFrame=0,wireUntil=0;
   function drawLinks() {
@@ -411,7 +393,7 @@
     const line=(x1,y1,x2,y2)=>`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=>`<path d="${d}"/>`;
     const port=(x,y)=>`<circle cx="${x}" cy="${y}" r="3"/>`;
-    const columns=[...content.querySelectorAll('.sm-column')];
+    const columns=[...board.querySelectorAll('.sm-column')];
     const narrow=window.matchMedia('(max-width:640px)').matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=>{
@@ -420,7 +402,8 @@
       if(narrow&&index>0) markup+=path(`M${qx} ${qy}V${qy+18}H8V${hy-17}H${hx}V${hy}`);
       else markup+=path(`M${qx} ${qy}V${qy+24}H${hx}V${hy}`);
       markup+=port(hx,hy);
-      const rows=[...column.querySelectorAll('.sm-card')].map(rect);
+      // Each idea connects at its leading (best-articulated) card, folded or unfolded.
+      const rows=[...column.querySelectorAll('[data-node]')].map(node=>rect(node.querySelector('.sm-card')));
       const spine=head.x+12;
       if(rows.length) markup+=path(line(spine,head.y+head.h,spine,Math.max(...rows.map(r=>r.y+16))));
       rows.forEach(card=>{markup+=path(line(spine,card.y+16,card.x,card.y+16))+port(card.x,card.y+16);});
@@ -436,55 +419,120 @@
   }
   function render(focusKey, motion='') {
     root.dataset.indicator=design.indicator; root.dataset.density=design.density; root.dataset.type=design.type;
-    if(!content.children.length)content.innerHTML=board();
-    if(state.view!=='board'){renderModal(focusKey,motion);animateWires();return;}
-    const before=new Map([...content.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,el.getBoundingClientRect().top]));
-    content.innerHTML=board();
+    const reduced=reducedMotion();
+    const beforeNodes=new Map([...board.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,el.getBoundingClientRect().top]));
+    const beforeFaces=new Map([...board.querySelectorAll('.sm-card[data-card]')].map(el=>[el.dataset.card,el.getBoundingClientRect()]));
+    const oldTemplate=getComputedStyle(board).gridTemplateColumns;
+    const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
+    board.dataset.open=state.open?ideaOf(state.open).option:'';
+    board.innerHTML=boardMarkup();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    const newTrack=board.querySelector('.sm-track');
+    if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
-    const reduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    if(!reduced&&motion==='reorder') content.querySelectorAll('[data-node]').forEach(el=>{const from=before.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;el.animate([{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.75,.2,1)'});}});
-    animateWires(motion&&!reduced?700:0);
+    if(!reduced&&motion) {
+      const newTemplate=getComputedStyle(board).gridTemplateColumns;
+      if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:340});
+      if(motion==='unfold'||motion==='fold') {
+        // The leading card is the same card before and after: ease its width instead of swapping it.
+        const lead=ordered(ideaOf(state.open||lastToggled))[0], face=board.querySelector(`.sm-card[data-card="${lead}"]`), from=beforeFaces.get(lead);
+        if(face&&from) play(face,[{width:from.width+'px'},{width:face.getBoundingClientRect().width+'px'}],{duration:340});
+      }
+      if(motion==='unfold'&&newTrack) {
+        const first=newTrack.querySelector('.sm-version-face'), x=first.getBoundingClientRect().left;
+        const bar=board.querySelector('.sm-track-axis');
+        if(bar) play(bar,[{height:'0px',marginBottom:'0px',opacity:0},{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1}],{duration:340});
+        const arriving=[...newTrack.children].slice(2);
+        arriving.forEach((el,index)=>play(el,[{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0},{transform:'none',opacity:1}],{duration:380,delay:Math.floor(index/2)*45,fill:'backwards'}));
+      }
+      if(motion==='detail'&&state.expanded) {
+        const reveal=board.querySelector(`#sm-reveal-${state.expanded}`);
+        if(reveal) play(reveal,[{height:'0px',opacity:0},{height:reveal.offsetHeight+'px',opacity:1}]);
+      }
+      if(motion==='added') {
+        const face=board.querySelector(`.sm-card[data-card="${state.expanded}"]`);
+        if(face) play(face,[{transform:'translateY(8px)',opacity:0},{transform:'none',opacity:1}],{duration:300});
+      }
+      if(motion==='reorder') board.querySelectorAll('[data-node]').forEach(el=>{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.75,.2,1)'});}});
+    }
+    if(motion==='unfold'&&newTrack) {
+      // Keep the unfolded row in view without jumping the page.
+      const box=newTrack.closest('[data-node]').getBoundingClientRect();
+      if(box.bottom>window.innerHeight) newTrack.closest('[data-node]').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
+    }
+    animateWires(motion&&!reduced?720:0);
+  }
+  let lastToggled=null;
+  async function fold(id, focus) {
+    busy=true; await foldOut(id); busy=false;
+    lastToggled=id;
+    const top=ordered(ideaOf(id))[0];
+    if(state.expanded&&cards[state.expanded]?.idea===id&&state.expanded!==top) state.expanded=null;
+    state.open=null; state.composing=false;
+    render(focus||'stack-'+id,'fold');
+    announce('Versions folded back into the stack.');save();
+  }
+  async function collapse(id, focus) {
+    busy=true; await collapseOut(id); busy=false;
+    state.expanded=null; render(focus||'expand-'+id); announce('Card collapsed.');save();
   }
   root.addEventListener('input',event=>{
-    if(event.target.id==='sm-draft') state.draftClaim=event.target.value;
-    if(event.target.id==='sm-reason') state.draftReason=event.target.value;
-    if(state.preview && ['sm-draft','sm-reason'].includes(event.target.id)) {state.preview=false;modal.querySelector('.sm-preview')?.remove();}
+    if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
   root.addEventListener('submit',event=>event.preventDefault());
   root.addEventListener('click',event=>{
-    const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger))return;
+    const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
-    if(action==='close'){closeModal();return;}
-    if(action==='alternatives'||action==='evidence')rememberOrigin(trigger);
-    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared row order stays in place.':'Importance vote withdrawn. The shared row order stays in place.');}
-    if(action==='alternatives') {state.view='alternatives';state.idea=id;state.card=ideas.find(i=>i.id===id).versions[0];focus='expand-'+state.card;motion='fan';announce('Compare versions of one idea. Browsing does not cast a vote.');}
-    if(action==='evidence') {state.view='evidence';state.card=id;state.idea=cards[id].idea;focus='expand-'+id;motion='detail';announce('Illustrative evidence packet. Opening it does not cast an assessment.');}
-    if(action==='collapse') {state.view='alternatives';focus='expand-'+id;motion='collapse';announce('Card collapsed. Other versions remain in place.');}
-    if(action==='back') {state.view=trigger.dataset.to;focus='close';motion='return';announce('Alternative articulations in front of the diagram.');}
-    if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Version preference saved. The shared card order stays in place.':'Version preference withdrawn.');}
-    if(action==='assess') {const value=trigger.dataset.value;state.assessments[state.card]=value==='skip'||state.assessments[state.card]===value?null:value;announce(state.assessments[state.card]?'Your one active assessment is included in the support percentage.':value==='skip'?'No active assessment. Skipping adds nothing to the denominator.':'Assessment withdrawn.');}
-    if(action==='compose') {state.view='compose';state.preview=false;focus='back';announce('Your suggestion will remain in this prototype.');}
-    if(action==='preview') {if(!state.draftClaim.trim()||!state.draftReason.trim()){modal.querySelector('#sm-error').textContent='Add a claim and a short explanation to preview your version.';return;}state.preview=true;focus=null;announce('Preview ready. This version has no inherited preference or credibility assessments.');}
-    if(action==='add') {if(state.added.length>=5)return;state.added.push({idea:state.idea,claim:state.draftClaim.trim(),reason:state.draftReason.trim()});syncAdded();state.view='alternatives';state.draftClaim='';state.draftReason='';state.preview=false;state.card='local'+(state.added.length-1);focus='expand-'+state.card;motion='added';announce('Your version was added locally. The idea keeps its importance; the new card starts unreviewed.');}
+    if(action==='toggle') {
+      if(state.expanded===id){collapse(id,key);return;}
+      state.expanded=id;motion='detail';announce('Context and evidence shown. Opening it does not cast an assessment.');
+    }
+    if(action==='unfold') {
+      if(state.open&&state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
+      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1&&state.added.length<5;
+      focus=state.composing?'draft':'claim-'+ordered(ideaOf(id))[0];motion='unfold';
+      announce('Versions unfolded in place, best articulated first. Browsing does not cast a vote.');
+    }
+    if(action==='fold') {fold(id);return;}
+    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
+    if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
+    if(action==='assess') {const value=trigger.dataset.value;state.assessments[id]=value==='skip'||state.assessments[id]===value?null:value;announce(state.assessments[id]?'Your one active assessment is included in the support percentage.':'Assessment withdrawn.');}
+    if(action==='compose') {state.composing=true;focus='draft';announce('Write your version in the empty card.');}
+    if(action==='cancel-compose') {state.composing=false;focus='compose-'+id;if(ideaOf(id).versions.length===1){fold(id);return;}announce('Draft kept for later.');}
+    if(action==='add') {
+      const form=root.querySelector('#sm-form'),claim=state.draftClaim.trim(),reason=state.draftReason.trim();
+      if(!claim||!reason){
+        form.querySelector('#sm-draft').toggleAttribute('aria-invalid',!claim);
+        form.querySelector('#sm-reason').toggleAttribute('aria-invalid',!reason);
+        form.querySelectorAll('[aria-invalid]').forEach(el=>el.setAttribute('aria-invalid','true'));
+        form.querySelector(!claim?'#sm-draft':'#sm-reason').focus();
+        announce('Add your version and what it improves.');return;
+      }
+      if(state.added.length>=5)return;
+      state.added.push({idea:id,claim,reason});syncAdded();
+      state.composing=false;state.draftClaim='';state.draftReason='';
+      state.expanded='local'+(state.added.length-1);focus='claim-'+state.expanded;motion='added';
+      announce('Your version was added at the end of the row. It starts unreviewed, with no articulation votes.');
+    }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     render(focus,motion);save();
+  });
+  root.addEventListener('keydown',event=>{
+    if(event.key!=='Escape'||busy)return;
+    if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
+    if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
+    if(state.open){event.preventDefault();fold(state.open);}
   });
   root.addEventListener('click',event=>{
     const summary=event.target.closest('.sm-source-row summary');if(!summary)return;
     const detail=summary.parentElement;
-    requestAnimationFrame(()=>{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;placeModal();save();});
+    requestAnimationFrame(()=>{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;animateWires();save();});
   });
-  modal.addEventListener('cancel',event=>{event.preventDefault();closeModal();});
-  modal.addEventListener('click',event=>{if(event.target===modal)closeModal();});
   restore(window.openai?.widgetState);
-  originId=state.idea;
-  returnKey='expand-'+ideas.find(i=>i.id===state.idea).versions[0];
   render();
-  window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);originId=state.idea;render();}});
+  window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);render();}});
   new ResizeObserver(()=>animateWires()).observe(scene);
-  new ResizeObserver(()=>{if(modal.open)placeModal();}).observe(modal);
-  window.addEventListener('resize',()=>{if(modal.open)placeModal();});
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>render()});tweak.addSelect(design,'type',{label:'Argument typography',options:[{label:'Graphics sans',value:'sans'},{label:'Editorial serif',value:'serif'}]});tweak.addSelect(design,'indicator',{label:'Evidence metaphor',options:[{label:'Paper dossier',value:'dossier'},{label:'Open book',value:'books'},{label:'Review checklist',value:'checklist'}]});tweak.addSelect(design,'density',{label:'Card density',options:[{label:'Comfortable',value:'comfortable'},{label:'Compact',value:'compact'}]});}
 })();
 </script>

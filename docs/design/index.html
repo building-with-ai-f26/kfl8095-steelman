@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steelman — Design specimen</title>
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    /* Page chrome only. Components are styled by the prototype's own stylesheet, loaded below. */
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--sm-paper); background-image:var(--sm-grain); color:var(--sm-ink); font:14px/1.6 var(--sm-sans); }
+    .page { max-width:1060px; margin:auto; padding:0 32px 64px; }
+    .masthead { display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding:26px 0 20px; border-bottom:1px solid var(--sm-ink); }
+    .masthead strong { font:700 26px/1 var(--sm-serif); letter-spacing:-1px; }
+    .masthead a, .note a { color:inherit; text-underline-offset:3px; }
+    .masthead nav { display:flex; gap:20px; font-size:12px; }
+    .spec { padding:34px 0 10px; border-bottom:1px solid var(--sm-line); }
+    .spec:last-of-type { border-bottom:0; }
+    .spec-head { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:20px; }
+    h2 { margin:0; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.5px; }
+    .spec-head span, .label, .note { color:var(--sm-muted); font-size:11px; }
+    .note { max-width:620px; margin:-8px 0 20px; font-size:12px; line-height:1.6; }
+    .row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+    .item { display:flex; flex-direction:column; gap:10px; min-width:0; }
+    .swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+    .swatch { display:flex; flex-direction:column; gap:6px; }
+    .swatch label { position:relative; display:block; height:64px; border:1px solid var(--sm-line); border-radius:10px; cursor:pointer; overflow:hidden; }
+    .swatch input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+    .swatch code { font-size:11px; }
+    .swatch .changed { color:var(--sm-ink); font-weight:600; }
+    .type-sample { display:grid; grid-template-columns:150px minmax(0,1fr); gap:20px; align-items:baseline; padding:14px 0; border-top:1px solid var(--sm-line); }
+    .overrides { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+    .overrides pre { margin:0; padding:12px 14px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; font-size:12px; white-space:pre-wrap; min-height:44px; }
+    .overrides .actions { display:flex; gap:8px; }
+    .demo-card { width:min(420px,100%); }
+    .v-axis-demo { height:320px; display:flex; }
+    .h-axis-demo { width:min(560px,100%); }
+    #steelman-study { display:block; }
+    @media(max-width:640px) {
+      .page { padding:0 18px 48px; }
+      .type-sample { grid-template-columns:1fr; gap:4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <strong>steelman. design</strong>
+      <nav><a href="README.md">Identity brief</a><a href="tokens.css">tokens.css</a><a href="../prototype/">Prototype ↗</a></nav>
+    </header>
+    <!-- #steelman-study scopes the prototype's component styles to this specimen. -->
+    <main id="steelman-study">
+      <section class="spec" aria-labelledby="color-title">
+        <div class="spec-head"><h2 id="color-title">Color</h2><span>Click a swatch to try a value</span></div>
+        <p class="note">Changes apply live to every component on this page and nowhere else. When a change works, copy the overrides into <code>tokens.css</code> and run <code>python3 scripts/sync-prototype.py</code>.</p>
+        <div class="swatches" id="swatches"></div>
+        <div class="overrides">
+          <span class="label">Changed tokens</span>
+          <pre id="override-css">None yet.</pre>
+          <div class="actions"><button type="button" class="sm-button" id="copy-overrides">Copy CSS</button><button type="button" class="sm-button" id="reset-overrides">Reset</button></div>
+        </div>
+      </section>
+
+      <section class="spec" aria-labelledby="type-title">
+        <div class="spec-head"><h2 id="type-title">Type</h2><span>Source Serif 4 · Libre Franklin</span></div>
+        <div class="type-sample"><span class="label">Question · serif 700</span><span style="font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px">Should our library open on Sundays?</span></div>
+        <div class="type-sample"><span class="label">Option · sans 600</span><span style="font-size:17px; font-weight:600; letter-spacing:-.3px">Open on Sundays</span></div>
+        <div class="type-sample"><span class="label">Claim · sans 400</span><span class="sm-claim">Sunday hours would give some weekday workers their only practical time to visit.</span></div>
+        <div class="type-sample"><span class="label">Axis · serif 300 italic</span><span class="sm-axis" style="justify-content:flex-start"><span class="sm-axis-label">best articulation</span></span></div>
+        <div class="type-sample"><span class="label">Meta · sans 11</span><span style="font-size:11px; color:var(--sm-muted)">75% · 32 assessments</span></div>
+      </section>
+
+      <section class="spec" aria-labelledby="axes-title">
+        <div class="spec-head"><h2 id="axes-title">Axes</h2><span>One arrowhead, rotated</span></div>
+        <div class="row">
+          <div class="item h-axis-demo"><span class="label">Articulation · above an unfolded row</span><div class="axis-slot" data-axis="h" data-start="best articulation" data-end="weaker"></div></div>
+          <div class="item"><span class="label">Importance · between columns</span><div class="v-axis-demo axis-slot" data-axis="v" data-start="more important" data-end="less important"></div></div>
+        </div>
+      </section>
+
+      <section class="spec" aria-labelledby="vote-title">
+        <div class="spec-head"><h2 id="vote-title">Vote control</h2><span>Same element, a quarter turn apart</span></div>
+        <div class="row">
+          <div class="item"><span class="label">Importance · none / more / less</span><div class="row" style="gap:14px"><div class="vote-slot" data-axis="v" data-value="0" data-score="42"></div><div class="vote-slot" data-axis="v" data-value="1" data-score="43"></div><div class="vote-slot" data-axis="v" data-value="-1" data-score="41"></div></div></div>
+          <div class="item"><span class="label">Articulation · none / better / weaker</span><div class="row" style="gap:14px; flex-direction:column"><div class="vote-slot" data-axis="h" data-value="0" data-score="26"></div><div class="vote-slot" data-axis="h" data-value="1" data-score="27"></div><div class="vote-slot" data-axis="h" data-value="-1" data-score="25"></div></div></div>
+        </div>
+      </section>
+
+      <section class="spec" aria-labelledby="cred-title">
+        <div class="spec-head"><h2 id="cred-title">Credibility mark</h2><span>Supported as worded</span></div>
+        <div class="row" id="cred-row"></div>
+      </section>
+
+      <section class="spec" aria-labelledby="card-title">
+        <div class="spec-head"><h2 id="card-title">Argument card</h2><span>With its paper stack</span></div>
+        <div class="row" id="card-row"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+  <script>
+  (async () => {
+    const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
+    // Same arrowhead markup as the prototype's axis().
+    const head = '<svg class="sm-axis-head" viewBox="0 0 12 8" aria-hidden="true"><path d="M11.5 .6C7 2.7 3.4 3.7 .5 4c2.9.3 6.5 1.3 11 3.4"/></svg>';
+    const axis = (kind, start, end) => `<div class="sm-axis" data-axis="${kind}" aria-hidden="true"><span class="sm-axis-label">${start}</span><span class="sm-axis-line">${head}${head}</span><span class="sm-axis-label">${end}</span></div>`;
+    const vote = (dir, value, score) => {
+      const btn = (v, glyph) => `<button type="button" class="sm-vote-btn" data-vote="${v}" aria-pressed="${value === v}" aria-label="${v > 0 ? 'Up' : 'Down'}">${icon(glyph)}</button>`;
+      return `<div class="sm-vote" data-axis="${dir}" role="group" aria-label="Example vote">${btn(1, 'chevron-up')}<span class="sm-vote-score">${score}</span>${btn(-1, 'chevron-down')}</div>`;
+    };
+    const cred = ({pct, n, value}) => {
+      if (value) return `<span class="sm-cred">${icon('scale')}<span>Value judgment</span></span>`;
+      const mark = n === 0 ? 'circle-help' : pct === 100 ? 'check' : pct === 0 ? 'x' : null;
+      return `<span class="sm-cred"><span class="sm-evidence-symbol ${n ? '' : 'sm-unreviewed'}">${icon('files')}${mark ? `<span class="sm-stamp">${icon(mark)}</span>` : ''}</span><span class="sm-cred-copy"><span class="sm-percentage">${n ? pct + '%' : 'Unreviewed'}</span>${n ? `<span class="sm-count ${n < 5 ? 'sm-few' : ''}">· ${n}${n < 5 ? ' · few' : ''}</span>` : ''}</span></span>`;
+    };
+    const stack = edges => {
+      const empty = edges === 0;
+      const spans = (empty ? [1] : Array.from({length: edges}, (_, k) => edges - k)).map(i => `<span aria-hidden="true" style="right:${24 - 7 * i}px;top:${3 * i}px;bottom:${3 * i}px"></span>`).join('');
+      return `<span class="sm-stack-button ${empty ? 'sm-empty' : ''}" aria-hidden="true">${spans}</span>`;
+    };
+    const card = (claim, credInfo, edges, sources) => `<div class="sm-card-wrap demo-card">${stack(edges)}<article class="sm-card"><div class="sm-claim-button"><span class="sm-claim">${claim}</span></div><div class="sm-card-meta">${cred(credInfo)}<div class="sm-card-tools"><span class="sm-source-button">${icon('paperclip')} ${sources}</span><span class="sm-expand">${icon('chevron-down')}</span></div></div></article></div>`;
+
+    // Components use the prototype's real stylesheet, so this page cannot drift from it.
+    try {
+      const source = await (await fetch('../prototype/source/steelman-refined.html')).text();
+      const css = source.match(/<style>([\s\S]*?)<\/style>/)[1];
+      const style = document.createElement('style');
+      style.textContent = css;
+      document.head.append(style);
+    } catch {
+      document.querySelector('main').insertAdjacentHTML('afterbegin', '<p class="note">Component styles could not load. Serve docs/ over HTTP (see AGENTS.md) rather than opening this file directly.</p>');
+    }
+
+    document.querySelectorAll('.axis-slot').forEach(el => { el.innerHTML = axis(el.dataset.axis, el.dataset.start, el.dataset.end); });
+    document.querySelectorAll('.vote-slot').forEach(el => { el.innerHTML = vote(el.dataset.axis, Number(el.dataset.value), el.dataset.score); });
+    document.getElementById('cred-row').innerHTML = [
+      {pct: 100, n: 18, label: '100% · well assessed'}, {pct: 75, n: 32, label: '75%'}, {pct: 75, n: 4, label: 'Few assessments'},
+      {pct: 0, n: 8, label: '0%'}, {n: 0, label: 'Unreviewed'}, {value: true, label: 'Value judgment'}
+    ].map(c => `<div class="item"><span class="label">${c.label}</span>${cred(c)}</div>`).join('');
+    document.getElementById('card-row').innerHTML = [
+      ['One version', 'A public library should be available on the day families can spend time together.', {value: true}, 0, 0],
+      ['Two versions', 'Sunday study space could improve outcomes for students without a quiet place at home.', {pct: 33, n: 6}, 1, 1],
+      ['Three or more', 'Sunday hours would give some weekday workers their only practical time to visit.', {pct: 75, n: 32}, 3, 2]
+    ].map(([label, claim, c, edges, sources]) => `<div class="item"><span class="label">${label}</span>${card(claim, c, edges, sources)}</div>`).join('');
+
+    // Live color tokens: read the current values from tokens.css, edit them in place.
+    const root = document.documentElement;
+    const colorTokens = ['--sm-paper', '--sm-card', '--sm-soft', '--sm-ink', '--sm-muted', '--sm-selected', '--sm-on-selected', '--sm-line', '--sm-wire', '--sm-axis', '--sm-axis-line'];
+    const toHex = value => {
+      const probe = document.createElement('span'); probe.style.color = value; document.body.append(probe);
+      const [r, g, b] = getComputedStyle(probe).color.match(/\d+/g).map(Number); probe.remove();
+      return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    };
+    const original = Object.fromEntries(colorTokens.map(t => [t, toHex(getComputedStyle(root).getPropertyValue(t).trim())]));
+    const changed = {};
+    const out = document.getElementById('override-css');
+    const showOverrides = () => {
+      const lines = Object.entries(changed).map(([t, v]) => `  ${t}:${v};`);
+      out.textContent = lines.length ? `:root {\n${lines.join('\n')}\n}` : 'None yet.';
+    };
+    const swatches = document.getElementById('swatches');
+    swatches.innerHTML = colorTokens.map(t => `<div class="swatch"><label style="background:var(${t})"><input type="color" value="${original[t]}" data-token="${t}" aria-label="Edit ${t}"></label><code>${t}</code><code class="value">${original[t]}</code></div>`).join('');
+    swatches.addEventListener('input', event => {
+      const t = event.target.dataset.token, v = event.target.value;
+      root.style.setProperty(t, v);
+      if (v === original[t]) delete changed[t]; else changed[t] = v;
+      const value = event.target.closest('.swatch').querySelector('.value');
+      value.textContent = v; value.classList.toggle('changed', t in changed);
+      showOverrides();
+    });
+    document.getElementById('reset-overrides').addEventListener('click', () => {
+      for (const t of Object.keys(changed)) { root.style.removeProperty(t); delete changed[t]; }
+      swatches.querySelectorAll('input').forEach(input => { input.value = original[input.dataset.token]; const v = input.closest('.swatch').querySelector('.value'); v.textContent = input.value; v.classList.remove('changed'); });
+      showOverrides();
+    });
+    document.getElementById('copy-overrides').addEventListener('click', async event => {
+      try { await navigator.clipboard.writeText(out.textContent); event.target.textContent = 'Copied'; } catch { event.target.textContent = 'Select the text to copy'; }
+      setTimeout(() => { event.target.textContent = 'Copy CSS'; }, 1600);
+    });
+
+    if (window.lucide) lucide.createIcons({attrs: {width: 16, height: 16}});
+  })();
+  </script>
+</body>
+</html>
