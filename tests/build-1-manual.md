@@ -284,6 +284,8 @@ From a review of every feature. Checked by the coding agent at 800, 1024, and 39
 | Phone | No horizontal overflow at 390 px |
 | Browser errors | No prototype errors in the console |
 
+Hex texture by density: the prototype's background now uses filled hexagons of one size (82% of the lattice, 6% tone, from new tokens `--sm-hex-fill`, `--sm-hex-size`, `--sm-hex-sparse`). Importance sets the share of cells present, from a nearly full honeycomb behind the most important row (42 / 39) to about 4% behind the least important (8); each cell's presence is fixed by its grid position, so redraws don't flicker. Articulation still fades tone across an unfolded row. Checked at 800 px, folded and unfolded; no console errors. The design specimen's board study still shows the earlier outlined, size-based texture.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
