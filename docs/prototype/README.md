@@ -8,7 +8,7 @@ Argument cards use a grayscale paper texture, rounded corners, and soft shadows;
 - **Importance:** the vertical vote beside each row, with an axis down the left column's edge.
 - **Articulation:** the horizontal vote above each version, right under the axis of an unfolded row.
 
-Importance and articulation share one vote control, turned a quarter turn, and their axes use map-style halos. After a vote, a word ("Important.", "Less important.", "Well articulated.", "Weaker articulation.") appears beside the arrow and fades, repeating the axis direction. Behind each column, a faint outlined hex texture carries the same two votes: cell size follows importance, and darkness fades across an unfolded row from the best-articulated version.
+Importance and articulation share one vote control, turned a quarter turn, and their axes use map-style halos. After a vote, a word ("Important.", "Less important.", "Well articulated.", "Weaker articulation.") appears beside the arrow and fades, repeating the axis direction. Behind each column, a faint texture of filled hexagons carries the same two votes: importance sets how many cells are present (a full honeycomb behind the most important row, a scattering behind the least), and tone fades across an unfolded row from the best-articulated version.
 
 Colors, type, and texture come from [`../design/tokens.css`](../design/tokens.css). After editing the source or the tokens, run `python3 scripts/sync-prototype.py` from the repository root to update the standalone export; the script copies the tokens in, because the sandboxed prototype cannot load local files. The original supplied prototype remains in Git history.
 

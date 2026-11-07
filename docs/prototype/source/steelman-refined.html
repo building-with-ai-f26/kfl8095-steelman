@@ -922,8 +922,10 @@
   // Hex texture per column, from the shared votes. Size follows importance (normalized across the board,
   // then curved); darkness follows articulation across an unfolded row. Static: redrawn when layout or votes change.
   const hexPath=(ctx,cx,cy,r)=>{ctx.moveTo(cx+r*Math.cos(Math.PI/6),cy+r*Math.sin(Math.PI/6));for(let k=1;k<=6;k++){const a=Math.PI/6+k*Math.PI/3;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();};
+  // Each cell is either present or missing, decided once from its grid position so redraws don't flicker.
+  const cellChance=(i,j)=>{let h=Math.imul(i+4096,374761393)+Math.imul(j+4096,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;};
   function drawTexture() {
-    const R=parseFloat(token('--sm-hex-cell'))||9,contrast=parseFloat(token('--sm-hex-contrast'))||.1,floor=Math.min(1,Math.max(0,parseFloat(token('--sm-hex-art-floor'))||0)),curve=Math.max(.5,parseFloat(token('--sm-hex-curve'))||1.8),ink=token('--sm-hex-ink')||'#242424';
+    const R=parseFloat(token('--sm-hex-cell'))||9,fill=parseFloat(token('--sm-hex-fill'))||.06,size=parseFloat(token('--sm-hex-size'))||.82,sparse=Math.min(1,Math.max(0,parseFloat(token('--sm-hex-sparse'))||.04)),floor=Math.min(1,Math.max(0,parseFloat(token('--sm-hex-art-floor'))||0)),curve=Math.max(.5,parseFloat(token('--sm-hex-curve'))||1.8),ink=token('--sm-hex-ink')||'#242424';
     const scores=ideas.map(importanceScore),lo=Math.min(...scores),hi=Math.max(...scores);
     board.querySelectorAll('.sm-column').forEach(col=>{
       const canvas=col.querySelector('.sm-texture'),box=canvas.getBoundingClientRect();
@@ -938,14 +940,17 @@
       });
       if(!rows.length) return;
       const dx=R*Math.sqrt(3),dy=R*1.5;
-      ctx.strokeStyle=ink;ctx.lineWidth=.9;ctx.lineJoin='round';
+      // Filled cells of one size. Importance sets density: the most important row is a full honeycomb,
+      // the least important keeps only a scattering (sparse). Articulation fades tone across an unfolded row.
+      ctx.fillStyle=ink;
       for(let j=0;j*dy<box.height+R;j++) for(let i=-1;i*dx<box.width+R;i++) {
         const cx=i*dx+(j%2?dx/2:0),cy=j*dy;
         const row=rows.reduce((a,b)=>Math.abs(b.mid-cy)<Math.abs(a.mid-cy)?b:a);
+        if(cellChance(i,j)>sparse+(1-sparse)*row.imp) continue;
         let art=1;
         if(row.versions.length>1){const gapTo=v=>cx<v.l?v.l-cx:cx>v.r?cx-v.r:0;art=row.versions.reduce((a,b)=>gapTo(b)<gapTo(a)?b:a).art/row.maxArt;}
-        ctx.globalAlpha=contrast*(0.45+0.55*row.imp)*(floor+(1-floor)*Math.max(0,art));
-        ctx.beginPath();hexPath(ctx,cx,cy,R*(0.1+0.85*row.imp));ctx.stroke();
+        ctx.globalAlpha=fill*(floor+(1-floor)*Math.max(0,art));
+        ctx.beginPath();hexPath(ctx,cx,cy,R*size);ctx.fill();
       }
       ctx.globalAlpha=1;
     });
