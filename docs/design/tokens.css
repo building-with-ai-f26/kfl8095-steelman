@@ -9,7 +9,7 @@
 */
 :root {
   /* Surfaces */
-  --sm-paper:#d8dde0;        /* canvas behind the diagram: cool slate, under white contour lines */
+  --sm-paper:#dcd8cf;        /* canvas behind the diagram: warm stone, under white contour lines */
   --sm-panel:#f7f7f7;        /* option column panels; axis halos match it */
   --sm-card:#fdfdfd;         /* argument cards, headers, controls */
   --sm-soft:#eee;            /* hover fill */
@@ -41,7 +41,7 @@
   --sm-hex-contrast:.1;      /* outline opacity for the strongest cells: keep it very subtle */
   --sm-hex-art-floor:.15;    /* weakest version keeps this share of the row's tone */
   --sm-hex-curve:1.8;        /* importance curve: >1 exaggerates strong vs. weak rows */
-  --sm-hex-fill:.06;         /* prototype: opacity of each filled cell */
+  --sm-hex-fill:.04;         /* prototype: opacity of each filled cell */
   --sm-hex-size:.92;         /* prototype: filled cell size as a share of the lattice, leaving a gap */
   --sm-hex-sparse:.04;       /* prototype: share of cells kept for the least important row */
 
