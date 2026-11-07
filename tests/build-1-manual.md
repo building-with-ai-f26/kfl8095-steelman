@@ -158,6 +158,24 @@ Checked by the coding agent at 1280 px and 390 px. Most interactions were script
 | Browser errors | No prototype errors in the console |
 
 
+## November 7 — Comments (batch 2)
+
+Checked by the coding agent at 390, 1024, 1280 and 1400 px. Thread actions were scripted on an unsandboxed copy of the synced page; placement and persistence were also checked with pointer clicks on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Icons and counts | Question 2, "Sunday hours…" 2, staffing 1; Keep current hours shows none (its only thread is resolved). Counts include replies |
+| Open | Clicking an icon opens Comments with the item quoted at the top and a dark ring around it; focus moves to the comment box. Clicking the same icon closes it |
+| Add | An empty comment is refused with a red edge; ⌘/Ctrl + Enter posts as "You · Today"; count 2 → 3 |
+| Reply | Reply opens an inline box; Escape cancels it (panel stays open, focus returns to Reply); posting a reply raises the count to 4 |
+| Resolve and reopen | Resolve drops the count to 1 and folds the thread under "1 resolved"; Reopen restores 4 |
+| Delete | Only your comments offer Delete. Deleting a reply removes it; deleting your first comment that has replies leaves "Comment deleted." and keeps the reply |
+| Escape | Closes the panel and returns focus to the icon that opened it |
+| Persistence | A comment on Keep current hours survived a reload of the standalone page; saved state without comments gets the example comments |
+| Placement | The standalone page grows its frame to fit the content, so a screen-fixed panel was off-screen after scrolling. The panel now anchors level with its subject: beside the board at 1200 px and up; below that it floats on the opposite side (no overlap with the card, option, or question at 1024 px), or just below wide subjects and on phones (8 px gap at 390 px). The prototype grows if the panel runs past its end |
+| Narrow cards | Footer text no longer overlaps the comment icon; very narrow cards drop the count, then the percentage (meter and tooltip remain) |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

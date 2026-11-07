@@ -28,15 +28,28 @@
   #steelman-study .sm-head-button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:#ffffff8c; }
   #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded="true"] { background:#ffffff1f; color:#fff; }
   #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
+  #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
+  #steelman-study .sm-column-head .sm-head-button { margin:-6px -8px -6px auto; flex:none; }
+  #steelman-study .sm-comment-count { font:500 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-source-button.sm-comment-button svg { width:13px; height:13px; }
+  /* What the open comments are about: a ring around that question, option, or version. */
+  #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
   #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font:300 12px/1.4 var(--sm-sans); letter-spacing:.01em; color:#ffffff99; }
   #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:4px; }
   #steelman-study .sm-question-meta li + li::before { content:"·"; margin:0 8px; opacity:.7; }
   #steelman-study .sm-question-meta svg { width:12px; height:12px; stroke-width:1.6; }
 
-  /* Right-hand drawer: settings now, comments next. Non-modal: the board stays usable beside it. */
-  #steelman-study .sm-drawer { position:fixed; top:0; right:0; bottom:0; width:min(380px,100%); z-index:30; display:flex; flex-direction:column; background:var(--sm-card); border-left:1px solid var(--sm-line); box-shadow:-10px 0 30px #0000001a; overflow-y:auto; overscroll-behavior:contain; }
-  @media(min-width:900px) { #steelman-study[data-drawer] { padding-right:380px; } }
-  #steelman-study .sm-drawer-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
+  /* Right-hand panel for settings and comments. Non-modal: the board stays usable beside it.
+     The standalone page grows its frame to fit the content, so the panel can't be pinned to the screen;
+     positionDrawer() anchors it level with what it is about instead, like margin comments. */
+  #steelman-study { position:relative; }
+  #steelman-study .sm-drawer { position:absolute; top:0; right:12px; width:356px; z-index:30; display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  /* Wide screens make room beside the board. Narrower ones float the panel over the board without moving it,
+     on the side away from what it is about (data-side), so that item stays visible. */
+  @media(min-width:1200px) { #steelman-study[data-drawer] { padding-right:380px; } }
+  @media(max-width:1199px) { #steelman-study .sm-drawer[data-side="left"] { right:auto; left:12px; } }
+  #steelman-study .sm-drawer-head { border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-drawer-head h2 { font:600 18px/1.3 var(--sm-serif); }
   #steelman-study .sm-drawer-body { display:grid; gap:24px; padding:20px 20px 28px; }
   #steelman-study .sm-field { display:grid; gap:8px; min-width:0; margin:0; padding:0; border:0; }
@@ -57,6 +70,26 @@
   #steelman-study .sm-choice:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
   #steelman-study .sm-drawer-section { display:grid; gap:10px; padding-top:20px; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-drawer-section h3 { margin:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-button.sm-solid { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-comments-body { flex:1; align-content:start; gap:14px; }
+  #steelman-study .sm-comment-target { margin:0 0 4px; padding:10px 12px; border-left:3px solid var(--sm-ink); background:var(--sm-soft); border-radius:0 6px 6px 0; }
+  #steelman-study .sm-comment-target span { font-size:11px; font-weight:600; color:var(--sm-muted); }
+  #steelman-study .sm-comment-target p { margin:4px 0 0; font:400 14px/1.45 var(--sm-serif); }
+  #steelman-study .sm-thread { display:grid; gap:10px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; }
+  #steelman-study .sm-thread.sm-resolved { opacity:.7; border-style:dashed; }
+  #steelman-study .sm-comment header { display:flex; align-items:center; gap:7px; font-size:12px; }
+  #steelman-study .sm-comment time { color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--sm-ink); color:#fff; font-size:11px; font-weight:600; flex:none; }
+  #steelman-study .sm-comment p { margin:6px 0 0 29px; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+  #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-muted); font-style:italic; }
+  #steelman-study .sm-reply { margin-left:14px; padding-left:12px; border-left:1px solid var(--sm-line); }
+  #steelman-study .sm-comment-actions { display:flex; gap:12px; margin:6px 0 0 29px; }
+  #steelman-study .sm-link-button { border:0; background:transparent; padding:2px 0; font-size:11px; font-weight:500; color:var(--sm-muted); }
+  #steelman-study .sm-link-button:hover { color:var(--sm-ink); text-decoration:underline; }
+  #steelman-study .sm-reply-form { display:grid; gap:8px; margin-left:14px; }
+  #steelman-study .sm-comment-compose { display:grid; border-radius:0 0 10px 10px; gap:8px; padding:12px 20px 16px; background:var(--sm-card); border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-drawer :is(.sm-comment-compose,.sm-reply-form) textarea { min-height:0; font:400 13px/1.5 var(--sm-sans); }
+  #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
   #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
   #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
@@ -112,9 +145,13 @@
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
+  /* Narrow cards (a squeezed column) drop the secondary footer text; the meter and tooltip keep the meaning. */
+  #steelman-study .sm-card { container-type:inline-size; }
+  @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
+  @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
-  #steelman-study .sm-cred { display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
+  #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
   #steelman-study .sm-cred:hover, #steelman-study .sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
   #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -222,7 +259,7 @@
     #steelman-study .sm-col-arrow::after { content:""; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
     #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
     #steelman-study .sm-track { grid-auto-columns:84%; }
-    #steelman-study .sm-drawer { width:100%; border-left:0; }
+    #steelman-study .sm-drawer, #steelman-study .sm-drawer[data-side="left"] { left:8px; right:8px; width:auto; }
   }
   @media(pointer:coarse) {
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
@@ -287,14 +324,24 @@
     {id:'evenings',option:'keep',score:25,versions:['evenings']},
     {id:'services',option:'keep',score:8,versions:['services']}
   ];
+  // Example comments. A target is "question", "option:<id>", or "card:<id>"; replies point to their thread's first comment.
+  // by:'you' marks your own comments, which you can delete.
+  const seedComments = () => [
+    {id:'c-q1',target:'question',by:'Jordan',at:'2026-11-05T16:10:00Z',text:'Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.'},
+    {id:'c-q2',target:'question',parent:'c-q1',by:'Maya',at:'2026-11-05T17:02:00Z',text:'Good catch. The survey only covered the branch, too.'},
+    {id:'c-o1',target:'option:keep',by:'Priya',at:'2026-11-05T18:30:00Z',text:'Rename this from “Stay closed” so it reads as a choice, not a refusal?',resolved:true},
+    {id:'c-a1',target:'card:access',by:'Maya',at:'2026-11-06T09:15:00Z',text:'“Some” is carrying a lot here. Could we say roughly how many?'},
+    {id:'c-a2',target:'card:access',parent:'c-a1',by:'Jordan',at:'2026-11-06T10:40:00Z',text:'The survey says 18 of 80 respondents. The narrower version in this row uses that number.'},
+    {id:'c-s1',target:'card:staffing',by:'Sam',at:'2026-11-06T13:05:00Z',text:'Has anyone asked staff whether a voluntary rota swap would cover Sundays?'}
+  ];
   const seedDoc = () => structuredClone({
     question:{text:'Should our library open on Sundays?',author:'Kieran LaMee',posted:'2026-11-05',org:'pod6',visibility:'org',contribute:'viewers',vote:'viewers'},
     options:[{id:'open',name:'Open on Sundays'},{id:'keep',name:'Keep current hours'}],
-    ideas:seedIdeas,cards:seedCards,sources:seedSources,nextId:1
+    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
   });
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -307,7 +354,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({open:null,expanded:null,composing:false,drawer:null,confirmReset:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({open:null,expanded:null,composing:false,drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -341,7 +388,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:''},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -385,16 +432,16 @@
     const s=stats(id);
     const attrs=`type="button" data-action="toggle" data-id="${id}" data-key="cred-${id}"`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
-    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
+    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
   }
   function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}<div class="sm-card-tools">${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    return `${credibility(id)}<div class="sm-card-tools">${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceButton(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
   function cardFace(id, inTrack=false) {
     const expanded=state.expanded===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   function stack(idea) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
@@ -420,7 +467,7 @@
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head"><h2>${optionName(option)}</h2></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
   }
   function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
   function evidenceContent(cardId) {
@@ -446,13 +493,19 @@
     const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer==='settings';
     const org=q.org!=='none'?`<li>${escape(ORGS[q.org]||'')}</li>`:'';
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question"><li>Posted by ${escape(q.author)}</li><li><time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}<li>${icon(vis.icon)}${vis.label}</li></ul>`
-      +`<div class="sm-head-tools"><button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {
     return `<label class="sm-choice"><input type="radio" name="${name}" value="${value}" data-key="${name}-${value}" ${value===current?'checked':''} ${disabled?'disabled':''}>${glyph?icon(glyph):'<span></span>'}<span>${label}</span>${hint?`<small>${hint}</small>`:''}</label>`;
   }
   function select(id,options,current,label) {
     return `<div class="sm-field"><label for="sm-${id}">${label}</label><select id="sm-${id}" data-setting="${id}" data-key="setting-${id}">${Object.entries(options).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select></div>`;
+  }
+  // Closing the drawer returns focus to the button that opened it.
+  function closeDrawer() {
+    const back=state.drawer==='comments'?'comments-'+state.commentTarget:'settings';
+    announce(state.drawer==='comments'?'Comments closed.':'Settings closed.');
+    state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
   }
   function settingsMarkup() {
     const q=doc.question, personal=q.org==='none';
@@ -464,12 +517,57 @@
       +select('vote',{viewers:PERMISSIONS.viewers,invited:PERMISSIONS.invited},q.vote,'Who can vote and assess evidence')
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Settings and edits are saved in this browser only; nothing is shared with anyone.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
+  // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
+  const commenting = target => state.drawer==='comments' && state.commentTarget===target;
+  const threadsOn = target => doc.comments.filter(c=>c.target===target && !c.parent);
+  const repliesTo = id => doc.comments.filter(c=>c.parent===id);
+  // Counts include replies, but not deleted comments or resolved threads.
+  const openCount = target => threadsOn(target).filter(c=>!c.resolved).reduce((n,c)=>n+(c.deleted?0:1)+repliesTo(c.id).filter(r=>!r.deleted).length,0);
+  function commentButton(target,cls,noun) {
+    const n=openCount(target), label=n?`${n} ${n===1?'comment':'comments'} on this ${noun}`:`Comment on this ${noun}`;
+    return `<button type="button" class="${cls} sm-comment-button cursor-interaction" data-action="comments" data-id="${target}" data-key="comments-${target}" aria-expanded="${commenting(target)}" aria-controls="sm-drawer-body" aria-label="${label}" data-tooltip="${n?label:'Comment'}">${icon('message-square')}${n?`<span class="sm-comment-count">${n}</span>`:''}</button>`;
+  }
+  function describeTarget(target) {
+    const [kind,id]=target.split(':');
+    if(kind==='question') return {kind:'Question',text:doc.question.text};
+    if(kind==='option') return {kind:'Option',text:optionName(id)};
+    return {kind:'Version',text:cards[id]?.claim||'This version was removed.'};
+  }
+  const commentDate = iso => { const d=new Date(iso),now=new Date(); return d.toDateString()===now.toDateString()?'Today':d.toLocaleDateString('en-US',{month:'short',day:'numeric',...(d.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})}); };
+  const linkButton = (action,id,label,extra='') => `<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${extra}>${label}</button>`;
+  function commentItem(c,isReply) {
+    const who=c.by==='you'?'You':c.by;
+    const actions=c.deleted?'':[
+      !isReply&&!c.resolved?linkButton('reply',c.id,'Reply'):'',
+      !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
+      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
+    ].join('');
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0])}</span><strong>${escape(who)}</strong><time datetime="${c.at}">${commentDate(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+  }
+  function thread(c) {
+    const replying=state.replyTo===c.id;
+    const form=replying?`<div class="sm-reply-form"><textarea id="sm-reply" data-key="reply-text" rows="2" maxlength="1000" placeholder="Reply" aria-label="Your reply">${escape(state.replyDraft)}</textarea><div class="sm-comment-form-actions">${linkButton('reply-cancel',c.id,'Cancel')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="reply-add" data-id="${c.id}" data-key="reply-add">Reply</button></div></div>`:'';
+    return `<div class="sm-thread ${c.resolved?'sm-resolved':''}">${commentItem(c,false)}${repliesTo(c.id).map(r=>commentItem(r,true)).join('')}${form}</div>`;
+  }
+  function commentsMarkup() {
+    const target=state.commentTarget, about=describeTarget(target), threads=threadsOn(target);
+    const open=threads.filter(c=>!c.resolved), resolved=threads.filter(c=>c.resolved);
+    const resolvedToggle=resolved.length?`<button type="button" class="sm-text-button cursor-interaction" data-action="show-resolved" data-key="show-resolved" aria-expanded="${state.showResolved}">${icon(state.showResolved?'chevron-down':'chevron-right')}${resolved.length} resolved</button>${state.showResolved?resolved.map(thread).join(''):''}`:'';
+    return `<div class="sm-drawer-body sm-comments-body" id="sm-drawer-body"><blockquote class="sm-comment-target"><span>${about.kind}</span><p>${escape(about.text)}</p></blockquote>`
+      +(open.length?open.map(thread).join(''):'<p class="sm-field-hint">No open comments. Ask a question, point out a gap, or suggest a change.</p>')
+      +resolvedToggle+`</div>`
+      +`<div class="sm-comment-compose"><textarea id="sm-comment" data-key="comment-text" rows="2" maxlength="1000" placeholder="Add a comment" aria-label="Add a comment on this ${about.kind.toLowerCase()}">${escape(state.commentDraft)}</textarea><div class="sm-comment-form-actions"><span class="sm-field-hint">⌘/Ctrl + Enter</span><button type="button" class="sm-button sm-solid cursor-interaction" data-action="comment-add" data-key="comment-add">Comment</button></div></div>`;
+  }
   const drawer=root.querySelector('.sm-drawer');
   function renderDrawer() {
     const open=!!state.drawer;
     drawer.hidden=!open; root.toggleAttribute('data-drawer',open);
     if(!open){drawer.innerHTML='';return;}
-    drawer.innerHTML=`<div class="sm-drawer-head"><h2 id="sm-drawer-title">Settings</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="close-drawer" data-key="close-drawer" aria-label="Close settings" data-tooltip="Close">${icon('x')}</button></div><div class="sm-drawer-body" id="sm-drawer-body">${settingsMarkup()}</div>`;
+    const comments=state.drawer==='comments',title=comments?'Comments':'Settings';
+    const scroll=drawer.scrollTop;
+    drawer.innerHTML=`<div class="sm-drawer-head"><h2 id="sm-drawer-title">${title}</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="close-drawer" data-key="close-drawer" aria-label="Close ${title.toLowerCase()}" data-tooltip="Close">${icon('x')}</button></div>`
+      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${settingsMarkup()}</div>`);
+    drawer.scrollTop=scroll;
   }
   const headEl=root.querySelector('.sm-head');
   function renderHead() { headEl.innerHTML=headMarkup(); if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}}); }
@@ -526,8 +624,23 @@
     });
   }
   let wireFrame=0,wireUntil=0;
+  function positionDrawer() {
+    if(!state.drawer){root.style.minHeight='';return;}
+    const anchor=(state.drawer==='comments'&&root.querySelector(`[data-key="comments-${state.commentTarget}"]`)?.closest('.sm-card,.sm-column-head,.sm-head'))||headEl;
+    const rootBox=root.getBoundingClientRect();
+    const box=anchor.getBoundingClientRect(),reserved=parseFloat(getComputedStyle(root).paddingRight)>0;
+    // Floating panels sit opposite their subject. A subject too wide to sit beside (the question, or anything on a phone)
+    // gets the panel just below it instead.
+    const below=!reserved&&box.width>rootBox.width/2;
+    drawer.dataset.side=box.left+box.width/2>rootBox.left+rootBox.width/2?'left':'right';
+    const wanted=(below?box.bottom+8:box.top-8)-rootBox.top;
+    // Level with the anchor (or just below it on phones); the prototype grows if the panel runs past its end.
+    const top=Math.round(Math.max(0,wanted));
+    drawer.style.top=top+'px';
+    root.style.minHeight=(top+drawer.offsetHeight+16)+'px';
+  }
   function drawLinks() {
-    drawTexture();
+    drawTexture();positionDrawer();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector('.sm-head'));
@@ -568,11 +681,12 @@
     const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
     board.dataset.open=state.open?ideaOf(state.open).option:'';
     board.innerHTML=boardMarkup();
-    headEl.innerHTML=headMarkup();
+    headEl.innerHTML=headMarkup();headEl.classList.toggle('sm-commenting',commenting('question'));
     renderDrawer();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
+    positionDrawer();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -627,6 +741,8 @@
       event.target.removeAttribute('aria-invalid');
       doc.question.text=text;headEl.querySelector('h1').textContent=text;animateWires();save();
     }
+    if(event.target.id==='sm-comment') {state.commentDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -659,7 +775,36 @@
     }
     if(action==='fold') {fold(id);return;}
     if(action==='settings') {state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
-    if(action==='close-drawer') {state.drawer=null;state.confirmReset=false;focus='settings';announce('Settings closed.');}
+    if(action==='close-drawer') {focus=closeDrawer();}
+    if(action==='comments') {
+      if(commenting(id)){focus=closeDrawer();}
+      else {state.drawer='comments';state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus='comment-text';announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
+    }
+    if(action==='comment-add') {
+      const text=state.commentDraft.trim(),field=root.querySelector('#sm-comment');
+      if(!text){field.setAttribute('aria-invalid','true');field.focus();announce('Write a comment first.');return;}
+      doc.comments.push({id:'c'+(doc.nextId++),target:state.commentTarget,by:'you',at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.commentDraft='';focus='comment-text';announce('Comment added.');
+    }
+    if(action==='reply') {state.replyTo=id;state.replyDraft='';focus='reply-text';}
+    if(action==='reply-cancel') {state.replyTo=null;state.replyDraft='';focus='reply-'+id;}
+    if(action==='reply-add') {
+      const text=state.replyDraft.trim(),field=root.querySelector('#sm-reply');
+      if(!text){field.setAttribute('aria-invalid','true');field.focus();announce('Write a reply first.');return;}
+      doc.comments.push({id:'c'+(doc.nextId++),target:state.commentTarget,parent:id,by:'you',at:new Date().toISOString(),text:text.slice(0,1000)});
+      state.replyTo=null;state.replyDraft='';focus='reply-'+id;announce('Reply added.');
+    }
+    if(action==='resolve') {
+      const c=doc.comments.find(x=>x.id===id);c.resolved=!c.resolved;if(state.replyTo===id)state.replyTo=null;
+      focus=c.resolved?'comment-text':'resolve-'+id;announce(c.resolved?'Thread resolved. It is under Resolved.':'Thread reopened.');
+    }
+    if(action==='delete-comment') {
+      const c=doc.comments.find(x=>x.id===id);
+      // A first comment with replies leaves a placeholder, so the replies keep their context.
+      if(!c.parent&&repliesTo(id).length) c.deleted=true; else doc.comments=doc.comments.filter(x=>x.id!==id);
+      focus='comment-text';announce('Comment deleted.');
+    }
+    if(action==='show-resolved') {state.showResolved=!state.showResolved;}
     if(action==='reset') {
       if(!state.confirmReset){state.confirmReset=true;focus='reset';announce('Click again to reset the board, your votes, and your edits to the original example.');}
       else {state=freshState();useDoc(seedDoc());state.drawer='settings';focus='reset';announce('The example board was reset.');}
@@ -687,8 +832,10 @@
     render(focus,motion);save();
   });
   root.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
     if(event.key!=='Escape'||busy)return;
-    if(state.drawer){event.preventDefault();state.drawer=null;state.confirmReset=false;render('settings');save();announce('Settings closed.');return;}
+    if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
+    if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);}
