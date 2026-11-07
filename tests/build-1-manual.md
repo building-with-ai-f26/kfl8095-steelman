@@ -292,6 +292,8 @@ Narrower hex gaps: `--sm-hex-size` .82 → .92 (gap between neighbouring cells a
 
 Larger again: `--sm-hex-cell` 14 px → 18 px. Checked at 800 px; density still steps down by importance; no console errors.
 
+Lighter column panels: `--sm-panel` #f0f0f0 → #f7f7f7 so the hexagons (6% ink, about #e3e3e3 → #e9e9e9) stand apart from the panel; axis halos follow the same token. Checked at 800 px; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
