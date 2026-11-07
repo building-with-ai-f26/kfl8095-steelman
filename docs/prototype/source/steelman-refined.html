@@ -233,6 +233,20 @@
   #steelman-study .sm-source-packet dl { display:grid; grid-template-columns:54px minmax(0,1fr); gap:8px; margin:12px 0 0; }
   #steelman-study .sm-source-packet dt { color:var(--sm-muted); }
   #steelman-study .sm-source-packet dd { margin:0; }
+  #steelman-study .sm-source-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:12px; }
+  #steelman-study .sm-source-actions:empty { display:none; }
+  #steelman-study .sm-add-source { margin-top:10px; }
+  #steelman-study .sm-evidence-changed { display:flex; gap:6px; align-items:flex-start; margin:0 0 10px; font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-evidence-changed svg { width:13px; height:13px; flex:none; margin-top:2px; }
+  #steelman-study .sm-source-form { display:grid; gap:10px; margin-top:12px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); }
+  #steelman-study .sm-source-form h4 { margin:0; font-size:12px; font-weight:600; }
+  #steelman-study .sm-source-field { display:grid; gap:4px; }
+  #steelman-study .sm-source-field label { font-size:11px; font-weight:600; }
+  #steelman-study .sm-source-field label span { font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-source-form :is(input,textarea) { width:100%; border:1px solid #c8c8c8; border-radius:6px; background:#fff; padding:7px 9px; font:400 13px/1.45 var(--sm-sans); color:var(--sm-ink); resize:vertical; }
+  #steelman-study .sm-source-form :is(input,textarea):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-source-form [aria-invalid="true"] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
+  #steelman-study .sm-source-form-actions { display:flex; justify-content:flex-end; align-items:center; gap:14px; }
   #steelman-study .sm-evidence-vote { display:flex; flex-direction:column; align-items:start; gap:10px; margin-top:16px; }
   #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
   #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
@@ -386,7 +400,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -422,7 +436,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{}},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -534,9 +548,21 @@
     const brief=card.brief||card.explanation;
     const sourceRows=card.sources.map(id=>{
       const source=sources[id],key=cardId+'/'+id;
-      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
+      const mine=source.by==='you',ref=`data-id="${cardId}" data-source="${id}"`;
+      const actions=[
+        mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="edit-source" ${ref} data-key="edit-source-${key}">Edit</button>`:'',
+        mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="remove-source" ${ref} data-key="remove-source-${key}">Remove from this version</button>`:'',
+        !source.unavailable?`<button type="button" class="sm-link-button cursor-interaction" data-action="report-source" ${ref} data-key="report-source-${key}">Report as unavailable</button>`:'',
+        source.reportedBy==='you'?`<button type="button" class="sm-link-button cursor-interaction" data-action="unreport-source" ${ref} data-key="unreport-source-${key}">It opens again</button>`:''
+      ].join('');
+      const note=[mine?'Added by you.':'',source.reportedBy==='you'?'You reported that it can’t be opened.':''].filter(Boolean).join(' ');
+      const rows=[['Supports',source.premise],['Limit',source.limit]].filter(([,v])=>v).map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('');
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    const formHere=state.sourceForm?.card===cardId;
+    const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
+    const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
@@ -649,10 +675,60 @@
   function closeMenu() { if(!state.menu) return; state.menu=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
   // Deleting keeps a snapshot for a short Undo window; the snapshot is never saved.
   let undoTimer=0;
+  const takeSnapshot = () => JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
+  // Shows the Undo bar under a row (afterIdea) for ten seconds. focus: where focus goes after Undo, if not the card itself.
+  function startUndo(snapshot,details) {
+    clearTimeout(undoTimer);
+    state.undo={snapshot,...details};
+    const current=state.undo;
+    // The bar leaves quietly after ten seconds, without re-rendering anything you might be typing in.
+    undoTimer=setTimeout(()=>{if(state.undo!==current)return;state.undo=null;board.querySelector('.sm-undo')?.remove();animateWires();},10000);
+  }
+  // Evidence. A source is shared: several versions can cite it. Whoever added a source can edit it or remove it
+  // from a version; anyone can report that it can't be opened.
+  const SOURCE_FIELDS = [
+    ['name','Source','e.g. Library visitor counts, 2025',true,120],
+    ['locator','Where to find it','Link, page, or section',false,200],
+    ['finding','What it shows','The specific finding, in plain words',true,500],
+    ['premise','What it supports','The part of this argument it backs up',false,300],
+    ['limit','Limits','What it does not show',false,300]
+  ];
+  // Changing the evidence after people assessed the wording is flagged, so earlier assessments are read in context.
+  function markEvidenceChanged(cardId) { if(stats(cardId).n) cards[cardId].evidenceChanged=true; }
+  function saveSource() {
+    const {card:cardId,source:sourceId}=state.sourceForm,draft=state.sourceDraft;
+    const clean=Object.fromEntries(SOURCE_FIELDS.map(([f,,,,max])=>[f,String(draft[f]||'').replace(/\s+/g,' ').trim().slice(0,max)]));
+    const missing=SOURCE_FIELDS.filter(([f,,,req])=>req&&!clean[f]).map(([f])=>f);
+    if(missing.length) return {missing};
+    let id=sourceId;
+    if(id) Object.assign(sources[id],clean);
+    else {id='s'+(doc.nextId++);sources[id]={...clean,by:'you'};cards[cardId].sources.push(id);}
+    markEvidenceChanged(cardId);
+    state.openSources[cardId+'/'+id]=true;
+    state.sourceForm=null;state.sourceDraft={};
+    return {id,added:!sourceId};
+  }
+  function removeSource(cardId,sourceId) {
+    const snapshot=takeSnapshot(),card=cards[cardId],idea=ideaOf(card.idea);
+    card.sources=card.sources.filter(x=>x!==sourceId);
+    if(!Object.values(cards).some(c=>c.sources.includes(sourceId))) delete sources[sourceId];
+    delete state.openSources[cardId+'/'+sourceId];
+    markEvidenceChanged(cardId);
+    startUndo(snapshot,{option:idea.option,afterIdea:idea.id,label:'Source removed.',focus:`src-${cardId}/${sourceId}`});
+  }
+  function sourceForm(cardId) {
+    const editing=state.sourceForm.source,d=state.sourceDraft;
+    const fields=SOURCE_FIELDS.map(([f,label,hint,req,max])=>{
+      const id='sm-src-'+f,tag=f==='name'||f==='locator'?'input':'textarea';
+      const control=tag==='input'?`<input id="${id}" type="text" data-field="${f}" data-key="src-${f}" maxlength="${max}" placeholder="${hint}" value="${escape(d[f]||'')}">`:`<textarea id="${id}" data-field="${f}" data-key="src-${f}" maxlength="${max}" rows="2" placeholder="${hint}">${escape(d[f]||'')}</textarea>`;
+      return `<div class="sm-source-field"><label for="${id}">${label}${req?'':' <span>(optional)</span>'}</label>${control}</div>`;
+    }).join('');
+    return `<form class="sm-source-form" id="sm-source-form" aria-label="${editing?'Edit source':'Add a source'}"><h4>${editing?'Edit source':'Add a source'}</h4>${fields}<div class="sm-source-form-actions"><button type="button" class="sm-text-button cursor-interaction" data-action="cancel-source" data-id="${cardId}" data-key="cancel-source">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="save-source" data-id="${cardId}" data-key="save-source">${editing?'Save source':'Add source'}</button></div></form>`;
+  }
   function deleteVersion(id) {
     const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
     const rows=ideas.filter(i=>i.option===option),rowIndex=rows.indexOf(idea);
-    const snapshot=JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
+    const snapshot=takeSnapshot();
     idea.versions=idea.versions.filter(v=>v!==id);delete cards[id];
     doc.comments=doc.comments.filter(c=>c.target!=='card:'+id);
     delete state.preference[id];delete state.assessments[id];
@@ -660,18 +736,15 @@
     if(rowGone){ideas.splice(ideas.indexOf(idea),1);delete state.importance[idea.id];if(state.open===idea.id){state.open=null;state.composing=false;}}
     if(state.expanded===id) state.expanded=null;
     if(state.drawer==='comments'&&state.commentTarget==='card:'+id) state.drawer=null;
-    clearTimeout(undoTimer);
-    state.undo={snapshot,card:id,idea:idea.id,option,label:rowGone?'Argument deleted.':'Version deleted.',afterIdea:rowGone?(rows[rowIndex-1]?.id||null):idea.id};
-    const current=state.undo;
-    // The bar leaves quietly after ten seconds, without re-rendering anything you might be typing in.
-    undoTimer=setTimeout(()=>{if(state.undo!==current)return;state.undo=null;board.querySelector('.sm-undo')?.remove();animateWires();},10000);
+    startUndo(snapshot,{card:id,idea:idea.id,option,label:rowGone?'Argument deleted.':'Version deleted.',afterIdea:rowGone?(rows[rowIndex-1]?.id||null):idea.id});
     return rowGone;
   }
   function undoDelete() {
-    const snap=JSON.parse(state.undo.snapshot),{card,idea}=state.undo;
+    const snap=JSON.parse(state.undo.snapshot),{card,idea,focus}=state.undo;
     clearTimeout(undoTimer);state.undo=null;
     useDoc(snap.doc);
     for(const key of ['importance','preference','assessments','openSources']) state[key]=snap[key];
+    if(focus) return focus;
     const face=state.open===idea||ordered(ideaOf(idea))[0]===card;
     return face?'claim-'+card:'stack-'+idea;
   }
@@ -836,7 +909,7 @@
   }
   async function collapse(id, focus) {
     busy=true; await collapseOut(id); busy=false;
-    state.expanded=null; render(focus||'expand-'+id); announce('Card collapsed.');save();
+    state.expanded=null;state.sourceForm=null;state.sourceDraft={}; render(focus||'expand-'+id); announce('Card collapsed.');save();
   }
   root.addEventListener('input',event=>{
     if(event.target.id==='sm-question') {
@@ -849,6 +922,7 @@
     if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
+    if(event.target.closest('#sm-source-form')&&event.target.dataset.field) {state.sourceDraft[event.target.dataset.field]=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
@@ -907,9 +981,26 @@
       const rowGone=deleteVersion(id);focus='undo';
       announce(rowGone?'Argument deleted. Undo is available for ten seconds.':'Version deleted. Undo is available for ten seconds.');
     }
+    if(action==='add-source') {state.sourceForm={card:id,source:null};state.sourceDraft={};focus='src-name';announce('Add a source in the form below the evidence list.');}
+    if(action==='edit-source') {const sid=trigger.dataset.source;state.sourceForm={card:id,source:sid};state.sourceDraft={...sources[sid]};focus='src-name';announce('Editing your source.');}
+    if(action==='cancel-source') {const sid=state.sourceForm?.source;state.sourceForm=null;state.sourceDraft={};focus=sid?`src-${id}/${sid}`:'add-source-'+id;}
+    if(action==='save-source') {
+      const result=saveSource();
+      if(result.missing){
+        const form=root.querySelector('#sm-source-form');
+        form.querySelectorAll('[data-field]').forEach(el=>el.toggleAttribute('aria-invalid',result.missing.includes(el.dataset.field)));
+        form.querySelectorAll('[aria-invalid]').forEach(el=>el.setAttribute('aria-invalid','true'));
+        form.querySelector('[aria-invalid]').focus();announce('Name the source and say what it shows.');return;
+      }
+      focus=`src-${id}/${result.id}`;announce(result.added?'Source added. It is open below so you can check it.':'Source updated.');
+    }
+    if(action==='remove-source') {removeSource(id,trigger.dataset.source);focus='undo';announce('Source removed from this version. Undo is available for ten seconds.');}
+    if(action==='report-source') {const src=sources[trigger.dataset.source];src.unavailable=true;src.reportedBy='you';focus=`src-${id}/${trigger.dataset.source}`;announce('Reported as unavailable for every version that cites it. An unavailable source does not make the claim false.');}
+    if(action==='unreport-source') {const src=sources[trigger.dataset.source];delete src.unavailable;delete src.reportedBy;focus=`src-${id}/${trigger.dataset.source}`;announce('Report withdrawn.');}
     if(action==='undo') {if(!state.undo)return;focus=undoDelete();announce('Restored.');}
     if(action==='toggle') {
       if(state.expanded===id){collapse(id,key);return;}
+      if(state.sourceForm&&state.sourceForm.card!==id){state.sourceForm=null;state.sourceDraft={};}
       state.expanded=id;motion='detail';announce('Context and evidence shown. Opening it does not cast an assessment.');
     }
     if(action==='unfold') {
@@ -987,6 +1078,7 @@
     render(focus,motion);save();
   });
   root.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&event.target.matches?.('#sm-source-form input')){event.preventDefault();root.querySelector('[data-action="save-source"]')?.click();return;}
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
     // Menu keys: arrows move between items, Tab leaves and closes it.
     if(state.menu&&event.target.closest?.('.sm-menu')) {
@@ -999,6 +1091,7 @@
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.sourceForm){event.preventDefault();const {card,source}=state.sourceForm;state.sourceForm=null;state.sourceDraft={};render(source?`src-${card}/${source}`:'add-source-'+card);announce('Source form closed.');return;}
     if(state.editing){event.preventDefault();const id=state.editing;state.editing=null;render('menu-'+id);announce('Changes discarded.');return;}
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}

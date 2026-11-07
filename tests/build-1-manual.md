@@ -211,6 +211,24 @@ Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed co
 
 Not reachable in this single-person prototype: editing or withdrawing a version that other people have voted on (example cards belong to others; your own cards have only your own votes). The intended rule, a revised version instead of an edit once others have voted, is described in the plan but not built.
 
+## November 7 — Evidence: add, edit, remove, report (batch 5)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with add-and-reload repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Add a source | "Add a source" under the evidence list opens a form (source, where to find it, what it shows; supports and limits optional) with focus on the first field. Empty submit marks the two required fields. Enter in a one-line field saves |
+| After adding | The source is listed and open, marked "Added by you", with Edit, Remove from this version, and Report as unavailable; the paperclip count goes 0 → 1; "Yes" becomes available on a card that had no sources |
+| Edit | The form opens prefilled; adding a limit shows it under the source |
+| Others' sources | Only "Report as unavailable" is offered |
+| Report and withdraw | Reporting marks the source Unavailable; on a card with another available source, "Yes" stays enabled. Reporting the shared survey from one card marks it on every version citing it and disables "Yes" on a version whose only source it is; "It opens again" restores both |
+| Evidence changed | Adding a source to the staffing card (20 assessments) shows "The evidence changed after some people assessed this wording." |
+| Remove and undo | Removing your source drops the count 3 → 2, keeps the card expanded, and shows "Source removed. Undo" under the row; Undo restores it and focuses the source |
+| Escape | Closes the source form first; collapsing the card or opening another closes it too |
+| Persistence | A source added on the standalone page survived a reload, still open |
+| Narrow | At 390 px the form stays inside the card; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
