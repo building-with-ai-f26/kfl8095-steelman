@@ -294,6 +294,8 @@ Larger again: `--sm-hex-cell` 14 px → 18 px. Checked at 800 px; density still 
 
 Lighter column panels: `--sm-panel` #f0f0f0 → #f7f7f7 so the hexagons (6% ink, about #e3e3e3 → #e9e9e9) stand apart from the panel; axis halos follow the same token. Checked at 800 px; no console errors.
 
+Cool slate canvas: `--sm-paper` #e7e6e3 → #d8dde0, so the canvas separates from the hex gray (about #e9e9e9) by lightness and temperature; white contours read more clearly. Chosen from a side-by-side of four canvases (current, warm stone #dcd8cf, cool slate, parchment #ece6da). Used by the prototype and the design specimen only. Checked at 800 px; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
