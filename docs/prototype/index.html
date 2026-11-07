@@ -1965,7 +1965,6 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
-  #steelman-study .sm-idea:last-child { margin-bottom:0; }
   #steelman-study .sm-idea &gt; .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
@@ -2044,6 +2043,11 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
   #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
   #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  /* New argument: same dashed language as a new version, lined up with the cards (vote lane on the left, stack lane on the right). */
+  #steelman-study .sm-new-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; position:relative; z-index:1; }
+  #steelman-study .sm-new-idea &gt; :last-child { margin-right:24px; width:auto; }
+  #steelman-study .sm-add-idea { display:flex; align-items:center; justify-content:center; gap:8px; min-height:58px; font-size:13px; }
+  #steelman-study .sm-add-idea svg { width:18px; height:18px; }
   #steelman-study .sm-compose-card textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:14px 18px 6px; margin:0; }
   #steelman-study .sm-compose-card textarea:focus-visible { outline:none; background:#f6f6f6; }
   #steelman-study .sm-compose-card .sm-draft-claim { font:400 16px/1.5 var(--sm-sans); min-height:96px; }
@@ -2121,6 +2125,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
+    #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-new-idea &gt; :last-child { margin-right:44px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -2203,6 +2209,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
   }
   // Each new card gets the next id from the document, so ids stay unique across reloads.
+  // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
+  function addIdea(option,claim,reason) {
+    const ideaId=&#x27;i&#x27;+(doc.nextId++),cardId=&#x27;v&#x27;+(doc.nextId++);
+    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:&#x27;you&#x27;});
+    return cardId;
+  }
   function addVersion(ideaId,claim,reason) {
     const idea=ideaOf(ideaId); if(!idea) return null;
     const id=&#x27;v&#x27;+(doc.nextId++);
@@ -2210,7 +2223,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({open:null,expanded:null,composing:false,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
+  const freshState = () =&gt; ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -2222,6 +2235,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim===&#x27;string&#x27; ? saved.draftClaim : &#x27;&#x27;;
     state.draftReason = typeof saved.draftReason===&#x27;string&#x27; ? saved.draftReason : &#x27;&#x27;;
+    state.ideaDraftClaim = typeof saved.ideaDraftClaim===&#x27;string&#x27; ? saved.ideaDraftClaim : &#x27;&#x27;;
+    state.ideaDraftReason = typeof saved.ideaDraftReason===&#x27;string&#x27; ? saved.ideaDraftReason : &#x27;&#x27;;
     if (data.version===4 &amp;&amp; validDoc(saved.doc)) useDoc(saved.doc);
     else {
       // Versions 2 and 3 stored only the added versions, as an overlay on the fixed example.
@@ -2320,10 +2335,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     const open=state.open===idea.id;
     return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(ordered(idea)[0]))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}&lt;/div&gt;&lt;/section&gt;`;
   }
+  // The last row of each column: a dashed card that opens a draft argument in place.
+  function addArgument(option) {
+    const name=escape(optionName(option));
+    if(state.composingIdea===option) return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-idea-form&quot; aria-label=&quot;New argument for ${name}&quot;&gt;&lt;textarea id=&quot;sm-idea-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;idea-claim&quot; maxlength=&quot;500&quot; placeholder=&quot;A new argument for “${name}”&quot; aria-label=&quot;Your argument&quot;&gt;${escape(state.ideaDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-idea-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;idea-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context: why it matters (optional)&quot; aria-label=&quot;Context for your argument (optional)&quot;&gt;${escape(state.ideaDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;cancel-idea&quot; aria-label=&quot;Close draft&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;add-idea&quot; aria-label=&quot;Add your argument&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;&lt;/div&gt;`;
+    return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-card sm-add-idea cursor-interaction&quot; data-action=&quot;compose-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;compose-idea-${option}&quot; aria-label=&quot;Add an argument for ${name}&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Add an argument&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`;
+  }
   function column(option) {
     const rows=ideas.filter(i=&gt;i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;sm-col-arrow&quot;&gt;${head}&lt;/span&gt;more important&lt;/div&gt;${rows.map(row).join(&#x27;&#x27;)}${addArgument(option)}&lt;/section&gt;`;
   }
   function boardMarkup() { return doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;); }
   function evidenceContent(cardId) {
@@ -2333,7 +2354,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const source=sources[id],key=cardId+&#x27;/&#x27;+id;
       return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;&lt;p&gt;${escape(source.finding)}&lt;/p&gt;&lt;dl&gt;&lt;dt&gt;Supports&lt;/dt&gt;&lt;dd&gt;${escape(source.premise)}&lt;/dd&gt;&lt;dt&gt;Limit&lt;/dt&gt;&lt;dd&gt;${escape(source.limit)}&lt;/dd&gt;&lt;/dl&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
-    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
+    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Supports this wording?&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence support this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
 
   // Question header and document settings.
@@ -2599,6 +2620,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(event.target.id===&#x27;sm-comment&#x27;) {state.commentDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-reply&#x27;) {state.replyDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-idea-claim&#x27;) {state.ideaDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
+    if(event.target.id===&#x27;sm-idea-reason&#x27;) {state.ideaDraftReason=event.target.value;}
     if(event.target.id===&#x27;sm-draft&#x27;) {state.draftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-reason&#x27;) {state.draftReason=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
   });
@@ -2625,7 +2648,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(action===&#x27;unfold&#x27;) {
       if(state.open&amp;&amp;state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
-      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;
+      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?&#x27;draft&#x27;:&#x27;claim-&#x27;+ordered(ideaOf(id))[0];motion=&#x27;unfold&#x27;;
       announce(&#x27;Versions unfolded in place, best articulated first. Browsing does not cast a vote.&#x27;);
     }
@@ -2668,7 +2691,17 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;importance&#x27;) {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?&#x27;Importance vote saved. The shared order stays in place.&#x27;:&#x27;Importance vote withdrawn.&#x27;);}
     if(action===&#x27;preference&#x27;) {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?&#x27;Articulation vote saved. The shared order stays in place.&#x27;:&#x27;Articulation vote withdrawn.&#x27;);}
     if(action===&#x27;assess&#x27;) {const value=trigger.dataset.value;state.assessments[id]=value===&#x27;skip&#x27;||state.assessments[id]===value?null:value;announce(state.assessments[id]?&#x27;Your one active assessment is included in the support percentage.&#x27;:&#x27;Assessment withdrawn.&#x27;);}
-    if(action===&#x27;compose&#x27;) {state.composing=true;focus=&#x27;draft&#x27;;announce(&#x27;Write your version in the empty card.&#x27;);}
+    if(action===&#x27;compose-idea&#x27;) {state.composingIdea=id;state.composing=false;focus=&#x27;idea-claim&#x27;;announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
+    if(action===&#x27;cancel-idea&#x27;) {state.composingIdea=null;focus=&#x27;compose-idea-&#x27;+id;announce(&#x27;Draft kept for later.&#x27;);}
+    if(action===&#x27;add-idea&#x27;) {
+      const claim=state.ideaDraftClaim.trim(),field=root.querySelector(&#x27;#sm-idea-claim&#x27;);
+      if(!claim){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;Write your argument first.&#x27;);return;}
+      const added=addIdea(id,claim,state.ideaDraftReason.trim());
+      state.composingIdea=null;state.ideaDraftClaim=&#x27;&#x27;;state.ideaDraftReason=&#x27;&#x27;;
+      state.expanded=added;focus=&#x27;claim-&#x27;+added;motion=&#x27;added&#x27;;
+      announce(`Your argument was added at the bottom of ${optionName(id)}. It starts with no importance votes, unreviewed, and with no sources.`);
+    }
+    if(action===&#x27;compose&#x27;) {state.composingIdea=null;state.composing=true;focus=&#x27;draft&#x27;;announce(&#x27;Write your version in the empty card.&#x27;);}
     if(action===&#x27;cancel-compose&#x27;) {state.composing=false;focus=&#x27;compose-&#x27;+id;if(ideaOf(id).versions.length===1){fold(id);return;}announce(&#x27;Draft kept for later.&#x27;);}
     if(action===&#x27;add&#x27;) {
       const form=root.querySelector(&#x27;#sm-form&#x27;),claim=state.draftClaim.trim(),reason=state.draftReason.trim();
@@ -2692,6 +2725,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.key!==&#x27;Escape&#x27;||busy)return;
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render(&#x27;reply-&#x27;+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render(&#x27;compose-idea-&#x27;+option);save();announce(&#x27;Draft kept for later.&#x27;);return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render(&#x27;compose-&#x27;+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);}

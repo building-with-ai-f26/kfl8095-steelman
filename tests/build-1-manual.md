@@ -176,6 +176,22 @@ Checked by the coding agent at 390, 1024, 1280 and 1400 px. Thread actions were 
 | Narrow cards | Footer text no longer overlaps the comment icon; very narrow cards drop the count, then the percentage (meter and tooltip remain) |
 | Browser errors | No prototype errors in the console |
 
+## November 7 — Add an argument (batch 3)
+
+Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed copy, with the add-and-reload flow repeated by pointer and keyboard on the sandboxed standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Slot | Each column ends with a dashed "Add an argument" card, aligned with the cards above it (vote lane left, stack lane right) |
+| Draft | Clicking opens a draft card in place with the argument and optional context; focus moves to the argument field |
+| Validation | An empty argument is refused with a red edge and announced; context is optional |
+| Escape | Closes the draft, keeps its text, and returns focus to the dashed card; reopening restores the text |
+| Add | The new row joins the bottom of its column with importance 0, unreviewed, no sources, a dashed stack edge, expanded to show its context (or "No context yet."); the wire connects to it |
+| Follow-on | Importance vote 0 → 1 works; the dashed stack edge opens a version draft for the new row |
+| Persistence | A new Keep-current-hours argument with context survived a reload of the standalone page |
+| Narrow | At 390 px the draft card matches the cards' width and left edge; no horizontal overflow |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

@@ -109,7 +109,6 @@
   #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
-  #steelman-study .sm-idea:last-child { margin-bottom:0; }
   #steelman-study .sm-idea > .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
@@ -188,6 +187,11 @@
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
   #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
   #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  /* New argument: same dashed language as a new version, lined up with the cards (vote lane on the left, stack lane on the right). */
+  #steelman-study .sm-new-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; position:relative; z-index:1; }
+  #steelman-study .sm-new-idea > :last-child { margin-right:24px; width:auto; }
+  #steelman-study .sm-add-idea { display:flex; align-items:center; justify-content:center; gap:8px; min-height:58px; font-size:13px; }
+  #steelman-study .sm-add-idea svg { width:18px; height:18px; }
   #steelman-study .sm-compose-card textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:14px 18px 6px; margin:0; }
   #steelman-study .sm-compose-card textarea:focus-visible { outline:none; background:#f6f6f6; }
   #steelman-study .sm-compose-card .sm-draft-claim { font:400 16px/1.5 var(--sm-sans); min-height:96px; }
@@ -265,6 +269,8 @@
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
+    #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
@@ -347,6 +353,13 @@
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
   }
   // Each new card gets the next id from the document, so ids stay unique across reloads.
+  // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
+  function addIdea(option,claim,reason) {
+    const ideaId='i'+(doc.nextId++),cardId='v'+(doc.nextId++);
+    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:'you'});
+    return cardId;
+  }
   function addVersion(ideaId,claim,reason) {
     const idea=ideaOf(ideaId); if(!idea) return null;
     const id='v'+(doc.nextId++);
@@ -354,7 +367,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({open:null,expanded:null,composing:false,drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -366,6 +379,8 @@
     state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim==='string' ? saved.draftClaim : '';
     state.draftReason = typeof saved.draftReason==='string' ? saved.draftReason : '';
+    state.ideaDraftClaim = typeof saved.ideaDraftClaim==='string' ? saved.ideaDraftClaim : '';
+    state.ideaDraftReason = typeof saved.ideaDraftReason==='string' ? saved.ideaDraftReason : '';
     if (data.version===4 && validDoc(saved.doc)) useDoc(saved.doc);
     else {
       // Versions 2 and 3 stored only the added versions, as an overlay on the fixed example.
@@ -464,10 +479,16 @@
     const open=state.open===idea.id;
     return `<section class="sm-idea ${open?'sm-open':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}</div></section>`;
   }
+  // The last row of each column: a dashed card that opens a draft argument in place.
+  function addArgument(option) {
+    const name=escape(optionName(option));
+    if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
+    return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
+  }
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}"><h2>${escape(optionName(option))}</h2>${commentButton('option:'+option,'sm-head-button','option')}</div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}${addArgument(option)}</section>`;
   }
   function boardMarkup() { return doc.options.map(o=>column(o.id)).join('<div aria-hidden="true"></div>'); }
   function evidenceContent(cardId) {
@@ -477,7 +498,7 @@
       const source=sources[id],key=cardId+'/'+id;
       return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
@@ -743,6 +764,8 @@
     }
     if(event.target.id==='sm-comment') {state.commentDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
+    if(event.target.id==='sm-idea-reason') {state.ideaDraftReason=event.target.value;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -769,7 +792,7 @@
     }
     if(action==='unfold') {
       if(state.open&&state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
-      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;
+      lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?'draft':'claim-'+ordered(ideaOf(id))[0];motion='unfold';
       announce('Versions unfolded in place, best articulated first. Browsing does not cast a vote.');
     }
@@ -812,7 +835,17 @@
     if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
     if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
     if(action==='assess') {const value=trigger.dataset.value;state.assessments[id]=value==='skip'||state.assessments[id]===value?null:value;announce(state.assessments[id]?'Your one active assessment is included in the support percentage.':'Assessment withdrawn.');}
-    if(action==='compose') {state.composing=true;focus='draft';announce('Write your version in the empty card.');}
+    if(action==='compose-idea') {state.composingIdea=id;state.composing=false;focus='idea-claim';announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
+    if(action==='cancel-idea') {state.composingIdea=null;focus='compose-idea-'+id;announce('Draft kept for later.');}
+    if(action==='add-idea') {
+      const claim=state.ideaDraftClaim.trim(),field=root.querySelector('#sm-idea-claim');
+      if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('Write your argument first.');return;}
+      const added=addIdea(id,claim,state.ideaDraftReason.trim());
+      state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';
+      state.expanded=added;focus='claim-'+added;motion='added';
+      announce(`Your argument was added at the bottom of ${optionName(id)}. It starts with no importance votes, unreviewed, and with no sources.`);
+    }
+    if(action==='compose') {state.composingIdea=null;state.composing=true;focus='draft';announce('Write your version in the empty card.');}
     if(action==='cancel-compose') {state.composing=false;focus='compose-'+id;if(ideaOf(id).versions.length===1){fold(id);return;}announce('Draft kept for later.');}
     if(action==='add') {
       const form=root.querySelector('#sm-form'),claim=state.draftClaim.trim(),reason=state.draftReason.trim();
@@ -836,6 +869,7 @@
     if(event.key!=='Escape'||busy)return;
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);}
