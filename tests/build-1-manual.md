@@ -290,6 +290,8 @@ Bigger hexagons: `--sm-hex-cell` 9 px → 14 px (shared with the design specimen
 
 Narrower hex gaps: `--sm-hex-size` .82 → .92 (gap between neighbouring cells about 4.4 px → 1.9 px at the 14 px lattice). Checked at 800 px; no console errors.
 
+Larger again: `--sm-hex-cell` 14 px → 18 px. Checked at 800 px; density still steps down by importance; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

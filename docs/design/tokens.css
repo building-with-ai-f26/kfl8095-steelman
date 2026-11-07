@@ -37,7 +37,7 @@
 
   /* Hex texture (per column): cell size = importance, darkness = articulation */
   --sm-hex-ink:#242424;
-  --sm-hex-cell:14px;        /* lattice radius */
+  --sm-hex-cell:18px;        /* lattice radius */
   --sm-hex-contrast:.1;      /* outline opacity for the strongest cells: keep it very subtle */
   --sm-hex-art-floor:.15;    /* weakest version keeps this share of the row's tone */
   --sm-hex-curve:1.8;        /* importance curve: >1 exaggerates strong vs. weak rows */
