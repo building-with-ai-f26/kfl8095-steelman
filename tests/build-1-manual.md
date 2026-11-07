@@ -229,6 +229,19 @@ Checked by the coding agent at 1280 px and 390 px; scripted on an unsandboxed co
 | Narrow | At 390 px the form stays inside the card; no horizontal overflow |
 | Browser errors | No prototype errors in the console |
 
+## November 7 — Move and split versions (batch 6)
+
+Checked by the coding agent at 1280 px on an unsandboxed copy (scripted). Moves and splits change the same saved document as earlier batches; they were not separately reloaded on the standalone page.
+
+| Check | Observed result |
+| --- | --- |
+| Menu | Your version's menu adds "Move to another argument" and "Split into its own argument"; Split is unavailable for an only version. Others' versions show "Move or split" as unavailable ("Suggest it in a comment") |
+| Pick mode | A banner explains the choice; the three other Open-on-Sundays rows show "Move here"; the source row recedes; the other option shows no targets; focus goes to the first target |
+| Escape | Leaves pick mode and returns focus to ⋯ |
+| Move | The version joins "Sunday hours…" (now four versions), which unfolds with the moved card expanded; its now-empty row disappears; the target keeps importance 42; Undo restores both rows and focuses the card |
+| Split | From the four-version row, the version becomes a new row at the bottom (importance 0), keeping its comment; the Undo bar sits under the new row; Undo puts it back in the row |
+| Browser errors | No prototype errors in the console |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

@@ -268,6 +268,14 @@
   #steelman-study .sm-menu-item:not([aria-disabled]):hover { background:var(--sm-soft); }
   #steelman-study .sm-menu-item[aria-disabled="true"] { opacity:.5; cursor:default; }
   #steelman-study .sm-menu-item[data-action="delete-card"]:not([aria-disabled]) svg { color:var(--sm-cred-weak); }
+  /* Pick mode for moving a version: other rows in the option offer "Move here"; the source row recedes. */
+  #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:8px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-move-source { opacity:.45; }
+  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:11px; background:#ffffffb8; font-size:13px; font-weight:600; }
+  #steelman-study .sm-open .sm-move-here { right:0; }
+  #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-move-here svg { width:14px; height:14px; }
+  #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
   /* Undo bar: where the deleted card was, in the card lane. */
   #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:8px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
@@ -302,6 +310,8 @@
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
     #steelman-study .sm-undo { margin:-10px 44px 24px 48px; }
+    #steelman-study .sm-move-banner { margin:-12px 44px 18px 48px; }
+    #steelman-study .sm-move-here { right:44px; }
     #steelman-study .sm-card-menu-button { width:40px; height:40px; top:2px; right:2px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
@@ -400,7 +410,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -436,7 +446,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{}},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -496,12 +506,16 @@
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
-    const card=cards[id],mine=card.by==='you',last=ideaOf(card.idea).versions.length===1;
+    const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
+    const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
     const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
     return `<p class="sm-menu-note">${mine?'You wrote this version.':'Written by another contributor.'}</p>`
       +(mine
-        ?item('edit-card','pencil','Edit wording and context')+item('delete-card','trash-2',last?'Delete argument':'Delete version',last?'It is the only version, so the row goes too.':'')
-        :item('revise-card','pen-line','Suggest a revised version','Starts a new version from this wording.')+item('edit-card','pencil','Edit','Only the author can edit.',true)+item('delete-card','trash-2','Delete','Only the author can delete.',true));
+        ?item('edit-card','pencil','Edit wording and context')
+          +item('move-card','merge','Move to another argument',others?'It says the same thing as another argument.':'No other argument in this option yet.',!others)
+          +item('split-card','split','Split into its own argument',last?'It is already its own argument.':'It makes a different point from this row.',last)
+          +item('delete-card','trash-2',last?'Delete argument':'Delete version',last?'It is the only version, so the row goes too.':'')
+        :item('revise-card','pen-line','Suggest a revised version','Starts a new version from this wording.')+item('edit-card','pencil','Edit','Only the author can edit.',true)+item('move-card','merge','Move or split','Only the author can. Suggest it in a comment.',true)+item('delete-card','trash-2','Delete','Only the author can delete.',true));
   }
   const undoMarkup = () => `<div class="sm-undo" role="status"><span>${state.undo.label}</span><button type="button" class="sm-link-button cursor-interaction" data-action="undo" data-key="undo">Undo</button></div>`;
   function stack(idea) {
@@ -521,9 +535,18 @@
     const versions=ordered(idea);
     return `<div class="sm-track" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>cardFace(id,true)+`<div class="sm-version-vote" data-vote-for="${id}">${preferenceVote(id)}</div>`).join('')}${addSlot(idea)}</div>`;
   }
+  // While moving a version, every other row in its option becomes a target.
+  const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea) {
-    const open=state.open===idea.id;
-    return `<section class="sm-idea ${open?'sm-open':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}</div></section>`;
+    const open=state.open===idea.id,from=movingFrom();
+    const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
+    const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="Move here: join “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}Move here</span></button>`:'';
+    return `<section class="sm-idea ${open?'sm-open':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}${here}</div></section>`;
+  }
+  function moveBanner(option) {
+    const from=movingFrom();
+    if(!from||from.option!==option) return '';
+    return `<div class="sm-move-banner" role="status"><span>Choose the argument this version says the same thing as.</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
   function addArgument(option) {
@@ -537,6 +560,7 @@
     // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
     let rowsHtml='',undoShown=false;
     const undo=state.undo?.option===option?undoMarkup():'';
+    rowsHtml+=moveBanner(option);
     if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
     rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&&!undoShown) rowsHtml+=undo;
@@ -724,6 +748,29 @@
       return `<div class="sm-source-field"><label for="${id}">${label}${req?'':' <span>(optional)</span>'}</label>${control}</div>`;
     }).join('');
     return `<form class="sm-source-form" id="sm-source-form" aria-label="${editing?'Edit source':'Add a source'}"><h4>${editing?'Edit source':'Add a source'}</h4>${fields}<div class="sm-source-form-actions"><button type="button" class="sm-text-button cursor-interaction" data-action="cancel-source" data-id="${cardId}" data-key="cancel-source">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="save-source" data-id="${cardId}" data-key="save-source">${editing?'Save source':'Add source'}</button></div></form>`;
+  }
+  // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
+  // Its articulation votes and comments travel with it. A row left empty is removed.
+  function detachVersion(card) {
+    const old=ideaOf(cards[card].idea);
+    old.versions=old.versions.filter(v=>v!==card);
+    if(!old.versions.length){ideas.splice(ideas.indexOf(old),1);delete state.importance[old.id];if(state.open===old.id){state.open=null;state.composing=false;}}
+  }
+  function moveVersion(card,targetId) {
+    const snapshot=takeSnapshot(),target=ideaOf(targetId),from=cards[card].idea;
+    detachVersion(card);
+    cards[card].idea=targetId;target.versions.push(card);
+    state.open=targetId;state.composing=false;state.expanded=card;
+    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:'Version moved.',card,idea:from});
+  }
+  function splitVersion(card) {
+    const snapshot=takeSnapshot(),old=ideaOf(cards[card].idea),ideaId='i'+(doc.nextId++);
+    detachVersion(card);
+    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:'you'});
+    cards[card].idea=ideaId;
+    if(state.expanded===card&&state.open===old.id) state.expanded=null;
+    startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:'Split into its own argument.',card,idea:old.id});
+    return ideaId;
   }
   function deleteVersion(id) {
     const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
@@ -958,6 +1005,15 @@
       positionMenu();menuEl.querySelector('[role="menuitem"]:not([aria-disabled])')?.focus();return;
     }
     if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
+    // Any other action leaves pick mode.
+    if(state.moving&&!['move-here','cancel-move'].includes(action)) state.moving=null;
+    if(action==='move-card') {state.moving=id;state.expanded=null;const first=ideas.find(i=>i.option===ideaOf(cards[id].idea).option&&i.id!==cards[id].idea);focus='move-here-'+first.id;announce('Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.');}
+    if(action==='cancel-move') {const card=state.moving;state.moving=null;focus='menu-'+card;announce('Move cancelled.');}
+    if(action==='move-here') {
+      const card=state.moving;state.moving=null;moveVersion(card,id);focus='undo';motion='unfold';lastToggled=id;
+      announce('Moved. It now sits with the other versions of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+    }
+    if(action==='split-card') {splitVersion(id);focus='undo';announce('Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.');}
     if(action==='edit-card') {
       const card=cards[id];state.editing=id;state.editDraftClaim=card.claim;state.editDraftReason=card.brief||card.explanation||'';
       focus='edit-claim';announce('Editing your version in place.');
@@ -1091,6 +1147,7 @@
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.moving){event.preventDefault();const card=state.moving;state.moving=null;render('menu-'+card);announce('Move cancelled.');return;}
     if(state.sourceForm){event.preventDefault();const {card,source}=state.sourceForm;state.sourceForm=null;state.sourceDraft={};render(source?`src-${card}/${source}`:'add-source-'+card);announce('Source form closed.');return;}
     if(state.editing){event.preventDefault();const id=state.editing;state.editing=null;render('menu-'+id);announce('Changes discarded.');return;}
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}

@@ -2124,6 +2124,14 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-menu-item:not([aria-disabled]):hover { background:var(--sm-soft); }
   #steelman-study .sm-menu-item[aria-disabled=&quot;true&quot;] { opacity:.5; cursor:default; }
   #steelman-study .sm-menu-item[data-action=&quot;delete-card&quot;]:not([aria-disabled]) svg { color:var(--sm-cred-weak); }
+  /* Pick mode for moving a version: other rows in the option offer &quot;Move here&quot;; the source row recedes. */
+  #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:8px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-move-source { opacity:.45; }
+  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:11px; background:#ffffffb8; font-size:13px; font-weight:600; }
+  #steelman-study .sm-open .sm-move-here { right:0; }
+  #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-move-here svg { width:14px; height:14px; }
+  #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
   /* Undo bar: where the deleted card was, in the card lane. */
   #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:8px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
@@ -2158,6 +2166,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea &gt; :last-child { margin-right:44px; }
     #steelman-study .sm-undo { margin:-10px 44px 24px 48px; }
+    #steelman-study .sm-move-banner { margin:-12px 44px 18px 48px; }
+    #steelman-study .sm-move-here { right:44px; }
     #steelman-study .sm-card-menu-button { width:40px; height:40px; top:2px; right:2px; }
     #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
     #steelman-study .sm-stack-button { width:56px; }
@@ -2256,7 +2266,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
+  const freshState = () =&gt; ({moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null});
   let state = freshState();
   useDoc(seedDoc());
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -2292,7 +2302,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{}},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -2352,12 +2362,16 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
-    const card=cards[id],mine=card.by===&#x27;you&#x27;,last=ideaOf(card.idea).versions.length===1;
+    const card=cards[id],mine=card.by===&#x27;you&#x27;,idea=ideaOf(card.idea),last=idea.versions.length===1;
+    const others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
     const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
     return `&lt;p class=&quot;sm-menu-note&quot;&gt;${mine?&#x27;You wrote this version.&#x27;:&#x27;Written by another contributor.&#x27;}&lt;/p&gt;`
       +(mine
-        ?item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit wording and context&#x27;)+item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,last?&#x27;Delete argument&#x27;:&#x27;Delete version&#x27;,last?&#x27;It is the only version, so the row goes too.&#x27;:&#x27;&#x27;)
-        :item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;,&#x27;Starts a new version from this wording.&#x27;)+item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit&#x27;,&#x27;Only the author can edit.&#x27;,true)+item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,&#x27;Delete&#x27;,&#x27;Only the author can delete.&#x27;,true));
+        ?item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit wording and context&#x27;)
+          +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Move to another argument&#x27;,others?&#x27;It says the same thing as another argument.&#x27;:&#x27;No other argument in this option yet.&#x27;,!others)
+          +item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Split into its own argument&#x27;,last?&#x27;It is already its own argument.&#x27;:&#x27;It makes a different point from this row.&#x27;,last)
+          +item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,last?&#x27;Delete argument&#x27;:&#x27;Delete version&#x27;,last?&#x27;It is the only version, so the row goes too.&#x27;:&#x27;&#x27;)
+        :item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;,&#x27;Starts a new version from this wording.&#x27;)+item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit&#x27;,&#x27;Only the author can edit.&#x27;,true)+item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Move or split&#x27;,&#x27;Only the author can. Suggest it in a comment.&#x27;,true)+item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,&#x27;Delete&#x27;,&#x27;Only the author can delete.&#x27;,true));
   }
   const undoMarkup = () =&gt; `&lt;div class=&quot;sm-undo&quot; role=&quot;status&quot;&gt;&lt;span&gt;${state.undo.label}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;undo&quot; data-key=&quot;undo&quot;&gt;Undo&lt;/button&gt;&lt;/div&gt;`;
   function stack(idea) {
@@ -2377,9 +2391,18 @@ html&gt;body{padding:0}&lt;/style&gt;
     const versions=ordered(idea);
     return `&lt;div class=&quot;sm-track&quot; role=&quot;region&quot; tabindex=&quot;0&quot; aria-label=&quot;Versions, best articulated first&quot;&gt;${versions.map(id=&gt;cardFace(id,true)+`&lt;div class=&quot;sm-version-vote&quot; data-vote-for=&quot;${id}&quot;&gt;${preferenceVote(id)}&lt;/div&gt;`).join(&#x27;&#x27;)}${addSlot(idea)}&lt;/div&gt;`;
   }
+  // While moving a version, every other row in its option becomes a target.
+  const movingFrom = () =&gt; state.moving&amp;&amp;cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea) {
-    const open=state.open===idea.id;
-    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(ordered(idea)[0]))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}&lt;/div&gt;&lt;/section&gt;`;
+    const open=state.open===idea.id,from=movingFrom();
+    const source=from?.id===idea.id,target=from&amp;&amp;!source&amp;&amp;from.option===idea.option;
+    const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;Move here: join “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}Move here&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(ordered(idea)[0]))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}${here}&lt;/div&gt;&lt;/section&gt;`;
+  }
+  function moveBanner(option) {
+    const from=movingFrom();
+    if(!from||from.option!==option) return &#x27;&#x27;;
+    return `&lt;div class=&quot;sm-move-banner&quot; role=&quot;status&quot;&gt;&lt;span&gt;Choose the argument this version says the same thing as.&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;cancel-move&quot; data-key=&quot;cancel-move&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
   function addArgument(option) {
@@ -2393,6 +2416,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
     let rowsHtml=&#x27;&#x27;,undoShown=false;
     const undo=state.undo?.option===option?undoMarkup():&#x27;&#x27;;
+    rowsHtml+=moveBanner(option);
     if(undo&amp;&amp;!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
     rows.forEach(r=&gt;{rowsHtml+=row(r);if(undo&amp;&amp;state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&amp;&amp;!undoShown) rowsHtml+=undo;
@@ -2580,6 +2604,29 @@ html&gt;body{padding:0}&lt;/style&gt;
       return `&lt;div class=&quot;sm-source-field&quot;&gt;&lt;label for=&quot;${id}&quot;&gt;${label}${req?&#x27;&#x27;:&#x27; &lt;span&gt;(optional)&lt;/span&gt;&#x27;}&lt;/label&gt;${control}&lt;/div&gt;`;
     }).join(&#x27;&#x27;);
     return `&lt;form class=&quot;sm-source-form&quot; id=&quot;sm-source-form&quot; aria-label=&quot;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&quot;&gt;&lt;h4&gt;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&lt;/h4&gt;${fields}&lt;div class=&quot;sm-source-form-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;cancel-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;cancel-source&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;save-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;save-source&quot;&gt;${editing?&#x27;Save source&#x27;:&#x27;Add source&#x27;}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
+  }
+  // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
+  // Its articulation votes and comments travel with it. A row left empty is removed.
+  function detachVersion(card) {
+    const old=ideaOf(cards[card].idea);
+    old.versions=old.versions.filter(v=&gt;v!==card);
+    if(!old.versions.length){ideas.splice(ideas.indexOf(old),1);delete state.importance[old.id];if(state.open===old.id){state.open=null;state.composing=false;}}
+  }
+  function moveVersion(card,targetId) {
+    const snapshot=takeSnapshot(),target=ideaOf(targetId),from=cards[card].idea;
+    detachVersion(card);
+    cards[card].idea=targetId;target.versions.push(card);
+    state.open=targetId;state.composing=false;state.expanded=card;
+    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:&#x27;Version moved.&#x27;,card,idea:from});
+  }
+  function splitVersion(card) {
+    const snapshot=takeSnapshot(),old=ideaOf(cards[card].idea),ideaId=&#x27;i&#x27;+(doc.nextId++);
+    detachVersion(card);
+    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:&#x27;you&#x27;});
+    cards[card].idea=ideaId;
+    if(state.expanded===card&amp;&amp;state.open===old.id) state.expanded=null;
+    startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:&#x27;Split into its own argument.&#x27;,card,idea:old.id});
+    return ideaId;
   }
   function deleteVersion(id) {
     const card=cards[id],idea=ideaOf(card.idea),option=idea.option;
@@ -2814,6 +2861,15 @@ html&gt;body{padding:0}&lt;/style&gt;
       positionMenu();menuEl.querySelector(&#x27;[role=&quot;menuitem&quot;]:not([aria-disabled])&#x27;)?.focus();return;
     }
     if(state.menu&amp;&amp;trigger.closest(&#x27;.sm-menu&#x27;)) state.menu=null;
+    // Any other action leaves pick mode.
+    if(state.moving&amp;&amp;![&#x27;move-here&#x27;,&#x27;cancel-move&#x27;].includes(action)) state.moving=null;
+    if(action===&#x27;move-card&#x27;) {state.moving=id;state.expanded=null;const first=ideas.find(i=&gt;i.option===ideaOf(cards[id].idea).option&amp;&amp;i.id!==cards[id].idea);focus=&#x27;move-here-&#x27;+first.id;announce(&#x27;Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.&#x27;);}
+    if(action===&#x27;cancel-move&#x27;) {const card=state.moving;state.moving=null;focus=&#x27;menu-&#x27;+card;announce(&#x27;Move cancelled.&#x27;);}
+    if(action===&#x27;move-here&#x27;) {
+      const card=state.moving;state.moving=null;moveVersion(card,id);focus=&#x27;undo&#x27;;motion=&#x27;unfold&#x27;;lastToggled=id;
+      announce(&#x27;Moved. It now sits with the other versions of that argument, keeping its votes and comments. Undo is available for ten seconds.&#x27;);
+    }
+    if(action===&#x27;split-card&#x27;) {splitVersion(id);focus=&#x27;undo&#x27;;announce(&#x27;Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.&#x27;);}
     if(action===&#x27;edit-card&#x27;) {
       const card=cards[id];state.editing=id;state.editDraftClaim=card.claim;state.editDraftReason=card.brief||card.explanation||&#x27;&#x27;;
       focus=&#x27;edit-claim&#x27;;announce(&#x27;Editing your version in place.&#x27;);
@@ -2947,6 +3003,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key=&quot;menu-${id}&quot;]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render(&#x27;reply-&#x27;+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
+    if(state.moving){event.preventDefault();const card=state.moving;state.moving=null;render(&#x27;menu-&#x27;+card);announce(&#x27;Move cancelled.&#x27;);return;}
     if(state.sourceForm){event.preventDefault();const {card,source}=state.sourceForm;state.sourceForm=null;state.sourceDraft={};render(source?`src-${card}/${source}`:&#x27;add-source-&#x27;+card);announce(&#x27;Source form closed.&#x27;);return;}
     if(state.editing){event.preventDefault();const id=state.editing;state.editing=null;render(&#x27;menu-&#x27;+id);announce(&#x27;Changes discarded.&#x27;);return;}
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render(&#x27;compose-idea-&#x27;+option);save();announce(&#x27;Draft kept for later.&#x27;);return;}
