@@ -13,7 +13,7 @@
   #steelman-study .sm-site { display:flex; align-items:center; min-height:56px; padding:10px 22px; background:#fff; border-bottom:1px solid var(--sm-ink); }
   #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font:700 23px var(--sm-serif); letter-spacing:-1px; }
   #steelman-study .sm-logo { display:grid; place-items:center; width:23px; height:24px; border-radius:3px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:20px; line-height:1; letter-spacing:0; }
-  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-grain),radial-gradient(circle,#d8d8d8 .65px,transparent .8px); background-size:180px 180px,18px 18px; }
+  #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
   #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
   #steelman-study .sm-links path { fill:none; stroke:var(--sm-wire); stroke-width:1.3; stroke-linejoin:round; }
@@ -21,13 +21,20 @@
   #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
-  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr); padding-top:56px; }
-  #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 56px minmax(0,1fr); }
-  #steelman-study .sm-board[data-open="keep"] { grid-template-columns:minmax(0,1fr) 56px minmax(0,2.6fr); }
-  #steelman-study .sm-axis-cell { display:flex; justify-content:center; padding:100px 0 22px; min-width:0; }
+  #steelman-study .sm-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
+  #steelman-study .sm-board[data-open="open"] { grid-template-columns:minmax(0,2.6fr) 32px minmax(0,1fr); }
+  #steelman-study .sm-board[data-open="keep"] { grid-template-columns:minmax(0,1fr) 32px minmax(0,2.6fr); }
+  /* The importance axis runs down the left column's left edge, mirroring the articulation axis above an unfolded row. */
+  #steelman-study .sm-column[data-option="open"] { padding-left:40px; }
+  #steelman-study .sm-col-vaxis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
+  /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
+  #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
-  #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) #f0f0f0; z-index:-1; }
+  #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) var(--sm-panel); box-shadow:var(--sm-shadow-panel); z-index:-1; }
   #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:7px; margin-bottom:28px; }
+  /* Inverted headers: near-black boxes with white serif type for the question and the options. */
+  #steelman-study .sm-head, #steelman-study .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
+  #steelman-study .sm-column-head h2 { font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
   #steelman-study .sm-col-axis { display:none; }
   #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
@@ -46,9 +53,13 @@
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head { top:1px; left:-5.5px; transform:rotate(90deg); }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-label { writing-mode:vertical-rl; transform:rotate(180deg); }
+  /* Map-style halos: labels, line, and arrowheads knock out whatever texture sits behind them. */
+  #steelman-study .sm-axis-label { font-weight:400; color:#444; text-shadow:0 0 2px var(--sm-panel),0 0 2px var(--sm-panel),0 0 3px var(--sm-panel),0 0 5px var(--sm-panel); }
+  #steelman-study .sm-axis-line { box-shadow:0 0 0 2.5px var(--sm-panel); }
+  #steelman-study .sm-axis-head { filter:drop-shadow(0 0 1.5px var(--sm-panel)) drop-shadow(0 0 1.5px var(--sm-panel)); }
 
   /* One vote component for both axes. The horizontal one is the same element turned a quarter turn. */
-  #steelman-study .sm-vote { display:inline-flex; flex-direction:column; align-items:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); color:var(--sm-muted); }
+  #steelman-study .sm-vote { display:inline-flex; flex-direction:column; align-items:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-vote[data-axis="h"] { flex-direction:row; }
   #steelman-study .sm-vote[data-axis="h"] .sm-vote-btn svg { transform:rotate(-90deg); }
   #steelman-study .sm-vote-btn { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
@@ -59,8 +70,8 @@
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
   #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
   /* The same face, type, and footer are used on the board and in an unfolded row. */
-  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:0 2px 3px #00000007,0 8px 18px #00000009,inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
-  #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:0 3px 5px #00000009,0 11px 24px #00000010,inset 0 1px 0 #fff; }
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
+  #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
@@ -89,14 +100,14 @@
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
 
   /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
-  #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:calc((100% - 36px - 44px) / 3); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:2px 8px 10px; margin:-2px -8px -6px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
+  #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:calc((100% - 36px - 44px) / 3); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
   #steelman-study .sm-version-vote { justify-self:center; }
   #steelman-study .sm-idea.sm-open { row-gap:0; }
   #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:24px; margin-bottom:10px; padding:0 2px; overflow:hidden; }
   #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; }
   #steelman-study .sm-open > .sm-card-wrap { grid-column:2; grid-row:2; }
   #steelman-study .sm-track-axis .sm-axis { flex:1; }
-  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:7px; background:var(--sm-card); color:var(--sm-muted); }
+  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:7px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-fold:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-fold svg { width:14px; height:14px; }
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
@@ -146,7 +157,7 @@
   #steelman-study .sm-evidence-vote { display:flex; flex-direction:column; align-items:start; gap:10px; margin-top:16px; }
   #steelman-study .sm-evidence-vote h4 { font-size:12px; font-weight:400; margin:0; line-height:1.5; }
   #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
-  #steelman-study .sm-value-note { padding:0 18px 18px; }
+  #steelman-study .sm-meter { display:inline-flex; }
   #steelman-study .sm-meta { font-size:12px; line-height:1.6; color:var(--sm-muted); }
   #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
   #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
@@ -165,7 +176,8 @@
     #steelman-study .sm-head { width:100%; padding:18px; }
     #steelman-study h1 { font-size:23px; }
     #steelman-study .sm-board, #steelman-study .sm-board[data-open] { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
-    #steelman-study .sm-axis-cell { display:none; }
+    #steelman-study .sm-col-vaxis { display:none; }
+    #steelman-study .sm-column[data-option="open"] { padding-left:8px; }
     #steelman-study .sm-column { padding:0 8px 15px; }
     #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
     #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
@@ -212,7 +224,7 @@
     accessBold: {idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
     accessNarrow: {idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
     study: {idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
-    purpose: {idea:'purpose', claim:'A public library should be available on the day families can spend time together.', value:true, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
+    purpose: {idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
     staffing: {idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
     evenings: {idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
     services: {idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
@@ -299,14 +311,21 @@
     const value=state.preference[id]||0;
     return vote({axis:'h',action:'preference',id,value,score:cards[id].pref+value,group:`Articulation: ${short(id)}`,forward:'Better articulated',back:'Less well articulated'});
   }
+  // Evidence color: red (0% supported) → neutral gray (contested) → green (supported), from the design tokens.
+  const token=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const mixHex=(a,b,t)=>'#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('');
+  const credColor=pct=>pct<=50?mixHex(token('--sm-cred-weak'),token('--sm-cred-mid'),pct/50):mixHex(token('--sm-cred-mid'),token('--sm-cred-strong'),(pct-50)/50);
+  // Support meter: four segments, one filled per quarter of assessments that support the wording.
+  // Empty segments are dashed when there are fewer than five assessments; unreviewed is an empty gray meter.
+  function meter(s) {
+    const w=22,h=8,cells=4,gap=1.5,cw=(w-gap*(cells-1))/cells,color=s.n?credColor(s.pct):'#9a9a9a',lit=s.n?Math.round(s.pct/100*cells):0;
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${Array.from({length:cells},(_,i)=>`<rect x="${(i*(cw+gap)).toFixed(2)}" y="0" width="${cw.toFixed(2)}" height="${h}" rx="1.5" fill="${i<lit?color:'none'}" ${i<lit?'':`stroke="${color}" stroke-width="1" ${s.n>=5?'':'stroke-dasharray="1.6 1.4"'}`}/>`).join('')}</svg>`;
+  }
   function credibility(id) {
-    const card=cards[id],s=stats(id);
+    const s=stats(id);
     const attrs=`type="button" data-action="toggle" data-id="${id}" data-key="cred-${id}"`;
-    if(card.value) return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="Value judgment; no factual credibility score">${icon('scale')}<span>Value judgment</span></button>`;
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
-    const symbol={dossier:'files',books:'book-open-text',checklist:'clipboard-list'}[design.indicator];
-    const mark=s.n===0?'circle-help':s.pct===100?'check':s.pct===0?'x':null;
-    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-evidence-symbol ${!s.n?'sm-unreviewed':s.pct<60?'sm-uncertain':''}">${icon(symbol)}${mark?`<span class="sm-stamp">${icon(mark)}</span>`:''}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
+    return `<button ${attrs} class="sm-cred cursor-interaction" aria-label="${aria}" data-tooltip="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></button>`;
   }
   function sourceButton(id) { const n=cards[id].sources.length; return `<button type="button" class="sm-source-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="source-${id}" aria-label="Inspect ${n} ${n===1?'source':'sources'}" data-tooltip="${n} linked ${n===1?'source':'sources'}">${icon('paperclip')} ${n}</button>`; }
   function cardMeta(id) {
@@ -342,9 +361,9 @@
   function column(option) {
     const rows=ideas.filter(i=>i.option===option);
     if(state.updated)[rows[0],rows[1]]=[rows[1],rows[0]];
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><div class="sm-column-head"><h2>${optionName(option)}</h2></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option==='open'?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head"><h2>${optionName(option)}</h2></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rows.map(row).join('')}</section>`;
   }
-  function boardMarkup() { return column('open')+`<div class="sm-axis-cell">${axis('v','more important','less important')}</div>`+column('keep'); }
+  function boardMarkup() { return column('open')+'<div aria-hidden="true"></div>'+column('keep'); }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
     const brief={
@@ -361,7 +380,7 @@
       const source=sources[id],key=cardId+'/'+id;
       return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction">${icon('file-text')}<span>${escape(source.name)}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet"><span class="sm-source-note">${escape(source.locator)}</span><p>${escape(source.finding)}</p><dl><dt>Supports</dt><dd>${escape(source.premise)}</dd><dt>Limit</dt><dd>${escape(source.limit)}</dd></dl></div></details>`;
     }).join('');
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${card.value?'<p class="sm-value-note sm-meta">A value judgment, rather than a factual claim.</p>':`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3><p class="sm-brief">${escape(brief)}</p></section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}<div class="sm-evidence-vote"><h4>Supports this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence support this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   const scene=root.querySelector('.sm-scene');
@@ -384,8 +403,40 @@
     if(!reveal||reveal.hidden||reducedMotion()) return Promise.resolve();
     return play(reveal,[{height:reveal.offsetHeight+'px',opacity:1},{height:'0px',opacity:0}],{duration:220,fill:'forwards'});
   }
+  // Hex texture per column, from the shared votes. Size follows importance (normalized across the board,
+  // then curved); darkness follows articulation across an unfolded row. Static: redrawn when layout or votes change.
+  const hexPath=(ctx,cx,cy,r)=>{ctx.moveTo(cx+r*Math.cos(Math.PI/6),cy+r*Math.sin(Math.PI/6));for(let k=1;k<=6;k++){const a=Math.PI/6+k*Math.PI/3;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();};
+  function drawTexture() {
+    const R=parseFloat(token('--sm-hex-cell'))||9,contrast=parseFloat(token('--sm-hex-contrast'))||.1,floor=Math.min(1,Math.max(0,parseFloat(token('--sm-hex-art-floor'))||0)),curve=Math.max(.5,parseFloat(token('--sm-hex-curve'))||1.8),ink=token('--sm-hex-ink')||'#242424';
+    const scores=ideas.map(importanceScore),lo=Math.min(...scores),hi=Math.max(...scores);
+    board.querySelectorAll('.sm-column').forEach(col=>{
+      const canvas=col.querySelector('.sm-texture'),box=canvas.getBoundingClientRect();
+      if(!box.width||!box.height) return;
+      const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
+      if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}
+      const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,box.width,box.height);
+      const rows=[...col.querySelectorAll('[data-node]')].map(node=>{
+        const b=node.getBoundingClientRect(),t=hi===lo?1:(importanceScore(ideaOf(node.dataset.node))-lo)/(hi-lo);
+        const versions=[...node.querySelectorAll('.sm-track .sm-card[data-card]')].map(c=>{const vb=c.getBoundingClientRect(),id=c.dataset.card;return {l:vb.left-box.left,r:vb.right-box.left,art:cards[id].pref+(state.preference[id]||0)};});
+        return {mid:(b.top+b.bottom)/2-box.top,imp:Math.pow(Math.max(0,t),curve),versions,maxArt:Math.max(1,...versions.map(v=>v.art))};
+      });
+      if(!rows.length) return;
+      const dx=R*Math.sqrt(3),dy=R*1.5;
+      ctx.strokeStyle=ink;ctx.lineWidth=.9;ctx.lineJoin='round';
+      for(let j=0;j*dy<box.height+R;j++) for(let i=-1;i*dx<box.width+R;i++) {
+        const cx=i*dx+(j%2?dx/2:0),cy=j*dy;
+        const row=rows.reduce((a,b)=>Math.abs(b.mid-cy)<Math.abs(a.mid-cy)?b:a);
+        let art=1;
+        if(row.versions.length>1){const gapTo=v=>cx<v.l?v.l-cx:cx>v.r?cx-v.r:0;art=row.versions.reduce((a,b)=>gapTo(b)<gapTo(a)?b:a).art/row.maxArt;}
+        ctx.globalAlpha=contrast*(0.45+0.55*row.imp)*(floor+(1-floor)*Math.max(0,art));
+        ctx.beginPath();hexPath(ctx,cx,cy,R*(0.1+0.85*row.imp));ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    });
+  }
   let wireFrame=0,wireUntil=0;
   function drawLinks() {
+    drawTexture();
     const sceneBox=scene.getBoundingClientRect();
     const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left-sceneBox.left,y:b.top-sceneBox.top,w:b.width,h:b.height};};
     const question=rect(root.querySelector('.sm-head'));
@@ -533,6 +584,6 @@
   render();
   window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);render();}});
   new ResizeObserver(()=>animateWires()).observe(scene);
-  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>render()});tweak.addSelect(design,'type',{label:'Argument typography',options:[{label:'Graphics sans',value:'sans'},{label:'Editorial serif',value:'serif'}]});tweak.addSelect(design,'indicator',{label:'Evidence metaphor',options:[{label:'Paper dossier',value:'dossier'},{label:'Open book',value:'books'},{label:'Review checklist',value:'checklist'}]});tweak.addSelect(design,'density',{label:'Card density',options:[{label:'Comfortable',value:'comfortable'},{label:'Compact',value:'compact'}]});}
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>render()});tweak.addSelect(design,'type',{label:'Argument typography',options:[{label:'Graphics sans',value:'sans'},{label:'Editorial serif',value:'serif'}]});tweak.addSelect(design,'density',{label:'Card density',options:[{label:'Comfortable',value:'comfortable'},{label:'Compact',value:'compact'}]});}
 })();
 </script>
