@@ -9,8 +9,8 @@
 */
 :root {
   /* Surfaces */
-  --sm-paper:#e7e6e3;        /* canvas behind the diagram: gray, under white contour lines */
-  --sm-panel:#f0f0f0;        /* option column panels; axis halos match it */
+  --sm-paper:#dcd8cf;        /* canvas behind the diagram: warm stone, under white contour lines */
+  --sm-panel:#f7f7f7;        /* option column panels; axis halos match it */
   --sm-card:#fdfdfd;         /* argument cards, headers, controls */
   --sm-soft:#eee;            /* hover fill */
 
@@ -25,8 +25,8 @@
   --sm-wire:#767676;         /* connectors between question, options, and arguments */
 
   /* Axes (importance and articulation) */
-  --sm-axis:#555;            /* axis labels */
-  --sm-axis-line:#8a8a8a;    /* axis hairline and arrowheads */
+  --sm-axis:#2e2e2e;         /* axis labels */
+  --sm-axis-line:#5c5c5c;    /* axis hairline and arrowheads */
 
   /* Meaning colors. Color is reserved for these; everything else is grayscale. */
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
@@ -37,12 +37,12 @@
 
   /* Hex texture (per column): cell size = importance, darkness = articulation */
   --sm-hex-ink:#242424;
-  --sm-hex-cell:9px;         /* lattice radius */
+  --sm-hex-cell:18px;        /* lattice radius */
   --sm-hex-contrast:.1;      /* outline opacity for the strongest cells: keep it very subtle */
   --sm-hex-art-floor:.15;    /* weakest version keeps this share of the row's tone */
   --sm-hex-curve:1.8;        /* importance curve: >1 exaggerates strong vs. weak rows */
-  --sm-hex-fill:.06;         /* prototype: opacity of each filled cell */
-  --sm-hex-size:.82;         /* prototype: filled cell size as a share of the lattice, leaving a gap */
+  --sm-hex-fill:.04;         /* prototype: opacity of each filled cell */
+  --sm-hex-size:.92;         /* prototype: filled cell size as a share of the lattice, leaving a gap */
   --sm-hex-sparse:.04;       /* prototype: share of cells kept for the least important row */
 
   /* Canvas: quiet topographic contours, white on gray, under the fine grain.

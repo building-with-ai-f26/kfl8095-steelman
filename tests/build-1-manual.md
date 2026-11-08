@@ -286,6 +286,20 @@ From a review of every feature. Checked by the coding agent at 800, 1024, and 39
 
 Hex texture by density: the prototype's background now uses filled hexagons of one size (82% of the lattice, 6% tone, from new tokens `--sm-hex-fill`, `--sm-hex-size`, `--sm-hex-sparse`). Importance sets the share of cells present, from a nearly full honeycomb behind the most important row (42 / 39) to about 4% behind the least important (8); each cell's presence is fixed by its grid position, so redraws don't flicker. Articulation still fades tone across an unfolded row. Checked at 800 px, folded and unfolded; no console errors. The design specimen's board study still shows the earlier outlined, size-based texture.
 
+Bigger hexagons: `--sm-hex-cell` 9 px → 14 px (shared with the design specimen's board study). Checked at 800 px; the density still steps down by importance; no console errors.
+
+Narrower hex gaps: `--sm-hex-size` .82 → .92 (gap between neighbouring cells about 4.4 px → 1.9 px at the 14 px lattice). Checked at 800 px; no console errors.
+
+Larger again: `--sm-hex-cell` 14 px → 18 px. Checked at 800 px; density still steps down by importance; no console errors.
+
+Lighter column panels: `--sm-panel` #f0f0f0 → #f7f7f7 so the hexagons (6% ink, about #e3e3e3 → #e9e9e9) stand apart from the panel; axis halos follow the same token. Checked at 800 px; no console errors.
+
+Cool slate canvas: `--sm-paper` #e7e6e3 → #d8dde0, so the canvas separates from the hex gray (about #e9e9e9) by lightness and temperature; white contours read more clearly. Chosen from a side-by-side of four canvases (current, warm stone #dcd8cf, cool slate, parchment #ece6da). Used by the prototype and the design specimen only. Checked at 800 px; no console errors.
+
+Warm stone and quieter cells: after trying cool slate in context, the canvas is warm stone (`--sm-paper` #dcd8cf). The darkest hex cells drop from 6% to 4% ink (`--sm-hex-fill` .06 → .04) so the texture stays in the background; density and articulation fading are unchanged. Checked at 800 px; no console errors.
+
+Darker axes: labels `--sm-axis` #555 → #2e2e2e (the prototype's hard-coded #444 label color now uses the token) and line and arrowheads `--sm-axis-line` #8a8a8a → #5c5c5c, for both the importance and articulation axes and the phone "more important" label. Checked at 800 px with a row unfolded; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
