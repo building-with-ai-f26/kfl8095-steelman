@@ -300,6 +300,17 @@ Warm stone and quieter cells: after trying cool slate in context, the canvas is 
 
 Darker axes: labels `--sm-axis` #555 → #2e2e2e (the prototype's hard-coded #444 label color now uses the token) and line and arrowheads `--sm-axis-line` #8a8a8a → #5c5c5c, for both the importance and articulation axes and the phone "more important" label. Checked at 800 px with a row unfolded; no console errors.
 
+## November 9 — Fainter contours and product page refresh
+
+| Check | Observed result |
+| --- | --- |
+| Contours | `scripts/make-contours.py` now has an `OPACITY` setting (.45 → .12); the regenerated tile has the same lines, barely visible on the warm stone canvas, in the prototype, specimen, and product page |
+| Screenshot | New `assets/prototype-board.jpg` (2160 × 1350, 414 KB), captured with headless Chrome at 1440 × 900 @2x with reduced motion: the board with "Sunday hours…" unfolded into three wordings. Replaces the old Build 1 image |
+| PRD content | Who it's for (students, companies, online communities), before and after (documents and threads vs. one vote per question: importance, credibility, articulation), one core workflow (compare alternative articulations and vote for the clearest), three non-goals (moderation beyond votes, AI judgments, money or incentives beyond points) |
+| Styling | The page uses the prototype's tokens: Source Serif 4 and Libre Franklin, the warm stone canvas with contours, a white header bar, inverted section headers, grain cards with the card shadow, option-style before/after columns, and Lucide icons |
+| Widths | At 800 px three-up cards and two columns; at 390 px everything stacks; no horizontal overflow; all 11 icons render; the screenshot loads |
+| Browser errors | None |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

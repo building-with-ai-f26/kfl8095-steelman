@@ -7,40 +7,83 @@
   <meta name="theme-color" content="#ffffff">
   <title>Steelman — Better arguments, together.</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2.00 -7.65 59.95 59.95' color='%23242424'%3E%3Cpolygon points='10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75' fill='currentColor'/%3E%3Cpolygon points='33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter' stroke-linecap='butt' pathLength='18' stroke-dasharray='.5 .5' stroke-dashoffset='.25'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,300;1,400&display=swap">
   <link rel="stylesheet" href="design/tokens.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="page">
-    <header class="masthead">
+  <header class="site">
+    <div class="site-inner">
       <a class="wordmark" href="#" aria-label="Steelman home"><svg class="logo" viewBox="0 0 55.95 44.65" aria-hidden="true" focusable="false"><polygon points="10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75" fill="currentColor"/><polygon points="33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter" stroke-linecap="butt" pathLength="18" stroke-dasharray=".5 .5" stroke-dashoffset=".25"/></svg>steelman.</a>
       <nav aria-label="Main navigation"><a href="#prd">PRD</a><a href="#build-log">Build log</a><a href="https://github.com/building-with-ai-f26/kfl8095-steelman">GitHub ↗</a></nav>
-    </header>
+    </div>
+  </header>
+  <div class="page">
     <main id="main">
       <section class="intro" aria-labelledby="title">
-        <p class="edition">Kieran LaMee · Pod 6 · Building with AI</p>
+        <p class="edition">Kieran LaMee · POD 6 · Building with AI</p>
         <h1 id="title">Find the strongest argument.<br>Together.</h1>
         <p class="lede">An intuitive way to collaborate on a topic.<br> Build on each other’s ideas and make the strongest case.</p>
-        <a class="try-link" href="prototype/">Try the prototype <span aria-hidden="true">↗</span></a>
+        <a class="try-link" href="prototype/">Try the prototype <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
       </section>
+
       <figure class="prototype" id="prototype">
-        <a href="prototype/" aria-label="Open the interactive prototype"><img src="assets/prototype-board.png" width="1248" height="858" alt="Steelman's library debate: two options, their arguments, alternative wordings, and evidence."></a>
-        <figcaption><span>Build 1 · Working prototype</span><span>Example topic, sources, and votes</span></figcaption>
+        <a href="prototype/" aria-label="Open the interactive prototype"><img src="assets/prototype-board.jpg" width="2160" height="1350" alt="Steelman's library debate: a question, two options with their arguments, and one argument unfolded to compare three wordings side by side."></a>
+        <figcaption><span>Working prototype</span><span>Example topic, sources, and votes</span></figcaption>
       </figure>
-      <section class="record" id="prd" aria-labelledby="prd-title">
-        <div class="section-title"><h2 id="prd-title">The idea</h2><span>PRD v1</span></div>
-        <dl>
-          <div><dt>First users</dt><dd>Pod 6 classmates discussing a decision together; reachable for a first test.</dd></div>
-          <div><dt>Before</dt><dd>Arguments and sources scattered across a chat. Good ideas get repeated or buried.</dd></div>
-          <div><dt>After</dt><dd>One shared view of the strongest case for each option, improved together.</dd></div>
-          <div><dt>Core workflow</dt><dd>Choose an idea, compare its wordings, inspect the evidence, and suggest a stronger version.</dd></div>
-          <div><dt>Three non-goals</dt><dd><ol><li>A social feed.</li><li>Reputation scores or rewards.</li><li>AI deciding what is true.</li></ol></dd></div>
-        </dl>
+
+      <section class="block" id="prd" aria-labelledby="prd-title">
+        <div class="block-head"><h2 id="prd-title">The idea</h2><span>PRD v2</span></div>
+
+        <h3 class="label">Who it’s for</h3>
+        <div class="cards three">
+          <article class="card"><i data-lucide="graduation-cap" aria-hidden="true"></i><h4>Students</h4><p>Deciding on a class project, or running a class debate.</p></article>
+          <article class="card"><i data-lucide="building-2" aria-hidden="true"></i><h4>Companies</h4><p>Making an important choice between a few clear options.</p></article>
+          <article class="card"><i data-lucide="users" aria-hidden="true"></i><h4>Online communities</h4><p>Working through an important debate together, in public.</p></article>
+        </div>
+
+        <h3 class="label">Before and after</h3>
+        <div class="columns">
+          <div class="column">
+            <div class="column-head">Before</div>
+            <article class="card"><i data-lucide="messages-square" aria-hidden="true"></i><h4>Documents and comment threads</h4><p>Neither lets people judge an argument the three ways it needs: how important it is, how credible it is, and how well it’s put. Everything collapses into one reply or one upvote.</p></article>
+          </div>
+          <div class="column">
+            <div class="column-head">After</div>
+            <article class="card"><i data-lucide="layers" aria-hidden="true"></i><h4>One vote for each question</h4><p>Each vote has a clear job, not a single up or down. The strongest, best-articulated, most credible arguments surface on each side.</p>
+              <ul class="axes" aria-label="Three separate judgments">
+                <li><i data-lucide="arrow-up-down" aria-hidden="true"></i>Importance</li>
+                <li><span class="meter" aria-hidden="true"><b></b><b></b><b></b><b></b></span>Credibility</li>
+                <li><i data-lucide="arrow-left-right" aria-hidden="true"></i>Articulation</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        <h3 class="label">Core workflow</h3>
+        <article class="card workflow">
+          <p class="statement">View an alternative articulation of a key argument, to compare wordings and vote for the one that states it best.</p>
+          <ol class="steps">
+            <li><span>1</span>Open a key argument’s stack of versions.</li>
+            <li><span>2</span>Compare the wordings side by side, with their evidence.</li>
+            <li><span>3</span>Vote for the clearest one. The best version leads.</li>
+          </ol>
+        </article>
+
+        <h3 class="label">Three non-goals</h3>
+        <div class="cards three">
+          <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>Moderating argument strength or credibility beyond users’ own votes.</p></article>
+          <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>AI summaries or AI judgments of how strong an argument is.</p></article>
+          <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>Money or incentives beyond simple points, like Reddit karma.</p></article>
+        </div>
       </section>
-      <section class="record" id="build-log" aria-labelledby="log-title">
-        <div class="section-title"><h2 id="log-title">Build log</h2><span>November 5–6, 2026</span></div>
-        <dl>
+
+      <section class="block" id="build-log" aria-labelledby="log-title">
+        <div class="block-head"><h2 id="log-title">Build log</h2><span>November 5–6, 2026</span></div>
+        <dl class="card log">
           <div><dt>Built</dt><dd>Working card comparisons, evidence views, voting, and suggested versions.</dd></div>
           <div><dt>Learned</dt><dd>The exported prototype saves changes in the browser, including after a refresh.</dd></div>
           <div><dt>Changed</dt><dd>Narrowed the PRD to one workflow. Simplified this page to match the diagram.</dd></div>
@@ -50,7 +93,9 @@
         </dl>
       </section>
     </main>
-    <footer><span>Steelman · Build 1</span><div><a href="reference/steelman-prd-v0.4.md">Original PRD</a><a href="https://github.com/building-with-ai-f26/kfl8095-steelman#run-locally">Run locally ↗</a></div></footer>
+    <footer><span>Steelman</span><div><a href="reference/steelman-prd-v0.4.md">Original PRD</a><a href="design/">Design tokens</a><a href="https://github.com/building-with-ai-f26/kfl8095-steelman#run-locally">Run locally ↗</a></div></footer>
   </div>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script>window.lucide && lucide.createIcons({attrs:{width:18,height:18,'stroke-width':1.6}});</script>
 </body>
 </html>

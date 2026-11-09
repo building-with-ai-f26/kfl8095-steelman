@@ -15,6 +15,7 @@ import random
 TILE = 480      # tile size in px
 STEP = 6        # sampling grid in px
 LEVELS = 22     # contour levels across the field's range
+OPACITY = .12   # white lines this faint sit just above the canvas color: barely visible
 SEED = 5280
 
 root = Path(__file__).resolve().parents[1]
@@ -92,7 +93,7 @@ for t in levels:
         paths.append('M' + 'L'.join(f'{x:.1f} {y:.1f}'.replace('.0 ', ' ') for x, y in line))
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{TILE}" height="{TILE}" viewBox="0 0 {TILE} {TILE}">'
-       f'<path fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" d="{"".join(paths)}"/></svg>\n')
+       f'<path fill="none" stroke="#fff" stroke-opacity="{OPACITY}" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" d="{"".join(paths)}"/></svg>\n')
 out = root / "docs/design/contours.svg"
 out.write_text(svg)
 print(f"Wrote {out.relative_to(root)} ({len(svg) // 1024} KB, {len(paths)} polylines)")
