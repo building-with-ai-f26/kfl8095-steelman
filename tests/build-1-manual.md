@@ -442,6 +442,25 @@ Fixed while checking: `render()` named its animation parameter `motion`, which h
 
 Known gaps: stepping to a match deep in a long column opens every row above it (the list is contiguous), so the page can get very long; drag targets are limited to the rows shown (pick mode shows all); the scale board was generated for testing and isn't in the prototype.
 
+## November 10 — Open-weights example
+
+The core example is now “Is open-weight AI a smart bet for China?”, with two options: “Why it makes sense” and “Why it might not”. It replaces the library board; earlier entries in this record refer to the library board. Saved browser state from before this change (docsVersion 3) is ignored, so returning visitors get the new board.
+
+The arguments came from desk research (November 10). Why it makes sense: independence from American open models; Western distrust of services run from China, which self-hosted weights avoid; China controls AI where it's deployed; influence through adoption. Why it might not: no direct revenue, and others can host the weights; Western distrust of Chinese models wherever they run; rivals can use released weights; the subsidy may not last. Each source names a public document or news report, and its summary sticks to what that source says.
+
+| Check | Observed result |
+| --- | --- |
+| Rows | Why it makes sense: independence, trust, control, influence, and the suggested duplicate; Why it might not: revenue, backlash, rivals, reversal |
+| Versions | Independence has three wordings (main, an overclaim, a narrow factual one); trust has two (main, and a “.cn” wording whose detail is wrong); revenue has two (main, and the blunt “They don’t make any money directly”) |
+| Evidence | Control cites the 2023 Interim Measures and the CAC filing counts; influence includes an unavailable attachment |
+| Suggestion | “jordan_w: same as “A closed Chinese model could rea…”” with Combine and Dismiss |
+| Highlight | New: 2 new wordings |
+| Simulate a reorder | Moves “control” and “rivals” to the top of their columns, and back |
+| Connector fix | With the first row unfolded and scrolled 214 px sideways, every wire runs from the spine to the row’s edge (none run backwards); before, the wire ran left to the off-screen first card |
+| Browser errors | None |
+
+Not updated: the design specimen (`docs/design/index.html`) and the Product Page screenshot (`docs/assets/prototype-board.jpg`) still show the library example.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
