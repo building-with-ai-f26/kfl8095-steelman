@@ -1,10 +1,13 @@
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,300&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,300&display=swap');
   /* @tokens: docs/design/tokens.css is inserted here by scripts/sync-prototype.py */
   #steelman-study {
     font-family:var(--sm-sans); color:var(--sm-ink); color-scheme:light; background:transparent;
   }
   #steelman-study * { box-sizing:border-box; }
+  #steelman-study svg.lucide { stroke-width:1.75; }
+  /* The host page sets its own font on p, li, and headings; inside the prototype they inherit ours. */
+  #steelman-study :is(p,li,h1,h2,h3,h4,h5,h6,dl,dt,dd,blockquote,figcaption,label,legend) { font-family:inherit; }
   #steelman-study button, #steelman-study textarea { font:inherit; color:inherit; }
   #steelman-study button { -webkit-tap-highlight-color:transparent; cursor:pointer; }
   #steelman-study button:disabled { opacity:.45; cursor:default; }
@@ -14,12 +17,15 @@
   #steelman-study .sm-wordmark { display:flex; align-items:center; gap:8px; font:700 23px var(--sm-serif); letter-spacing:-1px; }
   /* Logo: honeycomb diamond. Solid (strongest) top-left, two outlines, a dashed cell (weakest) bottom-right. */
   #steelman-study .sm-logo { display:block; height:24px; width:auto; color:var(--sm-ink); flex:none; }
+  /* The canvas always runs to the bottom of the window, even on a short board. */
+  #steelman-study .sm-surface { display:flex; flex-direction:column; min-height:calc(100vh - 57px); }
+  #steelman-study .sm-surface > .sm-scene { flex:1; }
   #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
   #steelman-study .sm-links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
   #steelman-study .sm-links path { fill:none; stroke:var(--sm-wire); stroke-width:1.3; stroke-linejoin:round; }
   #steelman-study .sm-links circle { fill:var(--sm-card); stroke:var(--sm-wire); stroke-width:1.2; }
-  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:8px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
+  #steelman-study .sm-head { position:relative; z-index:1; width:86%; margin:0 auto; padding:22px 25px 24px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:3px solid var(--sm-ink); border-radius:6px; box-shadow:0 2px 3px #00000005,0 8px 18px #00000005; }
   #steelman-study h1 { font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px; margin:0; text-wrap:balance; }
   /* Question details: quiet, light type under the title, with tools in the top-right corner. */
   #steelman-study .sm-head { padding-right:62px; }
@@ -27,15 +33,15 @@
   #steelman-study .sm-head-tools { position:absolute; top:12px; right:12px; display:flex; gap:2px; }
   #steelman-study .sm-head-button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:#ffffff8c; }
   #steelman-study .sm-head-button:hover, #steelman-study .sm-head-button[aria-expanded="true"] { background:#ffffff1f; color:#fff; }
-  #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.6; }
+  #steelman-study .sm-head-button svg { width:17px; height:17px; stroke-width:1.75; }
   #steelman-study .sm-head-button.sm-comment-button { display:inline-flex; align-items:center; justify-content:center; gap:4px; width:auto; min-width:32px; padding:0 7px; }
   #steelman-study .sm-column-tools { display:flex; gap:2px; margin:-6px -8px -6px auto; flex:none; }
-  #steelman-study .sm-option-input { flex:1; min-width:0; margin:-4px 8px -4px -6px; padding:3px 6px; border:1px solid #ffffff66; border-radius:5px; background:#ffffff14; color:#fff; font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-option-input { flex:1; min-width:0; margin:-4px 8px -4px -6px; padding:3px 6px; border:1px solid #ffffff66; border-radius:6px; background:#ffffff14; color:#fff; font:600 20px/1.3 var(--sm-serif); letter-spacing:-.3px; }
   #steelman-study .sm-option-input::placeholder { color:#ffffff80; }
   #steelman-study .sm-option-input:focus-visible { outline:2px solid #fff; outline-offset:2px; }
   #steelman-study .sm-option-input[aria-invalid="true"] { border-color:var(--sm-cred-weak); }
   /* Add an option: a dashed slot level with the option headers, after the last column. */
-  #steelman-study .sm-add-option { display:inline-flex; align-items:center; justify-content:center; gap:6px; width:auto; padding:0 14px; height:58px; margin-top:17px; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#777; font-size:13px; }
+  #steelman-study .sm-add-option { display:inline-flex; align-items:center; justify-content:center; gap:6px; width:auto; padding:0 14px; height:58px; margin-top:17px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:var(--sm-muted); font-size:13px; }
   #steelman-study .sm-add-option:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-add-option svg { width:18px; height:18px; }
   #steelman-study .sm-add-option .sm-add-long { display:none; }
@@ -46,16 +52,16 @@
   /* What the open comments are about: a ring around that question, option, or version. */
   #steelman-study .sm-head.sm-commenting, #steelman-study .sm-column-head.sm-commenting { outline:2px solid var(--sm-ink); outline-offset:3px; }
   #steelman-study .sm-card.sm-commenting, #steelman-study .sm-card.sm-commenting:hover { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),var(--sm-shadow); }
-  /* Each detail has its own voice: a person (avatar + name), a date (italic serif), a group (tracked caps),
+  /* Each detail has its own voice: a person (avatar + name), a date (light sans, relative), a group (tracked caps),
      and an access level (outlined pill). Hairlines separate them. */
   #steelman-study .sm-question-meta { display:flex; flex-wrap:wrap; align-items:center; row-gap:8px; margin:14px 0 0; padding:0; list-style:none; font:400 12px/1.4 var(--sm-sans); color:#ffffffa6; }
   #steelman-study .sm-question-meta li { display:inline-flex; align-items:center; gap:6px; }
   #steelman-study .sm-question-meta li + li::before { content:""; align-self:center; width:1px; height:13px; margin:0 7px 0 13px; background:#ffffff33; }
-  #steelman-study .sm-question-meta svg { width:13px; height:13px; stroke-width:1.5; opacity:.7; flex:none; }
-  #steelman-study .sm-meta-avatar { display:grid; place-items:center; width:21px; height:21px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); font:700 9px/1 var(--sm-sans); letter-spacing:.03em; }
+  #steelman-study .sm-question-meta svg { width:13px; height:13px; stroke-width:1.75; opacity:.7; flex:none; }
+  #steelman-study .sm-meta-avatar { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.03em; }
   #steelman-study .sm-meta-author strong { font-weight:600; color:#ffffffeb; }
-  #steelman-study .sm-meta-date time { font:italic 300 14px/1 var(--sm-serif); letter-spacing:.01em; color:#ffffffcc; }
-  #steelman-study .sm-meta-org-name { font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffdb; }
+  #steelman-study .sm-meta-date time { font:300 13px/1 var(--sm-sans); font-variant-numeric:tabular-nums; color:#ffffffb3; }
+  #steelman-study .sm-meta-org-name { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffdb; }
   #steelman-study .sm-meta-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px 3px 8px; border:1px solid #ffffff3d; border-radius:999px; font:500 11px/1.2 var(--sm-sans); letter-spacing:.02em; color:#ffffffd9; }
   #steelman-study .sm-meta-pill svg { opacity:.85; }
   @media(max-width:640px) {
@@ -70,10 +76,10 @@
   #steelman-study .sm-drawer { position:absolute; top:0; right:12px; width:356px; z-index:30; display:flex; flex-direction:column; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   /* Wide screens make room beside the board. Narrower ones float the panel over the board without moving it,
      on the side away from what it is about (data-side), so that item stays visible. */
-  @media(min-width:1200px) { #steelman-study[data-drawer] { padding-right:380px; } }
+  @media(min-width:1200px) { #steelman-study[data-drawer] .sm-surface { padding-right:380px; } }
   @media(max-width:1199px) { #steelman-study .sm-drawer[data-side="left"] { right:auto; left:12px; } }
   #steelman-study .sm-drawer-head { border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
-  #steelman-study .sm-drawer-head h2 { font:600 18px/1.3 var(--sm-serif); }
+  #steelman-study .sm-drawer-head h2 { font:600 20px/1.3 var(--sm-serif); }
   #steelman-study .sm-drawer-body { display:grid; gap:24px; padding:20px 20px 28px; }
   #steelman-study .sm-field { display:grid; gap:8px; min-width:0; margin:0; padding:0; border:0; }
   #steelman-study .sm-field > label, #steelman-study .sm-field > legend { padding:0; font-size:12px; font-weight:600; }
@@ -83,7 +89,7 @@
   #steelman-study .sm-drawer :is(textarea,select):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
   #steelman-study .sm-drawer textarea[aria-invalid="true"] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
   #steelman-study .sm-choices { display:grid; gap:6px; }
-  #steelman-study .sm-choice { display:grid; grid-template-columns:16px 18px minmax(0,1fr); align-items:center; gap:2px 8px; padding:9px 11px; border:1px solid var(--sm-line); border-radius:7px; font-size:13px; cursor:pointer; }
+  #steelman-study .sm-choice { display:grid; grid-template-columns:16px 18px minmax(0,1fr); align-items:center; gap:2px 8px; padding:9px 11px; border:1px solid var(--sm-line); border-radius:6px; font-size:13px; cursor:pointer; }
   #steelman-study .sm-choice input { margin:0; accent-color:var(--sm-ink); }
   #steelman-study .sm-choice svg { width:15px; height:15px; color:var(--sm-muted); }
   #steelman-study .sm-choice small { grid-column:3; font-size:11px; line-height:1.45; color:var(--sm-muted); }
@@ -98,13 +104,13 @@
   #steelman-study .sm-comment-target { margin:0 0 4px; padding:10px 12px; border-left:3px solid var(--sm-ink); background:var(--sm-soft); border-radius:0 6px 6px 0; }
   #steelman-study .sm-comment-target span { font-size:11px; font-weight:600; color:var(--sm-muted); }
   #steelman-study .sm-comment-target p { margin:4px 0 0; font:400 14px/1.45 var(--sm-serif); }
-  #steelman-study .sm-thread { display:grid; gap:10px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; }
+  #steelman-study .sm-thread { display:grid; gap:10px; padding:12px; border:1px solid var(--sm-line); border-radius:6px; }
   #steelman-study .sm-thread.sm-resolved { opacity:.7; border-style:dashed; }
   #steelman-study .sm-comment header { display:flex; align-items:center; gap:7px; font-size:12px; }
   #steelman-study .sm-comment time { color:var(--sm-muted); font-size:11px; }
   #steelman-study .sm-avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--sm-ink); color:#fff; font-size:11px; font-weight:600; flex:none; }
   #steelman-study .sm-comment p { margin:6px 0 0 29px; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
-  #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-muted); font-style:italic; }
+  #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-quiet); font-weight:300; }
   #steelman-study .sm-reply { margin-left:14px; padding-left:12px; border-left:1px solid var(--sm-line); }
   #steelman-study .sm-comment-actions { display:flex; gap:12px; margin:6px 0 0 29px; }
   #steelman-study .sm-link-button { border:0; background:transparent; padding:2px 0; font-size:11px; font-weight:500; color:var(--sm-muted); }
@@ -114,29 +120,31 @@
   #steelman-study .sm-drawer :is(.sm-comment-compose,.sm-reply-form) textarea { min-height:0; font:400 13px/1.5 var(--sm-sans); }
   #steelman-study .sm-comment-form-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
   #steelman-study .sm-coming-title { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--sm-muted); }
-  #steelman-study .sm-soon { padding:2px 7px; border:1px dashed #b9b9b9; border-radius:999px; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-soon { padding:2px 7px; border:1px dashed #b9b9b9; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--sm-muted); }
   #steelman-study .sm-button[data-armed] { border-color:var(--sm-cred-weak); color:var(--sm-cred-weak); }
   /* Two option columns with the shared importance axis between them. Opening a stack widens its column. */
   /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
   #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
-  /* The importance axis runs down the left column's left edge, mirroring the articulation axis above an unfolded row. */
+  /* The importance axis runs in the canvas margin, outside the first column's panel, so the hexagons stay whole. */
   #steelman-study .sm-column:first-of-type { padding-left:40px; }
-  #steelman-study .sm-col-vaxis { position:absolute; left:12px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
+  #steelman-study .sm-column:first-of-type::before { left:28px; }
+  #steelman-study .sm-column:first-of-type > .sm-texture { left:28px; width:calc(100% - 28px); }
+  #steelman-study .sm-col-vaxis { position:absolute; left:2px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
-  #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:12px; z-index:0; pointer-events:none; }
+  #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:10px; z-index:0; pointer-events:none; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
-  #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:12px; background:var(--sm-grain) var(--sm-panel); box-shadow:var(--sm-shadow-panel); z-index:-1; }
-  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:7px; margin-bottom:28px; }
+  #steelman-study .sm-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:10px; background:var(--sm-grain) var(--sm-panel); box-shadow:var(--sm-shadow-panel); z-index:-1; }
+  #steelman-study .sm-column-head { position:relative; z-index:1; display:flex; align-items:center; min-height:58px; padding:15px 18px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-top:2px solid var(--sm-ink); border-radius:6px; margin-bottom:28px; }
   /* Inverted headers: near-black boxes with white serif type for the question and the options. */
-  #steelman-study .sm-head, #steelman-study .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
-  #steelman-study .sm-column-head h2 { font:600 19px/1.3 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-head, #steelman-study .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-column-head h2 { font:600 20px/1.3 var(--sm-serif); letter-spacing:-.3px; }
   #steelman-study .sm-col-axis { display:none; }
-  #steelman-study h2 { font-size:17px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
+  #steelman-study h2 { font-size:16px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
   #steelman-study .sm-idea > .sm-vote { margin-top:12px; justify-self:center; }
 
-  /* Axis: hairline with swept arrowheads and light lowercase italic labels at each end. */
-  #steelman-study .sm-axis { display:flex; align-items:center; gap:10px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); letter-spacing:.01em; text-transform:lowercase; white-space:nowrap; min-width:0; }
+  /* Axis: hairline with swept arrowheads and small tracked capitals at each end. */
+  #steelman-study .sm-axis { display:flex; align-items:center; gap:10px; color:var(--sm-axis); font:500 11px/1 var(--sm-sans); letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; min-width:0; }
   #steelman-study .sm-axis-line { position:relative; flex:1; height:1px; min-width:24px; background:var(--sm-axis-line); }
   #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; color:var(--sm-axis-line); overflow:visible; }
   #steelman-study .sm-axis-head path { fill:none; stroke:currentColor; stroke-width:1; stroke-linecap:round; }
@@ -147,26 +155,25 @@
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head { top:1px; left:-5.5px; transform:rotate(90deg); }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-label { writing-mode:vertical-rl; transform:rotate(180deg); }
-  /* Map-style halos: labels, line, and arrowheads knock out whatever texture sits behind them. */
-  #steelman-study .sm-axis-label { font-weight:400; color:var(--sm-axis); text-shadow:0 0 2px var(--sm-panel),0 0 2px var(--sm-panel),0 0 3px var(--sm-panel),0 0 5px var(--sm-panel); }
-  #steelman-study .sm-axis-line { box-shadow:0 0 0 2.5px var(--sm-panel); }
-  #steelman-study .sm-axis-head { filter:drop-shadow(0 0 1.5px var(--sm-panel)) drop-shadow(0 0 1.5px var(--sm-panel)); }
+  /* No halos: the importance axis sits on the canvas outside the column, and the articulation axis is a key strip
+     with its own solid background, so neither cuts into the hexagon texture. */
+  #steelman-study .sm-axis-label { color:var(--sm-axis); }
 
   /* One vote component for both axes. The horizontal one is the same element turned a quarter turn. */
-  #steelman-study .sm-vote { display:inline-flex; flex-direction:column; align-items:center; border:1px solid #c8c8c8; border-radius:7px; padding:2px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-vote { display:inline-flex; flex-direction:column; align-items:center; border:1px solid #c8c8c8; border-radius:6px; padding:2px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-vote[data-axis="h"] { flex-direction:row; }
   #steelman-study .sm-vote[data-axis="h"] .sm-vote-btn svg { transform:rotate(-90deg); }
-  #steelman-study .sm-vote-btn { display:grid; place-items:center; border:0; border-radius:5px; background:transparent; padding:4px; width:25px; height:25px; }
+  #steelman-study .sm-vote-btn { display:grid; place-items:center; border:0; border-radius:6px; background:transparent; padding:4px; width:25px; height:25px; }
   #steelman-study .sm-vote-btn:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-vote-btn[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
   /* A word that confirms the direction of a vote, then fades. */
-  #steelman-study .sm-vote-toast { position:absolute; z-index:45; padding:3px 9px; border-radius:999px; background:var(--sm-ink); color:#fff; font:italic 400 13px/1.3 var(--sm-serif); white-space:nowrap; pointer-events:none; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-vote-toast { position:absolute; z-index:45; padding:3px 9px; border-radius:999px; background:var(--sm-ink); color:#fff; font:500 12px/1.3 var(--sm-sans); white-space:nowrap; pointer-events:none; box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-vote-score { display:grid; place-items:center; min-width:24px; min-height:20px; font-size:11px; font-weight:500; font-variant-numeric:tabular-nums; }
 
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
   #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
   /* The same face, type, and footer are used on the board and in an unfolded row. */
-  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:11px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:10px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
@@ -176,7 +183,7 @@
   @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
-  #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:5px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
+  #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:6px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
   #steelman-study button.sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   /* A card with no comments shows its comment button only on hover or focus (always on touch screens). */
   @media(hover:hover) { #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-comment-button[data-empty] { opacity:0; } }
@@ -185,38 +192,38 @@
   #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
   #steelman-study .sm-few { border-bottom:1px dotted var(--sm-muted); }
   #steelman-study .sm-evidence-symbol { display:grid; place-items:center; position:relative; width:17px; height:18px; flex:none; color:var(--sm-ink); }
-  #steelman-study .sm-evidence-symbol svg { width:16px; height:16px; stroke-width:1.6; }
+  #steelman-study .sm-evidence-symbol svg { width:16px; height:16px; stroke-width:1.75; }
   #steelman-study .sm-evidence-symbol.sm-unreviewed { color:var(--sm-muted); }
   #steelman-study .sm-evidence-symbol .sm-stamp { position:absolute; bottom:-1px; right:-3px; background:var(--sm-card); border-radius:50%; width:12px; height:12px; }
   #steelman-study .sm-evidence-symbol .sm-stamp svg { width:12px; height:12px; stroke-width:2.3; }
-  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; min-height:28px; border-radius:5px; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-source-button { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; min-height:28px; border-radius:6px; font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-source-button svg { width:13px; height:13px; }
   #steelman-study .sm-expand { display:grid; place-items:center; width:30px; height:28px; padding:6px; border:0; border-left:1px solid var(--sm-line); border-radius:0 4px 4px 0; background:transparent; }
-  #steelman-study .sm-expand svg { width:16px; height:16px; stroke-width:1.8; }
+  #steelman-study .sm-expand svg { width:16px; height:16px; stroke-width:1.75; }
   #steelman-study .sm-expanded { border-color:#929292; box-shadow:0 2px 4px #0000000d,0 18px 32px #00000020; }
 
   /* Paper stack: one edge per hidden version (up to three). A dashed edge means no other version yet. */
-  #steelman-study .sm-stack-button { position:absolute; top:0; bottom:0; right:0; width:40px; padding:0; border:0; background:transparent; z-index:1; border-radius:8px; }
-  #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:9px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
+  #steelman-study .sm-stack-button { position:absolute; top:0; bottom:0; right:0; width:40px; padding:0; border:0; background:transparent; z-index:1; border-radius:6px; }
+  #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:10px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
-  #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:9px; background:var(--sm-card); color:var(--sm-muted); font:600 10px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
+  #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
   #steelman-study .sm-stack-button:hover .sm-stack-count { color:var(--sm-ink); border-color:#aaa; }
 
   /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
   #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:max(210px,calc((100% - 36px - 44px) / 3)); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
   #steelman-study .sm-version-vote { justify-self:center; }
   #steelman-study .sm-idea.sm-open { row-gap:0; }
-  #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:24px; margin-bottom:10px; padding:0 2px; overflow:hidden; }
+  #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:30px; margin-bottom:10px; padding:0 4px 0 14px; overflow:hidden; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
   #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; margin-top:calc(12px + var(--sm-hvote,31px) + 10px); }
   #steelman-study .sm-open > .sm-card-wrap { grid-column:2; grid-row:2; }
   #steelman-study .sm-track-axis .sm-axis { flex:1; }
-  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:7px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:6px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-fold:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-fold svg { width:14px; height:14px; }
-  #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:11px; background:transparent; color:#9a9a9a; }
+  #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:10px; background:transparent; color:var(--sm-muted); }
   #steelman-study .sm-add-card:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fafafa80; }
-  #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.5; }
+  #steelman-study .sm-add-card svg { width:22px; height:22px; stroke-width:1.75; }
   /* New argument: same dashed language as a new version, lined up with the cards (vote lane on the left, stack lane on the right). */
   #steelman-study .sm-new-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; position:relative; z-index:1; }
   #steelman-study .sm-new-idea > :last-child { margin-right:24px; width:auto; }
@@ -228,7 +235,7 @@
   #steelman-study .sm-compose-card .sm-draft-reason { font-size:12px; line-height:1.5; color:var(--sm-muted); min-height:52px; border-top:1px dashed var(--sm-line); padding-top:10px; }
   #steelman-study .sm-compose-card textarea[aria-invalid="true"] { box-shadow:inset 3px 0 0 var(--sm-ink); }
   #steelman-study .sm-compose-card .sm-card-meta { justify-content:flex-end; }
-  #steelman-study .sm-icon-button { display:grid; place-items:center; width:30px; height:28px; padding:5px; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-icon-button { display:grid; place-items:center; width:30px; height:28px; padding:5px; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
   #steelman-study .sm-icon-button:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-icon-button.sm-primary { background:var(--sm-selected); color:var(--sm-on-selected); }
   #steelman-study .sm-icon-button svg { width:16px; height:16px; }
@@ -236,7 +243,7 @@
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
-  #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:5px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
+  #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
   #steelman-study .sm-text-button svg { width:14px; height:14px; }
   #steelman-study .sm-button { display:inline-flex; justify-content:center; align-items:center; gap:6px; border:1px solid var(--sm-line); background:var(--sm-card); padding:8px 10px; border-radius:6px; font-size:11px; line-height:1.4; }
@@ -267,10 +274,10 @@
   #steelman-study .sm-source-actions:empty { display:none; }
   #steelman-study .sm-add-source { margin-top:10px; }
   #steelman-study .sm-source-more { justify-self:start; padding:0; font-size:11px; }
-  #steelman-study .sm-you-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e2e2e2; color:var(--sm-muted); font-size:10px; font-weight:600; vertical-align:1px; }
+  #steelman-study .sm-you-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e2e2e2; color:var(--sm-muted); font-size:11px; font-weight:600; vertical-align:1px; }
   #steelman-study .sm-evidence-changed { display:flex; gap:6px; align-items:flex-start; margin:0 0 10px; font-size:11px; line-height:1.5; color:var(--sm-muted); }
   #steelman-study .sm-evidence-changed svg { width:13px; height:13px; flex:none; margin-top:2px; }
-  #steelman-study .sm-source-form { display:grid; gap:10px; margin-top:12px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); }
+  #steelman-study .sm-source-form { display:grid; gap:10px; margin-top:12px; padding:12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); }
   #steelman-study .sm-source-form h4 { margin:0; font-size:12px; font-weight:600; }
   #steelman-study .sm-source-field { display:grid; gap:4px; }
   #steelman-study .sm-source-field label { font-size:11px; font-weight:600; }
@@ -284,15 +291,15 @@
   #steelman-study .sm-assess-actions { display:flex; flex-wrap:wrap; gap:6px; }
   #steelman-study .sm-meter { display:inline-flex; }
   #steelman-study .sm-meta { font-size:12px; line-height:1.6; color:var(--sm-muted); }
-  #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:18px; line-height:1.42; }
+  #steelman-study[data-type="serif"] .sm-claim, #steelman-study[data-type="serif"] .sm-draft-claim { font-family:var(--sm-serif); font-size:20px; line-height:1.42; }
   #steelman-study[data-density="compact"] .sm-claim-button { padding:13px; }
-  #steelman-study[data-density="compact"] .sm-claim { font-size:15px; }
+  #steelman-study[data-density="compact"] .sm-claim { font-size:14px; }
   /* Card options: a quiet ⋯ in the top-right corner; the claim leaves room for it. */
   #steelman-study .sm-card .sm-claim-button { padding-right:40px; }
   #steelman-study .sm-card-menu-button { position:absolute; top:8px; right:7px; z-index:1; display:grid; place-items:center; width:28px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:#a0a0a0; }
   #steelman-study .sm-card-menu-button:hover, #steelman-study .sm-card-menu-button[aria-expanded="true"] { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-card-menu-button svg { width:16px; height:16px; }
-  #steelman-study .sm-menu { position:absolute; z-index:40; width:250px; padding:6px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:9px; box-shadow:var(--sm-shadow-lg),0 10px 28px #00000024; }
+  #steelman-study .sm-menu { position:absolute; z-index:40; width:250px; padding:6px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 10px 28px #00000024; }
   #steelman-study .sm-menu-note { margin:4px 8px 6px; font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-menu-item { display:flex; align-items:flex-start; gap:10px; width:100%; padding:8px; border:0; border-radius:6px; background:transparent; text-align:left; font-size:13px; line-height:1.4; }
   #steelman-study .sm-menu-item svg { width:15px; height:15px; margin-top:2px; color:var(--sm-muted); }
@@ -301,15 +308,15 @@
   #steelman-study .sm-menu-item[aria-disabled="true"] { opacity:.5; cursor:default; }
   #steelman-study .sm-menu-item[data-action="delete-card"]:not([aria-disabled]) svg { color:var(--sm-cred-weak); }
   /* Pick mode for moving a version: other rows in the option offer "Move here"; the source row recedes. */
-  #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:8px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:6px; background:var(--sm-card); font-size:13px; }
   #steelman-study .sm-move-source { opacity:.45; }
-  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:11px; background:#ffffffb8; font-size:13px; font-weight:600; }
+  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:10px; background:#ffffffb8; font-size:13px; font-weight:600; }
   #steelman-study .sm-open .sm-move-here { right:0; }
   #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
   #steelman-study .sm-move-here svg { width:14px; height:14px; }
   #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
   /* Undo bar: where the deleted card was, in the card lane. */
-  #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:8px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:6px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
   #steelman-study [hidden] { display:none !important; }
   @media(max-width:800px) {
@@ -327,12 +334,14 @@
     #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
     #steelman-study .sm-column:first-of-type { padding-left:8px; }
+    #steelman-study .sm-column:first-of-type::before { left:0; }
+    #steelman-study .sm-column:first-of-type > .sm-texture { left:0; width:100%; }
     #steelman-study .sm-col-gap { display:none; }
     #steelman-study .sm-add-option { width:100%; height:48px; }
     #steelman-study .sm-add-option .sm-add-long { display:inline; }
     #steelman-study .sm-add-option .sm-add-short { display:none; }
     #steelman-study .sm-column { padding:0 8px 15px; }
-    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:italic 300 13px/1 var(--sm-serif); text-transform:lowercase; }
+    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:500 11px/1 var(--sm-sans); letter-spacing:.1em; text-transform:uppercase; width:max-content; padding:6px 12px 6px 8px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
     #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
     #steelman-study .sm-col-arrow::after { content:""; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
     #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
@@ -355,7 +364,7 @@
     #steelman-study .sm-button, #steelman-study .sm-text-button, #steelman-study .sm-source-button, #steelman-study .sm-cred { min-height:44px; }
     #steelman-study .sm-expand, #steelman-study .sm-icon-button { width:44px; height:44px; }
     #steelman-study .sm-fold { width:36px; height:36px; }
-    #steelman-study .sm-open > .sm-track-axis { height:36px; }
+    #steelman-study .sm-open > .sm-track-axis { height:40px; }
   }
   @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
 
@@ -363,89 +372,88 @@
   #steelman-study .sm-site { gap:14px; }
   #steelman-study .sm-wordmark { padding:0; border:0; background:none; color:var(--sm-ink); }
   #steelman-study .sm-crumbs { display:flex; align-items:center; gap:8px; min-width:0; font-size:13px; color:var(--sm-muted); }
-  #steelman-study .sm-crumbs > span[aria-hidden] { color:#b5b5b5; }
+  #steelman-study .sm-crumbs > span[aria-hidden] { color:#8a8a8a; }
   #steelman-study .sm-crumb { display:inline-flex; align-items:center; gap:7px; padding:5px 8px; margin:0 -4px; border:0; border-radius:6px; background:transparent; font-size:13px; white-space:nowrap; }
   #steelman-study .sm-crumb:hover { background:var(--sm-soft); }
   #steelman-study .sm-crumb-here { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--sm-ink); font-weight:600; }
   #steelman-study .sm-site-tools { display:flex; align-items:center; gap:10px; margin-left:auto; flex:none; }
-  #steelman-study .sm-search { display:flex; align-items:center; gap:7px; width:280px; height:34px; padding:0 10px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-panel); color:var(--sm-muted); }
+  #steelman-study .sm-search { display:flex; align-items:center; gap:7px; width:280px; height:34px; padding:0 10px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); color:var(--sm-muted); }
   #steelman-study .sm-search:focus-within { border-color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-search svg { width:15px; height:15px; }
   #steelman-study .sm-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); color:var(--sm-ink); }
-  #steelman-study .sm-me { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 10.5px/1 var(--sm-sans); letter-spacing:.03em; }
+  #steelman-study .sm-me { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 11px/1 var(--sm-sans); letter-spacing:.03em; }
   /* A space is always named the same way: its name in tracked capitals, in a rounded box. */
-  #steelman-study .sm-tag { display:inline-flex; align-items:center; height:21px; padding:1px 7px 0; flex:none; border:1px solid var(--sm-ink); border-radius:4px; background:#fff; color:var(--sm-ink); font:600 10px/1 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; white-space:nowrap; }
+  #steelman-study .sm-tag { display:inline-flex; align-items:center; height:21px; padding:1px 7px 0; flex:none; border:1px solid var(--sm-ink); border-radius:6px; background:#fff; color:var(--sm-ink); font:600 11px/1 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; white-space:nowrap; }
   #steelman-study .sm-nav-toggle { display:none; place-items:center; width:34px; height:34px; margin:0 -4px 0 -8px; padding:0; border:0; border-radius:6px; background:transparent; }
   #steelman-study .sm-nav-toggle:hover, #steelman-study .sm-nav-toggle[aria-expanded="true"] { background:var(--sm-soft); }
   #steelman-study .sm-nav-toggle svg { width:20px; height:20px; }
 
   /* ── Home: communities sidebar and the list of steelmen. ── */
-  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:720px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(100vh - 57px); background-color:var(--sm-list-bg); }
   #steelman-study .sm-home[hidden] { display:none; }
   /* The sidebar hangs from the site header, running the full height, inverted like the board's header boxes. */
   #steelman-study .sm-side { display:flex; flex-direction:column; align-content:start; gap:1px; padding:12px 10px 24px; background:var(--sm-ink); color:#fff; }
   #steelman-study .sm-side :focus-visible { outline-color:#fff; }
-  #steelman-study .sm-side h2 { margin:16px 10px 7px; font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
+  #steelman-study .sm-side h2 { margin:16px 10px 7px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
   #steelman-study .sm-side-link { display:flex; align-items:center; gap:10px; width:100%; min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:#fff; font-size:13px; text-align:left; }
   #steelman-study .sm-side-link:hover { background:#ffffff1a; }
   #steelman-study .sm-side .sm-tag { background:transparent; border-color:#ffffffb3; color:#fff; }
   #steelman-study .sm-side-link[aria-current="true"] { background:#fff; color:var(--sm-ink); }
   #steelman-study .sm-side-link[aria-current="true"] .sm-tag { border-color:var(--sm-ink); color:var(--sm-ink); }
   #steelman-study .sm-side .sm-soon { border-color:#ffffff59; color:#ffffff8c; }
-  #steelman-study .sm-side-link > svg { width:16px; height:16px; stroke-width:1.6; }
-  #steelman-study .sm-side-link > span:not(.sm-tag):first-of-type { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-side-link > svg { width:16px; height:16px; stroke-width:1.75; }
+  #steelman-study .sm-side-link > span:not(.sm-tag):not(.sm-swatch):first-of-type { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #steelman-study .sm-side-count { margin-left:auto; font-size:11px; color:#ffffff8c; font-variant-numeric:tabular-nums; }
   #steelman-study [aria-current="true"] .sm-side-count { color:var(--sm-muted); }
   #steelman-study .sm-side-link.sm-side-soon { color:#ffffff8c; }
 
   #steelman-study .sm-feed { display:grid; gap:14px; align-content:start; width:100%; max-width:860px; min-width:0; padding:24px 32px 56px; }
-  /* A space's header borrows the board's inverted question box. */
-  #steelman-study .sm-space-head { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:20px 22px; background:var(--sm-ink); color:#fff; border-radius:8px; box-shadow:var(--sm-shadow-lg); }
-  #steelman-study .sm-space-head h1 { font:700 26px/1.15 var(--sm-serif); letter-spacing:-.5px; }
-  #steelman-study .sm-space-head .sm-question-meta { margin-top:8px; }
-  #steelman-study .sm-space-head > div { flex:1; min-width:220px; }
   #steelman-study .sm-join { height:34px; padding:0 16px; border:1px solid #fff; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:13px; font-weight:600; }
   #steelman-study .sm-join[aria-pressed="true"] { background:transparent; color:#fff; border-color:#ffffff66; }
-  #steelman-study .sm-sort { display:flex; gap:3px; width:max-content; max-width:100%; overflow-x:auto; padding:3px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; box-shadow:var(--sm-shadow-sm); }
-  #steelman-study .sm-sort { padding:2px; border-radius:7px; }
-  #steelman-study .sm-sort button { display:inline-flex; align-items:center; gap:5px; height:27px; padding:0 10px; border:0; border-radius:5px; background:transparent; font-size:12px; white-space:nowrap; }
+  #steelman-study .sm-sort { display:flex; gap:3px; width:max-content; max-width:100%; overflow-x:auto; padding:3px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px;  }
+  #steelman-study .sm-sort { padding:2px; border-radius:6px; }
+  #steelman-study .sm-sort button { display:inline-flex; align-items:center; gap:5px; height:27px; padding:0 10px; border:0; border-radius:6px; background:transparent; font-size:12px; white-space:nowrap; }
   #steelman-study .sm-sort button svg { width:13px; height:13px; }
   #steelman-study .sm-sort button:hover { background:var(--sm-soft); }
   #steelman-study .sm-sort button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
   #steelman-study .sm-feed-list { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
-  #steelman-study .sm-feed-empty { padding:40px 20px; border:1px dashed #9a9a9a; border-radius:8px; text-align:center; color:var(--sm-muted); font:italic 300 16px var(--sm-serif); }
+  #steelman-study .sm-feed-empty { padding:40px 20px; border:1px dashed #9a9a9a; border-radius:6px; text-align:center; color:var(--sm-quiet); font:300 14px var(--sm-sans); }
 
   /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
-  #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; box-shadow:var(--sm-shadow); cursor:pointer; transition:box-shadow .15s; }
-  #steelman-study .sm-post:hover { box-shadow:var(--sm-shadow-hover); }
+  #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer; transition:box-shadow .15s,border-color .15s; }
+  #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; }
-  #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
   #steelman-study .sm-post-vote button:hover { background:var(--sm-soft); color:var(--sm-ink); }
-  #steelman-study .sm-post-vote button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
-  #steelman-study .sm-post-vote svg { width:17px; height:17px; stroke-width:2; }
+  /* Your vote: a filled arrow and a heavier score. */
+  #steelman-study .sm-post-vote button[aria-pressed="true"] { color:var(--sm-ink); }
+  #steelman-study .sm-post-vote button[aria-pressed="true"] svg { fill:currentColor; }
+  #steelman-study .sm-post-vote:has([aria-pressed="true"]) .sm-post-score { font-weight:700; }
+  #steelman-study .sm-post-score { color:var(--sm-ink); }
+  #steelman-study .sm-post-vote svg { width:17px; height:17px; stroke-width:1.75; }
   #steelman-study .sm-post-score { font:600 13px/1.5 var(--sm-sans); font-variant-numeric:tabular-nums; }
-  #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:italic 300 13px var(--sm-serif); color:var(--sm-muted); }
+  #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:300 12px var(--sm-sans); letter-spacing:.06em; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; color:var(--sm-muted); }
   #steelman-study button.sm-tag:hover { background:var(--sm-ink); color:#fff; }
-  #steelman-study .sm-post-meta time { font:italic 300 13.5px/1 var(--sm-serif); }
+  #steelman-study .sm-post-meta time { font:300 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta svg { width:12px; height:12px; }
   #steelman-study .sm-post-meta .sm-dot::before { content:"·"; }
-  #steelman-study .sm-post h2 { margin:7px 0 11px; font:700 21px/1.22 var(--sm-serif); letter-spacing:-.4px; text-wrap:balance; }
+  #steelman-study .sm-post h2 { margin:7px 0 11px; font:700 20px/1.22 var(--sm-serif); letter-spacing:-.4px; text-wrap:balance; }
   #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
   #steelman-study .sm-post h2 button:hover { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; }
   #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
-  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:5px; background:#fff; font-size:12.5px; }
+  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font-size:12px; }
   #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:var(--sm-soft); font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
   /* Dashed, as on the board: an option with fewer than two arguments is an invitation. */
   #steelman-study .sm-post-options li.sm-thin { border-style:dashed; border-color:#9a9a9a; }
   #steelman-study .sm-post-foot { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:13px; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-post-foot > span { display:inline-flex; align-items:center; gap:5px; }
-  #steelman-study .sm-post-foot svg { width:14px; height:14px; stroke-width:1.6; }
+  #steelman-study .sm-post-foot svg { width:14px; height:14px; stroke-width:1.75; }
   #steelman-study .sm-post-foot strong { font-weight:600; color:var(--sm-ink); }
   #steelman-study .sm-help { padding:2px 9px 2px 7px; border:1px dashed #8a8a8a; border-radius:999px; color:var(--sm-ink); }
   #steelman-study .sm-faces { display:inline-flex; padding-left:5px; }
-  #steelman-study .sm-faces span { display:grid; place-items:center; width:21px; height:21px; margin-left:-5px; border-radius:50%; background:#f3f1ec; box-shadow:0 0 0 2px var(--sm-card); color:var(--sm-ink); font:700 8px/1 var(--sm-sans); }
-  #steelman-study .sm-thumb { align-self:start; display:flex; flex-direction:column; align-items:center; gap:7px; height:116px; padding:9px 8px 0; overflow:hidden; border:1px solid var(--sm-line); border-radius:6px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:90px 90px,240px 240px; }
+  #steelman-study .sm-faces span { display:grid; place-items:center; width:24px; height:24px; margin-left:-5px; border-radius:50%; background:#f3f1ec; box-shadow:0 0 0 2px var(--sm-card); color:var(--sm-ink); font:700 10px/1 var(--sm-sans); }
+  #steelman-study .sm-thumb { align-self:start; display:flex; flex-direction:column; align-items:center; gap:7px; height:116px; padding:9px 8px 0; overflow:hidden; border:1px solid var(--sm-line); border-radius:6px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-thumb-size); }
   #steelman-study .sm-thumb-q { width:76%; height:14px; flex:none; border-radius:2px; background:var(--sm-ink); }
   #steelman-study .sm-thumb-cols { display:flex; gap:5px; width:100%; flex:1; }
   #steelman-study .sm-thumb-col { display:flex; flex:1; flex-direction:column; gap:3px; min-width:0; padding:3px; border-radius:3px 3px 0 0; background:var(--sm-panel); }
@@ -454,8 +462,8 @@
   #steelman-study .sm-thumb-col b.sm-thumb-empty { border:1px dashed #9a9a9a; background:transparent; }
   /* ── Board top bar: who is here, and Share. ── */
   #steelman-study .sm-site-faces { display:flex; padding-left:6px; }
-  #steelman-study .sm-site-faces span { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; font:700 9.5px/1 var(--sm-sans); letter-spacing:.02em; }
-  #steelman-study .sm-share-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 14px; border:1px solid var(--sm-selected); border-radius:7px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:13px; font-weight:600; }
+  #steelman-study .sm-site-faces span { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-share-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 14px; border:1px solid var(--sm-selected); border-radius:6px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:13px; font-weight:600; }
   #steelman-study .sm-share-button svg { width:14px; height:14px; }
   #steelman-study .sm-share-button[aria-expanded="true"] { background:#fff; color:var(--sm-ink); }
 
@@ -465,19 +473,19 @@
   #steelman-study .sm-share > header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-share h2 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-share-body { display:grid; gap:18px; padding:16px 18px 18px; }
-  #steelman-study .sm-share h3 { margin:0 0 8px; font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
-  #steelman-study .sm-share select { padding:4px 22px 4px 6px; border:1px solid transparent; border-radius:5px; background:transparent; color:var(--sm-ink); font:500 12px var(--sm-sans); cursor:pointer; }
+  #steelman-study .sm-share h3 { margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-share select { padding:4px 22px 4px 6px; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--sm-ink); font:500 12px var(--sm-sans); cursor:pointer; }
   #steelman-study .sm-share select:hover:not(:disabled) { border-color:var(--sm-line); background:#fff; }
   #steelman-study .sm-share select:disabled { color:var(--sm-muted); cursor:default; opacity:1; }
   #steelman-study .sm-share-invite { display:flex; gap:8px; }
-  #steelman-study .sm-share-field { position:relative; display:flex; align-items:center; flex:1; min-width:0; border:1px solid #c8c8c8; border-radius:7px; background:#fff; }
+  #steelman-study .sm-share-field { position:relative; display:flex; align-items:center; flex:1; min-width:0; border:1px solid #c8c8c8; border-radius:6px; background:#fff; }
   #steelman-study .sm-share-field:focus-within { border-color:var(--sm-ink); }
   #steelman-study .sm-share-field input { flex:1; min-width:0; height:36px; padding:0 10px; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); }
   #steelman-study .sm-share-field select { margin-right:4px; }
   #steelman-study .sm-share-invite .sm-button { height:38px; }
-  #steelman-study .sm-share-suggest { position:absolute; top:calc(100% + 4px); left:-1px; right:-1px; z-index:2; display:grid; margin:0; padding:4px; list-style:none; background:#fff; border:1px solid var(--sm-line); border-radius:7px; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-share-suggest { position:absolute; top:calc(100% + 4px); left:-1px; right:-1px; z-index:2; display:grid; margin:0; padding:4px; list-style:none; background:#fff; border:1px solid var(--sm-line); border-radius:6px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-share-suggest:empty { display:none; }
-  #steelman-study .sm-share-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border:0; border-radius:5px; background:transparent; font-size:13px; text-align:left; }
+  #steelman-study .sm-share-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border:0; border-radius:6px; background:transparent; font-size:13px; text-align:left; }
   #steelman-study .sm-share-suggest button:hover, #steelman-study .sm-share-suggest button:focus-visible { background:var(--sm-soft); outline:0; }
   #steelman-study .sm-share-suggest small { margin-left:auto; color:var(--sm-muted); font-size:11px; }
   #steelman-study .sm-people { display:grid; gap:2px; margin:0; padding:0; list-style:none; }
@@ -487,9 +495,9 @@
   #steelman-study .sm-person-role { color:var(--sm-muted); font-size:12px; padding-right:6px; }
   #steelman-study .sm-person .sm-avatar { width:28px; height:28px; background:#f3f1ec; color:var(--sm-ink); font-size:10px; font-weight:700; }
   #steelman-study .sm-person .sm-avatar.sm-pending { background:transparent; border:1px dashed #8a8a8a; }
-  #steelman-study .sm-person .sm-avatar.sm-access { border-radius:7px; background:var(--sm-soft); }
+  #steelman-study .sm-person .sm-avatar.sm-access { border-radius:6px; background:var(--sm-soft); }
   #steelman-study .sm-person .sm-avatar svg { width:15px; height:15px; }
-  #steelman-study .sm-person-remove { display:grid; place-items:center; width:26px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-person-remove { display:grid; place-items:center; width:26px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
   #steelman-study .sm-person-remove:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-person-remove svg { width:14px; height:14px; }
   #steelman-study .sm-access-hint { margin:2px 0 0 38px; font-size:11px; line-height:1.5; color:var(--sm-muted); }
@@ -500,11 +508,12 @@
     #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
+    #steelman-study:is([data-zoom="read"],[data-zoom="overview"]) :is(.sm-wordmark-text,.sm-zoom) { display:none; }
   }
 
   /* ── Zoom: Read (the board as is) and Overview (the whole board, condensed). ── */
-  #steelman-study .sm-zoom { display:flex; padding:2px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-panel); }
-  #steelman-study .sm-zoom button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-zoom { display:flex; padding:2px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); }
+  #steelman-study .sm-zoom button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
   #steelman-study .sm-zoom button:hover { color:var(--sm-ink); }
   #steelman-study .sm-zoom button[aria-pressed="true"] { background:#fff; color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-zoom svg { width:15px; height:15px; }
@@ -515,7 +524,7 @@
   #steelman-study[data-zoom="overview"] .sm-column-head { min-height:44px; padding:9px 14px; }
   #steelman-study[data-zoom="overview"] .sm-column-head h2, #steelman-study[data-zoom="overview"] .sm-column-head :is(h2,h3) { font-size:16px; }
   #steelman-study[data-zoom="overview"] .sm-idea { grid-template-columns:minmax(0,1fr); gap:0; margin-bottom:10px; }
-  #steelman-study[data-zoom="overview"] .sm-card { cursor:zoom-in; border-radius:8px; }
+  #steelman-study[data-zoom="overview"] .sm-card { cursor:zoom-in; border-radius:6px; }
   #steelman-study[data-zoom="overview"] .sm-card .sm-claim-button { padding:10px 34px 8px 12px; cursor:zoom-in; }
   #steelman-study[data-zoom="overview"] .sm-claim { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13px; line-height:1.4; }
   #steelman-study[data-zoom="overview"] .sm-card-meta { min-height:0; padding:3px 8px 5px; border-top:0; }
@@ -525,18 +534,19 @@
   #steelman-study .sm-card.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; transition:outline-color .8s; }
 
   /* ── Presence: who is looking at which card, and a named cursor while someone writes. ── */
-  #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 9.5px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
   #steelman-study .sm-site-faces button:hover { position:relative; z-index:1; box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--sm-ink); }
-  #steelman-study .sm-presence { position:absolute; top:-11px; left:14px; z-index:3; display:flex; pointer-events:none; }
-  #steelman-study .sm-pbadge { display:grid; place-items:center; width:22px; height:22px; margin-right:-5px; border-radius:50%; background:#fff; color:var(--sm-ink); box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; font:700 8.5px/1 var(--sm-sans); animation:sm-pop .25s ease-out; }
-  #steelman-study .sm-cursor { position:absolute; right:22px; bottom:-16px; z-index:4; display:flex; align-items:flex-start; gap:1px; pointer-events:none; animation:sm-drift 2.6s ease-in-out infinite alternate; }
-  #steelman-study .sm-cursor svg { width:15px; height:15px; margin-top:-6px; }
-  #steelman-study .sm-cursor b { padding:3px 8px; border-radius:3px 9px 9px 9px; background:var(--sm-ink); color:#fff; font:600 11px/1.2 var(--sm-sans); white-space:nowrap; }
-  #steelman-study .sm-cursor i { font:italic 300 12px var(--sm-serif); font-weight:300; opacity:.8; }
+  #steelman-study .sm-presence { position:absolute; top:-12px; left:14px; z-index:3; display:flex; align-items:center; pointer-events:none; }
+  #steelman-study .sm-pbadge { display:grid; place-items:center; width:24px; height:24px; margin-right:-5px; border-radius:50%; background:#fff; color:var(--sm-ink); box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; font:700 10px/1 var(--sm-sans); animation:sm-pop .25s ease-out; }
+  /* Someone writing: a still bubble with three softly pulsing dots beside their badge, as in a messages app. */
+  #steelman-study .sm-typing { display:inline-flex; align-items:center; gap:3px; height:22px; margin-left:9px; padding:0 8px; border-radius:10px; background:#fff; box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; animation:sm-pop .25s ease-out; }
+  #steelman-study .sm-typing i { width:4px; height:4px; border-radius:50%; background:var(--sm-ink); animation:sm-dot 1.2s ease-in-out infinite; }
+  #steelman-study .sm-typing i:nth-child(2) { animation-delay:.2s; }
+  #steelman-study .sm-typing i:nth-child(3) { animation-delay:.4s; }
   #steelman-study .sm-card.sm-followed { outline:2px dashed var(--sm-ink); outline-offset:5px; }
   @keyframes sm-pop { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
-  @keyframes sm-drift { from { transform:translate(0,0); } to { transform:translate(-34px,5px); } }
-  @media(prefers-reduced-motion:reduce) { #steelman-study :is(.sm-cursor,.sm-pbadge) { animation:none; } }
+  @keyframes sm-dot { 0%,60%,100% { opacity:.25; } 30% { opacity:1; } }
+  @media(prefers-reduced-motion:reduce) { #steelman-study :is(.sm-typing,.sm-typing i,.sm-pbadge) { animation:none; opacity:1; } }
 
   /* ── New steelman: the sheet is the board's skeleton, written in place: a question box, then its options. ── */
   #steelman-study .sm-create-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
@@ -545,8 +555,8 @@
   #steelman-study .sm-create-canvas { display:grid; gap:14px; padding:20px 20px 22px; border-radius:10px 10px 0 0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-create-top { display:flex; align-items:center; justify-content:space-between; }
   #steelman-study .sm-create-top h2 { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
-  #steelman-study .sm-create-q { padding:16px 20px 18px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
-  #steelman-study .sm-create-q textarea { display:block; width:100%; padding:0; border:0; outline:0; resize:none; background:transparent; color:#fff; font:700 26px/1.2 var(--sm-serif); letter-spacing:-.6px; }
+  #steelman-study .sm-create-q { padding:16px 20px 18px; border-radius:6px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-create-q textarea { display:block; width:100%; padding:0; border:0; outline:0; resize:none; background:transparent; color:#fff; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.6px; }
   #steelman-study .sm-create-q textarea::placeholder { color:#ffffff73; }
   #steelman-study .sm-create-q:focus-within { outline:2px solid var(--sm-ink); outline-offset:3px; }
   #steelman-study .sm-create-q[data-invalid] { box-shadow:inset 4px 0 0 var(--sm-cred-weak),var(--sm-shadow-lg); }
@@ -556,15 +566,15 @@
   #steelman-study .sm-create-hints:empty { display:none; }
   #steelman-study .sm-create-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   @media(max-width:520px) { #steelman-study .sm-create-options { grid-template-columns:minmax(0,1fr); } }
-  #steelman-study .sm-create-option { display:flex; align-items:center; min-height:46px; padding:4px 4px 4px 12px; border-radius:7px; background:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
+  #steelman-study .sm-create-option { display:flex; align-items:center; min-height:46px; padding:4px 4px 4px 12px; border-radius:6px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-create-option:focus-within { outline:2px solid var(--sm-ink); outline-offset:3px; }
   #steelman-study .sm-create-option[data-invalid] { box-shadow:inset 4px 0 0 var(--sm-cred-weak),var(--sm-shadow-lg); }
   #steelman-study .sm-create-option input { flex:1; min-width:0; padding:4px 0; border:0; outline:0; background:transparent; color:#fff; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-create-option input::placeholder { color:#ffffff73; }
-  #steelman-study .sm-create-option button { display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:5px; background:transparent; color:#ffffff8c; }
+  #steelman-study .sm-create-option button { display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:6px; background:transparent; color:#ffffff8c; }
   #steelman-study .sm-create-option button:hover { background:#ffffff1f; color:#fff; }
   #steelman-study .sm-create-option button svg { width:14px; height:14px; }
-  #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#666; font-size:13px; }
+  #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:#666; font-size:13px; }
   #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-create-add svg { width:15px; height:15px; }
   #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
@@ -574,7 +584,63 @@
   #steelman-study .sm-create-access { margin:0; font-size:12px; line-height:1.5; color:var(--sm-muted); }
   #steelman-study .sm-create-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
   #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
-  @media(max-width:640px) { #steelman-study .sm-create { top:68px; } #steelman-study .sm-create-q textarea { font-size:22px; } }
+  @media(max-width:640px) { #steelman-study .sm-create { top:68px; } #steelman-study .sm-create-q textarea { font-size:20px; } }
+
+  /* ── Space canvases: a tint and a texture per space, on its boards, miniatures, swatches, and the create sheet. ── */
+  #steelman-study [data-canvas] { --sm-thumb-size:90px 90px,240px 240px; }
+  #steelman-study [data-canvas="stone"] { --sm-paper:var(--sm-canvas-stone); }
+  #steelman-study [data-canvas="cool"] { --sm-paper:var(--sm-canvas-cool); --sm-canvas-image:var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:180px 180px,18px 18px; --sm-thumb-size:90px 90px,9px 9px; }
+  #steelman-study [data-canvas="sand"] { --sm-paper:var(--sm-canvas-sand); --sm-canvas-image:var(--sm-grain); --sm-canvas-size:180px 180px; --sm-thumb-size:90px 90px; }
+  #steelman-study [data-canvas="slate"] { --sm-paper:var(--sm-canvas-slate); }
+  #steelman-study [data-canvas="sage"] { --sm-paper:var(--sm-canvas-sage); --sm-canvas-image:var(--sm-grain),var(--sm-tex-linen); --sm-canvas-size:180px 180px,6px 6px; --sm-thumb-size:90px 90px,4px 4px; }
+  #steelman-study [data-canvas="lilac"] { --sm-paper:var(--sm-canvas-lilac); --sm-canvas-image:var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:180px 180px,18px 18px; --sm-thumb-size:90px 90px,9px 9px; }
+  #steelman-study .sm-swatch { display:block; width:14px; height:14px; flex:none; border-radius:3px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-thumb-size); box-shadow:inset 0 0 0 1px #00000014; }
+  #steelman-study .sm-side .sm-swatch { box-shadow:none; }
+
+  /* ── Right rail: on Home, boards that need help and your drafts; on a space, the space itself. ── */
+  #steelman-study .sm-rail { display:none; align-content:start; gap:14px; padding:24px 24px 56px 0; }
+  #steelman-study .sm-rail-card { display:grid; gap:10px; padding:16px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-rail-card h2 { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-rail-list { display:grid; gap:2px; margin:0 -8px; padding:0; list-style:none; }
+  #steelman-study .sm-rail-list button { display:grid; gap:4px; width:100%; padding:8px; border:0; border-radius:6px; background:transparent; text-align:left; }
+  #steelman-study .sm-rail-list button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-rail-list strong { font:600 14px/1.3 var(--sm-serif); }
+  #steelman-study .sm-rail-list small { display:flex; align-items:center; gap:6px; font:300 12px/1.4 var(--sm-sans); color:var(--sm-quiet); }
+  #steelman-study .sm-rail-empty { margin:0; font:300 13px/1.5 var(--sm-sans); color:var(--sm-quiet); }
+  /* A space, shown as a card with a strip of its canvas on top. In the rail on wide screens, atop the list otherwise. */
+  #steelman-study .sm-space-card { overflow:hidden; padding:0; gap:0; }
+  #steelman-study .sm-space-banner { height:64px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-space-body { display:grid; gap:10px; padding:14px 16px 16px; }
+  #steelman-study .sm-space-body h1 { font:700 24px/1.15 var(--sm-serif); letter-spacing:-.4px; }
+  #steelman-study .sm-space-body p { margin:0; font-size:13px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-space-facts { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0; padding:0; list-style:none; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-space-facts li { display:inline-flex; align-items:center; gap:5px; }
+  #steelman-study .sm-space-facts svg { width:13px; height:13px; }
+  #steelman-study .sm-space-body .sm-join { justify-self:start; border-color:var(--sm-ink); background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-space-body .sm-join[aria-pressed="true"] { background:transparent; color:var(--sm-ink); border-color:var(--sm-line); }
+  #steelman-study .sm-feed > .sm-space-card { display:grid; }
+  @media(min-width:1280px) {
+    #steelman-study .sm-home { grid-template-columns:232px minmax(0,1fr) 320px; }
+    #steelman-study .sm-rail { display:grid; position:sticky; top:0; align-self:start; }
+    #steelman-study .sm-feed > .sm-space-card { display:none; }
+  }
+
+  /* ── Phones: no axis arrows. Each option says how it is ordered, and an unfolded row is a swipeable carousel. ── */
+  #steelman-study .sm-col-sub, #steelman-study .sm-pager { display:none; }
+  @media(max-width:640px) {
+    #steelman-study .sm-col-axis { display:none; }
+    #steelman-study .sm-col-sub { display:block; margin-top:3px; font:300 12px/1.3 var(--sm-sans); letter-spacing:0; color:#ffffffa6; }
+    #steelman-study .sm-open > .sm-track-axis { height:40px; padding:0 4px 0 12px; border:0; background:transparent; }
+    #steelman-study .sm-track-axis .sm-axis { display:none; }
+    #steelman-study .sm-pager { display:flex; align-items:center; gap:10px; flex:1; min-width:0; font:400 12px/1 var(--sm-sans); color:var(--sm-muted); }
+    #steelman-study .sm-pager-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums; }
+    #steelman-study .sm-pager-dots { display:flex; gap:5px; }
+    #steelman-study .sm-pager-dots i { width:6px; height:6px; border-radius:50%; background:#c4c4c4; }
+    #steelman-study .sm-pager-dots i[data-on] { background:var(--sm-ink); }
+    #steelman-study .sm-track { scroll-snap-type:x mandatory; scrollbar-width:none; }
+    #steelman-study .sm-track::-webkit-scrollbar { display:none; }
+    #steelman-study .sm-track > .sm-card, #steelman-study .sm-track > .sm-add-card, #steelman-study .sm-track > form { scroll-snap-align:start; scroll-margin-left:14px; }
+  }
 
   /* Narrow screens fold the sidebar behind a menu button in the header; it opens over the list. */
   @media(max-width:900px) {
@@ -668,12 +734,12 @@
   // Private spaces (a class pod, a company, your own drafts) and public communities share one sidebar.
   // Every steelman lives in exactly one space; the space sets who can find it by default.
   const SPACES = [
-    {id:'pod6',name:'POD 6',kind:'private',members:9,about:'Building with AI · Fall 2026'},
-    {id:'northwind',name:'Northwind Studio',kind:'private',members:42,about:'Company workspace'},
-    {id:'none',name:'Personal',kind:'private',members:1,about:'Drafts only you can see'},
-    {id:'brooklyn',name:'Brooklyn Streets',kind:'public',members:3812,about:'Transit, housing, and street design'},
-    {id:'campus',name:'Campus Life',kind:'public',members:12406,about:'Teaching, grading, and student life'},
-    {id:'worklab',name:'Future of Work',kind:'public',members:8290,about:'How teams work and organize'}
+    {id:'pod6',name:'POD 6',kind:'private',canvas:'stone',members:9,about:'Building with AI · Fall 2026'},
+    {id:'northwind',name:'Northwind Studio',kind:'private',canvas:'cool',members:42,about:'Company workspace'},
+    {id:'none',name:'Personal',kind:'private',canvas:'sand',members:1,about:'Drafts only you can see'},
+    {id:'brooklyn',name:'Brooklyn Streets',kind:'public',canvas:'slate',members:3812,about:'Transit, housing, and street design'},
+    {id:'campus',name:'Campus Life',kind:'public',canvas:'sage',members:12406,about:'Teaching, grading, and student life'},
+    {id:'worklab',name:'Future of Work',kind:'public',canvas:'lilac',members:8290,about:'How teams work and organize'}
   ];
   const spaceOf = id => SPACES.find(s=>s.id===id) || SPACES[2];
   // People you could invite, by space. Anyone else can be invited by email.
@@ -684,6 +750,7 @@
     brooklyn:['dev_oka17','ana.lu','rtorres','kwame_b'],campus:['samr_92','bwells','kt_nguyen'],worklab:['alexkim.dev','june.o']
   };
   const ME = 'kieran_lamee';
+  const swatch = s => `<span class="sm-swatch" data-canvas="${s.canvas}" aria-hidden="true"></span>`;
   const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
   function sketchDoc(key,{q,author,posted,org,visibility,options}) {
@@ -728,6 +795,7 @@
     denver:{score:null,at:'2026-11-09T11:30:00Z',did:'You started this draft',here:[],people:1,comments:0}
   };
   const NOW = Date.parse('2026-11-09T12:00:00Z'); // the prototype's fixed "now", so relative times stay stable
+  const fullDate = iso => new Date(iso).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'});
   const ago = iso => { const m=Math.max(1,Math.round((NOW-Date.parse(iso))/60000)); return m<60?`${m}m ago`:m<1440?`${Math.round(m/60)}h ago`:`${Math.round(m/1440)}d ago`; };
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
@@ -883,7 +951,10 @@
     return `<span aria-hidden="true"></span><button type="button" class="sm-add-card cursor-interaction" data-action="compose" data-id="${idea.id}" data-key="compose-${idea.id}" aria-label="Suggest a better version" data-tooltip="Suggest a version">${icon('plus')}</button>`;
   }
   function trackAxis(idea) {
-    return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button></div>`;
+    const n=idea.versions.length;
+    // Phones swap the axis for a carousel caption: which version you're on, and dots.
+    const pager=`<div class="sm-pager" aria-live="polite"><span class="sm-pager-text">1 of ${n} · best articulated</span><span class="sm-pager-dots" aria-hidden="true"><i data-on></i>${'<i></i>'.repeat(n-1)}</span></div>`;
+    return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}${pager}<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button></div>`;
   }
   function track(idea) {
     const versions=ordered(idea);
@@ -910,7 +981,7 @@
   }
   // An option's name, or the field for renaming it.
   function optionTitle(option) {
-    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}</h2>`;
+    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}<small class="sm-col-sub">Most important first</small></h2>`;
     return `<input id="sm-option-name" class="sm-option-input" type="text" data-key="option-name" data-select maxlength="80" placeholder="Name this option" aria-label="Option name" value="${escape(state.optionDraft)}">`;
   }
   function column(option) {
@@ -978,7 +1049,7 @@
     const initials=q.author.split(/[\s_.]+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
       +`<li class="sm-meta-author"><span class="sm-meta-avatar" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
-      +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}`
+      +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></li>${org}`
       +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="${escape(vis.hint)}">${icon(vis.icon)}${pill}</span></li></ul>`
       +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
   }
@@ -1026,7 +1097,7 @@
       !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
       c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
     ].join('');
-    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0].toUpperCase())}</span><strong>${escape(who)}</strong><time datetime="${c.at}">${commentDate(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0].toUpperCase())}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -1271,7 +1342,7 @@
     if(!state.drawer){root.style.minHeight='';return;}
     const anchor=(state.drawer==='comments'&&root.querySelector(`[data-key="comments-${state.commentTarget}"]`)?.closest('.sm-card,.sm-column-head,.sm-head'))||headEl;
     const rootBox=root.getBoundingClientRect();
-    const box=anchor.getBoundingClientRect(),reserved=parseFloat(getComputedStyle(root).paddingRight)>0;
+    const box=anchor.getBoundingClientRect(),reserved=parseFloat(getComputedStyle(surfaceEl).paddingRight)>0;
     // Floating panels sit opposite their subject. A subject too wide to sit beside (the question, or anything on a phone)
     // gets the panel just below it instead.
     const below=!reserved&&box.width>rootBox.width/2;
@@ -1343,7 +1414,7 @@
   // A miniature of the board: the question box, then one column per option with a card per argument.
   function thumb(b) {
     const cols=b.options.map(o=>`<span class="sm-thumb-col"><i></i>${o.n?'<b></b>'.repeat(Math.min(o.n,4)):'<b class="sm-thumb-empty"></b>'}</span>`).join('');
-    return `<button type="button" class="sm-thumb cursor-interaction" data-action="open-board" data-id="${b.id}" tabindex="-1" aria-hidden="true"><span class="sm-thumb-q"></span><span class="sm-thumb-cols">${cols}</span></button>`;
+    return `<button type="button" class="sm-thumb cursor-interaction" data-canvas="${b.space.canvas}" data-action="open-board" data-id="${b.id}" tabindex="-1" aria-hidden="true"><span class="sm-thumb-q"></span><span class="sm-thumb-cols">${cols}</span></button>`;
   }
   // A list item keeps to the essentials: votes, where and who, the question, its options, and a miniature.
   function post(b) {
@@ -1354,7 +1425,7 @@
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`<span><span class="sm-faces">${b.f.here.slice(0,3).map(u=>`<span title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>${here} here now</span>`:'';
     return `<li class="sm-post" data-board="${b.id}"><div class="sm-post-vote">${vote}</div><div class="sm-post-body">`
-      +`<div class="sm-post-meta"><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${b.space.id}" data-key="post-space-${b.id}">${escape(b.space.name)}</button><span>${escape(q.author)}</span><span class="sm-dot"></span><time datetime="${q.posted}">${ago(q.posted+'T09:00:00Z')}</time></div>`
+      +`<div class="sm-post-meta"><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${b.space.id}" data-key="post-space-${b.id}">${escape(b.space.name)}</button><span>${escape(q.author)}</span><span class="sm-dot"></span><time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></div>`
       +`<h2><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="open-${b.id}">${escape(q.text)}</button></h2>`
       +`<ul class="sm-post-options" aria-label="Options and how many arguments each has">${options}</ul>`
       +`<div class="sm-post-foot"><span>${icon('message-square')}${b.comments}</span>${faces}</div>`
@@ -1363,23 +1434,37 @@
   function sidebar() {
     const count=id=>Object.values(docs).filter(d=>d.question.org===id).length;
     const link=(id,label,n='')=>`<button type="button" class="sm-side-link cursor-interaction" data-action="space" data-id="${id}" data-key="side-${id}" aria-current="${state.space===id}">${label}${n!==''?`<span class="sm-side-count">${n}</span>`:''}</button>`;
-    const group=(title,list)=>`<h2>${title}</h2>`+list.map(s=>link(s.id,spaceTag(s),count(s.id))).join('');
+    const group=(title,list)=>`<h2>${title}</h2>`+list.map(s=>link(s.id,swatch(s)+spaceTag(s),count(s.id))).join('');
     return `<nav class="sm-side" id="sm-side" aria-label="Spaces">${link('all',icon('house')+'<span>Home</span>')}`
       +group('Your spaces',SPACES.filter(s=>s.kind==='private'))
       +group('Communities',SPACES.filter(s=>s.kind==='public'&&state.joined[s.id]))
       +`<button type="button" class="sm-side-link sm-side-soon cursor-interaction" aria-disabled="true" data-action="browse" data-key="browse">${icon('compass')}<span>Discover</span><span class="sm-soon">Soon</span></button></nav>`;
   }
-  function feedHead() {
-    if(state.space==='all') return '';
-    const s=spaceOf(state.space),pub=s.kind==='public';
-    const join=pub?`<button type="button" class="sm-join cursor-interaction" data-action="join" data-id="${s.id}" data-key="join-${s.id}" aria-pressed="${!!state.joined[s.id]}">${state.joined[s.id]?'Joined':'Join'}</button>`:'';
-    return `<header class="sm-space-head"><div><h1>${escape(s.name)}</h1><ul class="sm-question-meta"><li><span class="sm-meta-pill">${icon(pub?'globe':'lock')}${pub?'Public community':s.id==='none'?'Only you':'Private space'}</span></li><li>${icon('users')}${s.members.toLocaleString('en-US')} ${s.members===1?'member':'members'}</li><li>${escape(s.about)}</li></ul></div>${join}</header>`;
+  // A space as a card: a strip of its canvas, its name, what it is, and Join for public communities.
+  // It sits in the right rail on wide screens and atop the list otherwise (keyed so focus survives either way).
+  function spaceCard(s,where) {
+    const pub=s.kind==='public';
+    const join=pub?`<button type="button" class="sm-join cursor-interaction" data-action="join" data-id="${s.id}" data-key="join-${s.id}-${where}" aria-pressed="${!!state.joined[s.id]}">${state.joined[s.id]?'Joined':'Join'}</button>`:'';
+    return `<section class="sm-rail-card sm-space-card" aria-label="About ${escape(s.name)}"><div class="sm-space-banner" data-canvas="${s.canvas}"></div><div class="sm-space-body"><h1>${escape(s.name)}</h1><p>${escape(s.about)}</p><ul class="sm-space-facts"><li>${icon(pub?'globe':'lock')}${pub?'Public community':s.id==='none'?'Only you':'Private space'}</li><li>${icon('users')}${s.members.toLocaleString('en-US')} ${s.members===1?'member':'members'}</li></ul>${join}</div></section>`;
+  }
+  function feedHead() { return state.space==='all'?'':spaceCard(spaceOf(state.space),'feed'); }
+  // Boards in scope (Home: your spaces and joined communities; a space: its own) where an option has fewer than two arguments.
+  function railList(items,empty) {
+    return items.length?`<ul class="sm-rail-list">${items.map(b=>`<li><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="rail-${b.id}"><strong>${escape(b.d.question.text)}</strong><small>${swatch(b.space)}${escape(b.space.name)} · ${escape(b.thin.length===1?`${b.thin[0].name} has ${b.thin[0].n?'one argument':'no arguments'}`:b.thin.length?`${b.thin.length} options need arguments`:ago(b.d.question.posted+'T09:00:00Z'))}</small></button></li>`).join('')}</ul>`:`<p class="sm-rail-empty">${empty}</p>`;
+  }
+  function rail() {
+    const all=Object.keys(docs).map(boardInfo).filter(b=>state.space==='all'?(b.space.kind==='private'||state.joined[b.space.id]):b.space.id===state.space);
+    const help=all.filter(b=>b.thin.length&&b.space.id!=='none').sort((a,b)=>Math.min(...a.options.map(o=>o.n))-Math.min(...b.options.map(o=>o.n))||(b.score??0)-(a.score??0)).slice(0,4);
+    const helpCard=`<section class="sm-rail-card" aria-labelledby="sm-rail-help"><h2 id="sm-rail-help">Needs your help</h2>${railList(help,'Every option here has at least two arguments.')}</section>`;
+    if(state.space!=='all') return `<aside class="sm-rail" aria-label="About this space">${spaceCard(spaceOf(state.space),'rail')}${helpCard}</aside>`;
+    const drafts=all.filter(b=>b.space.id==='none');
+    return `<aside class="sm-rail" aria-label="Suggestions">${helpCard}<section class="sm-rail-card" aria-labelledby="sm-rail-drafts"><h2 id="sm-rail-drafts">Your drafts</h2>${railList(drafts,'Steelmen you start in Personal stay here until you share them.')}</section></aside>`;
   }
   function renderHome() {
     const list=visibleBoards();
     const empty=state.query.trim()?'No steelmen match that search.':state.sort==='help'?'Every option here has at least two arguments.':'Nothing here yet.';
-    homeEl.innerHTML=sidebar()+`<main class="sm-feed" id="sm-feed">${feedHead()}<div class="sm-sort" role="group" aria-label="Sort steelmen">${Object.entries(SORTS).map(([k,[g,l]])=>`<button type="button" class="cursor-interaction" data-action="sort" data-id="${k}" data-key="sort-${k}" aria-pressed="${state.sort===k}">${icon(g)}${l}</button>`).join('')}</div>`
-      +(list.length?`<ol class="sm-feed-list">${list.map(post).join('')}</ol>`:`<p class="sm-feed-empty">${empty}</p>`)+`</main>`;
+    homeEl.innerHTML=sidebar()+`<main class="sm-feed" id="sm-feed">${feedHead()}<div class="sm-sort" role="group" aria-label="Sort steelmen">${Object.entries(SORTS).map(([k,[g,l]])=>`<button type="button" class="cursor-interaction" data-action="sort" data-id="${k}" data-key="sort-${k}" aria-pressed="${state.sort===k}">${l}</button>`).join('')}</div>`
+      +(list.length?`<ol class="sm-feed-list">${list.map(post).join('')}</ol>`:`<p class="sm-feed-empty">${empty}</p>`)+`</main>${rail()}`;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
   function renderSite() {
@@ -1398,7 +1483,7 @@
       tools=`<button type="button" class="sm-share-button cursor-interaction" data-action="create-open" data-key="create-open" aria-haspopup="dialog">${icon('plus')}<span>New steelman</span></button><label class="sm-search">${icon('search')}<input id="sm-search" type="search" data-key="search" placeholder="Search steelmen" aria-label="Search steelmen" value="${escape(state.query)}"></label>`;
     }
     root.toggleAttribute('data-nav-open',state.view==='home'&&state.navOpen);
-    siteEl.innerHTML=`${menu}<button type="button" class="sm-wordmark cursor-interaction" data-action="space" data-id="all" data-key="wordmark" aria-label="Steelman home">${LOGO}steelman.</button>${middle}<div class="sm-site-tools">${tools}${me}</div>`;
+    siteEl.innerHTML=`${menu}<button type="button" class="sm-wordmark cursor-interaction" data-action="space" data-id="all" data-key="wordmark" aria-label="Steelman home">${LOGO}<span class="sm-wordmark-text">steelman.</span></button>${middle}<div class="sm-site-tools">${tools}${me}</div>`;
   }
   // ── New steelman: a question, two to four options, and the space it lives in ──
   // The space sets who can find it; Share refines that once it exists.
@@ -1420,7 +1505,7 @@
     const d=state.createDraft,yours=SPACES.filter(s=>s.kind==='private'||state.joined[s.id]);
     const options=d.options.map((o,i)=>`<div class="sm-create-option" ${state.createError&&!o.trim()&&i<2?'data-invalid':''}><input type="text" class="sm-create-opt" data-index="${i}" data-key="create-opt-${i}" maxlength="80" placeholder="${['First option','Second option','Third option','Fourth option'][i]}" aria-label="Option ${i+1}" value="${escape(o)}">${d.options.length>2?`<button type="button" class="cursor-interaction" data-action="create-remove-option" data-id="${i}" data-key="create-remove-${i}" aria-label="Remove option ${i+1}" data-tooltip="Remove">${icon('x')}</button>`:''}</div>`).join('');
     const add=d.options.length<MAX_OPTIONS?`<button type="button" class="sm-create-add cursor-interaction" data-action="create-add-option" data-key="create-add">${icon('plus')}Option</button>`:'';
-    return `<div class="sm-create-canvas"><div class="sm-create-top"><h2 id="sm-create-title">New steelman</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="create-close" data-key="create-close" aria-label="Close (your draft is kept)" data-tooltip="Close">${icon('x')}</button></div>`
+    return `<div class="sm-create-canvas" data-canvas="${spaceOf(d.space).canvas}"><div class="sm-create-top"><h2 id="sm-create-title">New steelman</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="create-close" data-key="create-close" aria-label="Close (your draft is kept)" data-tooltip="Close">${icon('x')}</button></div>`
       +`<div class="sm-create-q" ${state.createError&&!d.q.trim()?'data-invalid':''}><textarea id="sm-create-q" data-key="create-q" rows="2" maxlength="200" placeholder="Ask a question with more than one good answer" aria-label="Question">${escape(d.q)}</textarea></div>`
       +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
       +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
@@ -1487,7 +1572,7 @@
     const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
     const link=`steelman.example/s/${state.boardId}`;
     return `<header><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></header>`
-      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Add people by username or email" aria-label="Add people by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',state.shareRole,'id="sm-share-role" data-key="share-role"')}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
+      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',state.shareRole,'id="sm-share-role" data-key="share-role"')}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
       +`<section aria-labelledby="sm-people-title"><h3 id="sm-people-title">People with access</h3><ul class="sm-people">${people}</ul></section>`
       +`<section aria-labelledby="sm-general-title"><h3 id="sm-general-title">General access</h3><div class="sm-person"><span class="sm-avatar sm-access" aria-hidden="true">${icon(accessIcon)}</span><span>${generalSelect}</span>${q.visibility==='private'?'':roleSelect('general',q.accessRole,'id="sm-share-access-role" data-key="share-access-role"',!owner)}</div><p class="sm-access-hint">${escape(accessHint)}</p>${ownerNote}</section></div>`
       +`<footer><input type="text" readonly value="${link}" aria-label="Link to this steelman" data-key="share-link">${button('share-copy',icon(state.copied==='yes'?'check':'link')+(state.copied==='yes'?' Copied':' Copy link'),'data-key="share-copy"')}</footer>`;
@@ -1507,7 +1592,7 @@
     return null;
   }
 
-  // ── Presence (simulated): classmates move between cards; now and then one starts writing. Nothing they do changes the board. ──
+  // ── Presence (simulated): classmates move between cards; now and then one starts writing (a typing bubble). Nothing they do changes the board. ──
   let presence={},presenceTimer=0;
   const reducedMotion2=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
   function visibleCards() { return [...board.querySelectorAll('.sm-card[data-card]')].map(el=>el.dataset.card); }
@@ -1528,19 +1613,17 @@
     presenceTimer=setTimeout(tick,1800);
     paintPresence();
   }
-  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};root.querySelectorAll('.sm-presence,.sm-cursor').forEach(el=>el.remove()); }
-  const ARROW='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 1.5 13.5 7 8 8.4 5.6 13.8Z" fill="#242424" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};root.querySelectorAll('.sm-presence').forEach(el=>el.remove()); }
   // Badges are painted onto the cards directly, so focus and drafts are never disturbed.
   function paintPresence() {
-    root.querySelectorAll('.sm-presence,.sm-cursor').forEach(el=>el.remove());
+    root.querySelectorAll('.sm-presence').forEach(el=>el.remove());
     if(state.view!=='board') return;
     const byCard={};
     for(const [u,p] of Object.entries(presence)) (byCard[p.card] ||= []).push(u);
     for(const [id,users] of Object.entries(byCard)){
       const el=board.querySelector(`.sm-card[data-card="${id}"]`);if(!el)continue;
-      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge" title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>`);
       const writer=users.find(u=>presence[u].writing);
-      if(writer) el.insertAdjacentHTML('beforeend',`<span class="sm-cursor" aria-hidden="true">${ARROW}<b>${escape(writer)} <i>writing a version…</i></b></span>`);
+      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge" title="${escape(u)}${presence[u].writing?' is writing a version':''}">${escape(userInitials(u))}</span>`).join('')}${writer?'<span class="sm-typing"><i></i><i></i><i></i></span>':''}</span>`);
     }
     siteEl.querySelectorAll('[data-follow]').forEach(b=>{const p=presence[b.dataset.follow],c=p&&cards[p.card];b.title=c?`${b.dataset.follow} · ${p.writing?'writing on':'viewing'} “${short(p.card)}”`:b.dataset.follow;});
   }
@@ -1607,6 +1690,7 @@
   function renderView(focusKey) {
     const home=state.view==='home';
     homeEl.hidden=!home; surfaceEl.hidden=home; root.toggleAttribute('data-drawer',false);
+    if(home) root.dataset.zoom='';
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
     else {render();startPresence();}
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
@@ -1645,6 +1729,7 @@
 
   function render(focusKey, motion='') {
     root.dataset.zoom=state.view==='board'?state.zoom:'';
+    surfaceEl.dataset.canvas=spaceOf(doc.question.org).canvas;
     renderSite();renderShare();
     root.dataset.indicator=design.indicator; root.dataset.density=design.density; root.dataset.type=design.type;
     const reduced=reducedMotion();
@@ -1739,7 +1824,7 @@
   root.addEventListener('change',event=>{
     const el=event.target,q=doc.question;
     if(el.id==='sm-share-role') {state.shareRole=el.value;return;}
-    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value)+' You can change this under Share.';return;}
+    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('.sm-create-canvas').dataset.canvas=spaceOf(el.value).canvas;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value)+' You can change this under Share.';return;}
     if(el.dataset.sharePerson) {const p=q.people.find(x=>x.user===el.dataset.sharePerson);if(p){p.role=el.value;announce(`${p.user} ${ROLES[p.role]}.`);}}
     else if(el.id==='sm-share-general') {q.visibility=el.value;announce(el.selectedOptions[0].textContent+'.');}
     else if(el.id==='sm-share-access-role') {q.accessRole=el.value;announce(`General access: ${ROLES[el.value]}.`);}
@@ -1992,6 +2077,16 @@
     requestAnimationFrame(()=>{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;animateWires();save();});
   });
   scrimEl.addEventListener('click',()=>root.querySelector('[data-key="create-close"]')?.click());
+  // Phone carousel: the caption and dots follow the version in view.
+  root.addEventListener('scroll',event=>{
+    const t=event.target;if(!t.classList?.contains('sm-track'))return;
+    const row=t.closest('.sm-idea'),pager=row?.querySelector('.sm-pager');if(!pager||getComputedStyle(pager).display==='none')return;
+    const faces=[...t.querySelectorAll(':scope > .sm-card, :scope > .sm-add-card, :scope > form')],x=t.getBoundingClientRect().left;
+    let i=0,best=Infinity;faces.forEach((f,k)=>{const d=Math.abs(f.getBoundingClientRect().left-x-14);if(d<best){best=d;i=k;}});
+    const n=pager.querySelectorAll('.sm-pager-dots i').length;
+    pager.querySelector('.sm-pager-text').textContent=i>=n?'Add a better version':`${i+1} of ${n}${i===0?' · best articulated':i===n-1&&n>1?' · weakest':''}`;
+    pager.querySelectorAll('.sm-pager-dots i').forEach((d,k)=>d.toggleAttribute('data-on',k===i));
+  },true);
   // In Overview, choosing a card (or a header) zooms in to read it.
   root.addEventListener('click',event=>{
     if(state.view!=='board'||state.zoom!=='overview'||!event.target.closest('.sm-scene'))return;

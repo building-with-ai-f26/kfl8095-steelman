@@ -332,6 +332,53 @@ Checks run by the coding agent in the in-app browser against the decoded prototy
 
 Known gaps: animations pause in background tabs (a fallback cleans up the list↔board overlay); inside the published, content-height frame, opening a board from far down the list can play part of the zoom off-screen before the page scrolls up. Presence and list details are illustrative and never change the board. Saved board edits from earlier versions were reset twice as sample data changed (votes kept).
 
+## November 9 — Design audit, batch A
+
+Checked by the coding agent on the decoded prototype at 1440 px after syncing.
+
+| Check | Observed result |
+| --- | --- |
+| Fonts | No visible text in a system font (option chips, meta rows, comments, and Share rows now use Libre Franklin) |
+| Italics | No visible italic text in the list, the board, or comments |
+| Dates | List: "2d ago" with the title "November 7, 2026"; board header "4d ago"; comments "3d ago" with the full date |
+| Type scale | Sizes in the stylesheet: 10 (initials only), 11, 12, 13, 14, 16, 20, 23 (wordmark), 24, 32 |
+| Typing | Within about 40 s a "•••" bubble appeared beside jordan_w's badge; its title reads "jordan_w is writing a version"; no cursor |
+| Contrast | "Add an argument" and "Add an option" use `--sm-muted`; the breadcrumb separator is #8a8a8a |
+| Small fixes | Share invite placeholder reads "Username or email"; the canvas reaches the bottom of the window on a short board; icons use a 1.75 stroke |
+| Browser errors | None |
+
+## November 9 — Design audit, batch B
+
+Checked by the coding agent on the decoded prototype at 1440 px, about 700 px, and 375 px.
+
+| Check | Observed result |
+| --- | --- |
+| Axes | "MORE IMPORTANT" runs in the canvas margin, left of the first panel. With "Sunday hours…" unfolded, the articulation key is a white pill strip. No holes in the hexagon texture |
+| Phone axes | At 375 px the first panel contains its cards (panel left 22 px, card left 78 px). "MORE IMPORTANT" is a pill above the first card. No horizontal overflow |
+| Elevation and corners | List items are flat with a hover lift. Headers carry a single small shadow. Radii in the stylesheet are 6, 10, and pill, plus 1.5–3 px in the miniatures |
+| List controls | The sort bar is text only. Upvoting "grade on a curve" fills the arrow and makes 897 bold |
+| Phone header | On a board: logo mark, POD 6 tag, Share icon, avatar. Back on the list the wordmark returns (the zoom marker is cleared on the list) |
+| Comments panel | At 1440 px the canvas runs under and beside the panel, with no white strip |
+| Browser errors | None |
+
+## November 9 — Design audit, batch C
+
+Checked by the coding agent on the decoded prototype at 1440 px and 1000 px.
+
+| Check | Observed result |
+| --- | --- |
+| List background | Plain gray, with no contours |
+| Miniatures | Campus Life sage, Brooklyn Streets slate, and POD 6 stone are distinguishable side by side (after raising the tints' saturation once) |
+| Sidebar swatches | A 14 px swatch beside each space tag. A flex rule first stretched them into bars; fixed |
+| Boards | Campus Life board on sage with linen hatching, Northwind board on cool gray with dots, library board on warm stone with contours |
+| Right rail | At 1440 px Home shows four "Needs your help" boards (standups first) and the Denver draft. Campus Life shows its card (sage banner, Public community, 12,406 members, Joined) and "Every option here has at least two arguments." Leaving and rejoining from the card updates the sidebar and keeps focus on the button |
+| Narrower | At 1000 px the rail is hidden and the Northwind card sits above the list. No horizontal overflow |
+| Browser errors | None |
+
+## November 9 — Phone axes
+
+At 375 px on the library board, with "Sunday hours…" unfolded: the option header reads "Open on Sundays / Most important first". No axis pills or arrows show. The row caption starts at "1 of 3 · best articulated" with the first dot filled. Scrolling the carousel to the second and third versions gives "2 of 3" and "3 of 3 · weakest", with one dot filled each time. No horizontal page overflow and no browser errors. At 1440 px the caption and subline are hidden, and both axes show as before.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
