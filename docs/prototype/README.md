@@ -1,6 +1,6 @@
 # Steelman prototype
 
-Open **index.html** in a modern browser. It starts on the list of steelmen; choose “Should our library open on Sundays?” for the full example board. No installation or server is required. An internet connection loads the fonts and supporting browser assets.
+Open **index.html** in a modern browser. It starts on the list of steelmen; choose “Is open-weight AI a smart bet for China?” for the full example board. No installation or server is required. An internet connection loads the fonts and supporting browser assets.
 
 Argument cards use a grayscale paper texture, rounded corners, and soft shadows; the question and option headers are inverted (near-black boxes, white serif). Each card is judged on three axes:
 
@@ -24,9 +24,9 @@ The prototype now opens on a list of steelmen, a mock of how people find, share,
 - **Share.** The **Share** button opens a panel: invite by username (suggested from the space) or by email, with a role: **can view** (read and comment), **can vote** (also vote and assess evidence), or **can contribute** (also write). People with access lists the owner and everyone invited, with role menus and remove. **General access** is only people invited, everyone in the space, or anyone with the link, with its own role; the pill under the question follows it. Only the owner can change access; on someone else's board you can still invite and copy the link. **Copy link** uses a placeholder address. Settings keeps the question and its space and links to Share.
 - **New steelman.** **+ New steelman** in the header opens a sheet laid out like the board's skeleton: a dark question box and two to four dark option headers, then the space (defaulting to the one you're viewing) and what that means for who can see it. Gentle hints appear for loaded words, "Why…" questions, and options named Yes or No. A question, at least two options, and different option names are required. Escape or Cancel keeps the draft. Creating zooms into the new, empty board, ready for the first argument; back in the list it starts with your upvote.
 
-The usernames, spaces, list details, and other boards are illustrative. The library board is the fully worked example.
+The usernames, spaces, list details, and other boards are illustrative. The open-weights board is the fully worked example: “Why it makes sense” and “Why it might not”. Its sources point to public documents and reporting (OpenAI cutting off API access from China, restrictions on DeepSeek’s app, US clouds hosting DeepSeek-R1, China’s rules and filings for public AI services, the US government evaluation of DeepSeek, and others); its votes and assessments are illustrative.
 
-## Try it on the library board
+## Try it on the open-weights board
 
 - Click the paper stack to the right of a card. Its dark badge is how many wordings there are; **≫** means there is no other wording yet, and opens a draft for one. The versions unfold in place, in the column's sort order (best articulated first under Top); the column widens, the row scrolls sideways if needed, and the wires stay attached.
 - **The order never changes.** Arguments sit by shared importance and wordings by shared articulation, for everyone; your own votes don't move cards.
@@ -40,7 +40,7 @@ The usernames, spaces, list details, and other boards are illustrative. The libr
 - Click **Add an argument** at the bottom of a column to write a new argument in place, with optional context. It joins the bottom of that column as its own row: importance 0, unreviewed, no sources, and a dashed stack edge inviting other versions. Escape or × keeps the draft for later.
 - **Combining arguments that make the same point.** Drag the merge icon in a card's footer onto another argument in the same option (or click the icon to pick one; touch screens use the click). Dropping a wording from a row with several onto the column's **Add an argument** slot makes it a separate argument. Votes and comments travel with a moved version; a row left empty disappears; an Undo bar appears for ten seconds. Who can do it:
   - The **board owner** and a version's **author** combine or separate it directly.
-  - Other people who **can contribute** drag to *suggest* it. The suggestion appears as one line under the card ("jordan_w: same as “…”"); the owner or author can **Combine** or **Dismiss** it, and the suggester can **Withdraw** it. On the library board, jordan_w has suggested combining "Weekend opening…" with the first Sunday argument.
+  - Other people who **can contribute** drag to *suggest* it. The suggestion appears as one line under the card ("jordan_w: same as “…”"); the owner or author can **Combine** or **Dismiss** it, and the suggester can **Withdraw** it. On the open-weights board, jordan_w has suggested combining “Nobody abroad will trust a Chinese AI service…” with the trust argument.
   - People who can only view or vote don't see the handle.
 - Each card has a **⋯** menu. On your own versions: **Edit wording and context** (in place), **Combine with another argument**, **Make it a separate argument**, and **Delete**. On other people's versions the menu says only they can edit it and offers **Suggest a revised version**, which opens a new version in the same row starting from that wording; the board owner also gets combine and separate, and other contributors get **Suggest combining**.
 - Options are editable too. The **⋯** on an option's header renames it in place (Enter saves, Escape keeps the old name) or deletes it, which is allowed only when it has no arguments and the question keeps at least two options; Undo is available. The dashed **+ Option** after the last column adds an option (up to four): name it and press Enter; leaving it unnamed removes it.

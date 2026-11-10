@@ -762,51 +762,68 @@
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
-    access: {at:'2026-11-05T15:00:00Z', brief:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.', idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
-    accessBold: {at:'2026-11-06T11:00:00Z', brief:'The survey shows a need among some residents. It doesn’t establish access for everyone.', idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
-    accessNarrow: {at:'2026-11-08T19:30:00Z', brief:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.', idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
-    study: {at:'2026-11-05T15:20:00Z', brief:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.', idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
-    purpose: {at:'2026-11-07T10:00:00Z', brief:'This puts family access at the heart of the library’s public purpose.', idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
-    staffing: {at:'2026-11-05T16:00:00Z', brief:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.', idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
-    evenings: {at:'2026-11-08T09:00:00Z', brief:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.', idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
-    services: {at:'2026-11-06T14:00:00Z', brief:'The agreement provides cleaning and closing services for each day the building opens.', idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'},
-    weekend: {at:'2026-11-09T08:30:00Z', idea:'weekend', claim:'Weekend opening would help people who work Monday to Friday.', yes:0, no:0, pref:2, sources:[], explanation:'Another way to put the access argument, written before its author saw the first row.'}
+    independence: {at:'2026-11-05T15:00:00Z', brief:'The case is about dependence: whoever makes the best open models decides what everyone else builds on, and can stop.', idea:'independence', claim:'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', yes:14, no:6, pref:24, sources:['openaiblock','metaclosed'], explanation:'A US provider has already cut China off, and the supply of American open weights depends on US companies’ choices. Whether China would refuse good American weights today is the contested part.'},
+    independenceBold: {at:'2026-11-06T11:00:00Z', brief:'China has strong closed models too; “completely dependent” goes past the evidence.', idea:'independence', claim:'Without its own open models, China would be completely dependent on American AI.', yes:1, no:9, pref:7, sources:['openaiblock'], explanation:'Easy to read, but overstated: Chinese labs also build closed models, and the sources show a risk of dependence, not total dependence.'},
+    independenceNarrow: {at:'2026-11-08T19:30:00Z', brief:'This sticks to what happened and leaves the reader to draw the conclusion.', idea:'independence', claim:'Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', yes:4, no:0, pref:5, sources:['llamachina','openaiblock'], explanation:'Precise about the record. It doesn’t claim what China would do now.'},
+    trust: {at:'2026-11-05T15:20:00Z', brief:'A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.', idea:'trust', claim:'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', yes:16, no:4, pref:19, sources:['deepseekbans','clouds','airbnb'], explanation:'Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.'},
+    trustDomain: {at:'2026-11-06T16:00:00Z', brief:'The concern is where data goes and which country’s law governs it, not the domain name.', idea:'trust', claim:'Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.', yes:3, no:7, pref:6, sources:['deepseekbans'], explanation:'The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.'},
+    control: {at:'2026-11-07T10:00:00Z', brief:'China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.', idea:'control', claim:'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', yes:15, no:2, pref:10, sources:['genaimeasures','cacfilings'], explanation:'Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.'},
+    influence: {at:'2026-11-06T12:00:00Z', brief:'Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.', idea:'influence', claim:'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', yes:7, no:5, pref:8, sources:['haibrief','aiplus','downloads'], explanation:'Adoption is well documented; whether it turns into lasting influence is a judgment.'},
+    trustDup: {at:'2026-11-09T08:30:00Z', idea:'trustDup', claim:'Nobody abroad will trust a Chinese AI service, but they’ll happily download free weights.', yes:0, no:0, pref:1, sources:[], explanation:'Another way to put the trust argument, written before its author saw that row.'},
+    revenue: {at:'2026-11-05T16:00:00Z', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
+    revenueBlunt: {at:'2026-11-07T09:00:00Z', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
+    backlash: {at:'2026-11-06T14:00:00Z', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
+    rivals: {at:'2026-11-08T09:00:00Z', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
+    reversal: {at:'2026-11-07T12:00:00Z', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], explanation:'A forecast, not a fact. It can still matter to the decision.'}
   };
+  // Sources point to public documents and reporting. Findings are summarized, not quoted; votes and assessments are illustrative.
   const seedSources = {
-    survey: {name:'Resident access survey',locator:'Example packet · p. 2, question 4',finding:'18 of 80 respondents selected Sunday as their only available day to visit.',premise:'Some respondents cannot visit during the current opening hours.',limit:'Voluntary sample; not representative of all residents. Availability was self-reported.'},
-    hours: {name:'Current opening schedule',locator:'Example packet · p. 1',finding:'The library opens Monday–Friday, 10–6, and Saturday, 10–2. It is closed on Sunday.',premise:'A Sunday session would create access at a currently unavailable time.',limit:'The schedule does not establish who would actually attend.'},
-    study: {name:'Student listening session',locator:'Example packet · p. 3, notes 6–9',finding:'Seven of twelve participants asked for a quiet weekend study space.',premise:'Some students report a need for more weekend study space.',limit:'No academic outcomes were measured. A need for space does not establish an educational benefit.'},
-    roster: {name:'Staff rota',locator:'Example packet · p. 4, table A',finding:'All scheduled staff hours are allocated to the current six-day week.',premise:'Sunday opening is not covered by the current rota.',limit:'A different rota or changed duties might free capacity without cutting opening hours.'},
-    budget: {name:'Four-hour Sunday estimate',locator:'Example packet · p. 5, assumptions',finding:'The estimate assumes two additional staff members for four hours.',premise:'The modeled Sunday session includes extra paid staffing.',limit:'This is one staffing model. It does not prove that every viable model requires extra hours.'},
-    unavailable: {name:'Evening vs. Sunday cost estimate',locator:'Example packet · attachment unavailable',unavailable:true,finding:'The cited attachment cannot be opened.',premise:'No comparison can be inspected from the available material.',limit:'An unavailable source does not show the claim is false. You can skip assessment or challenge its support.'},
-    contract: {name:'Building services agreement',locator:'Example packet · p. 6, section 2',finding:'Cleaning and closing services are provided for each day the building opens.',premise:'Opening another day adds a day of services.',limit:'This does not establish the size of the additional cost or its importance.'}
+    openaiblock: {name:'OpenAI blocks API access from China',locator:'Bloomberg, June 25, 2024; in effect July 9, 2024',finding:'OpenAI told developers in China it would block their API access from July 9, 2024. Alibaba and Zhipu invited them to switch to domestic models.',premise:'A US provider can cut Chinese users off at any time.',limit:'This concerns a hosted service. Weights already downloaded can’t be withdrawn this way.'},
+    metaclosed: {name:'Meta weighs closing its frontier model',locator:'New York Times, July 14, 2025; Zuckerberg remarks, July 30, 2025',finding:'Meta’s superintelligence lab discussed not releasing its most powerful model openly; Zuckerberg later said Meta would be careful about what it open-sources.',premise:'The supply of top American open weights depends on US companies’ choices.',limit:'Meta said its open-source position was unchanged, and OpenAI released open weights (gpt-oss) in August 2025.'},
+    llamachina: {name:'Chinese labs and Meta’s Llama',locator:'South China Morning Post and TechNode reporting, 2023–2024',finding:'Chinese firms used Llama in 2023 and 2024 to build their own models; 01.AI’s Yi used Llama’s architecture and later credited it.',premise:'Before strong domestic open models existed, Chinese developers built on American ones.',limit:'Shows past reliance, not that China would refuse American models today.'},
+    deepseekbans: {name:'Restrictions on DeepSeek’s app',locator:'Italy’s data regulator, January 30, 2025; Australian and Taiwanese government-device bans; DeepSeek privacy policy',finding:'DeepSeek’s privacy policy says user data is stored in China. Italy’s regulator ordered it to stop processing Italians’ data, and several governments banned it on official devices.',premise:'Western users and governments avoid AI services run from China.',limit:'These actions target the hosted app, not the weights, and most cover government devices only.'},
+    clouds: {name:'US clouds host DeepSeek-R1',locator:'AWS and Microsoft announcements, January 2025',finding:'Amazon Bedrock and Microsoft’s Azure AI Foundry offered DeepSeek-R1, running on their own infrastructure.',premise:'A Chinese model can run on Western servers, under Western control.',limit:'Availability doesn’t show how much it is used.'},
+    airbnb: {name:'Airbnb’s customer-service agent',locator:'Bloomberg, October 2025',finding:'Airbnb’s CEO said its agent relies heavily on Alibaba’s Qwen because it is fast and cheap; the agent uses 13 models in all.',premise:'Western companies will build on a Chinese model they can run on their own terms.',limit:'One company, and congressional committees questioned the choice in April 2026.'},
+    genaimeasures: {name:'Interim Measures for Generative AI Services',locator:'Cyberspace Administration of China and other agencies, 2023, Article 2',finding:'The rules apply to generative AI services offered to the public in mainland China, and exclude research and development not offered to the public.',premise:'China regulates AI where it is deployed to the public, not where a model is built.',limit:'The text doesn’t say how it applies to weights published for download.'},
+    cacfilings: {name:'Generative AI service filings',locator:'Cyberspace Administration of China, as of June 30, 2025',finding:'439 generative AI services had completed filing with the regulator, and 233 apps or features built on them had registered.',premise:'Public AI services in China pass through a regulator, whatever model they use.',limit:'Filing counts don’t show how strictly content rules are enforced.'},
+    aiplus: {name:'“AI+” action plan',locator:'State Council of China, August 2025',finding:'The plan lists building an open-source ecosystem among its priorities, including communities and projects with international influence.',premise:'Open source is state policy, not only a company choice.',limit:'Shows intent, not that the strategy works.'},
+    haibrief: {name:'“Beyond DeepSeek” policy brief',locator:'Stanford HAI and DigiChina, December 2025',finding:'Chinese open-weight models seem to have caught up with or pulled ahead of others in capability and adoption; how labs will make money from them remains uncertain.',premise:'Chinese open models are widely built on.',limit:'A summary judgment. It doesn’t show influence over standards on its own.'},
+    downloads: {name:'Model download share',locator:'Example packet · attachment unavailable',unavailable:true,finding:'The cited attachment cannot be opened.',premise:'No download figures can be inspected from the available material.',limit:'An unavailable source does not show the claim is false. You can skip assessment or challenge its support.'},
+    ipolosses: {name:'Zhipu and MiniMax IPO filings',locator:'Hong Kong listings, 2026',finding:'Both Chinese model makers reported losses far larger than their revenue before listing.',premise:'Leading Chinese model labs are not yet profitable.',limit:'Both sell more than open weights; the losses reflect heavy spending generally, not open release alone.'},
+    deepseekmargin: {name:'DeepSeek’s inference cost disclosure',locator:'DeepSeek, March 1, 2025',finding:'DeepSeek said its theoretical daily cost-profit ratio for serving V3 and R1 was 545% if every user paid, and that actual revenue is much lower.',premise:'A lab can earn from serving its own open models.',limit:'A hypothetical figure from the company itself.'},
+    caisi: {name:'Evaluation of DeepSeek models',locator:'NIST Center for AI Standards and Innovation, September 30, 2025',finding:'The US evaluation found DeepSeek models trailed US models, were far more vulnerable to agent hijacking and jailbreaks, and repeated misleading CCP narratives about four times as often.',premise:'US agencies treat Chinese models as risky wherever they run.',limit:'A US government evaluation of one lab’s models; it doesn’t measure effects on adoption.'},
+    noadversarial: {name:'“No Adversarial AI Act”',locator:'Introduced in Congress, June 2025',finding:'A bipartisan bill would bar federal agencies from buying or using AI models from China and other adversary countries, kept on a public list.',premise:'Western governments are moving to exclude Chinese models, not just Chinese apps.',limit:'Introduced, not enacted, as of this example.'},
+    plallama: {name:'Military model built on Llama 2',locator:'Reuters, November 2024',finding:'Researchers linked to China’s military built a military-focused model on Meta’s Llama 2, despite a license forbidding military use.',premise:'Once weights are released, rivals can use them however they like.',limit:'An American model used in China, and an older, small one.'},
+    takshashila: {name:'“Why Is China Giving Away Its AI Models?”',locator:'Takshashila Institution, August 2026',finding:'The paper argues consolidation and market saturation could lead Beijing to restrict releases, possibly around late 2028.',premise:'The open strategy may not last.',limit:'A forecast, not evidence of a reversal.'}
   };
   const seedIdeas = [
-    {id:'access',option:'open',score:42,versions:['access','accessBold','accessNarrow']},
-    {id:'study',option:'open',score:31,versions:['study']},
-    {id:'purpose',option:'open',score:12,versions:['purpose']},
-    {id:'weekend',option:'open',score:3,versions:['weekend']},
-    {id:'staffing',option:'keep',score:39,versions:['staffing']},
-    {id:'evenings',option:'keep',score:25,versions:['evenings']},
-    {id:'services',option:'keep',score:8,versions:['services']}
+    {id:'independence',option:'sense',score:44,versions:['independence','independenceBold','independenceNarrow']},
+    {id:'trust',option:'sense',score:39,versions:['trust','trustDomain']},
+    {id:'control',option:'sense',score:30,versions:['control']},
+    {id:'influence',option:'sense',score:16,versions:['influence']},
+    {id:'trustDup',option:'sense',score:3,versions:['trustDup']},
+    {id:'revenue',option:'not',score:41,versions:['revenue','revenueBlunt']},
+    {id:'backlash',option:'not',score:33,versions:['backlash']},
+    {id:'rivals',option:'not',score:25,versions:['rivals']},
+    {id:'reversal',option:'not',score:12,versions:['reversal']}
   ];
   // Example comments. A target is "question", "option:<id>", or "card:<id>"; replies point to their thread's first comment.
   // by:'you' marks your own comments, which you can delete.
   const seedComments = () => [
-    {id:'c-q1',target:'question',by:'jordan_w',at:'2026-11-05T16:10:00Z',text:'Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.'},
-    {id:'c-q2',target:'question',parent:'c-q1',by:'maya.chen',at:'2026-11-05T17:02:00Z',text:'Good catch. The survey only covered the branch, too.'},
-    {id:'c-o1',target:'option:keep',by:'priya_s',at:'2026-11-05T18:30:00Z',text:'Rename this from “Stay closed” so it reads as a choice, not a refusal?',resolved:true},
-    {id:'c-a1',target:'card:access',by:'maya.chen',at:'2026-11-06T09:15:00Z',text:'“Some” is carrying a lot here. Could we say roughly how many?'},
-    {id:'c-a2',target:'card:access',parent:'c-a1',by:'jordan_w',at:'2026-11-06T10:40:00Z',text:'The survey says 18 of 80 respondents. The narrower version in this row uses that number.'},
-    {id:'c-s1',target:'card:staffing',by:'samr_92',at:'2026-11-06T13:05:00Z',text:'Has anyone asked staff whether a voluntary rota swap would cover Sundays?'}
+    {id:'c-q1',target:'question',by:'jordan_w',at:'2026-11-05T16:10:00Z',text:'Do we mean China’s government or its labs? Alibaba and DeepSeek may have different reasons.'},
+    {id:'c-q2',target:'question',parent:'c-q1',by:'maya.chen',at:'2026-11-05T17:02:00Z',text:'Both, I think. The AI+ plan backs open source, but each lab has its own business case.'},
+    {id:'c-o1',target:'option:not',by:'priya_s',at:'2026-11-05T18:30:00Z',text:'Rename this from “Bad idea” so it reads as a position, not a verdict?',resolved:true},
+    {id:'c-a1',target:'card:independence',by:'maya.chen',at:'2026-11-06T09:15:00Z',text:'Chinese labs did build on Llama in 2023. Doesn’t that cut against this?'},
+    {id:'c-a2',target:'card:independence',parent:'c-a1',by:'jordan_w',at:'2026-11-06T10:40:00Z',text:'It’s why the narrow version in this row mentions it. The point is they didn’t want to stay dependent.'},
+    {id:'c-s1',target:'card:backlash',by:'samr_92',at:'2026-11-06T13:05:00Z',text:'Does the federal bill cover self-hosted weights, or only services run from China?'}
   ];
   const seedDoc = () => structuredClone({
-    question:{text:'Should our library open on Sundays?',author:'kieran_lamee',posted:'2026-11-05',org:'pod6',visibility:'org',accessRole:'contribute',contribute:'viewers',vote:'viewers',
+    question:{text:'Is open-weight AI a smart bet for China?',author:'kieran_lamee',posted:'2026-11-05',org:'pod6',visibility:'org',accessRole:'contribute',contribute:'viewers',vote:'viewers',
       people:[{user:'maya.chen',role:'contribute'},{user:'jordan_w',role:'contribute'},{user:'priya_s',role:'vote'},{user:'samr_92',role:'view'}]},
-    options:[{id:'open',name:'Open on Sundays'},{id:'keep',name:'Keep current hours'}],
+    options:[{id:'sense',name:'Why it makes sense'},{id:'not',name:'Why it might not'}],
     ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1,
     // A contributor's suggestion that two arguments make the same point. The owner or the version's author decides.
-    suggestions:[{id:'sg1',card:'weekend',into:'access',by:'jordan_w',at:'2026-11-09T09:10:00Z'}]
+    suggestions:[{id:'sg1',card:'trustDup',into:'trust',by:'jordan_w',at:'2026-11-09T09:10:00Z'}]
   });
 
   // ── Spaces and the list of steelmen ──
@@ -841,7 +858,7 @@
     return d;
   }
   const seedDocs = () => ({
-    library:seedDoc(),
+    openweights:seedDoc(),
     capstone:sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
       ['Allow it, with disclosure',[['Disclosure keeps grading honest while letting teams build the way they will at work.',34,6,2],['A ban is hard to enforce; disclosure at least makes AI use visible.',22,3,3]]],
       ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]}),
@@ -865,7 +882,7 @@
   // List-only details that a single board doesn't hold: recent activity, who has it open, and earlier comments.
   // Comments here are added to the board's own count. A board's score is computed from its own votes (see boardInfo).
   const FEED = {
-    library:{at:'2026-11-09T09:40:00Z',did:'Jordan suggested combining two arguments',here:['maya.chen','jordan_w'],people:7,comments:0},
+    openweights:{at:'2026-11-09T09:40:00Z',did:'Jordan suggested combining two arguments',here:['maya.chen','jordan_w'],people:7,comments:0},
     capstone:{at:'2026-11-09T08:05:00Z',did:'Sam added an argument',here:['samr_92'],people:5,comments:4},
     standups:{at:'2026-11-06T15:20:00Z',did:'Priya added an option',here:[],people:6,comments:9},
     bikelane:{at:'2026-11-09T07:12:00Z',did:'23 people voted on importance',here:['dev_oka17','ana.lu','rtorres'],more:11,people:58,comments:141},
@@ -899,9 +916,9 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'library',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
   let state = freshState();
-  useDoc(docs.library);
+  useDoc(docs.openweights);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
   function restore(raw) {
     const data = raw?.privateContent;
@@ -923,9 +940,9 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Older saves held only the library board.
-    if (saved.docsVersion===3 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
-    state.boardId = docs[saved.boardId] ? saved.boardId : 'library';
+    // Every board, and where you were in the list. Saves from before the open-weights example (docsVersion 3) are dropped.
+    if (saved.docsVersion===4 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
@@ -943,7 +960,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:3,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,docs,docsVersion:4,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -953,7 +970,7 @@
   // (A stable sort, so ties keep their saved order.)
   const byVotes = (list,votes) => [...list].sort((a,b)=>votes(b)-votes(a));
   // The shared importance score (the example's "Simulate a reorder" adds 20 to two rows).
-  const sharedImportance = idea => idea.score+(state.updated&&['study','evenings'].includes(idea.id)?20:0);
+  const sharedImportance = idea => idea.score+(state.updated&&['control','rivals'].includes(idea.id)?20:0);
   const ordered = idea => byVotes(idea.versions,id=>cards[id].pref);
   const rowsOf = option => byVotes(ideas.filter(i=>i.option===option),sharedImportance);
   // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
@@ -1366,7 +1383,7 @@
   // Evidence. A source is shared: several versions can cite it. Whoever added a source can edit it or remove it
   // from a version; anyone can report that it can't be opened.
   const SOURCE_FIELDS = [
-    ['name','Source','e.g. Library visitor counts, 2025',true,120],
+    ['name','Source','e.g. A model card, a law, or a paper',true,120],
     ['locator','Where to find it','Link, page, or section',false,200],
     ['finding','What it shows','The specific finding, in plain words',true,500],
     ['premise','What it backs up','The part of this argument it backs up',false,300],
@@ -1587,7 +1604,8 @@
       else markup+=path(`M${qx} ${qy}V${qy+24}H${hx}V${hy}`);
       markup+=port(hx,hy);
       // Each idea connects at its leading (best-articulated) card, folded or unfolded.
-      const rows=[...column.querySelectorAll('[data-node]')].map(node=>rect(node.querySelector('.sm-card')));
+      // An unfolded row can be scrolled sideways, leaving its first card off to the left; the wire stops at the row's edge.
+      const rows=[...column.querySelectorAll('[data-node]')].map(node=>{const c=rect(node.querySelector('.sm-card')),wrap=node.querySelector('.sm-card-wrap');return wrap?{...c,x:Math.max(c.x,rect(wrap).x)}:c;});
       const spine=head.x+12;
       if(rows.length) markup+=path(line(spine,head.y+head.h,spine,Math.max(...rows.map(r=>r.y+16))));
       rows.forEach(card=>{markup+=path(line(spine,card.y+16,card.x,card.y+16))+port(card.x,card.y+16);});
