@@ -2162,6 +2162,34 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-history p { margin:0; }
   #steelman-study .sm-history time { display:block; font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-history-reason { display:inline-block; padding:0 6px; border:1px solid var(--sm-line); border-radius:4px; font-size:11px; color:var(--sm-muted); }
+  /* Decision: inside the dark question box, under a hairline. */
+  #steelman-study .sm-decision { display:grid; gap:10px; margin-top:18px; padding-top:16px; border-top:1px solid #ffffff33; color:#fff; }
+  #steelman-study .sm-decision h2 { display:flex; align-items:center; gap:6px; margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffa6; }
+  #steelman-study .sm-decision h2 svg { width:14px; height:14px; }
+  #steelman-study .sm-decision-choice { margin:0; font:700 22px/1.2 var(--sm-serif); }
+  #steelman-study .sm-decision-why { margin:0; max-width:62ch; font-size:14px; line-height:1.55; color:#ffffffd9; }
+  #steelman-study .sm-decision-args, #steelman-study .sm-decision-picks { display:grid; gap:6px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-decision-arg { display:flex; align-items:baseline; gap:8px; width:100%; padding:6px 10px; border:1px solid #ffffff33; border-radius:6px; background:transparent; color:#ffffffd9; font:400 13px/1.45 var(--sm-sans); text-align:left; }
+  #steelman-study .sm-decision-arg:hover { border-color:#ffffff8c; color:#fff; }
+  #steelman-study .sm-decision-arg span { flex:none; font:600 10px/1.6 var(--sm-sans); letter-spacing:.08em; text-transform:uppercase; color:#ffffff8c; }
+  #steelman-study .sm-decision-arg svg { flex:none; width:13px; height:13px; align-self:center; }
+  #steelman-study .sm-decision-arg[aria-pressed=&quot;true&quot;] { border-color:#fff; color:#fff; }
+  #steelman-study .sm-decision-by { margin:0; font-size:12px; color:#ffffffa6; }
+  #steelman-study .sm-decision .sm-link-button { color:#fff; font-size:12px; text-decoration:underline; }
+  #steelman-study .sm-decision-options { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-decision-option { padding:6px 12px; border:1px solid #ffffff59; border-radius:6px; background:transparent; color:#fff; font:600 14px/1.2 var(--sm-serif); }
+  #steelman-study .sm-decision-option[aria-checked=&quot;true&quot;] { background:#fff; color:var(--sm-ink); border-color:#fff; }
+  #steelman-study .sm-decision textarea { width:100%; padding:8px 10px; border:1px solid #ffffff59; border-radius:6px; background:#ffffff14; color:#fff; font:400 14px/1.5 var(--sm-sans); resize:vertical; }
+  #steelman-study .sm-decision textarea::placeholder { color:#ffffff8c; }
+  #steelman-study .sm-decision-label { margin:4px 0 0; font-size:12px; color:#ffffffa6; }
+  #steelman-study .sm-decision-actions { display:flex; justify-content:flex-end; align-items:center; gap:12px; }
+  #steelman-study .sm-decision .sm-solid { background:#fff; color:var(--sm-ink); border-color:#fff; }
+  #steelman-study .sm-decision .sm-solid[aria-disabled=&quot;true&quot;] { opacity:.45; }
+  #steelman-study .sm-post-closed { display:inline-flex; align-items:center; gap:4px; margin-left:4px; padding:1px 7px; border:1px solid var(--sm-line); border-radius:999px; font-size:11px; color:var(--sm-ink); }
+  #steelman-study .sm-post-closed svg { width:11px; height:11px; }
+  #steelman-study .sm-weighed { flex-direction:row; align-items:center; gap:8px; }
+  #steelman-study .sm-weighed small { display:inline; }
+  #steelman-study .sm-not-yet { color:var(--sm-quiet); }
   #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
@@ -2839,7 +2867,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   ];
   const seedDoc = () =&gt; structuredClone({
     question:{text:&#x27;Is open-weight AI a smart bet for China?&#x27;,author:&#x27;kieran_lamee&#x27;,posted:&#x27;2026-11-05&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,accessRole:&#x27;contribute&#x27;,contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;,
-      people:[{user:&#x27;maya.chen&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;jordan_w&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;priya_s&#x27;,role:&#x27;vote&#x27;},{user:&#x27;samr_92&#x27;,role:&#x27;view&#x27;}]},
+      people:[{user:&#x27;maya.chen&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;jordan_w&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;priya_s&#x27;,role:&#x27;vote&#x27;},{user:&#x27;samr_92&#x27;,role:&#x27;view&#x27;}],voted:[&#x27;samr_92&#x27;,&#x27;dev_oka17&#x27;]},
     options:[{id:&#x27;sense&#x27;,name:&#x27;Why it makes sense&#x27;},{id:&#x27;not&#x27;,name:&#x27;Why it might not&#x27;}],
     ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1,
     // A contributor&#x27;s suggestion that two arguments make the same point. The owner or the version&#x27;s author decides.
@@ -2867,6 +2895,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   const aiAllowed = (spaceId,feature) =&gt; (SPACE_AI[spaceId]?.allow||[]).includes(feature);
   function defaultRules(spaceId) { const m=MODES[spaceOf(spaceId).kind===&#x27;public&#x27;?&#x27;public&#x27;:&#x27;team&#x27;]; return {publish:m.publish,structure:m.structure,editors:[],judgments:{importance:true,articulation:true,evidence:true},ai:{draft:false,check:aiAllowed(spaceId,&#x27;check&#x27;),dupes:false},closes:&#x27;&#x27;}; }
   const modeOf = r =&gt; Object.keys(MODES).find(k=&gt;MODES[k].publish===r.publish&amp;&amp;MODES[k].structure===r.structure)||&#x27;custom&#x27;;
+  const TODAY = &#x27;2026-11-09&#x27;;
+  function closedOf(d) { const q=d.question; return q.closed||(q.rules?.closes&amp;&amp;q.rules.closes&lt;=TODAY?{at:q.rules.closes+&#x27;T00:00:00Z&#x27;,by:&#x27;date&#x27;}:null); }
   const shortDate = iso =&gt; new Date(iso+&#x27;T12:00:00Z&#x27;).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
   // People you could invite, by space. Anyone else can be invited by email.
   const PEOPLE = {
@@ -2884,7 +2914,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     &#x27;comment-add&#x27;:&#x27;view&#x27;,reply:&#x27;view&#x27;,&#x27;reply-add&#x27;:&#x27;view&#x27;,resolve:&#x27;view&#x27;,&#x27;delete-comment&#x27;:&#x27;view&#x27;,&#x27;report-source&#x27;:&#x27;view&#x27;,&#x27;unreport-source&#x27;:&#x27;view&#x27;,share:&#x27;view&#x27;,&#x27;open-share&#x27;:&#x27;view&#x27;,&#x27;create-open&#x27;:&#x27;view&#x27;,join:&#x27;view&#x27;,&#x27;request-access&#x27;:&#x27;view&#x27;,
     importance:&#x27;vote&#x27;,preference:&#x27;vote&#x27;,assess:&#x27;vote&#x27;,
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
-    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;report-open&#x27;:&#x27;view&#x27;,&#x27;report-card&#x27;:&#x27;view&#x27;,&#x27;report-withdraw&#x27;:&#x27;view&#x27;,&#x27;hide-open&#x27;:&#x27;edit&#x27;,&#x27;hide-card&#x27;:&#x27;edit&#x27;,&#x27;restore-card&#x27;:&#x27;edit&#x27;,&#x27;reports-dismiss&#x27;:&#x27;edit&#x27;,&#x27;comment-report-open&#x27;:&#x27;view&#x27;,&#x27;comment-report&#x27;:&#x27;view&#x27;,&#x27;comment-report-withdraw&#x27;:&#x27;view&#x27;,&#x27;comment-hide-open&#x27;:&#x27;edit&#x27;,&#x27;comment-hide&#x27;:&#x27;edit&#x27;,&#x27;comment-restore&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
+    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;decision-option&#x27;:&#x27;owner&#x27;,&#x27;decision-arg&#x27;:&#x27;owner&#x27;,&#x27;decision-edit&#x27;:&#x27;owner&#x27;,&#x27;decision-cancel&#x27;:&#x27;owner&#x27;,&#x27;decision-save&#x27;:&#x27;owner&#x27;,&#x27;report-open&#x27;:&#x27;view&#x27;,&#x27;report-card&#x27;:&#x27;view&#x27;,&#x27;report-withdraw&#x27;:&#x27;view&#x27;,&#x27;hide-open&#x27;:&#x27;edit&#x27;,&#x27;hide-card&#x27;:&#x27;edit&#x27;,&#x27;restore-card&#x27;:&#x27;edit&#x27;,&#x27;reports-dismiss&#x27;:&#x27;edit&#x27;,&#x27;comment-report-open&#x27;:&#x27;view&#x27;,&#x27;comment-report&#x27;:&#x27;view&#x27;,&#x27;comment-report-withdraw&#x27;:&#x27;view&#x27;,&#x27;comment-hide-open&#x27;:&#x27;edit&#x27;,&#x27;comment-hide&#x27;:&#x27;edit&#x27;,&#x27;comment-restore&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
     settings:&#x27;owner&#x27;};
   const WHY = {view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
   const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
@@ -2908,6 +2938,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       {id:&#x27;p2&#x27;,kind:&#x27;version&#x27;,idea:&#x27;capstone-0-0&#x27;,claim:&#x27;Disclosure shows graders how each team used AI, without banning tools students will use at work.&#x27;,reason:&#x27;Shorter, and says what graders get.&#x27;,by:&#x27;omar_h&#x27;,at:&#x27;2026-11-09T10:15:00Z&#x27;}];
     return d;
   }
+  // The standups example is closed: priya_s recorded the decision, citing an argument from each side.
+  function decidedExample(d) {
+    d.question.closed={at:&#x27;2026-11-07T17:00:00Z&#x27;,by:&#x27;priya_s&#x27;,decision:{option:&#x27;standups-o0&#x27;,why:&#x27;Async frees a fixed slot across four time zones. We keep one live call a week for blockers people don’t write down.&#x27;,cards:[&#x27;standups-0-0v&#x27;,&#x27;standups-1-0v&#x27;],by:&#x27;priya_s&#x27;,at:&#x27;2026-11-07T17:00:00Z&#x27;}};
+    d.log=[{at:&#x27;2026-11-07T17:00:00Z&#x27;,by:&#x27;priya_s&#x27;,did:&#x27;decided&#x27;,ref:&#x27;Go async&#x27;,reason:&#x27;&#x27;},{at:&#x27;2026-11-07T16:55:00Z&#x27;,by:&#x27;priya_s&#x27;,did:&#x27;closed&#x27;,ref:&#x27;&#x27;,reason:&#x27;&#x27;}];
+    return d;
+  }
   // The bike-lane example is a public community board: you and rtorres moderate; one argument is reported, one removed.
   function moderatedExample(d) {
     d.question.rules=defaultRules(&#x27;brooklyn&#x27;);
@@ -2925,10 +2961,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     capstone:editedExample(sketchDoc(&#x27;capstone&#x27;,{q:&#x27;Should capstone teams be allowed to ship AI-written code?&#x27;,author:&#x27;maya.chen&#x27;,posted:&#x27;2026-11-08&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Allow it, with disclosure&#x27;,[[&#x27;Disclosure keeps grading honest while letting teams build the way they will at work.&#x27;,34,6,2],[&#x27;A ban is hard to enforce; disclosure at least makes AI use visible.&#x27;,22,3,3]]],
       [&#x27;Require hand-written code&#x27;,[[&#x27;Students can’t defend design trade-offs in code they didn’t write.&#x27;,29,4,1]]]]})),
-    standups:sketchDoc(&#x27;standups&#x27;,{q:&#x27;Should we replace daily standups with written updates?&#x27;,author:&#x27;priya_s&#x27;,posted:&#x27;2026-11-03&#x27;,org:&#x27;northwind&#x27;,visibility:&#x27;org&#x27;,options:[
+    standups:decidedExample(sketchDoc(&#x27;standups&#x27;,{q:&#x27;Should we replace daily standups with written updates?&#x27;,author:&#x27;priya_s&#x27;,posted:&#x27;2026-11-03&#x27;,org:&#x27;northwind&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Go async&#x27;,[[&#x27;Written updates free a fixed meeting slot for a team spread over four time zones.&#x27;,18,5,0],[&#x27;A written log shows who was blocked, days later.&#x27;,11,1,1]]],
       [&#x27;Keep live standups&#x27;,[[&#x27;Live standups surface blockers people don’t think to write down.&#x27;,15,2,2],[&#x27;New hires pick up team norms faster by hearing them daily.&#x27;,6]]],
-      [&#x27;Two live days, three written&#x27;,[]]]}),
+      [&#x27;Two live days, three written&#x27;,[]]]})),
     bikelane:moderatedExample(sketchDoc(&#x27;bikelane&#x27;,{q:&#x27;Should 7th Avenue get a protected bike lane?&#x27;,author:&#x27;dev_oka17&#x27;,posted:&#x27;2026-10-29&#x27;,org:&#x27;brooklyn&#x27;,visibility:&#x27;link&#x27;,options:[
       [&#x27;Build the protected lane&#x27;,[[&#x27;Protected lanes cut injuries on comparable avenues.&#x27;,61,22,6],[&#x27;A continuous lane connects the two park entrances.&#x27;,33,9,2],[&#x27;Delivery loading zones can be kept on side streets.&#x27;,18,3,7]]],
       [&#x27;Keep parking, paint a lane&#x27;,[[&#x27;Shops on the avenue depend on short-stay parking.&#x27;,47,8,9]]]]})),
@@ -3004,8 +3040,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       for (const key of [&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=&gt;[renamed(k),v]));
       if (typeof saved.expanded===&#x27;string&#x27;) saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 10) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===10 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 11) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===11 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : &#x27;openweights&#x27;;
     state.view = saved.view===&#x27;board&#x27; ? &#x27;board&#x27; : &#x27;home&#x27;;
     if (saved.space===&#x27;all&#x27;||SPACES.some(s=&gt;s.id===saved.space)) state.space=saved.space;
@@ -3025,7 +3061,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,docs,docsVersion:10,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:11,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -3081,9 +3117,12 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Your access through Share. &quot;Preview as&quot; in the top bar (a prototype tool) can stand in for it, so testers can try each role.
   function realRole() { const q=doc.question; if(q.author===ME) return &#x27;owner&#x27;; return q.people.find(p=&gt;p.user===ME)?.role||(q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole); }
   function myRole() { return state.persona===&#x27;you&#x27;?realRole():state.persona; }
-  const can = level =&gt; level===&#x27;structure&#x27;?canStructure():RANK[myRole()]&gt;=RANK[level];
+  // A closed board is read-only: no votes, writing, reviewing, or reorganizing. Comments stay open.
+  const closedNow = () =&gt; !!closedOf(doc);
+  const LOCKED = new Set([&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;,&#x27;structure&#x27;]);
+  const can = level =&gt; closedNow()&amp;&amp;LOCKED.has(level)?false:level===&#x27;structure&#x27;?canStructure():RANK[myRole()]&gt;=RANK[level];
   // The board&#x27;s rules say who changes its structure: anyone who can write, its editors, or only the owner.
-  function canStructure() { const r=doc.question.rules; if(myRole()===&#x27;owner&#x27;) return true; return r.structure===&#x27;writers&#x27;?can(&#x27;contribute&#x27;):r.structure===&#x27;editors&#x27;?can(&#x27;edit&#x27;):false; }
+  function canStructure() { const r=doc.question.rules; if(closedNow()) return false; if(myRole()===&#x27;owner&#x27;) return true; return r.structure===&#x27;writers&#x27;?can(&#x27;contribute&#x27;):r.structure===&#x27;editors&#x27;?can(&#x27;edit&#x27;):false; }
   // Under &quot;Editors review first&quot;, what anyone below editor adds waits for an editor.
   const held = () =&gt; doc.question.rules.publish===&#x27;review&#x27;&amp;&amp;!can(&#x27;edit&#x27;);
   const canMove = id =&gt; can(&#x27;contribute&#x27;)&amp;&amp;(canStructure()||cards[id]?.by===&#x27;you&#x27;);
@@ -3323,8 +3362,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   const reasonMenu = id =&gt; `&lt;p class=&quot;sm-menu-note&quot;&gt;${state.menuView===&#x27;report&#x27;?&#x27;Report it as&#x27;:&#x27;Hide it as&#x27;}&lt;/p&gt;`+Object.entries(REASONS).map(([k,l])=&gt;modItem(state.menuView===&#x27;report&#x27;?&#x27;report-card&#x27;:&#x27;hide-card&#x27;,id,{spam:&#x27;ban&#x27;,abuse:&#x27;shield-alert&#x27;,offtopic:&#x27;move-right&#x27;,other:&#x27;circle-help&#x27;}[k],l,k)).join(&#x27;&#x27;);
   function historyMarkup() {
-    const verbs={hid:&#x27;hid&#x27;,restored:&#x27;restored&#x27;,dismissed:&#x27;dismissed reports on&#x27;,accepted:&#x27;accepted&#x27;,declined:&#x27;declined&#x27;,deleted:&#x27;deleted&#x27;};
-    return doc.log.length?`&lt;ol class=&quot;sm-history&quot;&gt;${doc.log.map(e=&gt;`&lt;li&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(e.by===&#x27;you&#x27;?ME:e.by))}&lt;/span&gt;&lt;p&gt;&lt;strong&gt;${e.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(e.by)}&lt;/strong&gt; ${verbs[e.did]||e.did} “${escape(e.ref)}”${e.reason?` &lt;span class=&quot;sm-history-reason&quot;&gt;${escape(REASONS[e.reason]||e.reason)}&lt;/span&gt;`:&#x27;&#x27;}&lt;time datetime=&quot;${e.at}&quot; title=&quot;${fullDate(e.at)}&quot;&gt;${ago(e.at)}&lt;/time&gt;&lt;/p&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;Nothing yet.&lt;/p&gt;&#x27;;
+    const verbs={closed:&#x27;closed the board&#x27;,reopened:&#x27;reopened the board&#x27;,decided:&#x27;recorded the decision:&#x27;,hid:&#x27;hid&#x27;,restored:&#x27;restored&#x27;,dismissed:&#x27;dismissed reports on&#x27;,accepted:&#x27;accepted&#x27;,declined:&#x27;declined&#x27;,deleted:&#x27;deleted&#x27;};
+    return doc.log.length?`&lt;ol class=&quot;sm-history&quot;&gt;${doc.log.map(e=&gt;`&lt;li&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(e.by===&#x27;you&#x27;?ME:e.by))}&lt;/span&gt;&lt;p&gt;&lt;strong&gt;${e.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(e.by)}&lt;/strong&gt; ${verbs[e.did]||e.did}${[&#x27;closed&#x27;,&#x27;reopened&#x27;].includes(e.did)?&#x27;&#x27;:` “${escape(e.ref)}”`}${e.reason?` &lt;span class=&quot;sm-history-reason&quot;&gt;${escape(REASONS[e.reason]||e.reason)}&lt;/span&gt;`:&#x27;&#x27;}&lt;time datetime=&quot;${e.at}&quot; title=&quot;${fullDate(e.at)}&quot;&gt;${ago(e.at)}&lt;/time&gt;&lt;/p&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;Nothing yet.&lt;/p&gt;&#x27;;
   }
   const heldId = () =&gt; { let id; do id=&#x27;p&#x27;+(doc.nextId++); while(doc.pending.some(x=&gt;x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
@@ -3461,12 +3500,30 @@ html&gt;body{padding:0}&lt;/style&gt;
       +`&lt;li class=&quot;sm-meta-date&quot;&gt;${icon(&#x27;calendar&#x27;)}&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;&lt;/li&gt;`
       +`&lt;li class=&quot;sm-meta-vis&quot;&gt;&lt;span class=&quot;sm-meta-pill&quot; title=&quot;Who can see it&quot;&gt;${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}&lt;/span&gt;&lt;/li&gt;`
       +`&lt;li class=&quot;sm-meta-rules&quot;&gt;${rulesChip()}&lt;/li&gt;`
-      +`&lt;li class=&quot;sm-meta-access&quot;&gt;${escape(YOU_CAN[myRole()])}${accessAsk()}&lt;/li&gt;&lt;/ul&gt;`
+      +`&lt;li class=&quot;sm-meta-access&quot;&gt;${closedNow()?&#x27;Closed: read only.&#x27;:escape(YOU_CAN[myRole()])+accessAsk()}&lt;/li&gt;&lt;/ul&gt;`
+      +decisionMarkup()
       +`&lt;div class=&quot;sm-head-tools&quot;&gt;${commentButton(&#x27;question&#x27;,&#x27;sm-head-button&#x27;,&#x27;question&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;history&quot; data-key=&quot;history&quot; aria-label=&quot;History&quot; aria-expanded=&quot;${state.drawer===&#x27;history&#x27;}&quot; aria-controls=&quot;sm-drawer-body&quot; data-tooltip=&quot;History&quot;&gt;${icon(&#x27;history&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;settings&quot; data-key=&quot;settings&quot; aria-label=&quot;Document settings&quot; aria-expanded=&quot;${settingsOpen}&quot; aria-controls=&quot;sm-drawer-body&quot; data-tooltip=&quot;Settings&quot;&gt;${icon(&#x27;settings&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   function rulesChip() {
-    const q=doc.question,r=q.rules,m=modeOf(r),inner=icon(m===&#x27;custom&#x27;?&#x27;sliders-horizontal&#x27;:MODES[m].glyph)+escape(rulesLabel(r))+(r.closes?` · Closes ${shortDate(r.closes)}`:&#x27;&#x27;);
+    const q=doc.question,r=q.rules,m=modeOf(r),c=closedOf(doc),inner=c?icon(&#x27;lock&#x27;)+`Closed ${shortDate(c.at.slice(0,10))}`:icon(m===&#x27;custom&#x27;?&#x27;sliders-horizontal&#x27;:MODES[m].glyph)+escape(rulesLabel(r))+(r.closes?` · Closes ${shortDate(r.closes)}`:&#x27;&#x27;);
     return myRole()===&#x27;owner&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-meta-pill sm-rules-chip cursor-interaction&quot; data-action=&quot;settings&quot; data-key=&quot;rules-chip&quot; aria-label=&quot;How it runs: ${escape(rulesLabel(r))}. Change in Settings&quot;&gt;${inner}&lt;/button&gt;`:`&lt;span class=&quot;sm-meta-pill&quot;&gt;${inner}&lt;/span&gt;`;
+  }
+  // The decision: the option chosen, why, and the arguments that mattered (from any side). The owner records it.
+  function decisionMarkup() {
+    const c=closedOf(doc); if(!c) return &#x27;&#x27;;
+    const q=doc.question,dec=q.closed?.decision,owner=myRole()===&#x27;owner&#x27;;
+    if(dec&amp;&amp;!state.decisionEditing) {
+      const args=(dec.cards||[]).filter(id=&gt;cards[id]&amp;&amp;!cards[id].hidden).map(id=&gt;`&lt;li&gt;&lt;button type=&quot;button&quot; class=&quot;sm-decision-arg cursor-interaction&quot; data-action=&quot;decision-show&quot; data-id=&quot;${id}&quot; data-key=&quot;decision-arg-${id}&quot;&gt;&lt;span&gt;${escape(optionName(ideaOf(cards[id].idea).option))}&lt;/span&gt;${escape(cards[id].claim)}&lt;/button&gt;&lt;/li&gt;`).join(&#x27;&#x27;);
+      return `&lt;section class=&quot;sm-decision&quot; aria-label=&quot;Decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;&lt;p class=&quot;sm-decision-choice&quot;&gt;${escape(optionName(dec.option))}&lt;/p&gt;${dec.why?`&lt;p class=&quot;sm-decision-why&quot;&gt;${escape(dec.why)}&lt;/p&gt;`:&#x27;&#x27;}${args?`&lt;ul class=&quot;sm-decision-args&quot;&gt;${args}&lt;/ul&gt;`:&#x27;&#x27;}&lt;p class=&quot;sm-decision-by&quot;&gt;${dec.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(dec.by)} · ${shortDate(dec.at.slice(0,10))}${owner?` · &lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;decision-edit&quot; data-key=&quot;decision-edit&quot;&gt;Edit&lt;/button&gt;`:&#x27;&#x27;}&lt;/p&gt;&lt;/section&gt;`;
+    }
+    if(!owner) return `&lt;section class=&quot;sm-decision&quot; aria-label=&quot;Decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;&lt;p class=&quot;sm-decision-why&quot;&gt;Not recorded yet.&lt;/p&gt;&lt;/section&gt;`;
+    const d=state.decisionDraft||{option:&#x27;&#x27;,why:&#x27;&#x27;,cards:[]};
+    const leads=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(i=&gt;!cards[ordered(i)[0]].hidden).slice(0,3).map(i=&gt;ordered(i)[0]));
+    return `&lt;section class=&quot;sm-decision sm-decision-form&quot; aria-label=&quot;Record the decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;`
+      +`&lt;div class=&quot;sm-decision-options&quot; role=&quot;radiogroup&quot; aria-label=&quot;Chosen option&quot;&gt;${doc.options.map(o=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-decision-option cursor-interaction&quot; data-action=&quot;decision-option&quot; data-id=&quot;${o.id}&quot; data-key=&quot;decision-option-${o.id}&quot; aria-checked=&quot;${d.option===o.id}&quot;&gt;${escape(o.name)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
+      +`&lt;textarea id=&quot;sm-decision-why&quot; data-key=&quot;decision-why&quot; rows=&quot;2&quot; maxlength=&quot;400&quot; placeholder=&quot;Why&quot; aria-label=&quot;Why this option&quot;&gt;${escape(d.why)}&lt;/textarea&gt;`
+      +`&lt;p class=&quot;sm-decision-label&quot;&gt;Arguments that mattered&lt;/p&gt;&lt;ul class=&quot;sm-decision-picks&quot;&gt;${leads.map(id=&gt;`&lt;li&gt;&lt;button type=&quot;button&quot; class=&quot;sm-decision-arg cursor-interaction&quot; data-action=&quot;decision-arg&quot; data-id=&quot;${id}&quot; data-key=&quot;decision-pick-${id}&quot; aria-pressed=&quot;${d.cards.includes(id)}&quot;&gt;${icon(d.cards.includes(id)?&#x27;check&#x27;:&#x27;plus&#x27;)}&lt;span&gt;${escape(optionName(ideaOf(cards[id].idea).option))}&lt;/span&gt;${escape(short(id))}&lt;/button&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ul&gt;`
+      +`&lt;div class=&quot;sm-decision-actions&quot;&gt;${state.decisionEditing?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;decision-cancel&quot; data-key=&quot;decision-cancel&quot;&gt;Cancel&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;decision-save&quot; data-key=&quot;decision-save&quot; ${d.option?&#x27;&#x27;:&#x27;aria-disabled=&quot;true&quot;&#x27;}&gt;Record decision&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;`;
   }
   // Below &quot;can contribute&quot;, offer the next step: sign in, or ask the owner for more access.
   function accessAsk() {
@@ -3497,13 +3554,22 @@ html&gt;body{padding:0}&lt;/style&gt;
       +group(&#x27;Mode&#x27;,modes+row(&#x27;New arguments&#x27;,sel(&#x27;publish&#x27;,{now:&#x27;Publish right away&#x27;,review:&#x27;Editors review first&#x27;}))+row(&#x27;Reorganizing&#x27;,sel(&#x27;structure&#x27;,{writers:&#x27;Anyone who can write&#x27;,editors:&#x27;Editors&#x27;,owner:&#x27;Only the owner&#x27;}))+editors)
       +group(&#x27;Votes&#x27;,votes)
       +group(&#x27;AI&#x27;,ai,`${left} credits`)
-      +group(&#x27;Timing&#x27;,row(&#x27;Closes&#x27;,closes))
+      +group(&#x27;Timing&#x27;,row(&#x27;Closes&#x27;,closes)+(scope===&#x27;board&#x27;?row(closedNow()?`Closed ${shortDate(closedOf(doc).at.slice(0,10))}`:&#x27;Open&#x27;,`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;${closedNow()?&#x27;rule-reopen&#x27;:&#x27;rule-close&#x27;}&quot; data-key=&quot;${k}-${closedNow()?&#x27;reopen&#x27;:&#x27;close&#x27;}&quot;&gt;${closedNow()?&#x27;Reopen&#x27;:&#x27;Close now&#x27;}&lt;/button&gt;`):&#x27;&#x27;))
       +`&lt;/div&gt;`;
   }
   function rulesLabel(r) { const m=modeOf(r); return m===&#x27;custom&#x27;?&#x27;Custom rules&#x27;:MODES[m].label; }
   function rulesSummary(r,spaceId) {
     const ai=Object.keys(AI_FEATURES).filter(f=&gt;r.ai[f]&amp;&amp;aiAllowed(spaceId,f)).map(f=&gt;({draft:&#x27;drafts&#x27;,check:&#x27;checks&#x27;,dupes:&#x27;duplicates&#x27;})[f]);
     return [rulesLabel(r),ai.length?`AI ${ai.join(&#x27;, &#x27;)}`:&#x27;&#x27;,r.closes?`Closes ${shortDate(r.closes)}`:&#x27;&#x27;].filter(Boolean).join(&#x27; · &#x27;);
+  }
+  // Who has taken part: wrote (a version), voted, or not yet. Simulated from authors and a sample of voters.
+  function weighedInMarkup() {
+    const q=doc.question,authors=new Set(Object.values(cards).map(c=&gt;c.by===&#x27;you&#x27;?ME:c.by).filter(Boolean));
+    const votedYou=[state.importance,state.preference,state.assessments].some(m=&gt;Object.keys(m).length);
+    const people=[...new Set([q.author,...q.people.map(p=&gt;p.user),...(PEOPLE[q.org]||[]),ME])].filter(u=&gt;!u.includes(&#x27;@&#x27;));
+    const status=u=&gt;authors.has(u)?&#x27;Wrote&#x27;:(q.voted||[]).includes(u)||(u===ME&amp;&amp;votedYou)?&#x27;Voted&#x27;:&#x27;&#x27;;
+    const n=people.filter(status).length;
+    return `&lt;section class=&quot;sm-drawer-section sm-rgroup&quot; aria-label=&quot;Who’s weighed in&quot;&gt;&lt;h3&gt;Who’s weighed in&lt;span&gt;${n} of ${people.length}&lt;/span&gt;&lt;/h3&gt;${people.map(u=&gt;`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label sm-weighed&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;${escape(u)}${u===ME?&#x27; &lt;small&gt;(you)&lt;/small&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-rrow-control ${status(u)?&#x27;&#x27;:&#x27;sm-not-yet&#x27;}&quot;&gt;${status(u)||&#x27;Not yet&#x27;}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}&lt;/section&gt;`;
   }
   // Which rules the board applies, in one place: what&#x27;s hidden, and the target the controls change.
   function rulesTarget() { return state.view===&#x27;home&#x27;&amp;&amp;state.creating?{r:state.createDraft.rules,space:state.createDraft.space,create:true}:{r:doc.question.rules,space:doc.question.org,create:false}; }
@@ -3517,6 +3583,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       else {const people=doc.question.people,x=people.find(y=&gt;y.user===id);if(!x)people.push({user:id,role:&#x27;edit&#x27;});else x.role=x.role===&#x27;edit&#x27;?&#x27;contribute&#x27;:&#x27;edit&#x27;;}
     }
     if(action===&#x27;rule-set&#x27;) r[id]=value;
+    if(action===&#x27;rule-close&#x27;) {doc.question.closed={at:new Date(NOW).toISOString(),by:&#x27;you&#x27;};logEvent(&#x27;closed&#x27;,doc.question.text);key=key.replace(&#x27;-close&#x27;,&#x27;-reopen&#x27;);}
+    if(action===&#x27;rule-reopen&#x27;) {delete doc.question.closed;if(r.closes&amp;&amp;r.closes&lt;=TODAY)r.closes=&#x27;&#x27;;logEvent(&#x27;reopened&#x27;,doc.question.text);key=key.replace(&#x27;-reopen&#x27;,&#x27;-close&#x27;);}
     if(action===&#x27;rule-closes&#x27;) {r.closes=id===&#x27;add&#x27;?&#x27;2026-11-16&#x27;:&#x27;&#x27;;key=id===&#x27;add&#x27;?key.replace(&#x27;-add&#x27;,&#x27;&#x27;):key.replace(&#x27;-clear&#x27;,&#x27;-add&#x27;);}
     if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
     save();
@@ -3538,6 +3606,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;div class=&quot;sm-field&quot;&gt;&lt;label for=&quot;sm-question&quot;&gt;Question&lt;/label&gt;&lt;textarea id=&quot;sm-question&quot; data-key=&quot;q-text&quot; maxlength=&quot;200&quot; rows=&quot;2&quot; aria-describedby=&quot;sm-question-hint&quot;&gt;${escape(q.text)}&lt;/textarea&gt;&lt;p class=&quot;sm-field-hint&quot; id=&quot;sm-question-hint&quot;&gt;Ask it neutrally, so each option can make its strongest case.&lt;/p&gt;&lt;/div&gt;`
       +select(&#x27;org&#x27;,ORGS,q.org,&#x27;Space&#x27;)
       +`&lt;section class=&quot;sm-drawer-section&quot; aria-label=&quot;How it runs&quot;&gt;${rulesMarkup(q.rules,q.org,&#x27;board&#x27;)}&lt;/section&gt;`
+      +weighedInMarkup()
       +`&lt;div class=&quot;sm-field&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;open-share&quot; data-key=&quot;open-share&quot;&gt;${icon(&#x27;user-plus&#x27;)}Sharing and access →&lt;/button&gt;&lt;/div&gt;`
       +`&lt;section class=&quot;sm-drawer-section&quot; aria-labelledby=&quot;sm-reset-title&quot;&gt;&lt;h3 id=&quot;sm-reset-title&quot;&gt;Example board&lt;/h3&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Saved in this browser only.&lt;/p&gt;&lt;div&gt;${button(&#x27;reset&#x27;,icon(&#x27;rotate-ccw&#x27;)+(state.confirmReset?&#x27; Click again to reset everything&#x27;:&#x27; Reset to the original example&#x27;),`data-key=&quot;reset&quot; ${state.confirmReset?&#x27;data-armed&#x27;:&#x27;&#x27;}`)}&lt;/div&gt;&lt;/section&gt;`;
   }
@@ -3920,7 +3989,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`&lt;span&gt;&lt;span class=&quot;sm-faces&quot;&gt;${b.f.here.slice(0,3).map(u=&gt;`&lt;span title=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;${here} here now&lt;/span&gt;`:&#x27;&#x27;;
     return `&lt;li class=&quot;sm-post&quot; data-board=&quot;${b.id}&quot;&gt;&lt;div class=&quot;sm-post-vote&quot;&gt;${vote}&lt;/div&gt;&lt;div class=&quot;sm-post-body&quot;&gt;`
-      +`&lt;div class=&quot;sm-post-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${b.space.id}&quot; data-key=&quot;post-space-${b.id}&quot;&gt;${escape(b.space.name)}&lt;/button&gt;&lt;span&gt;${escape(q.author)}&lt;/span&gt;&lt;span class=&quot;sm-dot&quot;&gt;&lt;/span&gt;&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-post-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${b.space.id}&quot; data-key=&quot;post-space-${b.id}&quot;&gt;${escape(b.space.name)}&lt;/button&gt;&lt;span&gt;${escape(q.author)}&lt;/span&gt;&lt;span class=&quot;sm-dot&quot;&gt;&lt;/span&gt;&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;${closedOf(b.d)?`&lt;span class=&quot;sm-post-closed&quot;&gt;${icon(&#x27;lock&#x27;)}${q.closed?.decision?&#x27;Decided: &#x27;+escape(b.d.options.find(o=&gt;o.id===q.closed.decision.option)?.name||&#x27;&#x27;):&#x27;Closed&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`
       +`&lt;h2&gt;&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;open-board&quot; data-id=&quot;${b.id}&quot; data-key=&quot;open-${b.id}&quot;&gt;${escape(q.text)}&lt;/button&gt;&lt;/h2&gt;`
       +`&lt;ul class=&quot;sm-post-options&quot; aria-label=&quot;Options and how many arguments each has&quot;&gt;${options}&lt;/ul&gt;`
       +`&lt;div class=&quot;sm-post-foot&quot;&gt;&lt;span&gt;${icon(&#x27;message-square&#x27;)}${b.comments}&lt;/span&gt;${faces}&lt;/div&gt;`
@@ -4192,7 +4261,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     root.dataset.role=myRole();
     for(const el of root.querySelectorAll(&#x27;[data-action]&#x27;)) {
       const need=NEEDS[el.dataset.action],blocked=need&amp;&amp;!can(need);
-      if(blocked&amp;&amp;!el.dataset.blocked) {const why=need===&#x27;structure&#x27;&amp;&amp;doc.question.rules.structure===&#x27;owner&#x27;?&#x27;Owner only.&#x27;:WHY[need];el.dataset.blocked=why;el.dataset.tipWas=el.dataset.tooltip||&#x27;&#x27;;el.dataset.tooltip=why;el.setAttribute(&#x27;aria-disabled&#x27;,&#x27;true&#x27;);el.removeAttribute(&#x27;draggable&#x27;);}
+      if(blocked&amp;&amp;!el.dataset.blocked) {const why=closedNow()&amp;&amp;LOCKED.has(need)?&#x27;Closed.&#x27;:need===&#x27;structure&#x27;&amp;&amp;doc.question.rules.structure===&#x27;owner&#x27;?&#x27;Owner only.&#x27;:WHY[need];el.dataset.blocked=why;el.dataset.tipWas=el.dataset.tooltip||&#x27;&#x27;;el.dataset.tooltip=why;el.setAttribute(&#x27;aria-disabled&#x27;,&#x27;true&#x27;);el.removeAttribute(&#x27;draggable&#x27;);}
       else if(!blocked&amp;&amp;el.dataset.blocked) {delete el.dataset.blocked;if(el.dataset.tipWas)el.dataset.tooltip=el.dataset.tipWas;else delete el.dataset.tooltip;delete el.dataset.tipWas;el.removeAttribute(&#x27;aria-disabled&#x27;);}
     }
     for(const t of root.querySelectorAll(&#x27;#sm-comment,#sm-reply&#x27;)) {t.disabled=!can(&#x27;view&#x27;);if(!can(&#x27;view&#x27;))t.placeholder=&#x27;Sign in to comment&#x27;;}
@@ -4323,6 +4392,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.target.id===&#x27;sm-option-name&#x27;) {state.optionDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-claim&#x27;) {state.editDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-reason&#x27;) {state.editDraftReason=event.target.value;}
+    if(event.target.id===&#x27;sm-decision-why&#x27;) {(state.decisionDraft||={option:&#x27;&#x27;,why:&#x27;&#x27;,cards:[]}).why=event.target.value;return;}
     if(event.target.id===&#x27;sm-decline-reason&#x27;) {state.declineDraft=event.target.value;return;}
     if(event.target.id===&#x27;sm-draft&#x27;) {state.draftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-reason&#x27;) {state.draftReason=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
@@ -4527,6 +4597,22 @@ html&gt;body{padding:0}&lt;/style&gt;
       const fail=()=&gt;{link.select();announce(&#x27;Copying isn’t allowed here. The link is selected so you can copy it.&#x27;);};
       if(navigator.clipboard?.writeText) navigator.clipboard.writeText(&#x27;https://&#x27;+link.value).then(done,fail); else fail();
       return;
+    }
+    if(action.startsWith(&#x27;decision-&#x27;)) {
+      const q=doc.question,d=state.decisionDraft||={option:&#x27;&#x27;,why:&#x27;&#x27;,cards:[]};
+      if(action===&#x27;decision-option&#x27;) {d.option=id;focus=&#x27;decision-option-&#x27;+id;}
+      if(action===&#x27;decision-arg&#x27;) {d.cards=d.cards.includes(id)?d.cards.filter(x=&gt;x!==id):[...d.cards,id];focus=&#x27;decision-pick-&#x27;+id;}
+      if(action===&#x27;decision-edit&#x27;) {state.decisionEditing=true;state.decisionDraft=structuredClone({option:q.closed.decision.option,why:q.closed.decision.why||&#x27;&#x27;,cards:q.closed.decision.cards||[]});focus=&#x27;decision-why&#x27;;}
+      if(action===&#x27;decision-cancel&#x27;) {state.decisionEditing=false;state.decisionDraft=null;focus=&#x27;decision-edit&#x27;;}
+      if(action===&#x27;decision-save&#x27;&amp;&amp;d.option) {
+        q.closed={...(q.closed||closedOf(doc)),decision:{option:d.option,why:d.why.trim(),cards:d.cards,by:&#x27;you&#x27;,at:new Date(NOW).toISOString()}};
+        logEvent(&#x27;decided&#x27;,optionName(d.option));state.decisionEditing=false;state.decisionDraft=null;focus=&#x27;decision-edit&#x27;;announce(&#x27;Decision recorded.&#x27;);
+      }
+      if(action===&#x27;decision-show&#x27;&amp;&amp;cards[id]) {
+        const i=ideaOf(cards[id].idea);if(ordered(i)[0]!==id)state.open=i.id;state.expanded=id;focus=&#x27;claim-&#x27;+id;
+        render(focus,&#x27;detail&#x27;);save();root.querySelector(`.sm-card[data-card=&quot;${id}&quot;]`)?.scrollIntoView({block:&#x27;center&#x27;,behavior:reducedMotion()?&#x27;auto&#x27;:&#x27;smooth&#x27;});return;
+      }
+      render(focus);save();return;
     }
     if(action===&#x27;history&#x27;) {state.share=false;state.drawer=state.drawer===&#x27;history&#x27;?null:&#x27;history&#x27;;focus=state.drawer?&#x27;close-drawer&#x27;:&#x27;history&#x27;;announce(state.drawer?&#x27;History opened beside the board.&#x27;:&#x27;History closed.&#x27;);}
     {

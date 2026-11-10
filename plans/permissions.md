@@ -86,7 +86,7 @@ Steelman already avoids the hardest editing problem. Nobody overwrites anyone: a
 - Moderators can **Hide with reason**. A placeholder ("Removed by a moderator: off-topic") keeps the row's position and history; **Restore** brings it back.
 - A **History** panel per board: who did what, when, and why, with Undo for structural changes.
 
-### P5. Lifecycle (open teams)
+### P5. Lifecycle (open teams) *(built Nov 10: close by date or by hand, read only when closed, decision in the question box, Who's weighed in in Settings, Decided in the list)*
 - Optional deadline. **Close the board** makes it read-only.
 - A closed board shows a short **Decision** block above the columns: the chosen option, why, and who decided, linked to the arguments that mattered.
 - A **Who's weighed in** view for the owner (voted / contributed / not yet).

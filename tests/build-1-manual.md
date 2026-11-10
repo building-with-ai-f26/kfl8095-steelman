@@ -599,6 +599,22 @@ Reports (`reports`), removals (`hidden`), and a per-board log (`doc.log`) on ver
 | Phone width (375 px) | No horizontal overflow on the bike-lane board |
 | Console | No errors |
 
+## November 10 — Closing and the decision (permissions P5)
+
+`closedOf(board)` is true once the owner closes it (`question.closed`) or its closing date is on or before the prototype's today (Nov 9). Closed boards lock vote, contribute, edit, and structure actions in `can()`; comments stay open. The decision lives on `question.closed.decision` (option, why, cited cards, who, when). The standups example is closed and decided (save version 11).
+
+| Check | Observed result |
+| --- | --- |
+| List | Standups item shows "Decided: Go async" |
+| Decided board (not owner) | Pill "Closed Nov 7"; "Closed: read only."; importance votes, Add an argument, and + Option blocked with "Closed."; comments open; Decision block: Go async, why, one cited argument from each side, "priya_s · Nov 7"; clicking a cited argument opens and focuses its card |
+| Close now (owner, open-weights) | Pill "Closed Nov 9"; Timing shows Reopen; decision form appears in the question box |
+| Record decision | Option "Why it makes sense", why, two cited arguments → shown with "You · Nov 9 · Edit"; History: "You recorded the decision: “Why it makes sense”", "You closed the board" |
+| Reopen | Pill back to "Open team"; votes unblocked; decision cleared |
+| Closing date | Setting Closes to Nov 9 closes the board at once (22 vote controls blocked); Reopen clears the past date |
+| Who's weighed in | "8 of 9": maya.chen, jordan_w, priya_s, samr_92… Wrote; kieran_lamee Not yet |
+| Phone width (375 px) | List and standups board: no horizontal overflow |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
