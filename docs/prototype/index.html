@@ -2127,6 +2127,24 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-card { container-type:inline-size; }
   @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
   @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
+  /* Held for review: a faint dashed card with a tag on its edge; editors get Accept and Decline. */
+  #steelman-study .sm-held { position:relative; border:1px dashed var(--sm-wire); background:var(--sm-panel); box-shadow:none; }
+  #steelman-study .sm-held .sm-claim { color:var(--sm-muted); }
+  #steelman-study .sm-held-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px dashed var(--sm-wire); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-held-tag svg { width:12px; height:12px; }
+  #steelman-study .sm-declined .sm-held-tag { border-style:solid; border-color:var(--sm-cred-weak); color:var(--sm-ink); }
+  #steelman-study .sm-declined .sm-held-tag svg { color:var(--sm-cred-weak); }
+  #steelman-study .sm-held-reason { margin:-4px 0 0; padding:0 18px 10px; font-size:12px; line-height:1.5; color:var(--sm-ink); }
+  #steelman-study .sm-card-meta.sm-held-actions { justify-content:flex-start; gap:16px; flex-wrap:wrap; padding:6px 14px; }
+  #steelman-study .sm-held-actions [data-action=&quot;held-accept&quot;], #steelman-study .sm-held-actions [data-action=&quot;held-decline-confirm&quot;] { font-weight:700; color:var(--sm-ink); }
+  #steelman-study .sm-held-actions input { flex:1; min-width:120px; padding:5px 8px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:400 12px var(--sm-sans); }
+  #steelman-study .sm-held-list { display:grid; gap:16px; margin-top:18px; }
+  #steelman-study .sm-held-row { margin-bottom:16px; }
+  #steelman-study .sm-review-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); color:var(--sm-ink); font-size:13px; }
+  #steelman-study .sm-review-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-review-button svg { width:15px; height:15px; }
+  #steelman-study .sm-review-button b { font-weight:700; font-variant-numeric:tabular-nums; }
+  @media(max-width:640px) { #steelman-study .sm-review-button span { display:none; } }
   #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
@@ -2503,8 +2521,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
     #steelman-study .sm-persona { padding-left:6px; }
+    #steelman-study .sm-site { padding-left:12px; padding-right:12px; }
+    #steelman-study .sm-site-tools { gap:6px; }
+    #steelman-study .sm-review-button { padding:0 8px; }
     #steelman-study .sm-persona span { display:none; }
-    #steelman-study .sm-persona select { max-width:84px; }
+    #steelman-study .sm-persona select { max-width:68px; }
     #steelman-study:is([data-zoom=&quot;read&quot;],[data-zoom=&quot;case&quot;]) .sm-wordmark-text { display:none; }
   }
 
@@ -2833,17 +2854,17 @@ html&gt;body{padding:0}&lt;/style&gt;
   };
   const ME = &#x27;kieran_lamee&#x27;;
   // Roles build on each other. Signed out can only read.
-  const RANK = {out:0,view:1,vote:2,contribute:3,owner:4};
-  const PERSONAS = {you:&#x27;Your access&#x27;,owner:&#x27;Owner&#x27;,contribute:&#x27;Contributor&#x27;,vote:&#x27;Voter&#x27;,view:&#x27;Viewer&#x27;,out:&#x27;Signed out&#x27;};
+  const RANK = {out:0,view:1,vote:2,contribute:3,edit:4,owner:5};
+  const PERSONAS = {you:&#x27;Your access&#x27;,owner:&#x27;Owner&#x27;,edit:&#x27;Editor&#x27;,contribute:&#x27;Contributor&#x27;,vote:&#x27;Voter&#x27;,view:&#x27;Viewer&#x27;,out:&#x27;Signed out&#x27;};
   // What each action needs. Anything not listed (reading, folding, highlighting, opening comments) is open to everyone.
   const NEEDS = {
     &#x27;comment-add&#x27;:&#x27;view&#x27;,reply:&#x27;view&#x27;,&#x27;reply-add&#x27;:&#x27;view&#x27;,resolve:&#x27;view&#x27;,&#x27;delete-comment&#x27;:&#x27;view&#x27;,&#x27;report-source&#x27;:&#x27;view&#x27;,&#x27;unreport-source&#x27;:&#x27;view&#x27;,share:&#x27;view&#x27;,&#x27;open-share&#x27;:&#x27;view&#x27;,&#x27;create-open&#x27;:&#x27;view&#x27;,join:&#x27;view&#x27;,&#x27;request-access&#x27;:&#x27;view&#x27;,
     importance:&#x27;vote&#x27;,preference:&#x27;vote&#x27;,assess:&#x27;vote&#x27;,
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
-    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
+    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
     settings:&#x27;owner&#x27;};
-  const WHY = {view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
-  const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,owner:&#x27;You own this board.&#x27;};
+  const WHY = {view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
+  const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
   const swatch = s =&gt; `&lt;span class=&quot;sm-swatch&quot; data-canvas=&quot;${s.canvas}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;`;
   const spaceTag = s =&gt; `&lt;span class=&quot;sm-tag&quot;&gt;${escape(s.name)}&lt;/span&gt;`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
@@ -2855,11 +2876,20 @@ html&gt;body{padding:0}&lt;/style&gt;
     });
     return d;
   }
+  // The capstone example runs Edited: maya.chen owns it, you&#x27;re an editor, and two contributions wait for review.
+  function editedExample(d) {
+    Object.assign(d.question.rules=defaultRules(&#x27;pod6&#x27;),{publish:&#x27;review&#x27;,structure:&#x27;editors&#x27;});
+    d.question.people=[{user:ME,role:&#x27;edit&#x27;},{user:&#x27;jordan_w&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;tess.b&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;omar_h&#x27;,role:&#x27;contribute&#x27;}];
+    d.pending=[
+      {id:&#x27;p1&#x27;,kind:&#x27;idea&#x27;,option:&#x27;capstone-o1&#x27;,claim:&#x27;Hand-written code is the only fair way to compare teams with different access to AI tools.&#x27;,reason:&#x27;&#x27;,by:&#x27;tess.b&#x27;,at:&#x27;2026-11-09T09:30:00Z&#x27;},
+      {id:&#x27;p2&#x27;,kind:&#x27;version&#x27;,idea:&#x27;capstone-0-0&#x27;,claim:&#x27;Disclosure shows graders how each team used AI, without banning tools students will use at work.&#x27;,reason:&#x27;Shorter, and says what graders get.&#x27;,by:&#x27;omar_h&#x27;,at:&#x27;2026-11-09T10:15:00Z&#x27;}];
+    return d;
+  }
   const seedDocs = () =&gt; ({
     openweights:seedDoc(),
-    capstone:sketchDoc(&#x27;capstone&#x27;,{q:&#x27;Should capstone teams be allowed to ship AI-written code?&#x27;,author:&#x27;maya.chen&#x27;,posted:&#x27;2026-11-08&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,options:[
+    capstone:editedExample(sketchDoc(&#x27;capstone&#x27;,{q:&#x27;Should capstone teams be allowed to ship AI-written code?&#x27;,author:&#x27;maya.chen&#x27;,posted:&#x27;2026-11-08&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Allow it, with disclosure&#x27;,[[&#x27;Disclosure keeps grading honest while letting teams build the way they will at work.&#x27;,34,6,2],[&#x27;A ban is hard to enforce; disclosure at least makes AI use visible.&#x27;,22,3,3]]],
-      [&#x27;Require hand-written code&#x27;,[[&#x27;Students can’t defend design trade-offs in code they didn’t write.&#x27;,29,4,1]]]]}),
+      [&#x27;Require hand-written code&#x27;,[[&#x27;Students can’t defend design trade-offs in code they didn’t write.&#x27;,29,4,1]]]]})),
     standups:sketchDoc(&#x27;standups&#x27;,{q:&#x27;Should we replace daily standups with written updates?&#x27;,author:&#x27;priya_s&#x27;,posted:&#x27;2026-11-03&#x27;,org:&#x27;northwind&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Go async&#x27;,[[&#x27;Written updates free a fixed meeting slot for a team spread over four time zones.&#x27;,18,5,0],[&#x27;A written log shows who was blocked, days later.&#x27;,11,1,1]]],
       [&#x27;Keep live standups&#x27;,[[&#x27;Live standups surface blockers people don’t think to write down.&#x27;,15,2,2],[&#x27;New hires pick up team norms faster by hearing them daily.&#x27;,6]]],
@@ -2894,7 +2924,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
       &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
@@ -2938,8 +2968,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       for (const key of [&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=&gt;[renamed(k),v]));
       if (typeof saved.expanded===&#x27;string&#x27;) saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 8) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===8 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 9) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===9 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : &#x27;openweights&#x27;;
     state.view = saved.view===&#x27;board&#x27; ? &#x27;board&#x27; : &#x27;home&#x27;;
     if (saved.space===&#x27;all&#x27;||SPACES.some(s=&gt;s.id===saved.space)) state.space=saved.space;
@@ -2959,7 +2989,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:8,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,docs,docsVersion:9,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -3017,7 +3047,9 @@ html&gt;body{padding:0}&lt;/style&gt;
   function myRole() { return state.persona===&#x27;you&#x27;?realRole():state.persona; }
   const can = level =&gt; level===&#x27;structure&#x27;?canStructure():RANK[myRole()]&gt;=RANK[level];
   // The board&#x27;s rules say who changes its structure: anyone who can write, its editors, or only the owner.
-  function canStructure() { const r=doc.question.rules; if(myRole()===&#x27;owner&#x27;) return true; if(!can(&#x27;contribute&#x27;)) return false; return r.structure===&#x27;writers&#x27;||(r.structure===&#x27;editors&#x27;&amp;&amp;state.persona===&#x27;you&#x27;&amp;&amp;r.editors.includes(ME)); }
+  function canStructure() { const r=doc.question.rules; if(myRole()===&#x27;owner&#x27;) return true; return r.structure===&#x27;writers&#x27;?can(&#x27;contribute&#x27;):r.structure===&#x27;editors&#x27;?can(&#x27;edit&#x27;):false; }
+  // Under &quot;Editors review first&quot;, what anyone below editor adds waits for an editor.
+  const held = () =&gt; doc.question.rules.publish===&#x27;review&#x27;&amp;&amp;!can(&#x27;edit&#x27;);
   const canMove = id =&gt; can(&#x27;contribute&#x27;)&amp;&amp;(canStructure()||cards[id]?.by===&#x27;you&#x27;);
   const canSuggest = () =&gt; can(&#x27;contribute&#x27;)&amp;&amp;!canStructure();
   const button = (action,label,extra=&#x27;&#x27;) =&gt; `&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;${action}&quot; ${extra}&gt;${label}&lt;/button&gt;`;
@@ -3174,6 +3206,23 @@ html&gt;body{padding:0}&lt;/style&gt;
       return `&lt;div class=&quot;sm-suggest&quot; role=&quot;note&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;p&gt;${text}&lt;/p&gt;${actions?`&lt;div class=&quot;sm-suggest-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
     }).join(&#x27;&#x27;);
   }
+  // Held for review: the author and editors see it; everyone else doesn&#x27;t until it&#x27;s accepted.
+  // Declined items stay with their author, with the reason, until dismissed.
+  const seesHeld = p =&gt; p.by===&#x27;you&#x27;||(can(&#x27;edit&#x27;)&amp;&amp;p.status!==&#x27;declined&#x27;);
+  const heldIn = (kind,where) =&gt; doc.pending.filter(p=&gt;p.kind===kind&amp;&amp;(kind===&#x27;idea&#x27;?p.option===where:p.idea===where)&amp;&amp;seesHeld(p));
+  function heldCard(p) {
+    const declined=p.status===&#x27;declined&#x27;,deciding=state.declining===p.id;
+    const tag=`&lt;span class=&quot;sm-held-tag&quot;&gt;${icon(declined?&#x27;x&#x27;:&#x27;hourglass&#x27;)}${declined?&#x27;Declined&#x27;:p.kind===&#x27;version&#x27;?&#x27;New wording · awaiting review&#x27;:&#x27;Awaiting review&#x27;}&lt;/span&gt;`;
+    const actions=declined?linkButton(&#x27;held-dismiss&#x27;,p.id,&#x27;Dismiss&#x27;)
+      :deciding?`&lt;input id=&quot;sm-decline-reason&quot; data-key=&quot;decline-reason&quot; maxlength=&quot;140&quot; placeholder=&quot;Reason (optional)&quot; aria-label=&quot;Reason for declining&quot; value=&quot;${escape(state.declineDraft||&#x27;&#x27;)}&quot;&gt;`+linkButton(&#x27;held-decline-confirm&#x27;,p.id,&#x27;Decline&#x27;)+linkButton(&#x27;held-decline-cancel&#x27;,p.id,&#x27;Cancel&#x27;)
+      :can(&#x27;edit&#x27;)?linkButton(&#x27;held-accept&#x27;,p.id,&#x27;Accept&#x27;)+linkButton(&#x27;held-decline&#x27;,p.id,&#x27;Decline&#x27;)
+      :p.by===&#x27;you&#x27;?linkButton(&#x27;held-withdraw&#x27;,p.id,&#x27;Withdraw&#x27;):&#x27;&#x27;;
+    return `&lt;article class=&quot;sm-card sm-held ${declined?&#x27;sm-declined&#x27;:&#x27;&#x27;}&quot; data-held=&quot;${p.id}&quot;&gt;${tag}&lt;div class=&quot;sm-claim-button&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(p.claim)}&lt;/span&gt;&lt;/div&gt;&lt;p class=&quot;sm-byline&quot;&gt;${p.by===&#x27;you&#x27;?&#x27;you&#x27;:escape(p.by)}&lt;/p&gt;${declined&amp;&amp;p.reason?`&lt;p class=&quot;sm-held-reason&quot;&gt;${escape(p.reason)}&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-card-meta sm-held-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/article&gt;`;
+  }
+  const heldVersions = idea =&gt; { const list=heldIn(&#x27;version&#x27;,idea.id); return list.length?`&lt;div class=&quot;sm-held-list&quot;&gt;${list.map(heldCard).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;; };
+  const heldIdeas = option =&gt; heldIn(&#x27;idea&#x27;,option).map(p=&gt;`&lt;div class=&quot;sm-new-idea sm-held-row&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;${heldCard(p)}&lt;/div&gt;`).join(&#x27;&#x27;);
+  const toReview = () =&gt; doc.pending.filter(p=&gt;p.status!==&#x27;declined&#x27;);
+  const heldId = () =&gt; { let id; do id=&#x27;p&#x27;+(doc.nextId++); while(doc.pending.some(x=&gt;x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () =&gt; state.moving&amp;&amp;cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
@@ -3185,7 +3234,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const source=from?.id===idea.id,target=from&amp;&amp;!source&amp;&amp;from.option===idea.option;
     const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
     const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}&lt;/div&gt;&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -3193,7 +3242,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;div class=&quot;sm-move-banner&quot; role=&quot;status&quot;&gt;&lt;span&gt;${canMove(state.moving)?&#x27;Pick the argument that makes the same point.&#x27;:&#x27;Pick the argument that makes the same point. The owner or the author decides.&#x27;}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;cancel-move&quot; data-key=&quot;cancel-move&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
-  function addArgument(option) {
+  const addArgument = option =&gt; heldIdeas(option)+addArgumentSlot(option);
+  function addArgumentSlot(option) {
     const name=escape(optionName(option));
     if(state.composingIdea===option) return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-idea-form&quot; aria-label=&quot;New argument for ${name}&quot;&gt;&lt;textarea id=&quot;sm-idea-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;idea-claim&quot; maxlength=&quot;500&quot; placeholder=&quot;A new argument for “${name}”&quot; aria-label=&quot;Your argument&quot;&gt;${escape(state.ideaDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-idea-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;idea-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context: why it matters (optional)&quot; aria-label=&quot;Context for your argument (optional)&quot;&gt;${escape(state.ideaDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;cancel-idea&quot; aria-label=&quot;Close draft&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;add-idea&quot; aria-label=&quot;Add your argument&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;&lt;/div&gt;`;
     return `&lt;div class=&quot;sm-new-idea&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-card sm-add-idea cursor-interaction&quot; data-action=&quot;compose-idea&quot; data-id=&quot;${option}&quot; data-key=&quot;compose-idea-${option}&quot; aria-label=&quot;Add an argument for ${name}&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;Add an argument&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`;
@@ -3329,9 +3379,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     const row=(label,control,sub=&#x27;&#x27;,cls=&#x27;&#x27;)=&gt;`&lt;div class=&quot;sm-rrow ${cls}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}${sub?`&lt;small&gt;${sub}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${control}&lt;/span&gt;&lt;/div&gt;`;
     const sel=(rule,opts)=&gt;`&lt;select class=&quot;sm-rselect&quot; data-rule=&quot;${rule}&quot; data-key=&quot;${k}-${rule}&quot; aria-label=&quot;${rule===&#x27;publish&#x27;?&#x27;New arguments&#x27;:&#x27;Reorganizing&#x27;}&quot;&gt;${Object.entries(opts).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${r[rule]===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
     const modes=`&lt;div class=&quot;sm-modes&quot; role=&quot;radiogroup&quot; aria-label=&quot;Mode&quot;&gt;${Object.entries(MODES).map(([id,m])=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-mode cursor-interaction&quot; data-action=&quot;rule-mode&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-checked=&quot;${mode===id}&quot;&gt;${icon(m.glyph)}&lt;span&gt;${m.label}&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`;
-    const people=PEOPLE[spaceId]||[];
+    const q=scope===&#x27;board&#x27;?doc.question:null,chosen=q?q.people.filter(x=&gt;x.role===&#x27;edit&#x27;).map(x=&gt;x.user):r.editors;
+    const people=[...new Set([...(PEOPLE[spaceId]||[]),...(q?q.people.map(x=&gt;x.user).filter(u=&gt;!u.includes(&#x27;@&#x27;)):[])])];
     const editors=r.publish===&#x27;review&#x27;||r.structure===&#x27;editors&#x27;
-      ?row(&#x27;Editors&#x27;,`&lt;span class=&quot;sm-editors&quot;&gt;${people.map(u=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-editor cursor-interaction&quot; data-action=&quot;rule-editor&quot; data-id=&quot;${escape(u)}&quot; data-key=&quot;${k}-${escape(u)}&quot; aria-pressed=&quot;${r.editors.includes(u)}&quot; aria-label=&quot;${escape(u)}&quot; data-tooltip=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;`,r.editors.length?escape(r.editors.join(&#x27;, &#x27;)):&#x27;None yet&#x27;,&#x27;sm-rrow-stack&#x27;):&#x27;&#x27;;
+      ?row(&#x27;Editors&#x27;,`&lt;span class=&quot;sm-editors&quot;&gt;${people.map(u=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-editor cursor-interaction&quot; data-action=&quot;rule-editor&quot; data-id=&quot;${escape(u)}&quot; data-key=&quot;${k}-${escape(u)}&quot; aria-pressed=&quot;${chosen.includes(u)}&quot; aria-label=&quot;${escape(u)}&quot; data-tooltip=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;`,chosen.length?escape(chosen.join(&#x27;, &#x27;)):&#x27;None yet&#x27;,&#x27;sm-rrow-stack&#x27;):&#x27;&#x27;;
     const votes=`&lt;span class=&quot;sm-checks&quot;&gt;${Object.entries(JUDGMENTS).map(([id,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-check cursor-interaction&quot; data-action=&quot;rule-judgment&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-pressed=&quot;${r.judgments[id]}&quot;&gt;${icon(r.judgments[id]?&#x27;check&#x27;:g)}${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;`;
     const ai=Object.entries(AI_FEATURES).map(([id,[l,cost]])=&gt;{const ok=aiAllowed(spaceId,id),on=ok&amp;&amp;r.ai[id];
       return row(`${icon(&#x27;bot&#x27;)}${l}`,`&lt;button type=&quot;button&quot; role=&quot;switch&quot; class=&quot;sm-switch cursor-interaction&quot; data-action=&quot;rule-ai&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-checked=&quot;${on}&quot; aria-label=&quot;${l}&quot; ${ok?&#x27;&#x27;:`aria-disabled=&quot;true&quot; data-tooltip=&quot;Off in ${escape(spaceOf(spaceId).name)}&quot;`}&gt;&lt;/button&gt;`,cost,&#x27;sm-rrow-ai&#x27;+(ok?&#x27;&#x27;:&#x27; sm-rrow-off&#x27;));}).join(&#x27;&#x27;);
@@ -3357,7 +3408,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;rule-mode&#x27;) Object.assign(r,{publish:MODES[id].publish,structure:MODES[id].structure});
     if(action===&#x27;rule-judgment&#x27;) r.judgments[id]=!r.judgments[id];
     if(action===&#x27;rule-ai&#x27;) r.ai[id]=!r.ai[id];
-    if(action===&#x27;rule-editor&#x27;) r.editors=r.editors.includes(id)?r.editors.filter(u=&gt;u!==id):[...r.editors,id];
+    if(action===&#x27;rule-editor&#x27;) {
+      if(t.create) r.editors=r.editors.includes(id)?r.editors.filter(u=&gt;u!==id):[...r.editors,id];
+      else {const people=doc.question.people,x=people.find(y=&gt;y.user===id);if(!x)people.push({user:id,role:&#x27;edit&#x27;});else x.role=x.role===&#x27;edit&#x27;?&#x27;contribute&#x27;:&#x27;edit&#x27;;}
+    }
     if(action===&#x27;rule-set&#x27;) r[id]=value;
     if(action===&#x27;rule-closes&#x27;) {r.closes=id===&#x27;add&#x27;?&#x27;2026-11-16&#x27;:&#x27;&#x27;;key=id===&#x27;add&#x27;?key.replace(&#x27;-add&#x27;,&#x27;&#x27;):key.replace(&#x27;-clear&#x27;,&#x27;-add&#x27;);}
     if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
@@ -3810,6 +3864,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       tools=`&lt;div class=&quot;sm-zoom&quot; role=&quot;group&quot; aria-label=&quot;View&quot;&gt;${viewBtn(&#x27;read&#x27;,&#x27;layout-grid&#x27;,&#x27;Board&#x27;)}${viewBtn(&#x27;case&#x27;,&#x27;award&#x27;,&#x27;Strongest case&#x27;)}&lt;/div&gt;`
         // Who else has this board open: faces only. They don&#x27;t appear on cards.
         +(f.here.length?`&lt;span class=&quot;sm-site-faces&quot; role=&quot;img&quot; aria-label=&quot;Also here: ${escape(f.here.join(&#x27;, &#x27;))}${f.more?` and ${f.more} more`:&#x27;&#x27;}&quot;&gt;${f.here.map(u=&gt;`&lt;span title=&quot;${escape(u)} is here&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}${f.more?`&lt;span title=&quot;${f.more} more&quot;&gt;+${f.more}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;)
+        +(can(&#x27;edit&#x27;)&amp;&amp;toReview().length?`&lt;button type=&quot;button&quot; class=&quot;sm-review-button cursor-interaction&quot; data-action=&quot;review-next&quot; data-key=&quot;review-next&quot; data-tooltip=&quot;Next to review&quot;&gt;${icon(&#x27;inbox&#x27;)}&lt;b&gt;${toReview().length}&lt;/b&gt;&lt;span&gt;to review&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;)
         +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
       middle=`&lt;nav class=&quot;sm-crumbs&quot; aria-label=&quot;Breadcrumb&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;/&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${s.id}&quot; data-key=&quot;crumb-space&quot;&gt;${escape(s.name)}&lt;/button&gt;&lt;/nav&gt;`;
     } else {
@@ -3864,6 +3919,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const id=&#x27;new&#x27;+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:&#x27;2026-11-09&#x27;,org:d.space,visibility:d.space===&#x27;none&#x27;?&#x27;private&#x27;:&#x27;org&#x27;,options:names.map(n=&gt;[n.slice(0,80),[]])});
     const rules=structuredClone(d.rules||defaultRules(d.space)),nd=docs[id];nd.question.rules=rules;
+    nd.question.people=rules.editors.map(user=&gt;({user,role:&#x27;edit&#x27;}));rules.editors=[];
     if(rules.ai.draft&amp;&amp;aiAllowed(d.space,&#x27;draft&#x27;)) {
       nd.options.forEach((o,oi)=&gt;{const idea=`${id}-ai${oi}`,card=idea+&#x27;v&#x27;;nd.ideas.push({id:idea,option:o.id,score:0,versions:[card]});nd.cards[card]={at:new Date(NOW).toISOString(),by:&#x27;ai&#x27;,idea,claim:`AI draft: the strongest reason for “${o.name}”.`,yes:0,no:0,pref:0,sources:[],explanation:&#x27;&#x27;,ai:{basis:&#x27;Drafted from the question and this option.&#x27;,limits:&#x27;Simulated: no model ran.&#x27;},...(rules.ai.check&amp;&amp;aiAllowed(d.space,&#x27;check&#x27;)?{aiCheck:{verdict:&#x27;none&#x27;,summary:&#x27;&#x27;}}:{})};});
       state.spent[d.space]=(state.spent[d.space]||0)+20;
@@ -3878,8 +3934,8 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   // ── Share: who has access to this board, and how anyone else can get in ──
   // Roles build on each other: viewers read and comment, voters also vote and assess evidence, contributors also write.
-  const ROLES = {view:&#x27;can view&#x27;,vote:&#x27;can vote&#x27;,contribute:&#x27;can contribute&#x27;};
-  const ROLE_HINTS = {view:&#x27;read and comment&#x27;,vote:&#x27;read, comment, and vote&#x27;,contribute:&#x27;read, comment, vote, and write&#x27;};
+  const ROLES = {view:&#x27;can view&#x27;,vote:&#x27;can vote&#x27;,contribute:&#x27;can contribute&#x27;,edit:&#x27;can edit&#x27;};
+  const ROLE_HINTS = {view:&#x27;read and comment&#x27;,vote:&#x27;read, comment, and vote&#x27;,contribute:&#x27;read, comment, vote, and write&#x27;,edit:&#x27;read, comment, vote, write, and review&#x27;};
   // Initials from a username&#x27;s words, ignoring numbers: maya.chen → MC, samr_92 → SA.
   const userInitials = u =&gt; { const words=u.split(/[\s_.@]+/).filter(w=&gt;/^[a-z]/i.test(w)); return (words.length&gt;1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
   const roleSelect = (id,current,attrs=&#x27;&#x27;,disabled=false,upTo=&#x27;owner&#x27;) =&gt; `&lt;select ${attrs} aria-label=&quot;Access level&quot; ${disabled?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${Object.entries(ROLES).filter(([v])=&gt;RANK[v]&lt;=RANK[upTo]).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${v===current?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
@@ -4158,6 +4214,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.target.id===&#x27;sm-option-name&#x27;) {state.optionDraft=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-claim&#x27;) {state.editDraftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-edit-reason&#x27;) {state.editDraftReason=event.target.value;}
+    if(event.target.id===&#x27;sm-decline-reason&#x27;) {state.declineDraft=event.target.value;return;}
     if(event.target.id===&#x27;sm-draft&#x27;) {state.draftClaim=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
     if(event.target.id===&#x27;sm-reason&#x27;) {state.draftReason=event.target.value;event.target.removeAttribute(&#x27;aria-invalid&#x27;);}
   });
@@ -4402,6 +4459,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;add-idea&#x27;) {
       const claim=state.ideaDraftClaim.trim(),field=root.querySelector(&#x27;#sm-idea-claim&#x27;);
       if(!claim){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;Write your argument first.&#x27;);return;}
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:&#x27;idea&#x27;,option:id,claim:claim.slice(0,500),reason:state.ideaDraftReason.trim().slice(0,700),by:&#x27;you&#x27;,at:new Date(NOW).toISOString()});
+        state.composingIdea=null;state.ideaDraftClaim=&#x27;&#x27;;state.ideaDraftReason=&#x27;&#x27;;focus=&#x27;held-withdraw-&#x27;+pid;announce(&#x27;Sent to the editors.&#x27;);
+        render(focus);save();return;
+      }
       const added=addIdea(id,claim,state.ideaDraftReason.trim());
       state.composingIdea=null;state.ideaDraftClaim=&#x27;&#x27;;state.ideaDraftReason=&#x27;&#x27;;
       state.expanded=added;focus=&#x27;claim-&#x27;+added;motion=&#x27;added&#x27;;
@@ -4418,10 +4480,37 @@ html&gt;body{padding:0}&lt;/style&gt;
         form.querySelector(!claim?&#x27;#sm-draft&#x27;:&#x27;#sm-reason&#x27;).focus();
         announce(&#x27;Add your version and what it improves.&#x27;);return;
       }
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:&#x27;version&#x27;,idea:id,claim:claim.slice(0,500),reason:reason.slice(0,700),by:&#x27;you&#x27;,at:new Date(NOW).toISOString()});
+        state.composing=false;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;focus=&#x27;held-withdraw-&#x27;+pid;announce(&#x27;Sent to the editors.&#x27;);
+        render(focus);save();return;
+      }
       const added=addVersion(id,claim,reason);if(!added)return;
       state.composing=false;state.draftClaim=&#x27;&#x27;;state.draftReason=&#x27;&#x27;;
       state.expanded=added;focus=&#x27;claim-&#x27;+state.expanded;motion=&#x27;added&#x27;;
       announce(&#x27;Your version was added at the end of the row. It starts unreviewed, with no articulation votes.&#x27;);
+    }
+    if(action.startsWith(&#x27;held-&#x27;)||action===&#x27;review-next&#x27;) {
+      const p=doc.pending.find(x=&gt;x.id===id),drop=()=&gt;{doc.pending=doc.pending.filter(x=&gt;x.id!==id);};
+      if(action===&#x27;held-accept&#x27;&amp;&amp;p) {
+        const card=p.kind===&#x27;idea&#x27;?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind===&#x27;idea&#x27;){i.by=p.by;i.at=p.at;}}
+        drop();focus=card?&#x27;claim-&#x27;+card:&#x27;review-next&#x27;;announce(&#x27;Accepted.&#x27;);
+      }
+      if(action===&#x27;held-decline&#x27;) {state.declining=id;state.declineDraft=&#x27;&#x27;;focus=&#x27;decline-reason&#x27;;}
+      if(action===&#x27;held-decline-cancel&#x27;) {state.declining=null;focus=&#x27;held-decline-&#x27;+id;}
+      if(action===&#x27;held-decline-confirm&#x27;&amp;&amp;p) {p.status=&#x27;declined&#x27;;p.reason=(state.declineDraft||&#x27;&#x27;).trim();state.declining=null;focus=&#x27;review-next&#x27;;announce(&#x27;Declined.&#x27;);}
+      if(action===&#x27;held-withdraw&#x27;||action===&#x27;held-dismiss&#x27;) {drop();focus=p?.kind===&#x27;idea&#x27;?&#x27;compose-idea-&#x27;+p.option:&#x27;&#x27;;announce(action===&#x27;held-withdraw&#x27;?&#x27;Withdrawn.&#x27;:&#x27;Dismissed.&#x27;);}
+      // Step to the next item waiting for review: open its row&#x27;s fold if needed and move focus to Accept.
+      if(action===&#x27;review-next&#x27;) {
+        const onScreen=[...root.querySelectorAll(&#x27;[data-held]&#x27;)].map(e=&gt;e.dataset.held),at=x=&gt;{const i=onScreen.indexOf(x.id);return i&lt;0?1e3:i;};
+        const list=toReview().sort((a,b)=&gt;at(a)-at(b));if(!list.length)return;
+        state.reviewStep=((state.reviewStep??-1)+1)%list.length;const next=list[state.reviewStep];
+        if(next.kind===&#x27;version&#x27;){const i=ideaOf(next.idea);const all=rowsOf(i.option);const at=all.indexOf(i);if(at&gt;=shownRows(i.option,all))state.shownRows[colKey(i.option)]=at+1;}
+        render(&#x27;held-accept-&#x27;+next.id);root.querySelector(`[data-held=&quot;${next.id}&quot;]`)?.scrollIntoView({block:&#x27;center&#x27;,behavior:reducedMotion()?&#x27;auto&#x27;:&#x27;smooth&#x27;});
+        announce(`${state.reviewStep+1} of ${list.length} to review.`);save();return;
+      }
+      render(focus);save();return;
     }
     if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     render(focus,motion);save();

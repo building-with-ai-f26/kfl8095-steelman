@@ -555,6 +555,23 @@ Not built: holding new arguments for editors (P3), closing a board on its date (
 
 Revision (same day): the create sheet's lower half restyled to match Share and Settings. Space and How it runs are two hairline rows (quiet right-aligned selects, the summary and a chevron); the rules sit in groups under 11 px tracked headings: Mode (three tiles, the chosen one outlined in ink, not filled), New arguments and Reorganizing (quiet selects), Editors (initials as in Share; chosen ones inked; names listed under the label), Votes (outlined checks, dashed when off), AI (robot, name, cost underneath, a switch), and Timing (Add a date, then a date field with ×). Settings shows the same groups without a second heading. Checked: Edited mode with two editors, drafts on, articulation off, and a date; created board shows "Edited · Closes Nov 16"; drawer selects stay borderless; no row overflows in the 356 px drawer; no console errors.
 
+## November 10 — Editors and review (permissions P3)
+
+Share gains **can edit** (`RANK` contribute 3 → edit 4 → owner 5); Preview as gains Editor. Board editors are Share's "can edit" people (the create sheet converts its editor picks into them). Under "Editors review first", `held()` routes a below-editor submission into `doc.pending` (kept apart from `ideas` and `cards`, so counts, highlights, and the list never include it) until an editor accepts it. The capstone example runs Edited with two items waiting; the example save version moved to 9.
+
+| Check | Observed result |
+| --- | --- |
+| Editor view | Top bar "2 to review"; header "Edited", "You can write, review, and reorganize."; omar_h's wording under its row and tess.b's argument at the bottom of its column, each with Accept / Decline |
+| Contributor view | Neither held item shown; + Option blocked ("Editors only."); adding an argument shows it to its author as Awaiting review with Withdraw; status "Sent to the editors." |
+| Ids | A new held item no longer collides with the example's (fixed: `heldId()` skips ids in use) |
+| Step | "to review" steps p2 → p3 → p1, in screen order, focusing Accept |
+| Accept | omar_h's wording joins its row: the stack goes from one wording to "Compare 2 wordings"; count drops |
+| Decline | Reason field, then Decline: the item leaves the editor's view; its author (previewed as Contributor) sees Declined with the reason and Dismiss |
+| Share | Roles: can view / vote / contribute / edit; kieran_lamee listed as "can edit" on capstone |
+| Phone width (375 px) | List, open-weights, and capstone boards: no horizontal overflow (top bar gaps and padding tightened, Preview as menu 68 px) |
+
+Not built: holding new sources, "Ask for changes", per-option stewards.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

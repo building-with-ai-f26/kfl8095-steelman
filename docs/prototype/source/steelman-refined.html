@@ -245,6 +245,24 @@
   #steelman-study .sm-card { container-type:inline-size; }
   @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
   @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
+  /* Held for review: a faint dashed card with a tag on its edge; editors get Accept and Decline. */
+  #steelman-study .sm-held { position:relative; border:1px dashed var(--sm-wire); background:var(--sm-panel); box-shadow:none; }
+  #steelman-study .sm-held .sm-claim { color:var(--sm-muted); }
+  #steelman-study .sm-held-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px dashed var(--sm-wire); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-held-tag svg { width:12px; height:12px; }
+  #steelman-study .sm-declined .sm-held-tag { border-style:solid; border-color:var(--sm-cred-weak); color:var(--sm-ink); }
+  #steelman-study .sm-declined .sm-held-tag svg { color:var(--sm-cred-weak); }
+  #steelman-study .sm-held-reason { margin:-4px 0 0; padding:0 18px 10px; font-size:12px; line-height:1.5; color:var(--sm-ink); }
+  #steelman-study .sm-card-meta.sm-held-actions { justify-content:flex-start; gap:16px; flex-wrap:wrap; padding:6px 14px; }
+  #steelman-study .sm-held-actions [data-action="held-accept"], #steelman-study .sm-held-actions [data-action="held-decline-confirm"] { font-weight:700; color:var(--sm-ink); }
+  #steelman-study .sm-held-actions input { flex:1; min-width:120px; padding:5px 8px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:400 12px var(--sm-sans); }
+  #steelman-study .sm-held-list { display:grid; gap:16px; margin-top:18px; }
+  #steelman-study .sm-held-row { margin-bottom:16px; }
+  #steelman-study .sm-review-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); color:var(--sm-ink); font-size:13px; }
+  #steelman-study .sm-review-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-review-button svg { width:15px; height:15px; }
+  #steelman-study .sm-review-button b { font-weight:700; font-variant-numeric:tabular-nums; }
+  @media(max-width:640px) { #steelman-study .sm-review-button span { display:none; } }
   #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
@@ -621,8 +639,11 @@
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
     #steelman-study .sm-persona { padding-left:6px; }
+    #steelman-study .sm-site { padding-left:12px; padding-right:12px; }
+    #steelman-study .sm-site-tools { gap:6px; }
+    #steelman-study .sm-review-button { padding:0 8px; }
     #steelman-study .sm-persona span { display:none; }
-    #steelman-study .sm-persona select { max-width:84px; }
+    #steelman-study .sm-persona select { max-width:68px; }
     #steelman-study:is([data-zoom="read"],[data-zoom="case"]) .sm-wordmark-text { display:none; }
   }
 
@@ -951,17 +972,17 @@
   };
   const ME = 'kieran_lamee';
   // Roles build on each other. Signed out can only read.
-  const RANK = {out:0,view:1,vote:2,contribute:3,owner:4};
-  const PERSONAS = {you:'Your access',owner:'Owner',contribute:'Contributor',vote:'Voter',view:'Viewer',out:'Signed out'};
+  const RANK = {out:0,view:1,vote:2,contribute:3,edit:4,owner:5};
+  const PERSONAS = {you:'Your access',owner:'Owner',edit:'Editor',contribute:'Contributor',vote:'Voter',view:'Viewer',out:'Signed out'};
   // What each action needs. Anything not listed (reading, folding, highlighting, opening comments) is open to everyone.
   const NEEDS = {
     'comment-add':'view',reply:'view','reply-add':'view',resolve:'view','delete-comment':'view','report-source':'view','unreport-source':'view',share:'view','open-share':'view','create-open':'view',join:'view','request-access':'view',
     importance:'vote',preference:'vote',assess:'vote',
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
-    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
+    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     settings:'owner'};
-  const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
-  const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',owner:'You own this board.'};
+  const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
+  const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
   const swatch = s => `<span class="sm-swatch" data-canvas="${s.canvas}" aria-hidden="true"></span>`;
   const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
@@ -973,11 +994,20 @@
     });
     return d;
   }
+  // The capstone example runs Edited: maya.chen owns it, you're an editor, and two contributions wait for review.
+  function editedExample(d) {
+    Object.assign(d.question.rules=defaultRules('pod6'),{publish:'review',structure:'editors'});
+    d.question.people=[{user:ME,role:'edit'},{user:'jordan_w',role:'contribute'},{user:'tess.b',role:'contribute'},{user:'omar_h',role:'contribute'}];
+    d.pending=[
+      {id:'p1',kind:'idea',option:'capstone-o1',claim:'Hand-written code is the only fair way to compare teams with different access to AI tools.',reason:'',by:'tess.b',at:'2026-11-09T09:30:00Z'},
+      {id:'p2',kind:'version',idea:'capstone-0-0',claim:'Disclosure shows graders how each team used AI, without banning tools students will use at work.',reason:'Shorter, and says what graders get.',by:'omar_h',at:'2026-11-09T10:15:00Z'}];
+    return d;
+  }
   const seedDocs = () => ({
     openweights:seedDoc(),
-    capstone:sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
+    capstone:editedExample(sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
       ['Allow it, with disclosure',[['Disclosure keeps grading honest while letting teams build the way they will at work.',34,6,2],['A ban is hard to enforce; disclosure at least makes AI use visible.',22,3,3]]],
-      ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]}),
+      ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]})),
     standups:sketchDoc('standups',{q:'Should we replace daily standups with written updates?',author:'priya_s',posted:'2026-11-03',org:'northwind',visibility:'org',options:[
       ['Go async',[['Written updates free a fixed meeting slot for a team spread over four time zones.',18,5,0],['A written log shows who was blocked, days later.',11,1,1]]],
       ['Keep live standups',[['Live standups surface blockers people don’t think to write down.',15,2,2],['New hires pick up team norms faster by hearing them daily.',6]]],
@@ -1012,7 +1042,7 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -1056,8 +1086,8 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 8) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===8 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 9) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===9 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
@@ -1077,7 +1107,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:8,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',docs,docsVersion:9,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -1135,7 +1165,9 @@
   function myRole() { return state.persona==='you'?realRole():state.persona; }
   const can = level => level==='structure'?canStructure():RANK[myRole()]>=RANK[level];
   // The board's rules say who changes its structure: anyone who can write, its editors, or only the owner.
-  function canStructure() { const r=doc.question.rules; if(myRole()==='owner') return true; if(!can('contribute')) return false; return r.structure==='writers'||(r.structure==='editors'&&state.persona==='you'&&r.editors.includes(ME)); }
+  function canStructure() { const r=doc.question.rules; if(myRole()==='owner') return true; return r.structure==='writers'?can('contribute'):r.structure==='editors'?can('edit'):false; }
+  // Under "Editors review first", what anyone below editor adds waits for an editor.
+  const held = () => doc.question.rules.publish==='review'&&!can('edit');
   const canMove = id => can('contribute')&&(canStructure()||cards[id]?.by==='you');
   const canSuggest = () => can('contribute')&&!canStructure();
   const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
@@ -1292,6 +1324,23 @@
       return `<div class="sm-suggest" role="note">${icon('merge')}<p>${text}</p>${actions?`<div class="sm-suggest-actions">${actions}</div>`:''}</div>`;
     }).join('');
   }
+  // Held for review: the author and editors see it; everyone else doesn't until it's accepted.
+  // Declined items stay with their author, with the reason, until dismissed.
+  const seesHeld = p => p.by==='you'||(can('edit')&&p.status!=='declined');
+  const heldIn = (kind,where) => doc.pending.filter(p=>p.kind===kind&&(kind==='idea'?p.option===where:p.idea===where)&&seesHeld(p));
+  function heldCard(p) {
+    const declined=p.status==='declined',deciding=state.declining===p.id;
+    const tag=`<span class="sm-held-tag">${icon(declined?'x':'hourglass')}${declined?'Declined':p.kind==='version'?'New wording · awaiting review':'Awaiting review'}</span>`;
+    const actions=declined?linkButton('held-dismiss',p.id,'Dismiss')
+      :deciding?`<input id="sm-decline-reason" data-key="decline-reason" maxlength="140" placeholder="Reason (optional)" aria-label="Reason for declining" value="${escape(state.declineDraft||'')}">`+linkButton('held-decline-confirm',p.id,'Decline')+linkButton('held-decline-cancel',p.id,'Cancel')
+      :can('edit')?linkButton('held-accept',p.id,'Accept')+linkButton('held-decline',p.id,'Decline')
+      :p.by==='you'?linkButton('held-withdraw',p.id,'Withdraw'):'';
+    return `<article class="sm-card sm-held ${declined?'sm-declined':''}" data-held="${p.id}">${tag}<div class="sm-claim-button"><span class="sm-claim">${escape(p.claim)}</span></div><p class="sm-byline">${p.by==='you'?'you':escape(p.by)}</p>${declined&&p.reason?`<p class="sm-held-reason">${escape(p.reason)}</p>`:''}<div class="sm-card-meta sm-held-actions">${actions}</div></article>`;
+  }
+  const heldVersions = idea => { const list=heldIn('version',idea.id); return list.length?`<div class="sm-held-list">${list.map(heldCard).join('')}</div>`:''; };
+  const heldIdeas = option => heldIn('idea',option).map(p=>`<div class="sm-new-idea sm-held-row"><span aria-hidden="true"></span>${heldCard(p)}</div>`).join('');
+  const toReview = () => doc.pending.filter(p=>p.status!=='declined');
+  const heldId = () => { let id; do id='p'+(doc.nextId++); while(doc.pending.some(x=>x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
@@ -1303,7 +1352,7 @@
     const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
     const verb=target&&canMove(state.moving)?'Combine here':'Suggest combining here';
     const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="${verb}: same point as “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}${verb}</span></button>`:'';
-    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}</div></section>`;
+    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}</div></section>`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -1311,7 +1360,8 @@
     return `<div class="sm-move-banner" role="status"><span>${canMove(state.moving)?'Pick the argument that makes the same point.':'Pick the argument that makes the same point. The owner or the author decides.'}</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
-  function addArgument(option) {
+  const addArgument = option => heldIdeas(option)+addArgumentSlot(option);
+  function addArgumentSlot(option) {
     const name=escape(optionName(option));
     if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
     return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
@@ -1447,9 +1497,10 @@
     const row=(label,control,sub='',cls='')=>`<div class="sm-rrow ${cls}"><span class="sm-rrow-label">${label}${sub?`<small>${sub}</small>`:''}</span><span class="sm-rrow-control">${control}</span></div>`;
     const sel=(rule,opts)=>`<select class="sm-rselect" data-rule="${rule}" data-key="${k}-${rule}" aria-label="${rule==='publish'?'New arguments':'Reorganizing'}">${Object.entries(opts).map(([v,l])=>`<option value="${v}" ${r[rule]===v?'selected':''}>${l}</option>`).join('')}</select>`;
     const modes=`<div class="sm-modes" role="radiogroup" aria-label="Mode">${Object.entries(MODES).map(([id,m])=>`<button type="button" role="radio" class="sm-mode cursor-interaction" data-action="rule-mode" data-id="${id}" data-key="${k}-${id}" aria-checked="${mode===id}">${icon(m.glyph)}<span>${m.label}</span></button>`).join('')}</div>`;
-    const people=PEOPLE[spaceId]||[];
+    const q=scope==='board'?doc.question:null,chosen=q?q.people.filter(x=>x.role==='edit').map(x=>x.user):r.editors;
+    const people=[...new Set([...(PEOPLE[spaceId]||[]),...(q?q.people.map(x=>x.user).filter(u=>!u.includes('@')):[])])];
     const editors=r.publish==='review'||r.structure==='editors'
-      ?row('Editors',`<span class="sm-editors">${people.map(u=>`<button type="button" class="sm-editor cursor-interaction" data-action="rule-editor" data-id="${escape(u)}" data-key="${k}-${escape(u)}" aria-pressed="${r.editors.includes(u)}" aria-label="${escape(u)}" data-tooltip="${escape(u)}">${escape(userInitials(u))}</button>`).join('')}</span>`,r.editors.length?escape(r.editors.join(', ')):'None yet','sm-rrow-stack'):'';
+      ?row('Editors',`<span class="sm-editors">${people.map(u=>`<button type="button" class="sm-editor cursor-interaction" data-action="rule-editor" data-id="${escape(u)}" data-key="${k}-${escape(u)}" aria-pressed="${chosen.includes(u)}" aria-label="${escape(u)}" data-tooltip="${escape(u)}">${escape(userInitials(u))}</button>`).join('')}</span>`,chosen.length?escape(chosen.join(', ')):'None yet','sm-rrow-stack'):'';
     const votes=`<span class="sm-checks">${Object.entries(JUDGMENTS).map(([id,[g,l]])=>`<button type="button" class="sm-check cursor-interaction" data-action="rule-judgment" data-id="${id}" data-key="${k}-${id}" aria-pressed="${r.judgments[id]}">${icon(r.judgments[id]?'check':g)}${l}</button>`).join('')}</span>`;
     const ai=Object.entries(AI_FEATURES).map(([id,[l,cost]])=>{const ok=aiAllowed(spaceId,id),on=ok&&r.ai[id];
       return row(`${icon('bot')}${l}`,`<button type="button" role="switch" class="sm-switch cursor-interaction" data-action="rule-ai" data-id="${id}" data-key="${k}-${id}" aria-checked="${on}" aria-label="${l}" ${ok?'':`aria-disabled="true" data-tooltip="Off in ${escape(spaceOf(spaceId).name)}"`}></button>`,cost,'sm-rrow-ai'+(ok?'':' sm-rrow-off'));}).join('');
@@ -1475,7 +1526,10 @@
     if(action==='rule-mode') Object.assign(r,{publish:MODES[id].publish,structure:MODES[id].structure});
     if(action==='rule-judgment') r.judgments[id]=!r.judgments[id];
     if(action==='rule-ai') r.ai[id]=!r.ai[id];
-    if(action==='rule-editor') r.editors=r.editors.includes(id)?r.editors.filter(u=>u!==id):[...r.editors,id];
+    if(action==='rule-editor') {
+      if(t.create) r.editors=r.editors.includes(id)?r.editors.filter(u=>u!==id):[...r.editors,id];
+      else {const people=doc.question.people,x=people.find(y=>y.user===id);if(!x)people.push({user:id,role:'edit'});else x.role=x.role==='edit'?'contribute':'edit';}
+    }
     if(action==='rule-set') r[id]=value;
     if(action==='rule-closes') {r.closes=id==='add'?'2026-11-16':'';key=id==='add'?key.replace('-add',''):key.replace('-clear','-add');}
     if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
@@ -1928,6 +1982,7 @@
       tools=`<div class="sm-zoom" role="group" aria-label="View">${viewBtn('read','layout-grid','Board')}${viewBtn('case','award','Strongest case')}</div>`
         // Who else has this board open: faces only. They don't appear on cards.
         +(f.here.length?`<span class="sm-site-faces" role="img" aria-label="Also here: ${escape(f.here.join(', '))}${f.more?` and ${f.more} more`:''}">${f.here.map(u=>`<span title="${escape(u)} is here">${escape(userInitials(u))}</span>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
+        +(can('edit')&&toReview().length?`<button type="button" class="sm-review-button cursor-interaction" data-action="review-next" data-key="review-next" data-tooltip="Next to review">${icon('inbox')}<b>${toReview().length}</b><span>to review</span></button>`:'')
         +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
       middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
     } else {
@@ -1982,6 +2037,7 @@
     const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
     const rules=structuredClone(d.rules||defaultRules(d.space)),nd=docs[id];nd.question.rules=rules;
+    nd.question.people=rules.editors.map(user=>({user,role:'edit'}));rules.editors=[];
     if(rules.ai.draft&&aiAllowed(d.space,'draft')) {
       nd.options.forEach((o,oi)=>{const idea=`${id}-ai${oi}`,card=idea+'v';nd.ideas.push({id:idea,option:o.id,score:0,versions:[card]});nd.cards[card]={at:new Date(NOW).toISOString(),by:'ai',idea,claim:`AI draft: the strongest reason for “${o.name}”.`,yes:0,no:0,pref:0,sources:[],explanation:'',ai:{basis:'Drafted from the question and this option.',limits:'Simulated: no model ran.'},...(rules.ai.check&&aiAllowed(d.space,'check')?{aiCheck:{verdict:'none',summary:''}}:{})};});
       state.spent[d.space]=(state.spent[d.space]||0)+20;
@@ -1996,8 +2052,8 @@
 
   // ── Share: who has access to this board, and how anyone else can get in ──
   // Roles build on each other: viewers read and comment, voters also vote and assess evidence, contributors also write.
-  const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute'};
-  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write'};
+  const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute',edit:'can edit'};
+  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write',edit:'read, comment, vote, write, and review'};
   // Initials from a username's words, ignoring numbers: maya.chen → MC, samr_92 → SA.
   const userInitials = u => { const words=u.split(/[\s_.@]+/).filter(w=>/^[a-z]/i.test(w)); return (words.length>1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
   const roleSelect = (id,current,attrs='',disabled=false,upTo='owner') => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).filter(([v])=>RANK[v]<=RANK[upTo]).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
@@ -2276,6 +2332,7 @@
     if(event.target.id==='sm-option-name') {state.optionDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
+    if(event.target.id==='sm-decline-reason') {state.declineDraft=event.target.value;return;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -2520,6 +2577,11 @@
     if(action==='add-idea') {
       const claim=state.ideaDraftClaim.trim(),field=root.querySelector('#sm-idea-claim');
       if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('Write your argument first.');return;}
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:'idea',option:id,claim:claim.slice(0,500),reason:state.ideaDraftReason.trim().slice(0,700),by:'you',at:new Date(NOW).toISOString()});
+        state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';focus='held-withdraw-'+pid;announce('Sent to the editors.');
+        render(focus);save();return;
+      }
       const added=addIdea(id,claim,state.ideaDraftReason.trim());
       state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';
       state.expanded=added;focus='claim-'+added;motion='added';
@@ -2536,10 +2598,37 @@
         form.querySelector(!claim?'#sm-draft':'#sm-reason').focus();
         announce('Add your version and what it improves.');return;
       }
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:'version',idea:id,claim:claim.slice(0,500),reason:reason.slice(0,700),by:'you',at:new Date(NOW).toISOString()});
+        state.composing=false;state.draftClaim='';state.draftReason='';focus='held-withdraw-'+pid;announce('Sent to the editors.');
+        render(focus);save();return;
+      }
       const added=addVersion(id,claim,reason);if(!added)return;
       state.composing=false;state.draftClaim='';state.draftReason='';
       state.expanded=added;focus='claim-'+state.expanded;motion='added';
       announce('Your version was added at the end of the row. It starts unreviewed, with no articulation votes.');
+    }
+    if(action.startsWith('held-')||action==='review-next') {
+      const p=doc.pending.find(x=>x.id===id),drop=()=>{doc.pending=doc.pending.filter(x=>x.id!==id);};
+      if(action==='held-accept'&&p) {
+        const card=p.kind==='idea'?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind==='idea'){i.by=p.by;i.at=p.at;}}
+        drop();focus=card?'claim-'+card:'review-next';announce('Accepted.');
+      }
+      if(action==='held-decline') {state.declining=id;state.declineDraft='';focus='decline-reason';}
+      if(action==='held-decline-cancel') {state.declining=null;focus='held-decline-'+id;}
+      if(action==='held-decline-confirm'&&p) {p.status='declined';p.reason=(state.declineDraft||'').trim();state.declining=null;focus='review-next';announce('Declined.');}
+      if(action==='held-withdraw'||action==='held-dismiss') {drop();focus=p?.kind==='idea'?'compose-idea-'+p.option:'';announce(action==='held-withdraw'?'Withdrawn.':'Dismissed.');}
+      // Step to the next item waiting for review: open its row's fold if needed and move focus to Accept.
+      if(action==='review-next') {
+        const onScreen=[...root.querySelectorAll('[data-held]')].map(e=>e.dataset.held),at=x=>{const i=onScreen.indexOf(x.id);return i<0?1e3:i;};
+        const list=toReview().sort((a,b)=>at(a)-at(b));if(!list.length)return;
+        state.reviewStep=((state.reviewStep??-1)+1)%list.length;const next=list[state.reviewStep];
+        if(next.kind==='version'){const i=ideaOf(next.idea);const all=rowsOf(i.option);const at=all.indexOf(i);if(at>=shownRows(i.option,all))state.shownRows[colKey(i.option)]=at+1;}
+        render('held-accept-'+next.id);root.querySelector(`[data-held="${next.id}"]`)?.scrollIntoView({block:'center',behavior:reducedMotion()?'auto':'smooth'});
+        announce(`${state.reviewStep+1} of ${list.length} to review.`);save();return;
+      }
+      render(focus);save();return;
     }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     render(focus,motion);save();

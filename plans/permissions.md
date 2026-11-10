@@ -76,7 +76,7 @@ Steelman already avoids the hardest editing problem. Nobody overwrites anyone: a
 - A one-line summary under the question, e.g. *"Edited · 2 editors · new arguments are reviewed"*. Clicking it opens the rules.
 - New steelman sheet: the space suggests a default (a public community → Public; a private space → Open team).
 
-### P3. Editors and the review queue
+### P3. Editors and the review queue *(built Nov 10: can edit role, held arguments and wordings, Accept / Decline with reason, Withdraw, the "to review" stepper. Not yet: held sources, Ask for changes, per-option stewards)*
 - Share gains a **can edit** role. Editors can optionally be assigned to one option ("Steward of *Why it makes sense*").
 - In Edited mode, a non-editor's argument, version, or source is held. Its author and the editors see it as a faint card with a dashed border, marked *Awaiting review*. Nobody else sees it.
 - An editor's queue (a badge in the header showing the pending count) offers **Accept**, **Decline with reason**, and **Ask for changes**. The author sees the outcome on the card. This extends the existing combine-suggestion pattern.
