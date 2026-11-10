@@ -585,6 +585,20 @@ Simulated checks: `simulateCheck` returns a verdict per source (unavailable or n
 | Credits | POD 6: 480 → 477 after three checks |
 | Console | No errors |
 
+## November 10 — Moderation and history (permissions P4)
+
+Reports (`reports`), removals (`hidden`), and a per-board log (`doc.log`) on versions and comments. The ⋯ menu gains Report (anyone signed in), and Hide / Restore / Dismiss reports (editors), with a reason picker in the same menu. The bike-lane board in Brooklyn Streets is the public example (save version 10).
+
+| Check | Observed result |
+| --- | --- |
+| Moderator view | Pill "Public"; "1 to review"; "Spam ×2" flag on the parking-ad argument; the abusive argument shows "Removed by a moderator · Abusive" with its text struck through |
+| Hide | Menu: Write a better version, Combine, Report, Hide, Dismiss reports → Hide → reasons → Spam: card becomes a removed note, "to review" disappears, focus stays on its ⋯ |
+| History | "You hid “Cheap monthly parking…” Spam · 1m ago" above "rtorres hid “Drivers who complain…” Abusive · 18h ago" |
+| Voter view | Removed notes only (no original text), no flags, no review button; ⋯ offers Report; reporting as Off-topic adds a flag and "1 to review" for the moderator |
+| Comments | promo_bk's comment shows a flag (1) for moderators; Hide → Spam → "Removed by a moderator · Spam"; Restore brings back the text |
+| Phone width (375 px) | No horizontal overflow on the bike-lane board |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

@@ -263,6 +263,23 @@
   #steelman-study .sm-review-button svg { width:15px; height:15px; }
   #steelman-study .sm-review-button b { font-weight:700; font-variant-numeric:tabular-nums; }
   @media(max-width:640px) { #steelman-study .sm-review-button span { display:none; } }
+  /* Moderation: a report count on the card's edge (moderators only); a removed version keeps its place as a quiet note. */
+  #steelman-study .sm-flag-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px solid var(--sm-cred-weak); border-radius:999px; background:var(--sm-card); color:var(--sm-ink); font:600 11px/1 var(--sm-sans); box-shadow:0 0 0 2px var(--sm-card); cursor:help; }
+  #steelman-study .sm-flag-tag svg { width:12px; height:12px; color:var(--sm-cred-weak); }
+  #steelman-study .sm-removed { position:relative; border:1px dashed var(--sm-line); background:transparent; box-shadow:none; }
+  #steelman-study .sm-removed-note { display:flex; align-items:center; gap:6px; margin:0; padding:14px 40px 14px 16px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-removed-note svg { width:14px; height:14px; flex:none; }
+  #steelman-study .sm-removed-claim { margin:-6px 0 0; padding:0 16px 14px; font-size:12px; line-height:1.5; color:var(--sm-quiet); text-decoration:line-through; }
+  #steelman-study .sm-comment .sm-removed-claim { padding:0; margin:2px 0 0; }
+  #steelman-study .sm-comment-flag { display:inline-flex; align-items:center; gap:3px; margin-left:auto; font-size:11px; font-weight:600; color:var(--sm-ink); cursor:help; }
+  #steelman-study .sm-comment-flag svg { width:12px; height:12px; color:var(--sm-cred-weak); }
+  #steelman-study .sm-menu-rule { height:1px; margin:4px 8px; background:var(--sm-line); }
+  #steelman-study .sm-history { display:grid; gap:0; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-history li { display:flex; gap:10px; padding:12px 0; border-top:1px solid var(--sm-line); font-size:13px; line-height:1.45; }
+  #steelman-study .sm-history li:first-child { border-top:0; padding-top:0; }
+  #steelman-study .sm-history p { margin:0; }
+  #steelman-study .sm-history time { display:block; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-history-reason { display:inline-block; padding:0 6px; border:1px solid var(--sm-line); border-radius:4px; font-size:11px; color:var(--sm-muted); }
   #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
@@ -985,7 +1002,7 @@
     'comment-add':'view',reply:'view','reply-add':'view',resolve:'view','delete-comment':'view','report-source':'view','unreport-source':'view',share:'view','open-share':'view','create-open':'view',join:'view','request-access':'view',
     importance:'vote',preference:'vote',assess:'vote',
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
-    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
+    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     settings:'owner'};
   const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -1009,6 +1026,18 @@
       {id:'p2',kind:'version',idea:'capstone-0-0',claim:'Disclosure shows graders how each team used AI, without banning tools students will use at work.',reason:'Shorter, and says what graders get.',by:'omar_h',at:'2026-11-09T10:15:00Z'}];
     return d;
   }
+  // The bike-lane example is a public community board: you and rtorres moderate; one argument is reported, one removed.
+  function moderatedExample(d) {
+    d.question.rules=defaultRules('brooklyn');
+    d.question.people=[{user:ME,role:'edit'},{user:'rtorres',role:'edit'},{user:'ana.lu',role:'contribute'},{user:'kwame_b',role:'contribute'}];
+    const add=(key,option,claim,score,extra)=>{d.ideas.push({id:key,option,score,versions:[key+'v']});d.cards[key+'v']={at:'2026-11-08T15:00:00Z',idea:key,claim,yes:0,no:0,pref:0,sources:[],explanation:'',...extra};};
+    add('bikelane-x1','bikelane-o1','Cheap monthly parking near 7th Ave: message me for rates.',2,{by:'parkfinder22',reports:[{by:'kwame_b',reason:'spam',at:'2026-11-08T16:00:00Z'},{by:'ana.lu',reason:'spam',at:'2026-11-08T17:10:00Z'}]});
+    add('bikelane-x2','bikelane-o0','Drivers who complain about bike lanes should just move out of the city.',1,{by:'cyclebro',hidden:{by:'rtorres',reason:'abuse',at:'2026-11-08T18:20:00Z'}});
+    d.comments=[{id:'bl-c1',target:'question',by:'ana.lu',at:'2026-11-08T12:00:00Z',text:'The DOT study covered 9th Avenue too. Worth adding as a source?'},
+      {id:'bl-c2',target:'question',by:'promo_bk',at:'2026-11-08T13:30:00Z',text:'Join our group for the REAL story on 7th Ave!!',reports:[{by:'dev_oka17',reason:'spam',at:'2026-11-08T14:00:00Z'}]}];
+    d.log=[{at:'2026-11-08T18:20:00Z',by:'rtorres',did:'hid',ref:'Drivers who complain about bike lanes should…',reason:'abuse'}];
+    return d;
+  }
   const seedDocs = () => ({
     openweights:seedDoc(),
     capstone:editedExample(sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
@@ -1018,9 +1047,9 @@
       ['Go async',[['Written updates free a fixed meeting slot for a team spread over four time zones.',18,5,0],['A written log shows who was blocked, days later.',11,1,1]]],
       ['Keep live standups',[['Live standups surface blockers people don’t think to write down.',15,2,2],['New hires pick up team norms faster by hearing them daily.',6]]],
       ['Two live days, three written',[]]]}),
-    bikelane:sketchDoc('bikelane',{q:'Should 7th Avenue get a protected bike lane?',author:'dev_oka17',posted:'2026-10-29',org:'brooklyn',visibility:'link',options:[
+    bikelane:moderatedExample(sketchDoc('bikelane',{q:'Should 7th Avenue get a protected bike lane?',author:'dev_oka17',posted:'2026-10-29',org:'brooklyn',visibility:'link',options:[
       ['Build the protected lane',[['Protected lanes cut injuries on comparable avenues.',61,22,6],['A continuous lane connects the two park entrances.',33,9,2],['Delivery loading zones can be kept on side streets.',18,3,7]]],
-      ['Keep parking, paint a lane',[['Shops on the avenue depend on short-stay parking.',47,8,9]]]]}),
+      ['Keep parking, paint a lane',[['Shops on the avenue depend on short-stay parking.',47,8,9]]]]})),
     curve:sketchDoc('curve',{q:'Should intro courses grade on a curve?',author:'samr_92',posted:'2026-11-07',org:'campus',visibility:'link',options:[
       ['Grade on a curve',[['A curve corrects for an exam that turned out harder than intended.',40,9,4],['Curving keeps grades comparable across sections with different instructors.',21,2,5]]],
       ['Grade against fixed standards',[['Fixed standards let every student succeed without competing with classmates.',44,7,2],['Curves discourage studying together.',27,3,6],['A fixed rubric tells students what they need to learn.',13]]]]}),
@@ -1048,7 +1077,7 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[];
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
     for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
@@ -1093,8 +1122,8 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 9) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===9 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 10) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===10 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
@@ -1114,7 +1143,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',docs,docsVersion:9,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',menuView:null,commentPick:null,docs,docsVersion:10,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -1283,16 +1312,18 @@
   const byline = id => { const by=cards[id].by; return by&&by!=='ai'?`<p class="sm-byline">${by==='you'?'you':escape(by)}</p>`:''; };
   // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark='', lit=false) {
+    if(cards[id].hidden) return removedCard(id,inTrack);
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
     const menuOpen=state.menu===id;
     const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:'';
     const ai=cards[id].by==='ai'?`<span class="sm-ai-tag" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}AI draft</span>`:'';
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''} ${ai?'sm-ai':''}" data-card="${id}">${mark}${ai}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button>${byline(id)}<div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''} ${ai?'sm-ai':''}" data-card="${id}" ${flagTag(id)?'data-flagged':''}>${mark}${ai}${flagTag(id)}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button>${byline(id)}<div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
-  function menuMarkup(id) {
+  function menuMarkup(id) { return cards[id]&&state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?modItems(id):''); }
+  function baseMenuMarkup(id) {
     const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
     if(id.startsWith('lens:')) {
       const option=id.slice(5),mode=lensOf(option)||'off';
@@ -1386,6 +1417,33 @@
   const heldVersions = idea => { const list=heldIn('version',idea.id); return list.length?`<div class="sm-held-list">${list.map(heldCard).join('')}</div>`:''; };
   const heldIdeas = option => heldIn('idea',option).map(p=>`<div class="sm-new-idea sm-held-row"><span aria-hidden="true"></span>${heldCard(p)}</div>`).join('');
   const toReview = () => doc.pending.filter(p=>p.status!=='declined');
+  // Moderation: anyone signed in reports; editors (moderators, on a public board) hide with a reason, restore, or dismiss reports.
+  // Reports stay private to moderators; hiding, restoring, and review decisions go in the board's history for everyone.
+  const REASONS = {spam:'Spam',abuse:'Abusive',offtopic:'Off-topic',other:'Something else'};
+  const reported = () => can('edit')?Object.keys(cards).filter(id=>cards[id].reports?.length&&!cards[id].hidden):[];
+  const reviewCount = () => toReview().length+reported().length;
+  const clip = (text,n=48) => text.length>n?text.slice(0,n-2).trimEnd()+'…':text;
+  function logEvent(did,text,reason='') { doc.log.unshift({at:new Date().toISOString(),by:'you',did,ref:clip(text),reason}); }
+  const reasonsOf = list => Object.entries(list.reduce((m,r)=>(m[r.reason]=(m[r.reason]||0)+1,m),{})).map(([k,n])=>REASONS[k]+(n>1?` ×${n}`:'')).join(', ');
+  const flagTag = id => { const r=cards[id].reports||[]; return can('edit')&&r.length&&!cards[id].hidden?`<span class="sm-flag-tag" role="img" tabindex="0" aria-label="${r.length} ${r.length===1?'report':'reports'}: ${escape(reasonsOf(r))}" data-tooltip="${escape(reasonsOf(r))}">${icon('flag')}${r.length}</span>`:''; };
+  function removedCard(id,inTrack) {
+    const c=cards[id],mod=can('edit');
+    return `<article class="sm-card sm-removed ${inTrack?'sm-version-face':''}" data-card="${id}">${mod?`<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${state.menu===id}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button>`:''}<p class="sm-removed-note">${icon('eye-off')}Removed by a moderator · ${REASONS[c.hidden.reason]||'Removed'}</p>${mod?`<p class="sm-removed-claim">${escape(c.claim)}</p>`:''}</article>`;
+  }
+  // The ⋯ menu's moderation items, and the reason picker it switches to.
+  const modItem = (action,id,glyph,label,value='') => `<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" ${value?`data-value="${value}"`:''} data-key="${action}-${id}${value?'-'+value:''}">${icon(glyph)}<span>${label}</span></button>`;
+  function modItems(id) {
+    const c=cards[id]; if(!c||c.by==='you'||!can('view')) return '';
+    const mine=c.reports?.some(r=>r.by==='you');
+    let h=c.hidden?'':mine?modItem('report-withdraw',id,'flag-off','Withdraw your report'):modItem('report-open',id,'flag','Report');
+    if(can('edit')) h+=c.hidden?modItem('restore-card',id,'eye','Restore'):modItem('hide-open',id,'eye-off','Hide')+(c.reports?.length?modItem('reports-dismiss',id,'check','Dismiss reports'):'');
+    return h?`<div class="sm-menu-rule" role="separator"></div>${h}`:'';
+  }
+  const reasonMenu = id => `<p class="sm-menu-note">${state.menuView==='report'?'Report it as':'Hide it as'}</p>`+Object.entries(REASONS).map(([k,l])=>modItem(state.menuView==='report'?'report-card':'hide-card',id,{spam:'ban',abuse:'shield-alert',offtopic:'move-right',other:'circle-help'}[k],l,k)).join('');
+  function historyMarkup() {
+    const verbs={hid:'hid',restored:'restored',dismissed:'dismissed reports on',accepted:'accepted',declined:'declined',deleted:'deleted'};
+    return doc.log.length?`<ol class="sm-history">${doc.log.map(e=>`<li><span class="sm-avatar" aria-hidden="true">${escape(userInitials(e.by==='you'?ME:e.by))}</span><p><strong>${e.by==='you'?'You':escape(e.by)}</strong> ${verbs[e.did]||e.did} “${escape(e.ref)}”${e.reason?` <span class="sm-history-reason">${escape(REASONS[e.reason]||e.reason)}</span>`:''}<time datetime="${e.at}" title="${fullDate(e.at)}">${ago(e.at)}</time></p></li>`).join('')}</ol>`:'<p class="sm-field-hint">Nothing yet.</p>';
+  }
   const heldId = () => { let id; do id='p'+(doc.nextId++); while(doc.pending.some(x=>x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
@@ -1460,7 +1518,7 @@
   // ── Strongest case: each option's three most important arguments, each in its best-articulated wording. ──
   const CASE_SIZE=3;
   function caseColumn(option) {
-    const rows=rowsOf(option),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const rows=rowsOf(option).filter(i=>!cards[ordered(i)[0]].hidden),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
     const items=top.map((idea,k)=>{
       const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
       const facts=`<span class="sm-case-facts"><span title="Importance: ${imp} net votes">${icon('arrow-up-narrow-wide')}${imp}</span>${n>1?`<span title="The best-articulated of ${n} wordings">${icon('layers')}best of ${n}</span>`:''}</span>`;
@@ -1522,7 +1580,7 @@
       +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li>`
       +`<li class="sm-meta-rules">${rulesChip()}</li>`
       +`<li class="sm-meta-access">${escape(YOU_CAN[myRole()])}${accessAsk()}</li></ul>`
-      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="history" data-key="history" aria-label="History" aria-expanded="${state.drawer==='history'}" aria-controls="sm-drawer-body" data-tooltip="History">${icon('history')}</button><button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
   }
   function rulesChip() {
     const q=doc.question,r=q.rules,m=modeOf(r),inner=icon(m==='custom'?'sliders-horizontal':MODES[m].glyph)+escape(rulesLabel(r))+(r.closes?` · Closes ${shortDate(r.closes)}`:'');
@@ -1589,8 +1647,8 @@
   }
   // Closing the drawer returns focus to the button that opened it.
   function closeDrawer() {
-    const back=state.drawer==='comments'?'comments-'+state.commentTarget:'settings';
-    announce(state.drawer==='comments'?'Comments closed.':'Settings closed.');
+    const back=state.drawer==='comments'?'comments-'+state.commentTarget:state.drawer==='history'?'history':'settings';
+    announce(state.drawer==='comments'?'Comments closed.':state.drawer==='history'?'History closed.':'Settings closed.');
     state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
   }
   function settingsMarkup() {
@@ -1621,12 +1679,17 @@
   const linkButton = (action,id,label,extra='') => `<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${extra}>${label}</button>`;
   function commentItem(c,isReply) {
     const who=c.by==='you'?'You':c.by,initials=userInitials(c.by==='you'?ME:c.by);
-    const actions=c.deleted?'':[
+    const picking=state.commentPick?.id===c.id?state.commentPick.kind:null,others=c.by!=='you'&&!c.deleted;
+    const actions=c.deleted?'':c.hidden?(can('edit')?linkButton('comment-restore',c.id,'Restore'):'')
+      :picking?Object.entries(REASONS).map(([k,l])=>linkButton(picking==='report'?'comment-report':'comment-hide',c.id,l,`data-value="${k}"`)).join('')+linkButton('comment-pick-cancel',c.id,'Cancel'):[
       !isReply&&!c.resolved?linkButton('reply',c.id,'Reply'):'',
       !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
-      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
+      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):'',
+      others&&can('view')?(c.reports?.some(r=>r.by==='you')?linkButton('comment-report-withdraw',c.id,'Reported · Undo'):linkButton('comment-report-open',c.id,'Report')):'',
+      others&&can('edit')?linkButton('comment-hide-open',c.id,'Hide'):''
     ].join('');
-    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar${c.by==='you'?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+    const flags=can('edit')&&c.reports?.length&&!c.hidden?`<span class="sm-comment-flag" data-tooltip="${escape(reasonsOf(c.reports))}">${icon('flag')}${c.reports.length}</span>`:'';
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar${c.by==='you'?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time>${flags}</header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':c.hidden?`<p class="sm-comment-deleted">Removed by a moderator · ${REASONS[c.hidden.reason]}</p>${can('edit')?`<p class="sm-removed-claim">${escape(c.text)}</p>`:''}`:`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -1647,10 +1710,10 @@
     const open=!!state.drawer;
     drawer.hidden=!open; root.toggleAttribute('data-drawer',open);
     if(!open){drawer.innerHTML='';return;}
-    const comments=state.drawer==='comments',title=comments?'Comments':'Settings';
+    const comments=state.drawer==='comments',title=comments?'Comments':state.drawer==='history'?'History':'Settings';
     const scroll=drawer.scrollTop;
     drawer.innerHTML=`<div class="sm-drawer-head"><h2 id="sm-drawer-title">${title}</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="close-drawer" data-key="close-drawer" aria-label="Close ${title.toLowerCase()}" data-tooltip="Close">${icon('x')}</button></div>`
-      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${settingsMarkup()}</div>`);
+      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${state.drawer==='history'?historyMarkup():settingsMarkup()}</div>`);
     drawer.scrollTop=scroll;
   }
   const headEl=root.querySelector('.sm-head');
@@ -1672,7 +1735,7 @@
     menuEl.style.left=Math.max(8,Math.round(box.right-rootBox.left-menuEl.offsetWidth))+'px';
     menuEl.style.top=Math.round(box.bottom-rootBox.top+4)+'px';
   }
-  function closeMenu() { if(!state.menu) return; state.menu=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
+  function closeMenu() { if(!state.menu) return; state.menu=null; state.menuView=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
   // Deleting keeps a snapshot for a short Undo window; the snapshot is never saved.
   let undoTimer=0;
   const takeSnapshot = () => JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
@@ -2028,7 +2091,7 @@
       tools=`<div class="sm-zoom" role="group" aria-label="View">${viewBtn('read','layout-grid','Board')}${viewBtn('case','award','Strongest case')}</div>`
         // Who else has this board open: faces only. They don't appear on cards.
         +(f.here.length?`<span class="sm-site-faces" role="img" aria-label="Also here: ${escape(f.here.join(', '))}${f.more?` and ${f.more} more`:''}">${f.here.map(u=>`<span title="${escape(u)} is here">${escape(userInitials(u))}</span>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
-        +(can('edit')&&toReview().length?`<button type="button" class="sm-review-button cursor-interaction" data-action="review-next" data-key="review-next" data-tooltip="Next to review">${icon('inbox')}<b>${toReview().length}</b><span>to review</span></button>`:'')
+        +(can('edit')&&reviewCount()?`<button type="button" class="sm-review-button cursor-interaction" data-action="review-next" data-key="review-next" data-tooltip="Next to review">${icon('inbox')}<b>${reviewCount()}</b><span>to review</span></button>`:'')
         +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
       middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
     } else {
@@ -2431,11 +2494,15 @@
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
       if(state.menu===id){closeMenu();trigger.focus();return;}
-      state.menu=id;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
+      state.menu=id;state.menuView=null;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
       if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
       positionMenu();menuEl.querySelector('[role="menuitem"]:not([aria-disabled])')?.focus();return;
     }
-    if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
+    if(action==='report-open'||action==='hide-open') {
+      state.menuView=action==='report-open'?'report':'hide';renderMenu();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});positionMenu();
+      menuEl.querySelector('[role="menuitem"]')?.focus();return;
+    }
+    if(state.menu&&trigger.closest('.sm-menu')) {state.menu=null;state.menuView=null;}
     // Any other action leaves pick mode.
     if(state.moving&&!['move-here','cancel-move'].includes(action)) state.moving=null;
     if(action==='add-option') {
@@ -2521,6 +2588,7 @@
       focus='draft';motion=wasOpen?'':'unfold';
       announce(kept?'You already have a draft version in progress in this row; it was kept.':'A new version starts from this wording. Change it, then say what it improves.');
     }
+    if(action==='delete-card'&&cards[id]&&cards[id].by!=='you') logEvent('deleted',cards[id].claim);
     if(action==='delete-card') {
       const rowGone=deleteVersion(id);focus='undo';
       announce(rowGone?'Argument deleted. Undo is available for ten seconds.':'Version deleted. Undo is available for ten seconds.');
@@ -2577,6 +2645,22 @@
       const fail=()=>{link.select();announce('Copying isn’t allowed here. The link is selected so you can copy it.');};
       if(navigator.clipboard?.writeText) navigator.clipboard.writeText('https://'+link.value).then(done,fail); else fail();
       return;
+    }
+    if(action==='history') {state.share=false;state.drawer=state.drawer==='history'?null:'history';focus=state.drawer?'close-drawer':'history';announce(state.drawer?'History opened beside the board.':'History closed.');}
+    {
+      const c=cards[id],val=trigger.dataset.value;
+      if(action==='report-card'&&c) {(c.reports||=[]).push({by:'you',reason:val,at:new Date().toISOString()});focus='menu-'+id;announce('Reported. Moderators will see it.');}
+      if(action==='report-withdraw'&&c) {c.reports=(c.reports||[]).filter(r=>r.by!=='you');focus='menu-'+id;announce('Report withdrawn.');}
+      if(action==='hide-card'&&c) {c.hidden={by:'you',reason:val,at:new Date().toISOString()};logEvent('hid',c.claim,val);focus='menu-'+id;announce('Hidden.');}
+      if(action==='restore-card'&&c) {delete c.hidden;logEvent('restored',c.claim);focus='menu-'+id;announce('Restored.');}
+      if(action==='reports-dismiss'&&c) {c.reports=[];logEvent('dismissed',c.claim);focus='menu-'+id;announce('Reports dismissed.');}
+      const cm=doc.comments.find(x=>x.id===id);
+      if(action==='comment-report-open'||action==='comment-hide-open') {state.commentPick={id,kind:action==='comment-report-open'?'report':'hide'};focus='comment-pick-cancel-'+id;}
+      if(action==='comment-pick-cancel') {state.commentPick=null;focus='comment-report-open-'+id;}
+      if(action==='comment-report'&&cm) {(cm.reports||=[]).push({by:'you',reason:val,at:new Date().toISOString()});state.commentPick=null;focus='comment-report-withdraw-'+id;announce('Reported. Moderators will see it.');}
+      if(action==='comment-report-withdraw'&&cm) {cm.reports=(cm.reports||[]).filter(r=>r.by!=='you');focus='comment-report-open-'+id;announce('Report withdrawn.');}
+      if(action==='comment-hide'&&cm) {cm.hidden={by:'you',reason:val,at:new Date().toISOString()};state.commentPick=null;logEvent('hid',cm.text,val);focus='comment-restore-'+id;announce('Hidden.');}
+      if(action==='comment-restore'&&cm) {delete cm.hidden;logEvent('restored',cm.text);focus='comment-hide-open-'+id;announce('Restored.');}
     }
     if(action==='settings') {state.share=false;state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
     if(action==='close-drawer') {focus=closeDrawer();}
@@ -2659,19 +2743,20 @@
       if(action==='held-accept'&&p) {
         const card=p.kind==='idea'?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
         if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind==='idea'){i.by=p.by;i.at=p.at;}queueCheck(card);}
-        drop();focus=card?'claim-'+card:'review-next';announce('Accepted.');
+        logEvent('accepted',p.claim);drop();focus=card?'claim-'+card:'review-next';announce('Accepted.');
       }
       if(action==='held-decline') {state.declining=id;state.declineDraft='';focus='decline-reason';}
       if(action==='held-decline-cancel') {state.declining=null;focus='held-decline-'+id;}
-      if(action==='held-decline-confirm'&&p) {p.status='declined';p.reason=(state.declineDraft||'').trim();state.declining=null;focus='review-next';announce('Declined.');}
+      if(action==='held-decline-confirm'&&p) {p.status='declined';p.reason=(state.declineDraft||'').trim();logEvent('declined',p.claim,p.reason);state.declining=null;focus='review-next';announce('Declined.');}
       if(action==='held-withdraw'||action==='held-dismiss') {drop();focus=p?.kind==='idea'?'compose-idea-'+p.option:'';announce(action==='held-withdraw'?'Withdrawn.':'Dismissed.');}
       // Step to the next item waiting for review: open its row's fold if needed and move focus to Accept.
       if(action==='review-next') {
-        const onScreen=[...root.querySelectorAll('[data-held]')].map(e=>e.dataset.held),at=x=>{const i=onScreen.indexOf(x.id);return i<0?1e3:i;};
-        const list=toReview().sort((a,b)=>at(a)-at(b));if(!list.length)return;
+        const onScreen=[...root.querySelectorAll('[data-held],.sm-card[data-card]')].map(e=>e.dataset.held||e.dataset.card),at=x=>{const i=onScreen.indexOf(x.id);return i<0?1e3:i;};
+        const list=[...toReview(),...reported().map(cid=>({id:cid,kind:'report',idea:cards[cid].idea}))].sort((a,b)=>at(a)-at(b));if(!list.length)return;
         state.reviewStep=((state.reviewStep??-1)+1)%list.length;const next=list[state.reviewStep];
-        if(next.kind==='version'){const i=ideaOf(next.idea);const all=rowsOf(i.option);const at=all.indexOf(i);if(at>=shownRows(i.option,all))state.shownRows[colKey(i.option)]=at+1;}
-        render('held-accept-'+next.id);root.querySelector(`[data-held="${next.id}"]`)?.scrollIntoView({block:'center',behavior:reducedMotion()?'auto':'smooth'});
+        if(next.kind!=='idea'){const i=ideaOf(next.idea);const all=rowsOf(i.option);const at=all.indexOf(i);if(at>=shownRows(i.option,all))state.shownRows[colKey(i.option)]=at+1;if(next.kind==='report'&&ordered(i)[0]!==next.id)state.open=i.id;}
+        const target=next.kind==='report'?`.sm-card[data-card="${next.id}"]`:`[data-held="${next.id}"]`;
+        render(next.kind==='report'?'menu-'+next.id:'held-accept-'+next.id);root.querySelector(target)?.scrollIntoView({block:'center',behavior:reducedMotion()?'auto':'smooth'});
         announce(`${state.reviewStep+1} of ${list.length} to review.`);save();return;
       }
       render(focus);save();return;

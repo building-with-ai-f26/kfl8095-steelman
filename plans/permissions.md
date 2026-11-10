@@ -81,7 +81,7 @@ Steelman already avoids the hardest editing problem. Nobody overwrites anyone: a
 - In Edited mode, a non-editor's argument, version, or source is held. Its author and the editors see it as a faint card with a dashed border, marked *Awaiting review*. Nobody else sees it.
 - An editor's queue (a badge in the header showing the pending count) offers **Accept**, **Decline with reason**, and **Ask for changes**. The author sees the outcome on the card. This extends the existing combine-suggestion pattern.
 
-### P4. Moderation (public communities)
+### P4. Moderation (public communities) *(built Nov 10: report versions and comments, hide with reason, restore, dismiss reports, history panel, reports in the review stepper. Not yet: undo of combine/separate from history, new-member holds)*
 - **Report** on arguments, versions, and comments, in addition to sources.
 - Moderators can **Hide with reason**. A placeholder ("Removed by a moderator: off-topic") keeps the row's position and history; **Restore** brings it back.
 - A **History** panel per board: who did what, when, and why, with Undo for structural changes.
