@@ -1,6 +1,6 @@
 # Steelman prototype
 
-Open **index.html** in a modern browser. No installation or server is required. An internet connection loads the fonts and supporting browser assets.
+Open **index.html** in a modern browser. It starts on the list of steelmen; choose “Should our library open on Sundays?” for the full example board. No installation or server is required. An internet connection loads the fonts and supporting browser assets.
 
 Argument cards use a grayscale paper texture, rounded corners, and soft shadows; the question and option headers are inverted (near-black boxes, white serif). Each card is judged on three axes:
 
@@ -12,7 +12,21 @@ Importance and articulation share one vote control, turned a quarter turn, and t
 
 Colors, type, and texture come from [`../design/tokens.css`](../design/tokens.css). After editing the source or the tokens, run `python3 scripts/sync-prototype.py` from the repository root to update the standalone export; the script copies the tokens in, because the sandboxed prototype cannot load local files. The original supplied prototype remains in Git history.
 
-## Try it
+## Around the board: spaces, sharing, presence, and creating
+
+The prototype now opens on a list of steelmen, a mock of how people find, share, and start them. Think Reddit for the list and Figma for the board. Everything is simulated and local to your browser.
+
+- **Spaces.** The dark sidebar lists your private spaces (POD 6, Northwind Studio, Personal) and the public communities you've joined (Brooklyn Streets, Campus Life, Future of Work). Every space is named the same way: its name in capitals, in a rounded box. Each steelman lives in one space, which sets who can find it. A public community has a header with **Join / Joined**; leaving removes it from the sidebar. Below 900 px the sidebar folds behind the ☰ button in the header. **Discover** is marked Soon.
+- **The list.** Each steelman shows up and down votes with a score, its space, author, and age, the question, each option with its argument count, the comment count, who is there now, and a miniature of the board. An option with fewer than two arguments has a dashed outline, the board's sign for "add to this". Sort by **Hot**, **New**, **Top**, or **Needs help** (boards where an option has fewer than two arguments). Search filters by question or option. A draft in Personal has no votes. Click anywhere on an item to open it.
+- **Opening and leaving a board.** The board grows out of its miniature; the breadcrumb (**steelman. / POD 6**), the wordmark, or Escape shrinks it back into the list.
+- **Zoom.** The 🔍− / 🔍+ switch in the top bar (or the − and + keys) moves between **Read**, the board as it is, and **Overview**, which condenses every card to two lines and its evidence meter so the whole debate fits. Click a card in Overview to zoom in to it. With nothing open, Escape zooms out: Read → Overview → the list.
+- **Presence (simulated).** The classmates on a board appear as faces in the top bar and as small badges on the card each is looking at; every few seconds one moves. Now and then one starts writing, and a named cursor ("maya.chen *writing a version…*") appears by that card. Click a face to go to their card. They never change the board.
+- **Share.** The **Share** button opens a panel: invite by username (suggested from the space) or by email, with a role: **can view** (read and comment), **can vote** (also vote and assess evidence), or **can contribute** (also write). People with access lists the owner and everyone invited, with role menus and remove. **General access** is only people invited, everyone in the space, or anyone with the link, with its own role; the pill under the question follows it. Only the owner can change access; on someone else's board you can still invite and copy the link. **Copy link** uses a placeholder address. Settings keeps the question and its space and links to Share.
+- **New steelman.** **+ New steelman** in the header opens a sheet laid out like the board's skeleton: a dark question box and two to four dark option headers, then the space (defaulting to the one you're viewing) and what that means for who can see it. Gentle hints appear for loaded words, "Why…" questions, and options named Yes or No. A question, at least two options, and different option names are required. Escape or Cancel keeps the draft. Creating zooms into the new, empty board, ready for the first argument; back in the list it starts with your upvote.
+
+The usernames, spaces, list details, and other boards are illustrative. The library board is the fully worked example.
+
+## Try it on the library board
 
 - Click the paper stack to the right of a card (its small number is how many versions there are). The versions unfold in place, best articulated on the left; the column widens, the row scrolls sideways if needed, and the wires stay attached.
 - Vote on articulation with the arrows above each version, and on importance with the arrows beside the row.
@@ -24,6 +38,6 @@ Colors, type, and texture come from [`../design/tokens.css`](../design/tokens.cs
 - Options are editable too. The **⋯** on an option's header renames it in place (Enter saves, Escape keeps the old name) or deletes it, which is allowed only when it has no arguments and the question keeps at least two options; Undo is available. The dashed **+ Option** after the last column adds an option (up to four): name it and press Enter; leaving it unnamed removes it.
 - In an expanded card, **Add a source** opens a short form: the source, where to find it, and what it shows; **Backs up & limits** adds two optional fields. Sources you added carry a "You" tag and can be edited or removed (with Undo). Anyone can choose **Can't open it?** to report a source; it is marked Unavailable on every version that cites it, and "Yes" needs at least one available source. Changing the evidence on a card that already has assessments adds a note that the evidence changed.
 - Every question, option, and version has a speech-bubble icon with its open-comment count. Click it to open the comments panel next to that item; the item gets a dark ring. Comment, reply, resolve or reopen a thread, and delete your own comments (⌘/Ctrl + Enter also posts). Resolved threads fold under "Resolved". On wide screens the board makes room for the panel; on narrower ones it floats on the side away from the item, or just below it.
-- Under the question: the author, the date, and who can see it ("POD 6 only", "Private", or "Anyone with link"; the organization is listed separately when the question isn't limited to it). The cog opens settings beside the board: rename the question and choose the organization and visibility. Choosing who can contribute and vote is marked **Coming soon**. **Reset to the original example** (click twice) restores the example board; **Simulate a reorder** in the bottom bar previews a change in the shared order.
+- Under the question: the author, the date, and who can see it ("POD 6 only", "Private", or "Anyone with link"; the space is listed separately when the question isn't limited to it). The cog opens settings beside the board: rename the question and choose its space; who can see, vote, and contribute is under **Share**. **Reset to the original example** (click twice) restores every example board; **Simulate a reorder** in the bottom bar previews a change in the shared order.
 
 Everything a contributor can edit (the question, options, arguments, versions, and sources) is saved as one document in the browser, so later edits can change any part of it. The claims, sources, and votes are illustrative. Interactions are local to the prototype; there is no shared backend.

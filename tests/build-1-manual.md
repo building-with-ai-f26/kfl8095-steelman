@@ -311,12 +311,33 @@ Darker axes: labels `--sm-axis` #555 → #2e2e2e (the prototype's hard-coded #44
 | Widths | At 800 px three-up cards and two columns; at 390 px everything stacks; no horizontal overflow; all 11 icons render; the screenshot loads |
 | Browser errors | None |
 
+## November 9 — List, spaces, sharing, presence, zoom, and creating
+
+Checks run by the coding agent in the in-app browser against the decoded prototype page served locally (the sandboxed frame does not accept scripted clicks), at 1360 px, 700 px, and 375–390 px, after `python3 scripts/sync-prototype.py`. Not a user study.
+
+| Check | Observed result |
+| --- | --- |
+| List | Opens on Home with seven steelmen across six spaces; Hot order; dashed option chips where an option has fewer than two arguments; Personal draft shows "Draft" with no votes |
+| Votes | Library upvote 128 → 129, then withdrawn; pressed state shows |
+| Sorting and search | Needs help lists the five boards with a thin option; "bike" leaves one result; clearing restores the list |
+| Spaces | POD 6 shows two steelmen and its header; Brooklyn Streets Join/Joined toggles and the sidebar follows; space tags on items open their space |
+| Narrow list | Below 900 px the ☰ button opens the sidebar over the list; ×, Escape, an outside click, or choosing a space closes it; no horizontal overflow at 375 and 700 px |
+| Open and leave a board | Board grows out of its miniature; breadcrumb reads "POD 6"; going back shrinks it into the list and leaves no overlay styles behind |
+| Overview | Library board scene drops to about a third of its height; claims clamp to two lines; votes, menus, and Add slots hide; clicking "Sunday opening would require…" returns to Read focused on that card |
+| Zoom keys | − and + switch levels; Escape steps Read → Overview → list |
+| Presence | Two badges on the library board; top-bar face titles name the card; a "maya.chen writing a version…" cursor appeared within a few seconds; following samr_92 on the capstone board scrolls to and announces their card |
+| Share | Opens under the button and focuses the invite field; "te" suggests tess.b; inviting adds them with the chosen role; general access to "Anyone with the link" updates the pill and hint; unknown username explains itself; email invite shows "· invited"; on maya.chen's board general access is locked with a note; Escape and outside click close; Settings links to Share |
+| New steelman | Empty submit says "Write the question first."; typing clears it; "clearly" and "Why…" and a "Yes" option show hints; duplicate option names are refused with focus on the second; Escape keeps the draft; Personal changes the access line; creating opens the empty board focused on the first "Add an argument", and the list shows it with score 1, upvoted |
+| Browser errors | None in any flow |
+
+Known gaps: animations pause in background tabs (a fallback cleans up the list↔board overlay); inside the published, content-height frame, opening a board from far down the list can play part of the zoom off-screen before the page scrolls up. Presence and list details are illustrative and never change the board. Saved board edits from earlier versions were reset twice as sample data changed (votes kept).
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
 - No claim of full screen-reader, cross-browser, or device coverage.
 - Standalone state persists in browser local storage when available; it does not sync with other users or devices. Fonts and icons need internet access.
-- Material revision history and shared collaboration are not implemented.
+- Material revision history and shared collaboration are not implemented. Presence, other viewers, spaces, and invitations are simulated.
 - The order-update control simulates a change; it does not validate an aggregation algorithm.
 
 ## Re-run manually

@@ -358,9 +358,243 @@
     #steelman-study .sm-open > .sm-track-axis { height:36px; }
   }
   @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
+
+  /* ── Site header: wordmark (home), breadcrumb on a board, search on the list. ── */
+  #steelman-study .sm-site { gap:14px; }
+  #steelman-study .sm-wordmark { padding:0; border:0; background:none; color:var(--sm-ink); }
+  #steelman-study .sm-crumbs { display:flex; align-items:center; gap:8px; min-width:0; font-size:13px; color:var(--sm-muted); }
+  #steelman-study .sm-crumbs > span[aria-hidden] { color:#b5b5b5; }
+  #steelman-study .sm-crumb { display:inline-flex; align-items:center; gap:7px; padding:5px 8px; margin:0 -4px; border:0; border-radius:6px; background:transparent; font-size:13px; white-space:nowrap; }
+  #steelman-study .sm-crumb:hover { background:var(--sm-soft); }
+  #steelman-study .sm-crumb-here { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--sm-ink); font-weight:600; }
+  #steelman-study .sm-site-tools { display:flex; align-items:center; gap:10px; margin-left:auto; flex:none; }
+  #steelman-study .sm-search { display:flex; align-items:center; gap:7px; width:280px; height:34px; padding:0 10px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-panel); color:var(--sm-muted); }
+  #steelman-study .sm-search:focus-within { border-color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-search svg { width:15px; height:15px; }
+  #steelman-study .sm-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); color:var(--sm-ink); }
+  #steelman-study .sm-me { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 10.5px/1 var(--sm-sans); letter-spacing:.03em; }
+  /* A space is always named the same way: its name in tracked capitals, in a rounded box. */
+  #steelman-study .sm-tag { display:inline-flex; align-items:center; height:21px; padding:1px 7px 0; flex:none; border:1px solid var(--sm-ink); border-radius:4px; background:#fff; color:var(--sm-ink); font:600 10px/1 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; white-space:nowrap; }
+  #steelman-study .sm-nav-toggle { display:none; place-items:center; width:34px; height:34px; margin:0 -4px 0 -8px; padding:0; border:0; border-radius:6px; background:transparent; }
+  #steelman-study .sm-nav-toggle:hover, #steelman-study .sm-nav-toggle[aria-expanded="true"] { background:var(--sm-soft); }
+  #steelman-study .sm-nav-toggle svg { width:20px; height:20px; }
+
+  /* ── Home: communities sidebar and the list of steelmen. ── */
+  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:720px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+  #steelman-study .sm-home[hidden] { display:none; }
+  /* The sidebar hangs from the site header, running the full height, inverted like the board's header boxes. */
+  #steelman-study .sm-side { display:flex; flex-direction:column; align-content:start; gap:1px; padding:12px 10px 24px; background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-side :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-side h2 { margin:16px 10px 7px; font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
+  #steelman-study .sm-side-link { display:flex; align-items:center; gap:10px; width:100%; min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:#fff; font-size:13px; text-align:left; }
+  #steelman-study .sm-side-link:hover { background:#ffffff1a; }
+  #steelman-study .sm-side .sm-tag { background:transparent; border-color:#ffffffb3; color:#fff; }
+  #steelman-study .sm-side-link[aria-current="true"] { background:#fff; color:var(--sm-ink); }
+  #steelman-study .sm-side-link[aria-current="true"] .sm-tag { border-color:var(--sm-ink); color:var(--sm-ink); }
+  #steelman-study .sm-side .sm-soon { border-color:#ffffff59; color:#ffffff8c; }
+  #steelman-study .sm-side-link > svg { width:16px; height:16px; stroke-width:1.6; }
+  #steelman-study .sm-side-link > span:not(.sm-tag):first-of-type { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-side-count { margin-left:auto; font-size:11px; color:#ffffff8c; font-variant-numeric:tabular-nums; }
+  #steelman-study [aria-current="true"] .sm-side-count { color:var(--sm-muted); }
+  #steelman-study .sm-side-link.sm-side-soon { color:#ffffff8c; }
+
+  #steelman-study .sm-feed { display:grid; gap:14px; align-content:start; width:100%; max-width:860px; min-width:0; padding:24px 32px 56px; }
+  /* A space's header borrows the board's inverted question box. */
+  #steelman-study .sm-space-head { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:20px 22px; background:var(--sm-ink); color:#fff; border-radius:8px; box-shadow:var(--sm-shadow-lg); }
+  #steelman-study .sm-space-head h1 { font:700 26px/1.15 var(--sm-serif); letter-spacing:-.5px; }
+  #steelman-study .sm-space-head .sm-question-meta { margin-top:8px; }
+  #steelman-study .sm-space-head > div { flex:1; min-width:220px; }
+  #steelman-study .sm-join { height:34px; padding:0 16px; border:1px solid #fff; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:13px; font-weight:600; }
+  #steelman-study .sm-join[aria-pressed="true"] { background:transparent; color:#fff; border-color:#ffffff66; }
+  #steelman-study .sm-sort { display:flex; gap:3px; width:max-content; max-width:100%; overflow-x:auto; padding:3px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-sort { padding:2px; border-radius:7px; }
+  #steelman-study .sm-sort button { display:inline-flex; align-items:center; gap:5px; height:27px; padding:0 10px; border:0; border-radius:5px; background:transparent; font-size:12px; white-space:nowrap; }
+  #steelman-study .sm-sort button svg { width:13px; height:13px; }
+  #steelman-study .sm-sort button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-sort button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-feed-list { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-feed-empty { padding:40px 20px; border:1px dashed #9a9a9a; border-radius:8px; text-align:center; color:var(--sm-muted); font:italic 300 16px var(--sm-serif); }
+
+  /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
+  #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; box-shadow:var(--sm-shadow); cursor:pointer; transition:box-shadow .15s; }
+  #steelman-study .sm-post:hover { box-shadow:var(--sm-shadow-hover); }
+  #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; }
+  #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-post-vote button:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-post-vote button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+  #steelman-study .sm-post-vote svg { width:17px; height:17px; stroke-width:2; }
+  #steelman-study .sm-post-score { font:600 13px/1.5 var(--sm-sans); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:italic 300 13px var(--sm-serif); color:var(--sm-muted); }
+  #steelman-study .sm-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study button.sm-tag:hover { background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-post-meta time { font:italic 300 13.5px/1 var(--sm-serif); }
+  #steelman-study .sm-post-meta svg { width:12px; height:12px; }
+  #steelman-study .sm-post-meta .sm-dot::before { content:"·"; }
+  #steelman-study .sm-post h2 { margin:7px 0 11px; font:700 21px/1.22 var(--sm-serif); letter-spacing:-.4px; text-wrap:balance; }
+  #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
+  #steelman-study .sm-post h2 button:hover { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; }
+  #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:5px; background:#fff; font-size:12.5px; }
+  #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:var(--sm-soft); font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
+  /* Dashed, as on the board: an option with fewer than two arguments is an invitation. */
+  #steelman-study .sm-post-options li.sm-thin { border-style:dashed; border-color:#9a9a9a; }
+  #steelman-study .sm-post-foot { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:13px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-post-foot > span { display:inline-flex; align-items:center; gap:5px; }
+  #steelman-study .sm-post-foot svg { width:14px; height:14px; stroke-width:1.6; }
+  #steelman-study .sm-post-foot strong { font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-help { padding:2px 9px 2px 7px; border:1px dashed #8a8a8a; border-radius:999px; color:var(--sm-ink); }
+  #steelman-study .sm-faces { display:inline-flex; padding-left:5px; }
+  #steelman-study .sm-faces span { display:grid; place-items:center; width:21px; height:21px; margin-left:-5px; border-radius:50%; background:#f3f1ec; box-shadow:0 0 0 2px var(--sm-card); color:var(--sm-ink); font:700 8px/1 var(--sm-sans); }
+  #steelman-study .sm-thumb { align-self:start; display:flex; flex-direction:column; align-items:center; gap:7px; height:116px; padding:9px 8px 0; overflow:hidden; border:1px solid var(--sm-line); border-radius:6px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:90px 90px,240px 240px; }
+  #steelman-study .sm-thumb-q { width:76%; height:14px; flex:none; border-radius:2px; background:var(--sm-ink); }
+  #steelman-study .sm-thumb-cols { display:flex; gap:5px; width:100%; flex:1; }
+  #steelman-study .sm-thumb-col { display:flex; flex:1; flex-direction:column; gap:3px; min-width:0; padding:3px; border-radius:3px 3px 0 0; background:var(--sm-panel); }
+  #steelman-study .sm-thumb-col i { display:block; height:8px; margin-bottom:2px; border-radius:1.5px; background:var(--sm-ink); }
+  #steelman-study .sm-thumb-col b { display:block; height:12px; flex:none; border:1px solid var(--sm-line); border-radius:2px; background:#fff; }
+  #steelman-study .sm-thumb-col b.sm-thumb-empty { border:1px dashed #9a9a9a; background:transparent; }
+  /* ── Board top bar: who is here, and Share. ── */
+  #steelman-study .sm-site-faces { display:flex; padding-left:6px; }
+  #steelman-study .sm-site-faces span { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; font:700 9.5px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-share-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 14px; border:1px solid var(--sm-selected); border-radius:7px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:13px; font-weight:600; }
+  #steelman-study .sm-share-button svg { width:14px; height:14px; }
+  #steelman-study .sm-share-button[aria-expanded="true"] { background:#fff; color:var(--sm-ink); }
+
+  /* ── Share: a panel under the Share button, like a file's share sheet. ── */
+  #steelman-study .sm-share { position:absolute; top:64px; right:16px; z-index:45; display:grid; width:440px; max-width:calc(100% - 32px); background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  #steelman-study .sm-share[hidden] { display:none; }
+  #steelman-study .sm-share > header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-share h2 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 16px/1.3 var(--sm-serif); }
+  #steelman-study .sm-share-body { display:grid; gap:18px; padding:16px 18px 18px; }
+  #steelman-study .sm-share h3 { margin:0 0 8px; font:600 10.5px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-share select { padding:4px 22px 4px 6px; border:1px solid transparent; border-radius:5px; background:transparent; color:var(--sm-ink); font:500 12px var(--sm-sans); cursor:pointer; }
+  #steelman-study .sm-share select:hover:not(:disabled) { border-color:var(--sm-line); background:#fff; }
+  #steelman-study .sm-share select:disabled { color:var(--sm-muted); cursor:default; opacity:1; }
+  #steelman-study .sm-share-invite { display:flex; gap:8px; }
+  #steelman-study .sm-share-field { position:relative; display:flex; align-items:center; flex:1; min-width:0; border:1px solid #c8c8c8; border-radius:7px; background:#fff; }
+  #steelman-study .sm-share-field:focus-within { border-color:var(--sm-ink); }
+  #steelman-study .sm-share-field input { flex:1; min-width:0; height:36px; padding:0 10px; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); }
+  #steelman-study .sm-share-field select { margin-right:4px; }
+  #steelman-study .sm-share-invite .sm-button { height:38px; }
+  #steelman-study .sm-share-suggest { position:absolute; top:calc(100% + 4px); left:-1px; right:-1px; z-index:2; display:grid; margin:0; padding:4px; list-style:none; background:#fff; border:1px solid var(--sm-line); border-radius:7px; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-share-suggest:empty { display:none; }
+  #steelman-study .sm-share-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border:0; border-radius:5px; background:transparent; font-size:13px; text-align:left; }
+  #steelman-study .sm-share-suggest button:hover, #steelman-study .sm-share-suggest button:focus-visible { background:var(--sm-soft); outline:0; }
+  #steelman-study .sm-share-suggest small { margin-left:auto; color:var(--sm-muted); font-size:11px; }
+  #steelman-study .sm-people { display:grid; gap:2px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-person { display:flex; align-items:center; gap:10px; min-height:40px; font-size:13px; }
+  #steelman-study .sm-person > span:nth-child(2) { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-person small { color:var(--sm-muted); font-size:12px; }
+  #steelman-study .sm-person-role { color:var(--sm-muted); font-size:12px; padding-right:6px; }
+  #steelman-study .sm-person .sm-avatar { width:28px; height:28px; background:#f3f1ec; color:var(--sm-ink); font-size:10px; font-weight:700; }
+  #steelman-study .sm-person .sm-avatar.sm-pending { background:transparent; border:1px dashed #8a8a8a; }
+  #steelman-study .sm-person .sm-avatar.sm-access { border-radius:7px; background:var(--sm-soft); }
+  #steelman-study .sm-person .sm-avatar svg { width:15px; height:15px; }
+  #steelman-study .sm-person-remove { display:grid; place-items:center; width:26px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-person-remove:hover { background:var(--sm-soft); color:var(--sm-ink); }
+  #steelman-study .sm-person-remove svg { width:14px; height:14px; }
+  #steelman-study .sm-access-hint { margin:2px 0 0 38px; font-size:11px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-share > footer { display:flex; align-items:center; gap:8px; padding:12px 18px; border-top:1px solid var(--sm-line); background:var(--sm-panel); border-radius:0 0 10px 10px; }
+  #steelman-study .sm-share > footer input { flex:1; min-width:0; height:32px; padding:0 10px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; color:var(--sm-muted); font:400 12px var(--sm-sans); }
+  #steelman-study .sm-share > footer .sm-button { height:32px; min-height:32px; white-space:nowrap; }
+  @media(max-width:640px) {
+    #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
+    #steelman-study .sm-share-button span { display:none; }
+    #steelman-study .sm-site-faces { display:none; }
+  }
+
+  /* ── Zoom: Read (the board as is) and Overview (the whole board, condensed). ── */
+  #steelman-study .sm-zoom { display:flex; padding:2px; border:1px solid var(--sm-line); border-radius:7px; background:var(--sm-panel); }
+  #steelman-study .sm-zoom button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-zoom button:hover { color:var(--sm-ink); }
+  #steelman-study .sm-zoom button[aria-pressed="true"] { background:#fff; color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-zoom svg { width:15px; height:15px; }
+  #steelman-study[data-zoom="overview"] .sm-head { padding:16px 20px 18px; }
+  #steelman-study[data-zoom="overview"] .sm-head h1 { font-size:24px; }
+  #steelman-study[data-zoom="overview"] :is(.sm-head-tools,.sm-column-tools,.sm-card-tools,.sm-card-menu-button,.sm-idea > .sm-vote,.sm-col-vaxis,.sm-col-axis,.sm-new-idea,.sm-add-option-col,.sm-col-gap + .sm-add-option-col,.sm-toolbar,.sm-move-here) { display:none; }
+  #steelman-study[data-zoom="overview"] .sm-board { padding-top:40px; }
+  #steelman-study[data-zoom="overview"] .sm-column-head { min-height:44px; padding:9px 14px; }
+  #steelman-study[data-zoom="overview"] .sm-column-head h2, #steelman-study[data-zoom="overview"] .sm-column-head :is(h2,h3) { font-size:16px; }
+  #steelman-study[data-zoom="overview"] .sm-idea { grid-template-columns:minmax(0,1fr); gap:0; margin-bottom:10px; }
+  #steelman-study[data-zoom="overview"] .sm-card { cursor:zoom-in; border-radius:8px; }
+  #steelman-study[data-zoom="overview"] .sm-card .sm-claim-button { padding:10px 34px 8px 12px; cursor:zoom-in; }
+  #steelman-study[data-zoom="overview"] .sm-claim { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13px; line-height:1.4; }
+  #steelman-study[data-zoom="overview"] .sm-card-meta { min-height:0; padding:3px 8px 5px; border-top:0; }
+  #steelman-study[data-zoom="overview"] .sm-stack-button { pointer-events:none; }
+  #steelman-study[data-zoom="overview"] :is(.sm-column-head,.sm-head) { cursor:zoom-in; }
+  /* Where a zoom lands: a brief ring on the card. */
+  #steelman-study .sm-card.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; transition:outline-color .8s; }
+
+  /* ── Presence: who is looking at which card, and a named cursor while someone writes. ── */
+  #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 9.5px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-site-faces button:hover { position:relative; z-index:1; box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--sm-ink); }
+  #steelman-study .sm-presence { position:absolute; top:-11px; left:14px; z-index:3; display:flex; pointer-events:none; }
+  #steelman-study .sm-pbadge { display:grid; place-items:center; width:22px; height:22px; margin-right:-5px; border-radius:50%; background:#fff; color:var(--sm-ink); box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; font:700 8.5px/1 var(--sm-sans); animation:sm-pop .25s ease-out; }
+  #steelman-study .sm-cursor { position:absolute; right:22px; bottom:-16px; z-index:4; display:flex; align-items:flex-start; gap:1px; pointer-events:none; animation:sm-drift 2.6s ease-in-out infinite alternate; }
+  #steelman-study .sm-cursor svg { width:15px; height:15px; margin-top:-6px; }
+  #steelman-study .sm-cursor b { padding:3px 8px; border-radius:3px 9px 9px 9px; background:var(--sm-ink); color:#fff; font:600 11px/1.2 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-cursor i { font:italic 300 12px var(--sm-serif); font-weight:300; opacity:.8; }
+  #steelman-study .sm-card.sm-followed { outline:2px dashed var(--sm-ink); outline-offset:5px; }
+  @keyframes sm-pop { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
+  @keyframes sm-drift { from { transform:translate(0,0); } to { transform:translate(-34px,5px); } }
+  @media(prefers-reduced-motion:reduce) { #steelman-study :is(.sm-cursor,.sm-pbadge) { animation:none; } }
+
+  /* ── New steelman: the sheet is the board's skeleton, written in place: a question box, then its options. ── */
+  #steelman-study .sm-create-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
+  #steelman-study .sm-create-scrim[hidden], #steelman-study .sm-create[hidden] { display:none; }
+  #steelman-study .sm-create { position:absolute; z-index:71; left:50%; top:84px; transform:translateX(-50%); display:grid; width:600px; max-width:calc(100% - 32px); background:var(--sm-card); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 24px 60px #00000040; }
+  #steelman-study .sm-create-canvas { display:grid; gap:14px; padding:20px 20px 22px; border-radius:10px 10px 0 0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+  #steelman-study .sm-create-top { display:flex; align-items:center; justify-content:space-between; }
+  #steelman-study .sm-create-top h2 { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-create-q { padding:16px 20px 18px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
+  #steelman-study .sm-create-q textarea { display:block; width:100%; padding:0; border:0; outline:0; resize:none; background:transparent; color:#fff; font:700 26px/1.2 var(--sm-serif); letter-spacing:-.6px; }
+  #steelman-study .sm-create-q textarea::placeholder { color:#ffffff73; }
+  #steelman-study .sm-create-q:focus-within { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study .sm-create-q[data-invalid] { box-shadow:inset 4px 0 0 var(--sm-cred-weak),var(--sm-shadow-lg); }
+  #steelman-study .sm-create-hints { display:grid; gap:4px; margin:-4px 2px 0; padding:0; list-style:none; font-size:12px; line-height:1.45; color:var(--sm-ink); }
+  #steelman-study .sm-create-hints li { display:flex; gap:6px; align-items:flex-start; }
+  #steelman-study .sm-create-hints li::before { content:"→"; color:var(--sm-muted); }
+  #steelman-study .sm-create-hints:empty { display:none; }
+  #steelman-study .sm-create-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  @media(max-width:520px) { #steelman-study .sm-create-options { grid-template-columns:minmax(0,1fr); } }
+  #steelman-study .sm-create-option { display:flex; align-items:center; min-height:46px; padding:4px 4px 4px 12px; border-radius:7px; background:var(--sm-ink); box-shadow:var(--sm-shadow-lg); }
+  #steelman-study .sm-create-option:focus-within { outline:2px solid var(--sm-ink); outline-offset:3px; }
+  #steelman-study .sm-create-option[data-invalid] { box-shadow:inset 4px 0 0 var(--sm-cred-weak),var(--sm-shadow-lg); }
+  #steelman-study .sm-create-option input { flex:1; min-width:0; padding:4px 0; border:0; outline:0; background:transparent; color:#fff; font:600 16px/1.3 var(--sm-serif); }
+  #steelman-study .sm-create-option input::placeholder { color:#ffffff73; }
+  #steelman-study .sm-create-option button { display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:5px; background:transparent; color:#ffffff8c; }
+  #steelman-study .sm-create-option button:hover { background:#ffffff1f; color:#fff; }
+  #steelman-study .sm-create-option button svg { width:14px; height:14px; }
+  #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:7px; background:#ffffff80; color:#666; font-size:13px; }
+  #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-create-add svg { width:15px; height:15px; }
+  #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
+  #steelman-study .sm-create-where { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; }
+  #steelman-study .sm-create-where label { font-weight:600; }
+  #steelman-study .sm-create-where select { padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
+  #steelman-study .sm-create-access { margin:0; font-size:12px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-create-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
+  #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
+  @media(max-width:640px) { #steelman-study .sm-create { top:68px; } #steelman-study .sm-create-q textarea { font-size:22px; } }
+
+  /* Narrow screens fold the sidebar behind a menu button in the header; it opens over the list. */
+  @media(max-width:900px) {
+    #steelman-study .sm-nav-toggle { display:grid; }
+    #steelman-study .sm-home { grid-template-columns:minmax(0,1fr); }
+    #steelman-study .sm-side { display:none; position:absolute; top:0; left:0; bottom:0; z-index:40; width:260px; box-shadow:var(--sm-shadow-lg); }
+    #steelman-study[data-nav-open] .sm-side { display:flex; }
+    #steelman-study .sm-feed { padding:16px 16px 40px; }
+    #steelman-study .sm-search { width:200px; }
+  }
+  @media(max-width:640px) {
+    #steelman-study .sm-post { grid-template-columns:34px minmax(0,1fr); padding-right:14px; }
+    #steelman-study .sm-thumb { display:none; }
+    #steelman-study .sm-search { display:none; }
+    #steelman-study .sm-crumb-here { display:none; }
+  }
 </style>
 <div id="steelman-study" aria-label="Steelman canvas prototype" data-indicator="dossier" data-density="comfortable">
   <header class="sm-site"><div class="sm-wordmark"><svg class="sm-logo" viewBox="0 0 55.95 44.65" aria-hidden="true" focusable="false"><polygon points="10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75" fill="currentColor"/><polygon points="33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter" stroke-linecap="butt" pathLength="18" stroke-dasharray=".5 .5" stroke-dashoffset=".25"/></svg>steelman.</div></header>
+  <div class="sm-home" hidden></div>
   <div class="sm-surface">
     <div class="sm-scene">
       <svg class="sm-links" aria-hidden="true"></svg>
@@ -372,6 +606,9 @@
   </div>
   <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
   <div class="sm-menu" role="menu" aria-label="Version options" hidden></div>
+  <section class="sm-share" role="dialog" aria-modal="false" aria-labelledby="sm-share-title" hidden></section>
+  <div class="sm-create-scrim" data-action-scrim hidden></div>
+  <section class="sm-create" role="dialog" aria-modal="true" aria-labelledby="sm-create-title" hidden></section>
 </div>
 <script>
 (() => {
@@ -413,21 +650,89 @@
   // Example comments. A target is "question", "option:<id>", or "card:<id>"; replies point to their thread's first comment.
   // by:'you' marks your own comments, which you can delete.
   const seedComments = () => [
-    {id:'c-q1',target:'question',by:'Jordan',at:'2026-11-05T16:10:00Z',text:'Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.'},
-    {id:'c-q2',target:'question',parent:'c-q1',by:'Maya',at:'2026-11-05T17:02:00Z',text:'Good catch. The survey only covered the branch, too.'},
-    {id:'c-o1',target:'option:keep',by:'Priya',at:'2026-11-05T18:30:00Z',text:'Rename this from “Stay closed” so it reads as a choice, not a refusal?',resolved:true},
-    {id:'c-a1',target:'card:access',by:'Maya',at:'2026-11-06T09:15:00Z',text:'“Some” is carrying a lot here. Could we say roughly how many?'},
-    {id:'c-a2',target:'card:access',parent:'c-a1',by:'Jordan',at:'2026-11-06T10:40:00Z',text:'The survey says 18 of 80 respondents. The narrower version in this row uses that number.'},
-    {id:'c-s1',target:'card:staffing',by:'Sam',at:'2026-11-06T13:05:00Z',text:'Has anyone asked staff whether a voluntary rota swap would cover Sundays?'}
+    {id:'c-q1',target:'question',by:'jordan_w',at:'2026-11-05T16:10:00Z',text:'Should this say “branch library”? The town has two buildings, and the main one already opens on Sundays.'},
+    {id:'c-q2',target:'question',parent:'c-q1',by:'maya.chen',at:'2026-11-05T17:02:00Z',text:'Good catch. The survey only covered the branch, too.'},
+    {id:'c-o1',target:'option:keep',by:'priya_s',at:'2026-11-05T18:30:00Z',text:'Rename this from “Stay closed” so it reads as a choice, not a refusal?',resolved:true},
+    {id:'c-a1',target:'card:access',by:'maya.chen',at:'2026-11-06T09:15:00Z',text:'“Some” is carrying a lot here. Could we say roughly how many?'},
+    {id:'c-a2',target:'card:access',parent:'c-a1',by:'jordan_w',at:'2026-11-06T10:40:00Z',text:'The survey says 18 of 80 respondents. The narrower version in this row uses that number.'},
+    {id:'c-s1',target:'card:staffing',by:'samr_92',at:'2026-11-06T13:05:00Z',text:'Has anyone asked staff whether a voluntary rota swap would cover Sundays?'}
   ];
   const seedDoc = () => structuredClone({
-    question:{text:'Should our library open on Sundays?',author:'Kieran LaMee',posted:'2026-11-05',org:'pod6',visibility:'org',contribute:'viewers',vote:'viewers'},
+    question:{text:'Should our library open on Sundays?',author:'kieran_lamee',posted:'2026-11-05',org:'pod6',visibility:'org',accessRole:'contribute',contribute:'viewers',vote:'viewers',
+      people:[{user:'maya.chen',role:'contribute'},{user:'jordan_w',role:'contribute'},{user:'priya_s',role:'vote'},{user:'samr_92',role:'view'}]},
     options:[{id:'open',name:'Open on Sundays'},{id:'keep',name:'Keep current hours'}],
     ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
   });
+
+  // ── Spaces and the list of steelmen ──
+  // Private spaces (a class pod, a company, your own drafts) and public communities share one sidebar.
+  // Every steelman lives in exactly one space; the space sets who can find it by default.
+  const SPACES = [
+    {id:'pod6',name:'POD 6',kind:'private',members:9,about:'Building with AI · Fall 2026'},
+    {id:'northwind',name:'Northwind Studio',kind:'private',members:42,about:'Company workspace'},
+    {id:'none',name:'Personal',kind:'private',members:1,about:'Drafts only you can see'},
+    {id:'brooklyn',name:'Brooklyn Streets',kind:'public',members:3812,about:'Transit, housing, and street design'},
+    {id:'campus',name:'Campus Life',kind:'public',members:12406,about:'Teaching, grading, and student life'},
+    {id:'worklab',name:'Future of Work',kind:'public',members:8290,about:'How teams work and organize'}
+  ];
+  const spaceOf = id => SPACES.find(s=>s.id===id) || SPACES[2];
+  // People you could invite, by space. Anyone else can be invited by email.
+  const PEOPLE = {
+    pod6:['maya.chen','jordan_w','priya_s','samr_92','tess.b','omar_h','lin.zhao','dev_oka17'],
+    northwind:['priya_s','alexkim.dev','rafa_m','june.o','bo_lindqvist'],
+    none:['maya.chen','jordan_w'],
+    brooklyn:['dev_oka17','ana.lu','rtorres','kwame_b'],campus:['samr_92','bwells','kt_nguyen'],worklab:['alexkim.dev','june.o']
+  };
+  const ME = 'kieran_lamee';
+  const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
+  // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
+  function sketchDoc(key,{q,author,posted,org,visibility,options}) {
+    const d={question:{text:q,author,posted,org,visibility,accessRole:visibility==='link'?'vote':'contribute',people:[],contribute:'viewers',vote:'viewers'},options:[],ideas:[],cards:{},sources:{},comments:[],nextId:1};
+    options.forEach(([name,args],oi)=>{
+      const option=`${key}-o${oi}`; d.options.push({id:option,name});
+      args.forEach(([claim,score,yes=0,no=0],ai)=>{const idea=`${key}-${oi}-${ai}`,card=idea+'v';d.cards[card]={idea,claim,yes,no,pref:0,sources:[],explanation:''};d.ideas.push({id:idea,option,score,versions:[card]});});
+    });
+    return d;
+  }
+  const seedDocs = () => ({
+    library:seedDoc(),
+    capstone:sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
+      ['Allow it, with disclosure',[['Disclosure keeps grading honest while letting teams build the way they will at work.',34,6,2],['A ban is hard to enforce; disclosure at least makes AI use visible.',22,3,3]]],
+      ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]}),
+    standups:sketchDoc('standups',{q:'Should we replace daily standups with written updates?',author:'priya_s',posted:'2026-11-03',org:'northwind',visibility:'org',options:[
+      ['Go async',[['Written updates free a fixed meeting slot for a team spread over four time zones.',18,5,0],['A written log shows who was blocked, days later.',11,1,1]]],
+      ['Keep live standups',[['Live standups surface blockers people don’t think to write down.',15,2,2],['New hires pick up team norms faster by hearing them daily.',6]]],
+      ['Two live days, three written',[]]]}),
+    bikelane:sketchDoc('bikelane',{q:'Should 7th Avenue get a protected bike lane?',author:'dev_oka17',posted:'2026-10-29',org:'brooklyn',visibility:'link',options:[
+      ['Build the protected lane',[['Protected lanes cut injuries on comparable avenues.',61,22,6],['A continuous lane connects the two park entrances.',33,9,2],['Delivery loading zones can be kept on side streets.',18,3,7]]],
+      ['Keep parking, paint a lane',[['Shops on the avenue depend on short-stay parking.',47,8,9]]]]}),
+    curve:sketchDoc('curve',{q:'Should intro courses grade on a curve?',author:'samr_92',posted:'2026-11-07',org:'campus',visibility:'link',options:[
+      ['Grade on a curve',[['A curve corrects for an exam that turned out harder than intended.',40,9,4],['Curving keeps grades comparable across sections with different instructors.',21,2,5]]],
+      ['Grade against fixed standards',[['Fixed standards let every student succeed without competing with classmates.',44,7,2],['Curves discourage studying together.',27,3,6],['A fixed rubric tells students what they need to learn.',13]]]]}),
+    fourday:sketchDoc('fourday',{q:'Should small teams adopt a four-day work week?',author:'alexkim.dev',posted:'2026-11-01',org:'worklab',visibility:'link',options:[
+      ['Adopt it',[['Trials report similar output with less burnout.',52,11,7],['A shorter week is a hiring advantage small teams can afford.',23,4,2]]],
+      ['Keep five days',[['Customers still expect Friday replies, and a small team has little cover.',31,6,1]]]]}),
+    denver:sketchDoc('denver',{q:'Should I take the job offer in Denver?',author:'kieran_lamee',posted:'2026-11-09',org:'none',visibility:'private',options:[
+      ['Take the offer',[['The role is a step up I would otherwise wait two years for.',3]]],
+      ['Stay in New York',[]]]})
+  });
+  // List-only details that a single board doesn't hold: its whole-steelman vote, recent activity, and who has it open.
+  // Comments here are added to the board's own count. A private draft in Personal has no audience, so it takes no votes.
+  const FEED = {
+    library:{score:128,at:'2026-11-09T09:40:00Z',did:'Jordan replied to a comment',here:['maya.chen','jordan_w'],people:7,comments:0},
+    capstone:{score:64,at:'2026-11-09T08:05:00Z',did:'Sam added an argument',here:['samr_92'],people:5,comments:4},
+    standups:{score:21,at:'2026-11-06T15:20:00Z',did:'Priya added an option',here:[],people:6,comments:9},
+    bikelane:{score:412,at:'2026-11-09T07:12:00Z',did:'23 people voted on importance',here:['dev_oka17','ana.lu','rtorres'],more:11,people:58,comments:141},
+    curve:{score:896,at:'2026-11-08T22:30:00Z',did:'A source was reported unavailable',here:['samr_92','bwells','kt_nguyen'],more:28,people:203,comments:388},
+    fourday:{score:233,at:'2026-11-07T18:00:00Z',did:'Alex added a version',here:['alexkim.dev'],more:3,people:77,comments:96},
+    denver:{score:null,at:'2026-11-09T11:30:00Z',did:'You started this draft',here:[],people:1,comments:0}
+  };
+  const NOW = Date.parse('2026-11-09T12:00:00Z'); // the prototype's fixed "now", so relative times stay stable
+  const ago = iso => { const m=Math.max(1,Math.round((NOW-Date.parse(iso))/60000)); return m<60?`${m}m ago`:m<1440?`${Math.round(m/60)}h ago`:`${Math.round(m/1440)}d ago`; };
+  let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -447,9 +752,9 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'library',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',feedVotes:{},joined:{brooklyn:true,campus:true,worklab:true}});
   let state = freshState();
-  useDoc(seedDoc());
+  useDoc(docs.library);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
   function restore(raw) {
     const data = raw?.privateContent;
@@ -471,6 +776,14 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
+    // Every board, and where you were in the list. Older saves held only the library board.
+    if (saved.docsVersion===3 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    state.boardId = docs[saved.boardId] ? saved.boardId : 'library';
+    state.view = saved.view==='board' ? 'board' : 'home';
+    if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
+    if (SORTS[saved.sort]) state.sort=saved.sort;
+    for (const key of ['feedVotes','joined']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
+    useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version>=3) {
       state.open = ideas.some(i=>i.id===saved.open) ? saved.open : null;
@@ -483,7 +796,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,docs,docsVersion:3,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -648,7 +961,7 @@
   }
 
   // Question header and document settings.
-  const ORGS = {pod6:'POD 6', none:'Personal'};
+  const ORGS = Object.fromEntries(SPACES.map(s=>[s.id,s.name]));
   const VISIBILITY = {
     private:{icon:'lock',label:'Private',short:'Private',hint:'Only you and people you invite.'},
     org:{icon:'building-2',label:'Organization',short:'Organization',hint:'Everyone in the organization can find and read it.'},
@@ -662,7 +975,7 @@
     const orgOnly=q.visibility==='org'&&orgName;
     const org=orgName&&!orgOnly?`<li class="sm-meta-org">${icon('users')}<span class="sm-meta-org-name">${escape(orgName)}</span></li>`:'';
     const pill=orgOnly?`${escape(orgName)} only`:vis.short;
-    const initials=q.author.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const initials=q.author.split(/[\s_.]+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
       +`<li class="sm-meta-author"><span class="sm-meta-avatar" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
       +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}">${posted(q.posted)}</time></li>${org}`
@@ -682,12 +995,10 @@
     state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
   }
   function settingsMarkup() {
-    const q=doc.question, personal=q.org==='none';
-    const visibility=Object.entries(VISIBILITY).map(([v,o])=>choice('visibility',v,q.visibility,o.label,v==='org'&&personal?'Choose an organization first.':o.hint,o.icon,v==='org'&&personal)).join('');
+    const q=doc.question;
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
-      +select('org',ORGS,q.org,'Organization')
-      +`<fieldset class="sm-field"><legend>Who can see it</legend><div class="sm-choices">${visibility}</div></fieldset>`
-      +`<div class="sm-field sm-coming"><span class="sm-coming-title">Who can contribute and vote <span class="sm-soon">Coming soon</span></span><p class="sm-field-hint">Limit adding, editing, and voting to invited people.</p></div>`
+      +select('org',ORGS,q.org,'Space')
+      +`<div class="sm-field"><span class="sm-coming-title">Who can see, vote, and contribute</span><p class="sm-field-hint">Invite people and set access under Share.</p><div>${button('open-share',icon('user-plus')+' Open sharing','data-key="open-share"')}</div></div>`
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
   // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
@@ -715,7 +1026,7 @@
       !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
       c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
     ].join('');
-    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0])}</span><strong>${escape(who)}</strong><time datetime="${c.at}">${commentDate(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0].toUpperCase())}</span><strong>${escape(who)}</strong><time datetime="${c.at}">${commentDate(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -1004,7 +1315,337 @@
     const tick=()=>{drawLinks();if(performance.now()<wireUntil)wireFrame=requestAnimationFrame(tick);else wireFrame=0;};
     wireFrame=requestAnimationFrame(tick);
   }
+  // ── Home: the list of steelmen, and the header that moves between the list and a board ──
+  const shareEl=root.querySelector('.sm-share');
+  const siteEl=root.querySelector('.sm-site'), homeEl=root.querySelector('.sm-home'), surfaceEl=root.querySelector('.sm-surface');
+  const LOGO=siteEl.querySelector('.sm-logo').outerHTML;
+  const SORTS = {hot:['flame','Hot'],new:['sparkles','New'],top:['trophy','Top'],help:['hand-helping','Needs help']};
+  // What the list shows about each board, computed from the board itself so edits there show up here.
+  function boardInfo(id) {
+    // Boards created in the prototype have no list details yet: new, unvoted, nobody else here.
+    const d=docs[id],f=FEED[id]||{score:d.question.org==='none'?null:0,at:new Date(NOW).toISOString(),here:[],people:1,comments:0},vote=state.feedVotes[id]||0;
+    const options=d.options.map(o=>({name:o.name,n:d.ideas.filter(i=>i.option===o.id).length}));
+    const thin=options.filter(o=>o.n<2);
+    return {id,d,f,options,thin,space:spaceOf(d.question.org),score:f.score===null?null:f.score+vote,vote,
+      comments:d.comments.filter(c=>!c.deleted).length+f.comments,hours:(NOW-Date.parse(f.at))/3.6e6};
+  }
+  // Home shows your private spaces and the communities you've joined; a space shows only its own steelmen.
+  function visibleBoards() {
+    const q=state.query.trim().toLowerCase();
+    let list=Object.keys(docs).map(boardInfo).filter(b=>state.space==='all'?(b.space.kind==='private'||state.joined[b.space.id]):b.space.id===state.space);
+    if(q) list=list.filter(b=>b.d.question.text.toLowerCase().includes(q)||b.options.some(o=>o.name.toLowerCase().includes(q)));
+    const hot=b=>Math.log10(Math.max(b.score??1,1))-b.hours/36;
+    const sorts={hot:(a,b)=>hot(b)-hot(a),new:(a,b)=>b.d.question.posted.localeCompare(a.d.question.posted),top:(a,b)=>(b.score??-1)-(a.score??-1),
+      help:(a,b)=>Math.min(...a.options.map(o=>o.n))-Math.min(...b.options.map(o=>o.n))||(b.score??0)-(a.score??0)};
+    if(state.sort==='help') list=list.filter(b=>b.thin.length);
+    return list.sort(sorts[state.sort]);
+  }
+  // A miniature of the board: the question box, then one column per option with a card per argument.
+  function thumb(b) {
+    const cols=b.options.map(o=>`<span class="sm-thumb-col"><i></i>${o.n?'<b></b>'.repeat(Math.min(o.n,4)):'<b class="sm-thumb-empty"></b>'}</span>`).join('');
+    return `<button type="button" class="sm-thumb cursor-interaction" data-action="open-board" data-id="${b.id}" tabindex="-1" aria-hidden="true"><span class="sm-thumb-q"></span><span class="sm-thumb-cols">${cols}</span></button>`;
+  }
+  // A list item keeps to the essentials: votes, where and who, the question, its options, and a miniature.
+  function post(b) {
+    const q=b.d.question,vb=(v,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="feed-vote" data-id="${b.id}" data-vote="${v}" data-key="feed-${v>0?'up':'down'}-${b.id}" aria-pressed="${b.vote===v}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
+    const vote=b.score===null?`<span class="sm-post-draft">Draft</span>`
+      :`${vb(1,'arrow-big-up','Upvote')}<span class="sm-post-score" aria-label="${b.score} points">${b.score}</span>${vb(-1,'arrow-big-down','Downvote')}`;
+    const options=b.options.map(o=>`<li class="${o.n<2?'sm-thin':''}">${escape(o.name)}<b title="${o.n} ${o.n===1?'argument':'arguments'}">${o.n}</b></li>`).join('');
+    const here=b.f.here.length+(b.f.more||0);
+    const faces=here?`<span><span class="sm-faces">${b.f.here.slice(0,3).map(u=>`<span title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>${here} here now</span>`:'';
+    return `<li class="sm-post" data-board="${b.id}"><div class="sm-post-vote">${vote}</div><div class="sm-post-body">`
+      +`<div class="sm-post-meta"><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${b.space.id}" data-key="post-space-${b.id}">${escape(b.space.name)}</button><span>${escape(q.author)}</span><span class="sm-dot"></span><time datetime="${q.posted}">${ago(q.posted+'T09:00:00Z')}</time></div>`
+      +`<h2><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="open-${b.id}">${escape(q.text)}</button></h2>`
+      +`<ul class="sm-post-options" aria-label="Options and how many arguments each has">${options}</ul>`
+      +`<div class="sm-post-foot"><span>${icon('message-square')}${b.comments}</span>${faces}</div>`
+      +`</div>${thumb(b)}</li>`;
+  }
+  function sidebar() {
+    const count=id=>Object.values(docs).filter(d=>d.question.org===id).length;
+    const link=(id,label,n='')=>`<button type="button" class="sm-side-link cursor-interaction" data-action="space" data-id="${id}" data-key="side-${id}" aria-current="${state.space===id}">${label}${n!==''?`<span class="sm-side-count">${n}</span>`:''}</button>`;
+    const group=(title,list)=>`<h2>${title}</h2>`+list.map(s=>link(s.id,spaceTag(s),count(s.id))).join('');
+    return `<nav class="sm-side" id="sm-side" aria-label="Spaces">${link('all',icon('house')+'<span>Home</span>')}`
+      +group('Your spaces',SPACES.filter(s=>s.kind==='private'))
+      +group('Communities',SPACES.filter(s=>s.kind==='public'&&state.joined[s.id]))
+      +`<button type="button" class="sm-side-link sm-side-soon cursor-interaction" aria-disabled="true" data-action="browse" data-key="browse">${icon('compass')}<span>Discover</span><span class="sm-soon">Soon</span></button></nav>`;
+  }
+  function feedHead() {
+    if(state.space==='all') return '';
+    const s=spaceOf(state.space),pub=s.kind==='public';
+    const join=pub?`<button type="button" class="sm-join cursor-interaction" data-action="join" data-id="${s.id}" data-key="join-${s.id}" aria-pressed="${!!state.joined[s.id]}">${state.joined[s.id]?'Joined':'Join'}</button>`:'';
+    return `<header class="sm-space-head"><div><h1>${escape(s.name)}</h1><ul class="sm-question-meta"><li><span class="sm-meta-pill">${icon(pub?'globe':'lock')}${pub?'Public community':s.id==='none'?'Only you':'Private space'}</span></li><li>${icon('users')}${s.members.toLocaleString('en-US')} ${s.members===1?'member':'members'}</li><li>${escape(s.about)}</li></ul></div>${join}</header>`;
+  }
+  function renderHome() {
+    const list=visibleBoards();
+    const empty=state.query.trim()?'No steelmen match that search.':state.sort==='help'?'Every option here has at least two arguments.':'Nothing here yet.';
+    homeEl.innerHTML=sidebar()+`<main class="sm-feed" id="sm-feed">${feedHead()}<div class="sm-sort" role="group" aria-label="Sort steelmen">${Object.entries(SORTS).map(([k,[g,l]])=>`<button type="button" class="cursor-interaction" data-action="sort" data-id="${k}" data-key="sort-${k}" aria-pressed="${state.sort===k}">${icon(g)}${l}</button>`).join('')}</div>`
+      +(list.length?`<ol class="sm-feed-list">${list.map(post).join('')}</ol>`:`<p class="sm-feed-empty">${empty}</p>`)+`</main>`;
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  function renderSite() {
+    const me=`<span class="sm-me" title="kieran_lamee (you)">KL</span>`;
+    let middle='',tools='',menu='';
+    if(state.view==='board') {
+      const s=spaceOf(doc.question.org);
+      const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility==='link';
+      const zoomBtn=(level,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="zoom" data-id="${level}" data-key="zoom-${level}" aria-pressed="${state.zoom===level}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
+      tools=`<div class="sm-zoom" role="group" aria-label="Zoom">${zoomBtn('overview','zoom-out','Overview (−)')}${zoomBtn('read','zoom-in','Read (+)')}</div>`
+        +(f.here.length?`<span class="sm-site-faces" aria-label="Also here">${f.here.map(u=>`<button type="button" class="cursor-interaction" data-action="follow" data-id="${escape(u)}" data-key="follow-${escape(u)}" data-follow="${escape(u)}" aria-label="Go to where ${escape(u)} is">${escape(userInitials(u))}</button>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
+        +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
+      middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
+    } else {
+      menu=`<button type="button" class="sm-nav-toggle cursor-interaction" data-action="nav-toggle" data-key="nav-toggle" aria-expanded="${state.navOpen}" aria-controls="sm-side" aria-label="Spaces menu">${icon(state.navOpen?'x':'menu')}</button>`;
+      tools=`<button type="button" class="sm-share-button cursor-interaction" data-action="create-open" data-key="create-open" aria-haspopup="dialog">${icon('plus')}<span>New steelman</span></button><label class="sm-search">${icon('search')}<input id="sm-search" type="search" data-key="search" placeholder="Search steelmen" aria-label="Search steelmen" value="${escape(state.query)}"></label>`;
+    }
+    root.toggleAttribute('data-nav-open',state.view==='home'&&state.navOpen);
+    siteEl.innerHTML=`${menu}<button type="button" class="sm-wordmark cursor-interaction" data-action="space" data-id="all" data-key="wordmark" aria-label="Steelman home">${LOGO}steelman.</button>${middle}<div class="sm-site-tools">${tools}${me}</div>`;
+  }
+  // ── New steelman: a question, two to four options, and the space it lives in ──
+  // The space sets who can find it; Share refines that once it exists.
+  const LOADED=['obviously','clearly','finally','ridiculous','stupid','just','really','still','even'];
+  function createHints() {
+    const d=state.createDraft,q=d.q.trim(),hints=[];
+    const loaded=LOADED.filter(w=>new RegExp(`\\b${w}\\b`,'i').test(q));
+    if(loaded.length) hints.push(`“${loaded[0]}” may tilt the question toward one side. Ask it so each option can make its strongest case.`);
+    if(/^why\b/i.test(q)) hints.push('“Why…” assumes an answer. Try “Should…” or “Which…” so the options can disagree.');
+    if(d.options.some(o=>/^(yes|no)$/i.test(o.trim()))) hints.push('Name each option as a position (“Open on Sundays”), so each side reads as a case, not a vote.');
+    return hints.map(h=>`<li>${escape(h)}</li>`).join('');
+  }
+  function accessLine(spaceId) {
+    const sp=spaceOf(spaceId);
+    if(sp.id==='none') return 'Only you can see it until you share it.';
+    return sp.kind==='public'?`Public: anyone in ${sp.name} can find it, read it, and contribute.`:`Everyone in ${sp.name} can find it and contribute.`;
+  }
+  function createMarkup() {
+    const d=state.createDraft,yours=SPACES.filter(s=>s.kind==='private'||state.joined[s.id]);
+    const options=d.options.map((o,i)=>`<div class="sm-create-option" ${state.createError&&!o.trim()&&i<2?'data-invalid':''}><input type="text" class="sm-create-opt" data-index="${i}" data-key="create-opt-${i}" maxlength="80" placeholder="${['First option','Second option','Third option','Fourth option'][i]}" aria-label="Option ${i+1}" value="${escape(o)}">${d.options.length>2?`<button type="button" class="cursor-interaction" data-action="create-remove-option" data-id="${i}" data-key="create-remove-${i}" aria-label="Remove option ${i+1}" data-tooltip="Remove">${icon('x')}</button>`:''}</div>`).join('');
+    const add=d.options.length<MAX_OPTIONS?`<button type="button" class="sm-create-add cursor-interaction" data-action="create-add-option" data-key="create-add">${icon('plus')}Option</button>`:'';
+    return `<div class="sm-create-canvas"><div class="sm-create-top"><h2 id="sm-create-title">New steelman</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="create-close" data-key="create-close" aria-label="Close (your draft is kept)" data-tooltip="Close">${icon('x')}</button></div>`
+      +`<div class="sm-create-q" ${state.createError&&!d.q.trim()?'data-invalid':''}><textarea id="sm-create-q" data-key="create-q" rows="2" maxlength="200" placeholder="Ask a question with more than one good answer" aria-label="Question">${escape(d.q)}</textarea></div>`
+      +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
+      +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
+      +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))} You can change this under Share.</p></div>`
+      +`<div class="sm-create-actions">${state.createError?`<span class="sm-create-error" role="alert">${escape(state.createError)}</span>`:''}<button type="button" class="sm-link-button cursor-interaction" data-action="create-close" data-key="create-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="create-submit" data-key="create-submit">Create steelman</button></div></div>`;
+  }
+  const createEl=root.querySelector('.sm-create'),scrimEl=root.querySelector('.sm-create-scrim');
+  function renderCreate(focusKey) {
+    const open=state.view==='home'&&state.creating;
+    createEl.hidden=scrimEl.hidden=!open;
+    if(!open){createEl.innerHTML='';return;}
+    createEl.innerHTML=createMarkup();
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+    if(focusKey){const el=createEl.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});}
+  }
+  function createSubmit() {
+    const d=state.createDraft,q=d.q.replace(/\s+/g,' ').trim(),names=d.options.map(o=>o.replace(/\s+/g,' ').trim()).filter(Boolean);
+    const problem=!q?'Write the question first.':names.length<2?'A steelman needs at least two options.':new Set(names.map(n=>n.toLowerCase())).size<names.length?'Each option needs a different name.':'';
+    if(problem){
+      // Focus what needs fixing: the question, an empty option, or the second of two options with the same name.
+      const key=o=>o.replace(/\s+/g,' ').trim().toLowerCase(),empty=d.options.findIndex(o=>!o.trim()),dupe=d.options.findIndex((o,i)=>key(o)&&d.options.slice(0,i).some(x=>key(x)===key(o)));
+      state.createError=problem;renderCreate(!q?'create-q':'create-opt-'+(names.length<2?Math.max(empty,0):Math.max(dupe,0)));announce(problem);return;
+    }
+    const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
+    docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
+    if(d.space!=='none') state.feedVotes[id]=1; // your own steelman starts with your upvote
+    const T=relBox(createEl);
+    state.creating=false;state.createError='';state.createDraft={q:'',options:['',''],space:null};
+    leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);
+    renderCreate();renderView('compose-idea-'+doc.options[0].id);
+    growFrom(T);root.scrollIntoView({block:'start'});
+    announce(`Created. The board is empty: add the first argument for ${doc.options[0].name}.`);
+  }
+
+  // ── Share: who has access to this board, and how anyone else can get in ──
+  // Roles build on each other: viewers read and comment, voters also vote and assess evidence, contributors also write.
+  const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute'};
+  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, vote, and assess evidence',contribute:'do everything: write arguments, versions, and sources, and vote'};
+  // Initials from a username's words, ignoring numbers: maya.chen → MC, samr_92 → SA.
+  const userInitials = u => { const words=u.split(/[\s_.@]+/).filter(w=>/^[a-z]/i.test(w)); return (words.length>1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
+  const roleSelect = (id,current,attrs='',disabled=false) => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
+  function shareSuggestions() {
+    const q=doc.question,typed=state.shareQuery.trim().toLowerCase();
+    if(!typed) return '';
+    const taken=new Set([q.author,...q.people.map(p=>p.user)]);
+    const matches=(PEOPLE[q.org]||[]).filter(u=>!taken.has(u)&&u.includes(typed)).slice(0,5);
+    const email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typed)&&!taken.has(typed);
+    return matches.map(u=>`<li><button type="button" class="cursor-interaction" data-action="share-invite" data-id="${escape(u)}" data-key="suggest-${escape(u)}"><span class="sm-avatar" aria-hidden="true">${escape(userInitials(u))}</span>${escape(u)}<small>${escape(spaceOf(q.org).name)}</small></button></li>`).join('')
+      +(email?`<li><button type="button" class="cursor-interaction" data-action="share-invite" data-id="${escape(typed)}" data-key="suggest-email">${icon('mail')}Invite ${escape(typed)} by email</button></li>`:'');
+  }
+  function shareMarkup() {
+    const q=doc.question,owner=q.author===ME,space=spaceOf(q.org),personal=q.org==='none';
+    const person=(user,right,{pending=false,you=false}={})=>`<li class="sm-person"><span class="sm-avatar ${pending?'sm-pending':''}" aria-hidden="true">${pending?icon('mail'):escape(userInitials(user))}</span><span>${escape(user)}${you?' <small>(you)</small>':''}${pending?' <small>· invited</small>':''}</span>${right}</li>`;
+    const others=q.people.map(p=>person(p.user,owner
+      ?roleSelect(p.user,p.role,`data-share-person="${escape(p.user)}" data-key="role-${escape(p.user)}"`)+`<button type="button" class="sm-person-remove cursor-interaction" data-action="share-remove" data-id="${escape(p.user)}" data-key="remove-${escape(p.user)}" aria-label="Remove ${escape(p.user)}" data-tooltip="Remove">${icon('x')}</button>`
+      :`<span class="sm-person-role">${ROLES[p.role]}</span>`,{pending:p.user.includes('@'),you:p.user===ME})).join('');
+    // You always appear: as the owner, or with the access you have through the space or the link.
+    const youRole=q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole);
+    const people=person(q.author,`<span class="sm-person-role">Owner</span>`,{you:owner})+(owner||q.people.some(p=>p.user===ME)?'':person(ME,`<span class="sm-person-role">${ROLES[youRole]}</span>`,{you:true}))+others;
+    const general={private:['lock','Only people invited'],org:['building-2',`Everyone in ${space.name}`],link:['globe','Anyone with the link']};
+    const accessIcon=general[q.visibility]?.[0]||'lock';
+    const accessHint=q.visibility==='private'?'Only the people above can open it.':q.visibility==='org'?`Members of ${space.name} can find it in the space and ${ROLE_HINTS[q.accessRole]}.`:`Anyone with the link can ${ROLE_HINTS[q.accessRole]}. Signing in is needed to do more than read.`;
+    const generalSelect=`<select id="sm-share-general" data-key="share-general" aria-label="General access" ${owner?'':'disabled'}>${Object.entries(general).map(([v,[,l]])=>`<option value="${v}" ${v===q.visibility?'selected':''} ${v==='org'&&personal?'disabled':''}>${escape(l)}${v==='org'&&personal?' (choose a space first)':''}</option>`).join('')}</select>`;
+    const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
+    const link=`steelman.example/s/${state.boardId}`;
+    return `<header><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></header>`
+      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Add people by username or email" aria-label="Add people by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',state.shareRole,'id="sm-share-role" data-key="share-role"')}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
+      +`<section aria-labelledby="sm-people-title"><h3 id="sm-people-title">People with access</h3><ul class="sm-people">${people}</ul></section>`
+      +`<section aria-labelledby="sm-general-title"><h3 id="sm-general-title">General access</h3><div class="sm-person"><span class="sm-avatar sm-access" aria-hidden="true">${icon(accessIcon)}</span><span>${generalSelect}</span>${q.visibility==='private'?'':roleSelect('general',q.accessRole,'id="sm-share-access-role" data-key="share-access-role"',!owner)}</div><p class="sm-access-hint">${escape(accessHint)}</p>${ownerNote}</section></div>`
+      +`<footer><input type="text" readonly value="${link}" aria-label="Link to this steelman" data-key="share-link">${button('share-copy',icon(state.copied==='yes'?'check':'link')+(state.copied==='yes'?' Copied':' Copy link'),'data-key="share-copy"')}</footer>`;
+  }
+  function renderShare() {
+    shareEl.hidden=!(state.view==='board'&&state.share);
+    if(shareEl.hidden){shareEl.innerHTML='';return;}
+    shareEl.innerHTML=shareMarkup();shareEl.style.top=(siteEl.offsetHeight+8)+'px';
+  }
+  function invite(user) {
+    const q=doc.question,u=String(user||'').trim().toLowerCase();
+    if(!u) return 'Type a username or an email address.';
+    if(u===q.author||q.people.some(p=>p.user===u)) return `${u} already has access.`;
+    const known=Object.values(PEOPLE).flat().includes(u)||u===ME,email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u);
+    if(!known&&!email) return `No one called ${u}. Check the username, or invite them by email.`;
+    q.people.push({user:u,role:state.shareRole});state.shareQuery='';
+    return null;
+  }
+
+  // ── Presence (simulated): classmates move between cards; now and then one starts writing. Nothing they do changes the board. ──
+  let presence={},presenceTimer=0;
+  const reducedMotion2=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function visibleCards() { return [...board.querySelectorAll('.sm-card[data-card]')].map(el=>el.dataset.card); }
+  function startPresence() {
+    stopPresence();
+    const people=FEED[state.boardId]?.here||[],ids=visibleCards();
+    presence=Object.fromEntries(people.map((u,i)=>[u,{card:ids[(i*2+1)%Math.max(ids.length,1)],writing:false}]));
+    const tick=()=>{
+      const users=Object.keys(presence),ids=visibleCards();
+      if(users.length&&ids.length){
+        const u=users[Math.floor(Math.random()*users.length)],p=presence[u];
+        if(!p.writing&&Math.random()<.3&&ids.includes(p.card)) p.writing=true;
+        else {p.writing=false;p.card=ids[Math.floor(Math.random()*ids.length)];}
+        paintPresence();
+      }
+      presenceTimer=setTimeout(tick,2600+Math.random()*2600);
+    };
+    presenceTimer=setTimeout(tick,1800);
+    paintPresence();
+  }
+  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};root.querySelectorAll('.sm-presence,.sm-cursor').forEach(el=>el.remove()); }
+  const ARROW='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 1.5 13.5 7 8 8.4 5.6 13.8Z" fill="#242424" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  // Badges are painted onto the cards directly, so focus and drafts are never disturbed.
+  function paintPresence() {
+    root.querySelectorAll('.sm-presence,.sm-cursor').forEach(el=>el.remove());
+    if(state.view!=='board') return;
+    const byCard={};
+    for(const [u,p] of Object.entries(presence)) (byCard[p.card] ||= []).push(u);
+    for(const [id,users] of Object.entries(byCard)){
+      const el=board.querySelector(`.sm-card[data-card="${id}"]`);if(!el)continue;
+      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge" title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>`);
+      const writer=users.find(u=>presence[u].writing);
+      if(writer) el.insertAdjacentHTML('beforeend',`<span class="sm-cursor" aria-hidden="true">${ARROW}<b>${escape(writer)} <i>writing a version…</i></b></span>`);
+    }
+    siteEl.querySelectorAll('[data-follow]').forEach(b=>{const p=presence[b.dataset.follow],c=p&&cards[p.card];b.title=c?`${b.dataset.follow} · ${p.writing?'writing on':'viewing'} “${short(p.card)}”`:b.dataset.follow;});
+  }
+  function follow(user) {
+    const p=presence[user],el=p&&board.querySelector(`.sm-card[data-card="${p.card}"]`);
+    if(!el){announce(`${user} is somewhere you can’t see right now.`);return;}
+    el.scrollIntoView({block:'center',behavior:reducedMotion2()?'auto':'smooth'});
+    el.classList.add('sm-followed');setTimeout(()=>el.classList.remove('sm-followed'),1600);
+    announce(`${user} is ${p.writing?'writing a version of':'looking at'} “${short(p.card)}”.`);
+  }
+
+  // ── Zoom ──
+  // Two levels: Read is the board as it is; Overview condenses every card so the whole debate fits.
+  // Moving between them scales the scene around one card, so you keep your place.
+  const sceneEl=root.querySelector('.sm-scene');
+  function centerCard() {
+    const mid=innerHeight/2;let best=null,dist=Infinity;
+    board.querySelectorAll('.sm-card[data-card]').forEach(el=>{const r=el.getBoundingClientRect(),d=Math.abs(r.top+r.height/2-mid);if(d<dist){dist=d;best=el.dataset.card;}});
+    return best;
+  }
+  function zoomTo(level,cardId=centerCard()) {
+    if(state.zoom===level) return;
+    const sel=cardId?`.sm-card[data-card="${cardId}"]`:'.sm-head';
+    const before=root.querySelector(sel)?.getBoundingClientRect();
+    if(level==='overview') Object.assign(state,{open:null,expanded:null,drawer:null,menu:null,share:false,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null});
+    state.zoom=level;render(level==='read'&&cardId?'claim-'+cardId:'zoom-'+level);save();
+    const target=root.querySelector(sel);if(!target)return;
+    target.scrollIntoView({block:'center'});
+    if(cardId&&level==='read'){target.classList.add('sm-arrived');setTimeout(()=>target.classList.remove('sm-arrived'),900);}
+    if(!before||reducedMotion2())return;
+    const after=target.getBoundingClientRect(),scene=sceneEl.getBoundingClientRect(),k=before.width/after.width;
+    const tx=before.left-scene.left-(after.left-scene.left)*k,ty=before.top-scene.top-(after.top-scene.top)*k;
+    sceneEl.style.transformOrigin='0 0';
+    play(sceneEl,[{transform:`translate(${tx}px,${ty}px) scale(${k})`},{transform:'none'}],{duration:420});
+    animateWires(460);
+    announce(level==='overview'?'Overview: the whole board, condensed. Choose a card to read it.':'Reading.');
+  }
+  // Opening a board grows it out of its miniature in the list; leaving shrinks it back. Positions are relative to the prototype.
+  const relBox=el=>{const r=el.getBoundingClientRect(),o=root.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top,w:r.width,h:r.height};};
+  function growFrom(T) {
+    if(!T||reducedMotion2())return;
+    const F=relBox(surfaceEl),k=T.w/F.w;
+    play(surfaceEl,[{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`},{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)'}],{duration:480});
+    animateWires(520);
+  }
+  function shrinkInto(F,boardId) {
+    const thumb=root.querySelector(`.sm-post[data-board="${boardId}"] .sm-thumb`);
+    if(!thumb||reducedMotion2())return;
+    thumb.closest('.sm-post').scrollIntoView({block:'center'});
+    const T=relBox(thumb),k=T.w/F.w;
+    const done=()=>{surfaceEl.getAnimations().forEach(x=>x.cancel());if(state.view==='home')surfaceEl.hidden=true;surfaceEl.removeAttribute('style');};
+    surfaceEl.hidden=false;Object.assign(surfaceEl.style,{position:'absolute',left:F.x+'px',top:F.y+'px',width:F.w+'px',zIndex:60,pointerEvents:'none'});
+    play(surfaceEl,[{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)',opacity:1},{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`,opacity:.6}],{duration:420,easing:'cubic-bezier(.4,0,.2,1)'})
+      .then(done);
+    // Animations pause in background tabs; never leave the board stranded over the list.
+    setTimeout(done,700);
+  }
+
+  // Leaving a board closes whatever was open on it; votes stay, keyed by card.
+  function leaveBoard() {
+    stopPresence();
+    Object.assign(state,{zoom:'read',share:false,shareQuery:'',copied:'',open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
+  }
+  function renderView(focusKey) {
+    const home=state.view==='home';
+    homeEl.hidden=!home; surfaceEl.hidden=home; root.toggleAttribute('data-drawer',false);
+    if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
+    else {render();startPresence();}
+    if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
+  }
+  const HOME_ACTIONS=new Set(['space','sort','feed-vote','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-submit']);
+  function homeAction(action,id,trigger) {
+    if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
+    if(action==='create-open') {
+      const d=state.createDraft;if(!d.space) d.space=state.space!=='all'&&(spaceOf(state.space).kind==='private'||state.joined[state.space])?state.space:'pod6';
+      state.creating=true;state.navOpen=false;renderSite();renderCreate('create-q');announce('New steelman: write the question, then name the options.');return;
+    }
+    if(action==='create-close') {state.creating=false;state.createError='';renderCreate();root.querySelector('[data-key="create-open"]')?.focus();announce('Closed. Your draft is kept.');return;}
+    if(action==='create-add-option') {const d=state.createDraft;if(d.options.length<MAX_OPTIONS)d.options.push('');renderCreate('create-opt-'+(d.options.length-1));return;}
+    if(action==='create-remove-option') {const d=state.createDraft;d.options.splice(Number(id),1);renderCreate('create-opt-'+Math.min(Number(id),d.options.length-1));return;}
+    if(action==='create-submit') {createSubmit();return;}
+    if(action==='nav-toggle') {state.navOpen=!state.navOpen;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(state.navOpen?'.sm-side-link[aria-current="true"]':'[data-key="nav-toggle"]')?.focus();return;}
+    state.navOpen=false;
+    if(action==='open-board') {
+      const thumb=root.querySelector(`.sm-post[data-board="${id}"] .sm-thumb`),T=thumb&&relBox(thumb);
+      surfaceEl.getAnimations().forEach(x=>x.cancel());surfaceEl.removeAttribute('style');
+      leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);renderView('claim-'+(ideas[0]?ordered(ideas[0])[0]:''));
+      growFrom(T);root.scrollIntoView({block:'start',behavior:reducedMotion2()?'auto':'smooth'});
+      announce(`Opened “${doc.question.text}”.`);return;
+    }
+    if(action==='space') {
+      const from=state.view,F=from==='board'&&relBox(surfaceEl),left=state.boardId;leaveBoard();state.view='home';state.space=id;
+      renderView(from==='board'||trigger.dataset.key.startsWith('post-space')?'side-'+id:trigger.dataset.key);
+      if(F) shrinkInto(F,left); else root.scrollIntoView({block:'start'});
+      announce(id==='all'?'Home: steelmen from your spaces and communities.':`${spaceOf(id).name}.`);return;
+    }
+    if(action==='sort') {state.sort=id;renderHome();announce(`Sorted by ${SORTS[id][1].toLowerCase()}.`);}
+    if(action==='feed-vote') {const v=Number(trigger.dataset.vote);state.feedVotes[id]=state.feedVotes[id]===v?0:v;renderHome();announce(state.feedVotes[id]?(v>0?'Upvoted.':'Downvoted.'):'Vote withdrawn.');}
+    if(action==='join') {state.joined[id]=!state.joined[id];renderHome();announce(state.joined[id]?`Joined ${spaceOf(id).name}.`:`Left ${spaceOf(id).name}.`);}
+    root.querySelector(`[data-key="${trigger.dataset.key}"]`)?.focus({preventScroll:true});
+  }
+
   function render(focusKey, motion='') {
+    root.dataset.zoom=state.view==='board'?state.zoom:'';
+    renderSite();renderShare();
     root.dataset.indicator=design.indicator; root.dataset.density=design.density; root.dataset.type=design.type;
     const reduced=reducedMotion();
     const beforeNodes=new Map([...board.querySelectorAll('[data-node]')].map(el=>[el.dataset.node,el.getBoundingClientRect().top]));
@@ -1051,6 +1692,7 @@
       if(box.bottom>window.innerHeight) newTrack.closest('[data-node]').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
     }
     animateWires(motion&&!reduced?720:0);
+    paintPresence();
   }
   let lastToggled=null;
   async function fold(id, focus) {
@@ -1073,6 +1715,14 @@
       event.target.removeAttribute('aria-invalid');
       doc.question.text=text;headEl.querySelector('h1').textContent=text;animateWires();save();
     }
+    if(event.target.id==='sm-search') {state.query=event.target.value;renderHome();return;}
+    if(event.target.id==='sm-create-q'||event.target.classList?.contains('sm-create-opt')) {
+      const d=state.createDraft;if(event.target.id==='sm-create-q')d.q=event.target.value;else d.options[Number(event.target.dataset.index)]=event.target.value;
+      event.target.closest('[data-invalid]')?.removeAttribute('data-invalid');
+      if(state.createError){state.createError='';createEl.querySelector('.sm-create-error')?.remove();}
+      createEl.querySelector('#sm-create-hints').innerHTML=createHints();save();return;
+    }
+    if(event.target.id==='sm-share-q') {state.shareQuery=event.target.value;event.target.removeAttribute('aria-invalid');root.querySelector('#sm-share-suggest').innerHTML=shareSuggestions();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(event.target.id==='sm-comment') {state.commentDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reply') {state.replyDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-idea-claim') {state.ideaDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
@@ -1085,6 +1735,17 @@
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
   root.addEventListener('submit',event=>event.preventDefault());
+  // Share controls save as soon as they change.
+  root.addEventListener('change',event=>{
+    const el=event.target,q=doc.question;
+    if(el.id==='sm-share-role') {state.shareRole=el.value;return;}
+    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value)+' You can change this under Share.';return;}
+    if(el.dataset.sharePerson) {const p=q.people.find(x=>x.user===el.dataset.sharePerson);if(p){p.role=el.value;announce(`${p.user} ${ROLES[p.role]}.`);}}
+    else if(el.id==='sm-share-general') {q.visibility=el.value;announce(el.selectedOptions[0].textContent+'.');}
+    else if(el.id==='sm-share-access-role') {q.accessRole=el.value;announce(`General access: ${ROLES[el.value]}.`);}
+    else return;
+    const key=el.dataset.key;render();save();root.querySelector(`[data-key="${key}"]`)?.focus();
+  });
   // Settings selects and radios save as soon as they change.
   root.addEventListener('change',event=>{
     const el=event.target,q=doc.question;
@@ -1111,6 +1772,7 @@
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
+    if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
       if(state.menu===id){closeMenu();trigger.focus();return;}
@@ -1189,9 +1851,31 @@
       announce('Versions unfolded in place, best articulated first. Browsing does not cast a vote.');
     }
     if(action==='fold') {fold(id);return;}
-    if(action==='settings') {state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
+    if(action==='zoom') {zoomTo(id);return;}
+    if(action==='follow') {follow(id);return;}
+    if(action==='share') {
+      state.share=!state.share;state.copied='';state.shareQuery='';
+      if(state.share){state.drawer=null;focus='share-q';announce('Sharing opened. Invite people, or change who can get in with the link.');}
+      else {focus='share';announce('Sharing closed.');}
+    }
+    if(action==='open-share') {state.drawer=null;state.share=true;state.copied='';focus='share-q';}
+    if(action==='share-invite') {
+      const who=id||state.shareQuery,problem=invite(who);
+      if(problem){announce(problem);const field=root.querySelector('#sm-share-q');field?.focus();field?.setAttribute('aria-invalid','true');return;}
+      focus='share-q';announce(`${who.trim().toLowerCase()} ${ROLES[state.shareRole]}.${who.includes('@')?' An invitation was sent.':''}`);
+    }
+    if(action==='share-remove') {doc.question.people=doc.question.people.filter(p=>p.user!==id);focus='share-q';announce(`${id} no longer has access.`);}
+    if(action==='share-copy') {
+      const link=root.querySelector('[data-key="share-link"]');
+      const done=()=>{state.copied='yes';renderShare();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector('[data-key="share-copy"]')?.focus();announce('Link copied.');};
+      const fail=()=>{link.select();announce('Copying isn’t allowed here. The link is selected so you can copy it.');};
+      if(navigator.clipboard?.writeText) navigator.clipboard.writeText('https://'+link.value).then(done,fail); else fail();
+      return;
+    }
+    if(action==='settings') {state.share=false;state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
     if(action==='close-drawer') {focus=closeDrawer();}
     if(action==='comments') {
+      state.share=false;
       if(commenting(id)){focus=closeDrawer();}
       else {state.drawer='comments';state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus='comment-text';announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
     }
@@ -1222,7 +1906,7 @@
     if(action==='show-resolved') {state.showResolved=!state.showResolved;}
     if(action==='reset') {
       if(!state.confirmReset){state.confirmReset=true;focus='reset';announce('Click again to reset the board, your votes, and your edits to the original example.');}
-      else {state=freshState();useDoc(seedDoc());state.drawer='settings';focus='reset';announce('The example board was reset.');}
+      else {const keep=state.boardId;state=freshState();docs=seedDocs();state.view='board';state.boardId=keep;useDoc(docs[keep]);state.drawer='settings';focus='reset';announce('The example boards were reset.');}
     }
     let toast=null;
     if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'up':'down',text:state.importance[id]?(Number(vote)>0?'Important.':'Less important.'):'Vote withdrawn.'};announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
@@ -1261,6 +1945,15 @@
   root.addEventListener('keydown',event=>{
     if(event.key==='Enter'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
     if(event.key==='Escape'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=cancelOptionName();render(focus);save();announce('Rename cancelled.');return;}
+    if(state.creating&&event.key==='Escape'){event.preventDefault();root.querySelector('[data-key="create-close"]')?.click();return;}
+    if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&event.target.closest?.('.sm-create')){event.preventDefault();createSubmit();return;}
+    if(event.key==='Enter'&&event.target.id==='sm-create-q'){event.preventDefault();createEl.querySelector('.sm-create-opt')?.focus();return;}
+    if(event.key==='Enter'&&event.target.classList?.contains('sm-create-opt')){
+      event.preventDefault();const next=createEl.querySelector(`[data-index="${Number(event.target.dataset.index)+1}"]`);
+      if(next) next.focus(); else createSubmit();return;
+    }
+    if(event.key==='Enter'&&event.target.id==='sm-share-q'){event.preventDefault();root.querySelector('[data-key="share-invite"]')?.click();return;}
+    if(event.key==='ArrowDown'&&event.target.id==='sm-share-q'){const first=root.querySelector('#sm-share-suggest button');if(first){event.preventDefault();first.focus();}return;}
     if(event.key==='Enter'&&event.target.matches?.('#sm-source-form input')){event.preventDefault();root.querySelector('[data-action="save-source"]')?.click();return;}
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&['sm-comment','sm-reply'].includes(event.target.id)){event.preventDefault();root.querySelector(event.target.id==='sm-comment'?'[data-action="comment-add"]':'[data-action="reply-add"]')?.click();return;}
     // Menu keys: arrows move between items, Tab leaves and closes it.
@@ -1270,7 +1963,14 @@
       if(to!==undefined){event.preventDefault();items[(to+items.length)%items.length].focus();return;}
       if(event.key==='Tab'){closeMenu();return;}
     }
-    if(event.key!=='Escape'||busy)return;
+    if(event.key==='Escape'&&state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector('[data-key="nav-toggle"]')?.focus();return;}
+    const typing=event.target.closest?.('input,textarea,select,[contenteditable]');
+    if(state.view==='board'&&!typing&&!event.metaKey&&!event.ctrlKey&&!busy){
+      if(event.key==='-'||(event.shiftKey&&event.key==='!')){event.preventDefault();zoomTo('overview');return;}
+      if(event.key==='='||event.key==='+'||(event.shiftKey&&event.key===')')){event.preventDefault();zoomTo('read');return;}
+    }
+    if(event.key!=='Escape'||busy||state.view!=='board')return;
+    if(state.share){event.preventDefault();state.share=false;state.shareQuery='';render('share');announce('Sharing closed.');return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
     if(state.replyTo){event.preventDefault();const id=state.replyTo;state.replyTo=null;render('reply-'+id);return;}
     if(state.drawer){event.preventDefault();render(closeDrawer());save();return;}
@@ -1280,16 +1980,44 @@
     if(state.composingIdea){event.preventDefault();const option=state.composingIdea;state.composingIdea=null;render('compose-idea-'+option);save();announce('Draft kept for later.');return;}
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
-    if(state.open){event.preventDefault();fold(state.open);}
+    if(state.open){event.preventDefault();fold(state.open);return;}
+    // With nothing open, Escape zooms out: Read → Overview → back to the list.
+    event.preventDefault();
+    if(state.zoom==='read') zoomTo('overview');
+    else root.querySelector('[data-key="crumb-space"]')?.click();
   });
   root.addEventListener('click',event=>{
     const summary=event.target.closest('.sm-source-row summary');if(!summary)return;
     const detail=summary.parentElement;
     requestAnimationFrame(()=>{state.openSources ||= {};state.openSources[detail.dataset.sourceKey]=detail.open;animateWires();save();});
   });
+  scrimEl.addEventListener('click',()=>root.querySelector('[data-key="create-close"]')?.click());
+  // In Overview, choosing a card (or a header) zooms in to read it.
+  root.addEventListener('click',event=>{
+    if(state.view!=='board'||state.zoom!=='overview'||!event.target.closest('.sm-scene'))return;
+    const card=event.target.closest('.sm-card[data-card]'),header=event.target.closest('.sm-head,.sm-column-head');
+    if(!card&&!header)return;
+    event.preventDefault();event.stopPropagation();
+    zoomTo('read',card?.dataset.card||null);
+  },true);
+  // A click outside the share panel closes it (the Share button toggles it itself).
+  root.addEventListener('click',event=>{
+    if(!state.share||event.target.closest('.sm-share,[data-key="share"]'))return;
+    state.share=false;state.shareQuery='';renderSite();renderShare();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+  },true);
+  // A click outside the open spaces menu closes it.
+  root.addEventListener('click',event=>{
+    if(!state.navOpen||event.target.closest('.sm-side,[data-key="nav-toggle"]'))return;
+    state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});event.stopPropagation();
+  },true);
+  // Clicking anywhere on a list item opens its board, except on its own controls.
+  root.addEventListener('click',event=>{
+    const item=event.target.closest('.sm-post');if(!item||event.target.closest('button,a,input'))return;
+    homeAction('open-board',item.dataset.board,item);save();
+  });
   restore(window.openai?.widgetState);
-  render();
-  window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);render();}});
+  renderView();
+  window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});
   new ResizeObserver(()=>animateWires()).observe(scene);
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>render()});tweak.addSelect(design,'type',{label:'Argument typography',options:[{label:'Graphics sans',value:'sans'},{label:'Editorial serif',value:'serif'}]});tweak.addSelect(design,'density',{label:'Card density',options:[{label:'Comfortable',value:'comfortable'},{label:'Compact',value:'compact'}]});}
 })();
