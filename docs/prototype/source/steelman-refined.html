@@ -245,6 +245,70 @@
   #steelman-study .sm-card { container-type:inline-size; }
   @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
   @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
+  /* Held for review: a faint dashed card with a tag on its edge; editors get Accept and Decline. */
+  #steelman-study .sm-held { position:relative; border:1px dashed var(--sm-wire); background:var(--sm-panel); box-shadow:none; }
+  #steelman-study .sm-held .sm-claim { color:var(--sm-muted); }
+  #steelman-study .sm-held-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px dashed var(--sm-wire); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-held-tag svg { width:12px; height:12px; }
+  #steelman-study .sm-declined .sm-held-tag { border-style:solid; border-color:var(--sm-cred-weak); color:var(--sm-ink); }
+  #steelman-study .sm-declined .sm-held-tag svg { color:var(--sm-cred-weak); }
+  #steelman-study .sm-held-reason { margin:-4px 0 0; padding:0 18px 10px; font-size:12px; line-height:1.5; color:var(--sm-ink); }
+  #steelman-study .sm-card-meta.sm-held-actions { justify-content:flex-start; gap:16px; flex-wrap:wrap; padding:6px 14px; }
+  #steelman-study .sm-held-actions [data-action="held-accept"], #steelman-study .sm-held-actions [data-action="held-decline-confirm"] { font-weight:700; color:var(--sm-ink); }
+  #steelman-study .sm-held-actions input { flex:1; min-width:120px; padding:5px 8px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:400 12px var(--sm-sans); }
+  #steelman-study .sm-held-list { display:grid; gap:16px; margin-top:18px; }
+  #steelman-study .sm-held-row { margin-bottom:16px; }
+  #steelman-study .sm-review-button { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); color:var(--sm-ink); font-size:13px; }
+  #steelman-study .sm-review-button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-review-button svg { width:15px; height:15px; }
+  #steelman-study .sm-review-button b { font-weight:700; font-variant-numeric:tabular-nums; }
+  @media(max-width:640px) { #steelman-study .sm-review-button span { display:none; } }
+  /* Moderation: a report count on the card's edge (moderators only); a removed version keeps its place as a quiet note. */
+  #steelman-study .sm-flag-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px solid var(--sm-cred-weak); border-radius:999px; background:var(--sm-card); color:var(--sm-ink); font:600 11px/1 var(--sm-sans); box-shadow:0 0 0 2px var(--sm-card); cursor:help; }
+  #steelman-study .sm-flag-tag svg { width:12px; height:12px; color:var(--sm-cred-weak); }
+  #steelman-study .sm-removed { position:relative; border:1px dashed var(--sm-line); background:transparent; box-shadow:none; }
+  #steelman-study .sm-removed-note { display:flex; align-items:center; gap:6px; margin:0; padding:14px 40px 14px 16px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-removed-note svg { width:14px; height:14px; flex:none; }
+  #steelman-study .sm-removed-claim { margin:-6px 0 0; padding:0 16px 14px; font-size:12px; line-height:1.5; color:var(--sm-quiet); text-decoration:line-through; }
+  #steelman-study .sm-comment .sm-removed-claim { padding:0; margin:2px 0 0; }
+  #steelman-study .sm-comment-flag { display:inline-flex; align-items:center; gap:3px; margin-left:auto; font-size:11px; font-weight:600; color:var(--sm-ink); cursor:help; }
+  #steelman-study .sm-comment-flag svg { width:12px; height:12px; color:var(--sm-cred-weak); }
+  #steelman-study .sm-menu-rule { height:1px; margin:4px 8px; background:var(--sm-line); }
+  #steelman-study .sm-history { display:grid; gap:0; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-history li { display:flex; gap:10px; padding:12px 0; border-top:1px solid var(--sm-line); font-size:13px; line-height:1.45; }
+  #steelman-study .sm-history li:first-child { border-top:0; padding-top:0; }
+  #steelman-study .sm-history p { margin:0; }
+  #steelman-study .sm-history time { display:block; font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-history-reason { display:inline-block; padding:0 6px; border:1px solid var(--sm-line); border-radius:4px; font-size:11px; color:var(--sm-muted); }
+  /* Decision: inside the dark question box, under a hairline. */
+  #steelman-study .sm-decision { display:grid; gap:10px; margin-top:18px; padding-top:16px; border-top:1px solid #ffffff33; color:#fff; }
+  #steelman-study .sm-decision h2 { display:flex; align-items:center; gap:6px; margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffffa6; }
+  #steelman-study .sm-decision h2 svg { width:14px; height:14px; }
+  #steelman-study .sm-decision-choice { margin:0; font:700 22px/1.2 var(--sm-serif); }
+  #steelman-study .sm-decision-why { margin:0; max-width:62ch; font-size:14px; line-height:1.55; color:#ffffffd9; }
+  #steelman-study .sm-decision-args, #steelman-study .sm-decision-picks { display:grid; gap:6px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-decision-arg { display:flex; align-items:baseline; gap:8px; width:100%; padding:6px 10px; border:1px solid #ffffff33; border-radius:6px; background:transparent; color:#ffffffd9; font:400 13px/1.45 var(--sm-sans); text-align:left; }
+  #steelman-study .sm-decision-arg:hover { border-color:#ffffff8c; color:#fff; }
+  #steelman-study .sm-decision-arg span { flex:none; font:600 10px/1.6 var(--sm-sans); letter-spacing:.08em; text-transform:uppercase; color:#ffffff8c; }
+  #steelman-study .sm-decision-arg svg { flex:none; width:13px; height:13px; align-self:center; }
+  #steelman-study .sm-decision-arg[aria-pressed="true"] { border-color:#fff; color:#fff; }
+  #steelman-study .sm-decision-by { margin:0; font-size:12px; color:#ffffffa6; }
+  #steelman-study .sm-decision .sm-link-button { color:#fff; font-size:12px; text-decoration:underline; }
+  #steelman-study .sm-decision-options { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-decision-option { padding:6px 12px; border:1px solid #ffffff59; border-radius:6px; background:transparent; color:#fff; font:600 14px/1.2 var(--sm-serif); }
+  #steelman-study .sm-decision-option[aria-checked="true"] { background:#fff; color:var(--sm-ink); border-color:#fff; }
+  #steelman-study .sm-decision textarea { width:100%; padding:8px 10px; border:1px solid #ffffff59; border-radius:6px; background:#ffffff14; color:#fff; font:400 14px/1.5 var(--sm-sans); resize:vertical; }
+  #steelman-study .sm-decision textarea::placeholder { color:#ffffff8c; }
+  #steelman-study .sm-decision-label { margin:4px 0 0; font-size:12px; color:#ffffffa6; }
+  #steelman-study .sm-decision-actions { display:flex; justify-content:flex-end; align-items:center; gap:12px; }
+  #steelman-study .sm-decision .sm-solid { background:#fff; color:var(--sm-ink); border-color:#fff; }
+  #steelman-study .sm-decision .sm-solid[aria-disabled="true"] { opacity:.45; }
+  #steelman-study .sm-post-closed { display:inline-flex; align-items:center; gap:4px; margin-left:4px; padding:1px 7px; border:1px solid var(--sm-line); border-radius:999px; font-size:11px; color:var(--sm-ink); }
+  #steelman-study .sm-post-closed svg { width:11px; height:11px; }
+  #steelman-study .sm-weighed { flex-direction:row; align-items:center; gap:8px; }
+  #steelman-study .sm-weighed small { display:inline; }
+  #steelman-study .sm-not-yet { color:var(--sm-quiet); }
+  #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
   #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:6px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
@@ -324,6 +388,28 @@
   #steelman-study .sm-button:hover { background:var(--sm-soft); }
   #steelman-study .sm-button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
   #steelman-study .sm-card-reveal { overflow:hidden; border-radius:0 0 10px 10px; }
+  /* AI: ochre plus a dotted edge on an AI draft, and an ochre robot wherever AI weighed in. Ochre means nothing else anywhere in the product. */
+  #steelman-study .sm-card.sm-ai { border:1.5px dotted var(--sm-ai); }
+  #steelman-study .sm-ai-tag { position:absolute; top:-10px; right:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px dotted var(--sm-ai); border-radius:999px; background:var(--sm-card); color:var(--sm-ai-ink); font:600 11px/1 var(--sm-sans); white-space:nowrap; box-shadow:0 0 0 2px var(--sm-card); cursor:help; }
+  #steelman-study .sm-ai-tag svg { width:13px; height:13px; color:var(--sm-ai); }
+  #steelman-study .sm-ai-glyph { display:inline-flex; align-items:center; gap:2px; flex:none; height:22px; padding:0 4px; border:0; border-radius:999px; background:transparent; color:var(--sm-ai); cursor:help; vertical-align:middle; }
+  #steelman-study .sm-ai-glyph svg.lucide { width:14px; height:14px; }
+  #steelman-study .sm-ai-glyph .sm-ai-dot { width:9px; height:9px; }
+  #steelman-study .sm-ai-busy svg { animation:sm-pulse 1s ease-in-out infinite alternate; }
+  @keyframes sm-pulse { from { opacity:.25; } to { opacity:1; } }
+  #steelman-study .sm-ai-run { display:inline-grid; place-items:center; width:24px; height:24px; margin-left:2px; padding:0; border:1px dotted var(--sm-ai); border-radius:50%; background:var(--sm-card); color:var(--sm-ai); vertical-align:middle; }
+  #steelman-study .sm-ai-run svg { width:13px; height:13px; }
+  #steelman-study .sm-ai-run:hover { background:var(--sm-ai-hover); }
+  #steelman-study .sm-ai-offer { font-size:11px; color:var(--sm-ai-ink); white-space:nowrap; }
+  /* The robot stays ochre (it says who); the dot uses the evidence meter's colors (it says what): green supports, gray partly, red doesn't. Its fill carries the same meaning for colorblind readers. */
+  #steelman-study .sm-ai-glyph[data-verdict="supports"] .sm-ai-dot { color:var(--sm-cred-strong); }
+  #steelman-study .sm-ai-glyph[data-verdict="partly"] .sm-ai-dot { color:var(--sm-cred-mid); }
+  #steelman-study .sm-ai-glyph[data-verdict="doesnt"] .sm-ai-dot { color:var(--sm-cred-weak); }
+  #steelman-study .sm-ai-glyph[data-verdict="none"] .sm-ai-dot, #steelman-study .sm-ai-glyph[data-verdict="unopened"] .sm-ai-dot { color:var(--sm-quiet); }
+  #steelman-study .sm-ai-glyph:hover, #steelman-study .sm-ai-tag:hover { background:var(--sm-ai-hover); }
+  #steelman-study .sm-ai-glyph:focus-visible, #steelman-study .sm-ai-tag:focus-visible { outline:2px solid var(--sm-ai); outline-offset:1px; }
+  #steelman-study .sm-cred-group { display:inline-flex; align-items:center; gap:2px; min-width:0; }
+  #steelman-study .sm-evidence-vote h4 .sm-ai-glyph { margin-left:4px; }
   #steelman-study .sm-card-context { padding:17px 18px 19px; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font:600 11px/1.5 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
   #steelman-study .sm-brief { font-size:13px; line-height:1.65; color:var(--sm-muted); margin:0; }
@@ -470,6 +556,14 @@
   #steelman-study .sm-search:focus-within { border-color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-search svg { width:15px; height:15px; }
   #steelman-study .sm-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); color:var(--sm-ink); }
+  /* "Preview as": a prototype tool, so it gets a dashed outline rather than the product's own control style. */
+  #steelman-study .sm-persona { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 4px 0 10px; border:1px dashed var(--sm-wire); border-radius:6px; color:var(--sm-muted); font:600 10px/1 var(--sm-sans); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+  #steelman-study .sm-persona select { border:0; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); letter-spacing:0; text-transform:none; cursor:pointer; }
+  #steelman-study .sm-meta-access .sm-link-button { color:#fff; font-size:inherit; text-decoration:underline; text-underline-offset:2px; }
+  /* Controls your role can't use: arrows and buttons fade; prompts to write in a row or add an option disappear. */
+  #steelman-study [data-blocked] { opacity:.38; cursor:not-allowed; }
+  #steelman-study .sm-add-card[data-action="compose"][data-blocked], #steelman-study .sm-add-option-col:has([data-blocked]) { display:none; }
+  #steelman-study .sm-comment-compose textarea:disabled { background:var(--sm-soft); cursor:not-allowed; }
   #steelman-study .sm-me { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 11px/1 var(--sm-sans); letter-spacing:.03em; }
   /* A space is always named the same way: its name in tracked capitals, in a rounded box. */
   #steelman-study .sm-tag { display:inline-flex; align-items:center; height:21px; padding:1px 7px 0; flex:none; border:1px solid var(--sm-ink); border-radius:6px; background:#fff; color:var(--sm-ink); font:600 11px/1 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; white-space:nowrap; }
@@ -485,6 +579,8 @@
   #steelman-study .sm-side :focus-visible { outline-color:#fff; }
   #steelman-study .sm-side h2 { margin:16px 10px 7px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
   #steelman-study .sm-side-link { display:flex; align-items:center; gap:10px; width:100%; min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:#fff; font-size:13px; text-align:left; }
+  #steelman-study .sm-side-box .sm-side-link { gap:8px; padding:6px 8px; }
+  #steelman-study .sm-side-box { display:flex; flex-direction:column; gap:2px; padding:4px; border:1px solid #ffffff1f; border-radius:10px; background:#ffffff0a; }
   #steelman-study .sm-side-link:hover { background:#ffffff1a; }
   #steelman-study .sm-side .sm-tag { background:transparent; border-color:#ffffffb3; color:#fff; }
   #steelman-study .sm-side-link[aria-current="true"] { background:#fff; color:var(--sm-ink); }
@@ -527,10 +623,10 @@
   #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
   #steelman-study .sm-post:hover .sm-thumb { transform:translateY(-2px); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
-  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font-size:12px; }
-  #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:var(--sm-soft); font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-ink); color:#fff; font:600 12px/1.3 var(--sm-serif); }
+  #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:#ffffff26; color:#fff; font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
   /* Dashed, as on the board: an option with fewer than two arguments is an invitation. */
-  #steelman-study .sm-post-options li.sm-thin { border-style:dashed; border-color:#9a9a9a; }
+  #steelman-study .sm-post-options li.sm-thin { border:1px dashed #ffffffa6; box-shadow:0 0 0 1px var(--sm-ink); }
   #steelman-study .sm-post-foot { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:13px; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-post-foot > span { display:inline-flex; align-items:center; gap:5px; }
   #steelman-study .sm-post-foot svg { width:14px; height:14px; stroke-width:1.75; }
@@ -593,6 +689,12 @@
     #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
+    #steelman-study .sm-persona { padding-left:6px; }
+    #steelman-study .sm-site { padding-left:12px; padding-right:12px; }
+    #steelman-study .sm-site-tools { gap:6px; }
+    #steelman-study .sm-review-button { padding:0 8px; }
+    #steelman-study .sm-persona span { display:none; }
+    #steelman-study .sm-persona select { max-width:68px; }
     #steelman-study:is([data-zoom="read"],[data-zoom="case"]) .sm-wordmark-text { display:none; }
   }
 
@@ -648,10 +750,63 @@
   #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:#666; font-size:13px; }
   #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-create-add svg { width:15px; height:15px; }
+  /* How it runs: groups under small tracked headings (as in Share and Settings), rows split by hairlines, quiet controls on the right. */
+  #steelman-study .sm-rules { display:grid; gap:18px; }
+  #steelman-study .sm-rgroup { display:grid; }
+  #steelman-study .sm-rgroup h3 { display:flex; justify-content:space-between; margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-rgroup h3 span { letter-spacing:.04em; text-transform:none; font-weight:500; }
+  #steelman-study .sm-rrow { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; padding:6px 0; border-top:1px solid var(--sm-line); font-size:13px; color:var(--sm-ink); }
+  #steelman-study .sm-rgroup > .sm-rrow:last-child { border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-modes + .sm-rrow { margin-top:10px; }
+  #steelman-study .sm-rrow-label { display:flex; flex-direction:column; gap:2px; min-width:0; font-weight:500; }
+  #steelman-study .sm-rrow-label small { font-size:11px; font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-rrow-control { display:flex; align-items:center; gap:6px; min-width:0; }
+  #steelman-study .sm-rrow-stack { flex-direction:column; align-items:stretch; gap:8px; }
+  #steelman-study .sm-rules .sm-rselect, #steelman-study .sm-create .sm-rselect { width:auto; line-height:1.3; max-width:100%; padding:4px 2px; border:0; border-radius:4px; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); text-align:right; text-align-last:right; cursor:pointer; }
+  #steelman-study .sm-rules .sm-rselect:hover, #steelman-study .sm-create .sm-rselect:hover { background:var(--sm-soft); }
+  #steelman-study .sm-rrow-button { width:100%; border-left:0; border-right:0; border-bottom:0; background:none; text-align:left; font:400 13px var(--sm-sans); }
+  #steelman-study .sm-rrow-button:hover .sm-rrow-label { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-rrow-value { color:var(--sm-muted); font-size:12px; text-align:right; }
+  #steelman-study .sm-rrow-control > svg { width:15px; height:15px; color:var(--sm-muted); flex:none; }
+  /* Mode: three tiles; the chosen one gets an ink outline rather than a fill. */
+  #steelman-study .sm-modes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  #steelman-study .sm-mode { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px 10px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1.2 var(--sm-sans); }
+  #steelman-study .sm-mode svg { width:18px; height:18px; }
+  #steelman-study .sm-mode:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-mode[aria-checked="true"] { border-color:var(--sm-ink); box-shadow:inset 0 0 0 1px var(--sm-ink); color:var(--sm-ink); font-weight:600; }
+  /* Editors: initials, as in Share; chosen ones are inked. */
+  #steelman-study .sm-editors { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-editor { display:grid; place-items:center; width:28px; height:28px; padding:0; border:1px solid var(--sm-line); border-radius:50%; background:#f3f1ec; color:var(--sm-muted); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-editor:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-editor[aria-pressed="true"] { border-color:var(--sm-ink); background:var(--sm-ink); color:#fff; }
+  /* Votes: outlined checks; off ones go quiet and dashed. */
+  #steelman-study .sm-checks { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-check { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 12px 0 10px; border:1px dashed var(--sm-line); border-radius:6px; background:transparent; color:var(--sm-quiet); font:500 12px/1 var(--sm-sans); }
+  #steelman-study .sm-check svg { width:14px; height:14px; }
+  #steelman-study .sm-check[aria-pressed="true"] { border:1px solid var(--sm-ink); background:var(--sm-card); color:var(--sm-ink); }
+  /* AI: the ochre robot, the cost under the name, a switch on the right. */
+  #steelman-study .sm-rrow-ai .sm-rrow-label { display:grid; grid-template-columns:auto 1fr; column-gap:8px; }
+  #steelman-study .sm-rrow-ai .sm-rrow-label svg { grid-row:span 2; align-self:center; width:16px; height:16px; color:var(--sm-ai); }
+  #steelman-study .sm-rrow-off { opacity:.45; }
+  #steelman-study .sm-switch { position:relative; flex:none; width:32px; height:18px; padding:0; border:0; border-radius:999px; background:#cfcfcf; transition:background var(--sm-fast); }
+  #steelman-study .sm-switch::after { content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; box-shadow:0 1px 2px #0003; transition:transform var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-switch[aria-checked="true"] { background:var(--sm-ink); }
+  #steelman-study .sm-switch[aria-checked="true"]::after { transform:translateX(14px); }
+  #steelman-study .sm-switch[aria-disabled="true"] { cursor:not-allowed; }
+  #steelman-study .sm-rdate { padding:4px 6px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:500 13px var(--sm-sans); color:var(--sm-ink); }
+  /* Create sheet: Space and How it runs sit as two rows; the rules open below them. */
+  #steelman-study .sm-create-foot .sm-rules { padding-top:4px; }
+  #steelman-study button.sm-meta-pill { background:transparent; cursor:pointer; }
+  #steelman-study button.sm-meta-pill:hover { border-color:#ffffff8c; color:#fff; }
+  #steelman-study .sm-meta-pill svg { width:13px; height:13px; }
+  /* Votes or AI checks a board's rules switch off. */
+  /* The importance lane keeps its width (the grid depends on it); only its contents go. */
+  #steelman-study[data-off~="importance"] .sm-vote[data-axis="v"], #steelman-study[data-off~="importance"] .sm-col-vaxis { visibility:hidden !important; }
+  #steelman-study[data-off~="importance"] .sm-col-axis { display:none !important; }
+  #steelman-study[data-off~="articulation"] .sm-vote[data-axis="h"], #steelman-study[data-off~="articulation"] .sm-track-axis { display:none !important; }
+  #steelman-study[data-off~="evidence"] .sm-cred, #steelman-study[data-off~="evidence"] .sm-evidence-group, #steelman-study[data-off~="evidence"] .sm-card-meta .sm-ai-glyph, #steelman-study[data-off~="evidence"] .sm-card-tools > .sm-source-button[role="img"] { display:none !important; }
+  #steelman-study[data-off~="aicheck"] .sm-ai-glyph { display:none !important; }
   #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
-  #steelman-study .sm-create-where { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; }
-  #steelman-study .sm-create-where label { font-weight:600; }
-  #steelman-study .sm-create-where select { padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
   #steelman-study .sm-create-access { margin:0; font-size:12px; line-height:1.5; color:var(--sm-muted); }
   #steelman-study .sm-create-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
   #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
@@ -765,20 +920,23 @@
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
-    independence: {at:'2026-11-05T15:00:00Z', brief:'The case is about dependence: whoever makes the best open models decides what everyone else builds on, and can stop.', idea:'independence', claim:'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', yes:14, no:6, pref:24, sources:['openaiblock','metaclosed'], explanation:'A US provider has already cut China off, and the supply of American open weights depends on US companies’ choices. Whether China would refuse good American weights today is the contested part.'},
-    independenceBold: {at:'2026-11-06T11:00:00Z', brief:'China has strong closed models too; “completely dependent” goes past the evidence.', idea:'independence', claim:'Without its own open models, China would be completely dependent on American AI.', yes:1, no:9, pref:7, sources:['openaiblock'], explanation:'Easy to read, but overstated: Chinese labs also build closed models, and the sources show a risk of dependence, not total dependence.'},
-    independenceNarrow: {at:'2026-11-08T19:30:00Z', brief:'This sticks to what happened and leaves the reader to draw the conclusion.', idea:'independence', claim:'Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', yes:4, no:0, pref:5, sources:['llamachina','openaiblock'], explanation:'Precise about the record. It doesn’t claim what China would do now.'},
-    trust: {at:'2026-11-05T15:20:00Z', brief:'A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.', idea:'trust', claim:'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', yes:16, no:4, pref:19, sources:['deepseekbans','clouds','airbnb'], explanation:'Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.'},
-    trustDomain: {at:'2026-11-06T16:00:00Z', brief:'The concern is where data goes and which country’s law governs it, not the domain name.', idea:'trust', claim:'Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.', yes:3, no:7, pref:6, sources:['deepseekbans'], explanation:'The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.'},
-    control: {at:'2026-11-07T10:00:00Z', brief:'China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.', idea:'control', claim:'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', yes:15, no:2, pref:10, sources:['genaimeasures','cacfilings'], explanation:'Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.'},
-    influence: {at:'2026-11-06T12:00:00Z', brief:'Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.', idea:'influence', claim:'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', yes:7, no:5, pref:8, sources:['haibrief','aiplus','downloads'], explanation:'Adoption is well documented; whether it turns into lasting influence is a judgment.'},
-    trustDup: {at:'2026-11-09T08:30:00Z', idea:'trustDup', claim:'Nobody abroad will trust a Chinese AI service, but they’ll happily download free weights.', yes:0, no:0, pref:1, sources:[], explanation:'Another way to put the trust argument, written before its author saw that row.'},
-    revenue: {at:'2026-11-05T16:00:00Z', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
-    revenueBlunt: {at:'2026-11-07T09:00:00Z', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
-    backlash: {at:'2026-11-06T14:00:00Z', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
-    stripped: {at:'2026-11-09T10:00:00Z', brief:'China’s rules govern services offered at home. Once weights are out, anyone can retrain them, and that includes removing what the rules require.', idea:'stripped', claim:'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', yes:9, no:2, pref:6, sources:['r1776','finetune','genaimeasures'], explanation:'The direct answer to “China controls AI where it’s deployed”: that control covers services inside China, not copies of the weights elsewhere. Whether China cares about copies abroad is the open question.'},
-    rivals: {at:'2026-11-08T09:00:00Z', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
-    reversal: {at:'2026-11-07T12:00:00Z', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], explanation:'A forecast, not a fact. It can still matter to the decision.'}
+    independence: {at:'2026-11-05T15:00:00Z', by:'maya.chen', brief:'The case is about dependence: whoever makes the best open models decides what everyone else builds on, and can stop.', idea:'independence', claim:'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', yes:14, no:6, pref:24, sources:['openaiblock','metaclosed'], aiCheck:{verdict: "partly", summary: "The sources show a US provider can cut China off and that Meta may stop releasing its best models. They show the risk of dependence, not that China’s own releases remove it."}, explanation:'A US provider has already cut China off, and the supply of American open weights depends on US companies’ choices. Whether China would refuse good American weights today is the contested part.'},
+    independenceBold: {at:'2026-11-06T11:00:00Z', by:'omar_h', brief:'China has strong closed models too; “completely dependent” goes past the evidence.', idea:'independence', claim:'Without its own open models, China would be completely dependent on American AI.', yes:1, no:9, pref:7, sources:['openaiblock'], aiCheck:{verdict: "doesnt", summary: "One cut-off service doesn’t show complete dependence, and Chinese labs also build closed models."}, explanation:'Easy to read, but overstated: Chinese labs also build closed models, and the sources show a risk of dependence, not total dependence.'},
+    independenceNarrow: {at:'2026-11-08T19:30:00Z', by:'priya_s', brief:'This sticks to what happened and leaves the reader to draw the conclusion.', idea:'independence', claim:'Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', yes:4, no:0, pref:5, sources:['llamachina','openaiblock'], aiCheck:{verdict: "supports", summary: "Both events are in the sources as described."}, explanation:'Precise about the record. It doesn’t claim what China would do now.'},
+    trust: {at:'2026-11-05T15:20:00Z', by:'jordan_w', brief:'A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.', idea:'trust', claim:'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', yes:16, no:4, pref:19, sources:['deepseekbans','clouds','airbnb'], aiCheck:{verdict: "supports", summary: "The sources show limits on DeepSeek’s app, and Western clouds and companies running Chinese weights themselves."}, explanation:'Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.'},
+    trustDomain: {at:'2026-11-06T16:00:00Z', by:'tess.b', brief:'The concern is where data goes and which country’s law governs it, not the domain name.', idea:'trust', claim:'Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.', yes:3, no:7, pref:6, sources:['deepseekbans'], aiCheck:{verdict: "doesnt", summary: "The concern in the source is where data goes and which law applies, not the .cn address."}, explanation:'The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.'},
+    control: {at:'2026-11-07T10:00:00Z', by:'lin.zhao', brief:'China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.', idea:'control', claim:'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', yes:15, no:2, pref:10, sources:['genaimeasures','cacfilings'], aiCheck:{verdict: "supports", summary: "The rules cover public services, and the filing counts show services pass through the regulator."}, explanation:'Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.'},
+    influence: {at:'2026-11-06T12:00:00Z', by:'maya.chen', brief:'Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.', idea:'influence', claim:'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', yes:7, no:5, pref:8, sources:['haibrief','aiplus','downloads'], aiCheck:{verdict:'partly',at:'2026-11-08T20:00:00Z',summary:'The sources show that Chinese open models are widely built on. None shows that this gives China influence over tools or norms.',sources:{haibrief:['supports','Says Chinese open models have caught up in capability and adoption.'],aiplus:['doesnt','Shows the state wants international influence, not that it has it.'],downloads:['unopened','The attachment couldn’t be opened.']},limits:'Read the source summaries on this board, not the full documents. “Influence over norms” is hard to measure, so a person may reasonably read the sources differently.'}, explanation:'Adoption is well documented; whether it turns into lasting influence is a judgment.'},
+    // by is the author's username (or 'you' for yours). by:'ai' marks an AI draft. It starts like any new argument: no votes, unreviewed, no sources. ai says how it was drafted.
+    community: {at:'2026-11-09T08:00:00Z', by:'ai', idea:'community', claim:'Open release brings outside developers to Chinese models: they fine-tune them, test them, and build tools around them, and the labs can learn from that work for free.', yes:0, no:0, pref:0, sources:[], aiCheck:{verdict: "none", summary: "An AI draft with no sources yet."}, brief:'A missing argument for this side: open weights as a way to recruit help, not only to spread influence.',
+      ai:{basis:'Drafted from the question and the arguments already on this side, as a reason none of them makes.',limits:'Not checked against any source. Evidence to look for: how many fine-tuned versions of Qwen and DeepSeek are published, and whether the labs have adopted outside improvements.'}},
+    trustDup: {at:'2026-11-09T08:30:00Z', by:'dev_oka17', idea:'trustDup', claim:'Nobody abroad will trust a Chinese AI service, but they’ll happily download free weights.', yes:0, no:0, pref:1, sources:[], aiCheck:{verdict: "none", summary: "Once it has a source, AI can check it."}, explanation:'Another way to put the trust argument, written before its author saw that row.'},
+    revenue: {at:'2026-11-05T16:00:00Z', by:'priya_s', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], aiCheck:{verdict: "supports", summary: "US clouds serve DeepSeek’s models, and the labs’ filings show large losses."}, explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
+    revenueBlunt: {at:'2026-11-07T09:00:00Z', by:'omar_h', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], aiCheck:{verdict: "partly", summary: "DeepSeek says serving its own open models could pay well, so “no money” holds only for the weights themselves."}, explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
+    backlash: {at:'2026-11-06T14:00:00Z', by:'jordan_w', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], aiCheck:{verdict: "supports", summary: "A US evaluation treats DeepSeek’s models as risky, and a bill would bar them from federal use. The bill isn’t law yet."}, explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
+    stripped: {at:'2026-11-09T10:00:00Z', by:'samr_92', brief:'China’s rules govern services offered at home. Once weights are out, anyone can retrain them, and that includes removing what the rules require.', idea:'stripped', claim:'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', yes:9, no:2, pref:6, sources:['r1776','finetune','genaimeasures'], aiCheck:{verdict: "supports", summary: "Perplexity retrained R1 to remove censorship, and research shows safeguards can be fine-tuned away."}, explanation:'The direct answer to “China controls AI where it’s deployed”: that control covers services inside China, not copies of the weights elsewhere. Whether China cares about copies abroad is the open question.'},
+    rivals: {at:'2026-11-08T09:00:00Z', by:'tess.b', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], aiCheck:{verdict: "partly", summary: "The example is an American model used by China’s military: it shows the mechanism, not China’s own case."}, explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
+    reversal: {at:'2026-11-07T12:00:00Z', by:'lin.zhao', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], aiCheck:{verdict: "partly", summary: "A forecast: it backs “may not last”, not that the strategy will end."}, explanation:'A forecast, not a fact. It can still matter to the decision.'}
   };
   // Sources point to public documents and reporting. Findings are summarized, not quoted; votes and assessments are illustrative.
   const seedSources = {
@@ -808,6 +966,7 @@
     {id:'control',option:'sense',score:30,versions:['control']},
     {id:'influence',option:'sense',score:16,versions:['influence']},
     {id:'trustDup',option:'sense',score:3,versions:['trustDup']},
+    {id:'community',option:'sense',score:0,versions:['community']},
     {id:'revenue',option:'not',score:41,versions:['revenue','revenueBlunt']},
     {id:'backlash',option:'not',score:33,versions:['backlash']},
     {id:'stripped',option:'not',score:28,versions:['stripped']},
@@ -826,7 +985,7 @@
   ];
   const seedDoc = () => structuredClone({
     question:{text:'Is open-weight AI a smart bet for China?',author:'kieran_lamee',posted:'2026-11-05',org:'pod6',visibility:'org',accessRole:'contribute',contribute:'viewers',vote:'viewers',
-      people:[{user:'maya.chen',role:'contribute'},{user:'jordan_w',role:'contribute'},{user:'priya_s',role:'vote'},{user:'samr_92',role:'view'}]},
+      people:[{user:'maya.chen',role:'contribute'},{user:'jordan_w',role:'contribute'},{user:'priya_s',role:'vote'},{user:'samr_92',role:'view'}],voted:['samr_92','dev_oka17']},
     options:[{id:'sense',name:'Why it makes sense'},{id:'not',name:'Why it might not'}],
     ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1,
     // A contributor's suggestion that two arguments make the same point. The owner or the version's author decides.
@@ -845,6 +1004,18 @@
     {id:'worklab',name:'Future of Work',kind:'public',canvas:'lilac',members:8290,about:'How teams work and organize'}
   ];
   const spaceOf = id => SPACES.find(s=>s.id===id) || SPACES[2];
+  // How a board runs. A mode is a preset of two settings: whether new arguments publish right away, and who can change the structure.
+  const MODES = {team:{label:'Open team',glyph:'users',publish:'now',structure:'writers'},edited:{label:'Edited',glyph:'user-check',publish:'review',structure:'editors'},public:{label:'Public',glyph:'globe',publish:'now',structure:'editors'}};
+  const JUDGMENTS = {importance:['arrow-up-down','Importance'],articulation:['arrow-left-right','Articulation'],evidence:['file-check','Evidence']};
+  // Each space allows some AI features and holds the credits they spend (simulated).
+  const SPACE_AI = {pod6:{credits:480,allow:['draft','check','dupes']},northwind:{credits:2000,allow:['draft','check','dupes']},none:{credits:50,allow:['draft','check','dupes']},brooklyn:{credits:1200,allow:['check']},campus:{credits:0,allow:[]},worklab:{credits:800,allow:['check','dupes']}};
+  const AI_FEATURES = {draft:['Draft arguments','20 credits'],check:['Check evidence','1 per card'],dupes:['Flag duplicates','5 per run']};
+  const aiAllowed = (spaceId,feature) => (SPACE_AI[spaceId]?.allow||[]).includes(feature);
+  function defaultRules(spaceId) { const m=MODES[spaceOf(spaceId).kind==='public'?'public':'team']; return {publish:m.publish,structure:m.structure,editors:[],judgments:{importance:true,articulation:true,evidence:true},ai:{draft:false,check:aiAllowed(spaceId,'check'),dupes:false},closes:''}; }
+  const modeOf = r => Object.keys(MODES).find(k=>MODES[k].publish===r.publish&&MODES[k].structure===r.structure)||'custom';
+  const TODAY = '2026-11-09';
+  function closedOf(d) { const q=d.question; return q.closed||(q.rules?.closes&&q.rules.closes<=TODAY?{at:q.rules.closes+'T00:00:00Z',by:'date'}:null); }
+  const shortDate = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
   // People you could invite, by space. Anyone else can be invited by email.
   const PEOPLE = {
     pod6:['maya.chen','jordan_w','priya_s','samr_92','tess.b','omar_h','lin.zhao','dev_oka17'],
@@ -853,6 +1024,18 @@
     brooklyn:['dev_oka17','ana.lu','rtorres','kwame_b'],campus:['samr_92','bwells','kt_nguyen'],worklab:['alexkim.dev','june.o']
   };
   const ME = 'kieran_lamee';
+  // Roles build on each other. Signed out can only read.
+  const RANK = {out:0,view:1,vote:2,contribute:3,edit:4,owner:5};
+  const PERSONAS = {you:'Your access',owner:'Owner',edit:'Editor',contribute:'Contributor',vote:'Voter',view:'Viewer',out:'Signed out'};
+  // What each action needs. Anything not listed (reading, folding, highlighting, opening comments) is open to everyone.
+  const NEEDS = {
+    'comment-add':'view',reply:'view','reply-add':'view',resolve:'view','delete-comment':'view','report-source':'view','unreport-source':'view',share:'view','open-share':'view','create-open':'view',join:'view','request-access':'view',
+    importance:'vote',preference:'vote',assess:'vote',
+    compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
+    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','decision-option':'owner','decision-arg':'owner','decision-edit':'owner','decision-cancel':'owner','decision-save':'owner','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
+    settings:'owner'};
+  const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
+  const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
   const swatch = s => `<span class="sm-swatch" data-canvas="${s.canvas}" aria-hidden="true"></span>`;
   const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
@@ -864,18 +1047,45 @@
     });
     return d;
   }
+  // The capstone example runs Edited: maya.chen owns it, you're an editor, and two contributions wait for review.
+  function editedExample(d) {
+    Object.assign(d.question.rules=defaultRules('pod6'),{publish:'review',structure:'editors'});
+    d.question.people=[{user:ME,role:'edit'},{user:'jordan_w',role:'contribute'},{user:'tess.b',role:'contribute'},{user:'omar_h',role:'contribute'}];
+    d.pending=[
+      {id:'p1',kind:'idea',option:'capstone-o1',claim:'Hand-written code is the only fair way to compare teams with different access to AI tools.',reason:'',by:'tess.b',at:'2026-11-09T09:30:00Z'},
+      {id:'p2',kind:'version',idea:'capstone-0-0',claim:'Disclosure shows graders how each team used AI, without banning tools students will use at work.',reason:'Shorter, and says what graders get.',by:'omar_h',at:'2026-11-09T10:15:00Z'}];
+    return d;
+  }
+  // The standups example is closed: priya_s recorded the decision, citing an argument from each side.
+  function decidedExample(d) {
+    d.question.closed={at:'2026-11-07T17:00:00Z',by:'priya_s',decision:{option:'standups-o0',why:'Async frees a fixed slot across four time zones. We keep one live call a week for blockers people don’t write down.',cards:['standups-0-0v','standups-1-0v'],by:'priya_s',at:'2026-11-07T17:00:00Z'}};
+    d.log=[{at:'2026-11-07T17:00:00Z',by:'priya_s',did:'decided',ref:'Go async',reason:''},{at:'2026-11-07T16:55:00Z',by:'priya_s',did:'closed',ref:'',reason:''}];
+    return d;
+  }
+  // The bike-lane example is a public community board: you and rtorres moderate; one argument is reported, one removed.
+  function moderatedExample(d) {
+    d.question.rules=defaultRules('brooklyn');
+    d.question.people=[{user:ME,role:'edit'},{user:'rtorres',role:'edit'},{user:'ana.lu',role:'contribute'},{user:'kwame_b',role:'contribute'}];
+    const add=(key,option,claim,score,extra)=>{d.ideas.push({id:key,option,score,versions:[key+'v']});d.cards[key+'v']={at:'2026-11-08T15:00:00Z',idea:key,claim,yes:0,no:0,pref:0,sources:[],explanation:'',...extra};};
+    add('bikelane-x1','bikelane-o1','Cheap monthly parking near 7th Ave: message me for rates.',2,{by:'parkfinder22',reports:[{by:'kwame_b',reason:'spam',at:'2026-11-08T16:00:00Z'},{by:'ana.lu',reason:'spam',at:'2026-11-08T17:10:00Z'}]});
+    add('bikelane-x2','bikelane-o0','Drivers who complain about bike lanes should just move out of the city.',1,{by:'cyclebro',hidden:{by:'rtorres',reason:'abuse',at:'2026-11-08T18:20:00Z'}});
+    d.comments=[{id:'bl-c1',target:'question',by:'ana.lu',at:'2026-11-08T12:00:00Z',text:'The DOT study covered 9th Avenue too. Worth adding as a source?'},
+      {id:'bl-c2',target:'question',by:'promo_bk',at:'2026-11-08T13:30:00Z',text:'Join our group for the REAL story on 7th Ave!!',reports:[{by:'dev_oka17',reason:'spam',at:'2026-11-08T14:00:00Z'}]}];
+    d.log=[{at:'2026-11-08T18:20:00Z',by:'rtorres',did:'hid',ref:'Drivers who complain about bike lanes should…',reason:'abuse'}];
+    return d;
+  }
   const seedDocs = () => ({
     openweights:seedDoc(),
-    capstone:sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
+    capstone:editedExample(sketchDoc('capstone',{q:'Should capstone teams be allowed to ship AI-written code?',author:'maya.chen',posted:'2026-11-08',org:'pod6',visibility:'org',options:[
       ['Allow it, with disclosure',[['Disclosure keeps grading honest while letting teams build the way they will at work.',34,6,2],['A ban is hard to enforce; disclosure at least makes AI use visible.',22,3,3]]],
-      ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]}),
-    standups:sketchDoc('standups',{q:'Should we replace daily standups with written updates?',author:'priya_s',posted:'2026-11-03',org:'northwind',visibility:'org',options:[
+      ['Require hand-written code',[['Students can’t defend design trade-offs in code they didn’t write.',29,4,1]]]]})),
+    standups:decidedExample(sketchDoc('standups',{q:'Should we replace daily standups with written updates?',author:'priya_s',posted:'2026-11-03',org:'northwind',visibility:'org',options:[
       ['Go async',[['Written updates free a fixed meeting slot for a team spread over four time zones.',18,5,0],['A written log shows who was blocked, days later.',11,1,1]]],
       ['Keep live standups',[['Live standups surface blockers people don’t think to write down.',15,2,2],['New hires pick up team norms faster by hearing them daily.',6]]],
-      ['Two live days, three written',[]]]}),
-    bikelane:sketchDoc('bikelane',{q:'Should 7th Avenue get a protected bike lane?',author:'dev_oka17',posted:'2026-10-29',org:'brooklyn',visibility:'link',options:[
+      ['Two live days, three written',[]]]})),
+    bikelane:moderatedExample(sketchDoc('bikelane',{q:'Should 7th Avenue get a protected bike lane?',author:'dev_oka17',posted:'2026-10-29',org:'brooklyn',visibility:'link',options:[
       ['Build the protected lane',[['Protected lanes cut injuries on comparable avenues.',61,22,6],['A continuous lane connects the two park entrances.',33,9,2],['Delivery loading zones can be kept on side streets.',18,3,7]]],
-      ['Keep parking, paint a lane',[['Shops on the avenue depend on short-stay parking.',47,8,9]]]]}),
+      ['Keep parking, paint a lane',[['Shops on the avenue depend on short-stay parking.',47,8,9]]]]})),
     curve:sketchDoc('curve',{q:'Should intro courses grade on a curve?',author:'samr_92',posted:'2026-11-07',org:'campus',visibility:'link',options:[
       ['Grade on a curve',[['A curve corrects for an exam that turned out harder than intended.',40,9,4],['Curving keeps grades comparable across sections with different instructors.',21,2,5]]],
       ['Grade against fixed standards',[['Fixed standards let every student succeed without competing with classmates.',44,7,2],['Curves discourage studying together.',27,3,6],['A fixed rubric tells students what they need to learn.',13]]]]}),
@@ -903,7 +1113,8 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
+    for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -923,7 +1134,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:'you',requested:{},spent:{}});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -947,13 +1158,14 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 5) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===5 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 11) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===11 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
-    for (const key of ['lens','hiddenCols','joined']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
+    if (PERSONAS[saved.persona]) state.persona=saved.persona;
+    for (const key of ['lens','hiddenCols','joined','requested','spent']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
     useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version>=3) {
@@ -967,7 +1179,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:5,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:11,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -1020,9 +1232,19 @@
   const ideaOf = id => ideas.find(i=>i.id===id);
   // Who may reorganize arguments. The board owner and a version's author combine or separate it directly;
   // anyone else who can contribute suggests it, and the owner or author decides. Viewers and voters can't.
-  function myRole() { const q=doc.question; if(q.author===ME) return 'owner'; return q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole); }
-  const canMove = id => myRole()==='owner'||cards[id]?.by==='you';
-  const canSuggest = () => myRole()==='contribute';
+  // Your access through Share. "Preview as" in the top bar (a prototype tool) can stand in for it, so testers can try each role.
+  function realRole() { const q=doc.question; if(q.author===ME) return 'owner'; return q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole); }
+  function myRole() { return state.persona==='you'?realRole():state.persona; }
+  // A closed board is read-only: no votes, writing, reviewing, or reorganizing. Comments stay open.
+  const closedNow = () => !!closedOf(doc);
+  const LOCKED = new Set(['vote','contribute','edit','structure']);
+  const can = level => closedNow()&&LOCKED.has(level)?false:level==='structure'?canStructure():RANK[myRole()]>=RANK[level];
+  // The board's rules say who changes its structure: anyone who can write, its editors, or only the owner.
+  function canStructure() { const r=doc.question.rules; if(closedNow()) return false; if(myRole()==='owner') return true; return r.structure==='writers'?can('contribute'):r.structure==='editors'?can('edit'):false; }
+  // Under "Editors review first", what anyone below editor adds waits for an editor.
+  const held = () => doc.question.rules.publish==='review'&&!can('edit');
+  const canMove = id => can('contribute')&&(canStructure()||cards[id]?.by==='you');
+  const canSuggest = () => can('contribute')&&!canStructure();
   const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
   function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote==='yes'?1:0), no=(card.no||0)+(vote==='no'?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
 
@@ -1059,6 +1281,63 @@
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
     return `<span class="sm-cred" role="img" aria-label="${aria}" title="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></span>`;
   }
+  // AI: an ochre robot inside the existing components, with the explanation on hover (tap on touch screens).
+  // Ochre means nothing else, and AI never adds to people's counts.
+  // AI's verdict is a small dot beside the ochre robot, colored and filled like the people's meter: full = supports, half = partly,
+  // empty = doesn't, dashed = nothing it could check. When AI checks are on, every card has one, so it stays small and wordless.
+  const AI_VERDICT = {supports:'supports',partly:'partly supports',doesnt:'doesn’t support',unopened:'couldn’t open',none:'has no sources to check for'};
+  const aiDot = verdict => {
+    const c='cx="5" cy="5" r="3.9"';
+    const shape={supports:`<circle ${c} fill="currentColor" stroke="currentColor"/>`,partly:`<circle ${c} fill="none" stroke="currentColor"/><path d="M5 1.1a3.9 3.9 0 0 0 0 7.8z" fill="currentColor"/>`,doesnt:`<circle ${c} fill="none" stroke="currentColor"/>`}[verdict]||`<circle ${c} fill="none" stroke="currentColor" stroke-dasharray="1.6 1.4"/>`;
+    return `<svg class="sm-ai-dot" viewBox="0 0 10 10" aria-hidden="true" stroke-width="1.3">${shape}</svg>`;
+  };
+  const aiGlyph = (verdict,tip) => `<span class="sm-ai-glyph" data-verdict="${verdict}" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(verdict)}</span>`;
+  const aiCheckTip = c => `AI check: ${c.verdict==='none'?'no sources to check yet.':AI_VERDICT[c.verdict]+' this wording.'} ${c.summary||''}`.replace(/\s+/g,' ');
+  // AI evidence checks (simulated: no model runs). With checks on, new wordings and changed evidence are checked
+  // automatically, one credit each; anyone who can write can ask for a check from an opened card.
+  const checksOn = () => doc.question.rules.ai.check&&aiAllowed(doc.question.org,'check');
+  const creditsLeft = () => (SPACE_AI[doc.question.org]?.credits||0)-(state.spent[doc.question.org]||0);
+  // Declared as functions so loading a board (useDoc, early in the script) can use them.
+  function evidenceSig(d,c) { return c.sources.map(s=>s+(d.sources[s]?.unavailable?'!':'')).join(','); }
+  function pseudo(str) { let h=0; for(const ch of str) h=(h*31+ch.charCodeAt(0))|0; return ['supports','partly','doesnt'][Math.abs(h)%3]; }
+  function simulateCheck(d,cardId) {
+    const AI_NOTE={supports:'Backs the wording.',partly:'Backs part of the wording.',doesnt:'Doesn’t back the wording as put.',unopened:'Couldn’t open it.'};
+    const c=d.cards[cardId],per={};
+    // A source it can't reach: one already marked unavailable, or one with nowhere given to find it.
+    c.sources.forEach(sid=>{const src=d.sources[sid],v=src?.unavailable||!src?.locator?.trim()?'unopened':pseudo(cardId+sid+c.claim.length);per[sid]=[v,AI_NOTE[v]];});
+    const opened=Object.values(per).map(x=>x[0]).filter(v=>v!=='unopened');
+    const verdict=!c.sources.length?'none':!opened.length?'unopened':opened.every(v=>v==='supports')?'supports':opened.every(v=>v==='doesnt')?'doesnt':'partly';
+    return {verdict,summary:'',sources:per,sig:evidenceSig(d,c),at:new Date(NOW).toISOString()};
+  }
+  function queueCheck(cardId) {
+    if(!checksOn()||creditsLeft()<1||!cards[cardId]) return;
+    const org=doc.question.org,board=state.boardId;
+    state.spent[org]=(state.spent[org]||0)+1;cards[cardId].aiCheck={pending:true};
+    setTimeout(()=>{
+      const d=docs[board],c=d?.cards[cardId];if(!c?.aiCheck?.pending) return;
+      c.aiCheck=simulateCheck(d,cardId);
+      if(state.boardId===board&&state.view==='board'){const k=document.activeElement?.dataset?.key;render(k);}
+      save();
+    },reducedMotion()?0:1200);
+  }
+  // After anything that can change evidence, re-check checked cards whose sources (or their availability) changed.
+  function refreshChecks() {
+    if(!checksOn()) return;
+    for(const [id,c] of Object.entries(cards)) if(c.aiCheck&&!c.aiCheck.pending){c.aiCheck.sig??=evidenceSig(doc,c);if(c.aiCheck.sig!==evidenceSig(doc,c))queueCheck(id);}
+  }
+  function aiEvidenceControls(cardId) {
+    const c=cards[cardId].aiCheck,canRun=checksOn()&&creditsLeft()>0;
+    const glyph=!c?'':c.pending?`<span class="sm-ai-glyph sm-ai-busy" role="img" tabindex="0" aria-label="AI is checking" data-tooltip="AI is checking">${icon('bot')}</span>`:aiGlyph(c.verdict,`${aiCheckTip(c)} ${c.limits||''}`);
+    const run=canRun&&!c?.pending?`<button type="button" class="sm-ai-run cursor-interaction" data-action="ai-recheck" data-id="${cardId}" data-key="ai-recheck-${cardId}" aria-label="${c?'Check again with AI':'Check with AI'}" data-tooltip="${c?'Check again · 1 credit':'Check with AI · 1 credit'}">${icon(c?'refresh-cw':'bot')}</button>`:'';
+    return glyph+run;
+  }
+  // In the footer, right after the people's meter. Clicking it opens the card.
+  function aiCheckMark(id) {
+    const c=cards[id].aiCheck; if(!c) return '';
+    if(c.pending) return `<span class="sm-ai-glyph sm-ai-busy" role="img" tabindex="0" aria-label="AI is checking" data-tooltip="AI is checking">${icon('bot')}</span>`;
+    const tip=aiCheckTip(c);
+    return `<button type="button" class="sm-ai-glyph cursor-interaction" data-verdict="${c.verdict}" data-action="toggle" data-id="${id}" data-key="ai-check-${id}" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(c.verdict)}</button>`;
+  }
   // Source count: information only, and absent when there are none.
   function sourceCount(id) { const n=cards[id].sources.length; if(!n) return ''; const label=`${n} ${n===1?'source':'sources'}`; return `<span class="sm-source-button" role="img" aria-label="${label}" title="${label}">${icon('paperclip')} ${n}</span>`; }
   function cardMeta(id) {
@@ -1066,18 +1345,24 @@
     const idea=ideaOf(cards[id].idea),others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
     // The merge handle: drag it onto another argument in the same option (or click it to pick one).
     const direct=canMove(id),handle=others&&(direct||canSuggest())?`<button type="button" class="sm-source-button sm-merge-handle cursor-interaction" draggable="true" data-drag="${id}" data-action="move-card" data-id="${id}" data-key="merge-${id}" aria-label="${direct?'Combine with another argument':'Suggest combining with another argument'}" data-tooltip="${direct?'Drag onto the argument it repeats':'Drag to suggest combining'}">${icon('merge')}</button>`:'';
-    return `${credibility(id)}<div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    return `<span class="sm-cred-group">${credibility(id)}${aiCheckMark(id)}</span><div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
+  // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
+  const byline = id => { const by=cards[id].by; return by&&by!=='ai'?`<p class="sm-byline">${by==='you'?'you':escape(by)}</p>`:''; };
   // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark='', lit=false) {
+    if(cards[id].hidden) return removedCard(id,inTrack);
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
     const menuOpen=state.menu===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}">${mark}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:'';
+    const ai=cards[id].by==='ai'?`<span class="sm-ai-tag" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}AI draft</span>`:'';
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''} ${ai?'sm-ai':''}" data-card="${id}" ${flagTag(id)?'data-flagged':''}>${mark}${ai}${flagTag(id)}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button>${byline(id)}<div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
-  function menuMarkup(id) {
+  function menuMarkup(id) { return cards[id]&&state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?modItems(id):''); }
+  function baseMenuMarkup(id) {
     const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
     if(id.startsWith('lens:')) {
       const option=id.slice(5),mode=lensOf(option)||'off';
@@ -1094,11 +1379,15 @@
     }
     const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
-    if(!mine&&myRole()==='owner') return `<p class="sm-menu-note">Written by another contributor. Only they can edit or delete it. As the board’s owner, you can combine or separate it.</p>`
+    if(card.by==='ai') return `<p class="sm-menu-note">Drafted by AI.</p>`
+      +item('revise-card','pen-line','Write a better version')
+      +(myRole()==='owner'?item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)+item('delete-card','trash-2','Remove this AI draft'):'');
+    const author=`<p class="sm-menu-note">Written by ${escape(card.by||'another contributor')}.</p>`;
+    if(!mine&&canStructure()) return author
       +item('revise-card','pen-line','Suggest a revised version')
       +item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)
       +(last?'':item('split-card','split','Make it a separate argument'));
-    if(!mine) return `<p class="sm-menu-note">Written by another contributor. Only they can edit, move, or delete it.</p>`+item('revise-card','pen-line','Suggest a revised version')
+    if(!mine) return author+item('revise-card','pen-line','Suggest a revised version')
       +(canSuggest()&&others?item('move-card','merge','Suggest combining with another argument','The owner or the author decides.'):'');
     return `<p class="sm-menu-note">You wrote this version.</p>`
       +item('edit-card','pencil','Edit wording and context')
@@ -1151,6 +1440,50 @@
       return `<div class="sm-suggest" role="note">${icon('merge')}<p>${text}</p>${actions?`<div class="sm-suggest-actions">${actions}</div>`:''}</div>`;
     }).join('');
   }
+  // Held for review: the author and editors see it; everyone else doesn't until it's accepted.
+  // Declined items stay with their author, with the reason, until dismissed.
+  const seesHeld = p => p.by==='you'||(can('edit')&&p.status!=='declined');
+  const heldIn = (kind,where) => doc.pending.filter(p=>p.kind===kind&&(kind==='idea'?p.option===where:p.idea===where)&&seesHeld(p));
+  function heldCard(p) {
+    const declined=p.status==='declined',deciding=state.declining===p.id;
+    const tag=`<span class="sm-held-tag">${icon(declined?'x':'hourglass')}${declined?'Declined':p.kind==='version'?'New wording · awaiting review':'Awaiting review'}</span>`;
+    const actions=declined?linkButton('held-dismiss',p.id,'Dismiss')
+      :deciding?`<input id="sm-decline-reason" data-key="decline-reason" maxlength="140" placeholder="Reason (optional)" aria-label="Reason for declining" value="${escape(state.declineDraft||'')}">`+linkButton('held-decline-confirm',p.id,'Decline')+linkButton('held-decline-cancel',p.id,'Cancel')
+      :can('edit')?linkButton('held-accept',p.id,'Accept')+linkButton('held-decline',p.id,'Decline')
+      :p.by==='you'?linkButton('held-withdraw',p.id,'Withdraw'):'';
+    return `<article class="sm-card sm-held ${declined?'sm-declined':''}" data-held="${p.id}">${tag}<div class="sm-claim-button"><span class="sm-claim">${escape(p.claim)}</span></div><p class="sm-byline">${p.by==='you'?'you':escape(p.by)}</p>${declined&&p.reason?`<p class="sm-held-reason">${escape(p.reason)}</p>`:''}<div class="sm-card-meta sm-held-actions">${actions}</div></article>`;
+  }
+  const heldVersions = idea => { const list=heldIn('version',idea.id); return list.length?`<div class="sm-held-list">${list.map(heldCard).join('')}</div>`:''; };
+  const heldIdeas = option => heldIn('idea',option).map(p=>`<div class="sm-new-idea sm-held-row"><span aria-hidden="true"></span>${heldCard(p)}</div>`).join('');
+  const toReview = () => doc.pending.filter(p=>p.status!=='declined');
+  // Moderation: anyone signed in reports; editors (moderators, on a public board) hide with a reason, restore, or dismiss reports.
+  // Reports stay private to moderators; hiding, restoring, and review decisions go in the board's history for everyone.
+  const REASONS = {spam:'Spam',abuse:'Abusive',offtopic:'Off-topic',other:'Something else'};
+  const reported = () => can('edit')?Object.keys(cards).filter(id=>cards[id].reports?.length&&!cards[id].hidden):[];
+  const reviewCount = () => toReview().length+reported().length;
+  const clip = (text,n=48) => text.length>n?text.slice(0,n-2).trimEnd()+'…':text;
+  function logEvent(did,text,reason='') { doc.log.unshift({at:new Date().toISOString(),by:'you',did,ref:clip(text),reason}); }
+  const reasonsOf = list => Object.entries(list.reduce((m,r)=>(m[r.reason]=(m[r.reason]||0)+1,m),{})).map(([k,n])=>REASONS[k]+(n>1?` ×${n}`:'')).join(', ');
+  const flagTag = id => { const r=cards[id].reports||[]; return can('edit')&&r.length&&!cards[id].hidden?`<span class="sm-flag-tag" role="img" tabindex="0" aria-label="${r.length} ${r.length===1?'report':'reports'}: ${escape(reasonsOf(r))}" data-tooltip="${escape(reasonsOf(r))}">${icon('flag')}${r.length}</span>`:''; };
+  function removedCard(id,inTrack) {
+    const c=cards[id],mod=can('edit');
+    return `<article class="sm-card sm-removed ${inTrack?'sm-version-face':''}" data-card="${id}">${mod?`<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${state.menu===id}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button>`:''}<p class="sm-removed-note">${icon('eye-off')}Removed by a moderator · ${REASONS[c.hidden.reason]||'Removed'}</p>${mod?`<p class="sm-removed-claim">${escape(c.claim)}</p>`:''}</article>`;
+  }
+  // The ⋯ menu's moderation items, and the reason picker it switches to.
+  const modItem = (action,id,glyph,label,value='') => `<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" ${value?`data-value="${value}"`:''} data-key="${action}-${id}${value?'-'+value:''}">${icon(glyph)}<span>${label}</span></button>`;
+  function modItems(id) {
+    const c=cards[id]; if(!c||c.by==='you'||!can('view')) return '';
+    const mine=c.reports?.some(r=>r.by==='you');
+    let h=c.hidden?'':mine?modItem('report-withdraw',id,'flag-off','Withdraw your report'):modItem('report-open',id,'flag','Report');
+    if(can('edit')) h+=c.hidden?modItem('restore-card',id,'eye','Restore'):modItem('hide-open',id,'eye-off','Hide')+(c.reports?.length?modItem('reports-dismiss',id,'check','Dismiss reports'):'');
+    return h?`<div class="sm-menu-rule" role="separator"></div>${h}`:'';
+  }
+  const reasonMenu = id => `<p class="sm-menu-note">${state.menuView==='report'?'Report it as':'Hide it as'}</p>`+Object.entries(REASONS).map(([k,l])=>modItem(state.menuView==='report'?'report-card':'hide-card',id,{spam:'ban',abuse:'shield-alert',offtopic:'move-right',other:'circle-help'}[k],l,k)).join('');
+  function historyMarkup() {
+    const verbs={closed:'closed the board',reopened:'reopened the board',decided:'recorded the decision:',hid:'hid',restored:'restored',dismissed:'dismissed reports on',accepted:'accepted',declined:'declined',deleted:'deleted'};
+    return doc.log.length?`<ol class="sm-history">${doc.log.map(e=>`<li><span class="sm-avatar" aria-hidden="true">${escape(userInitials(e.by==='you'?ME:e.by))}</span><p><strong>${e.by==='you'?'You':escape(e.by)}</strong> ${verbs[e.did]||e.did}${['closed','reopened'].includes(e.did)?'':` “${escape(e.ref)}”`}${e.reason?` <span class="sm-history-reason">${escape(REASONS[e.reason]||e.reason)}</span>`:''}<time datetime="${e.at}" title="${fullDate(e.at)}">${ago(e.at)}</time></p></li>`).join('')}</ol>`:'<p class="sm-field-hint">Nothing yet.</p>';
+  }
+  const heldId = () => { let id; do id='p'+(doc.nextId++); while(doc.pending.some(x=>x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
@@ -1162,7 +1495,7 @@
     const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
     const verb=target&&canMove(state.moving)?'Combine here':'Suggest combining here';
     const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="${verb}: same point as “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}${verb}</span></button>`:'';
-    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}</div></section>`;
+    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}</div></section>`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -1170,7 +1503,8 @@
     return `<div class="sm-move-banner" role="status"><span>${canMove(state.moving)?'Pick the argument that makes the same point.':'Pick the argument that makes the same point. The owner or the author decides.'}</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
-  function addArgument(option) {
+  const addArgument = option => heldIdeas(option)+addArgumentSlot(option);
+  function addArgumentSlot(option) {
     const name=escape(optionName(option));
     if(state.composingIdea===option) return `<div class="sm-new-idea"><span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-idea-form" aria-label="New argument for ${name}"><textarea id="sm-idea-claim" class="sm-draft-claim" data-key="idea-claim" maxlength="500" placeholder="A new argument for “${name}”" aria-label="Your argument">${escape(state.ideaDraftClaim)}</textarea><textarea id="sm-idea-reason" class="sm-draft-reason" data-key="idea-reason" maxlength="700" placeholder="Context: why it matters (optional)" aria-label="Context for your argument (optional)">${escape(state.ideaDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-idea" data-id="${option}" data-key="cancel-idea" aria-label="Close draft" data-tooltip="Close">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add-idea" data-id="${option}" data-key="add-idea" aria-label="Add your argument" data-tooltip="Add">${icon('check')}</button></div></form></div>`;
     return `<div class="sm-new-idea"><span aria-hidden="true"></span><button type="button" class="sm-add-card sm-add-idea cursor-interaction" data-action="compose-idea" data-id="${option}" data-key="compose-idea-${option}" aria-label="Add an argument for ${name}">${icon('plus')}<span>Add an argument</span></button></div>`;
@@ -1223,7 +1557,7 @@
   // ── Strongest case: each option's three most important arguments, each in its best-articulated wording. ──
   const CASE_SIZE=3;
   function caseColumn(option) {
-    const rows=rowsOf(option),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const rows=rowsOf(option).filter(i=>!cards[ordered(i)[0]].hidden),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
     const items=top.map((idea,k)=>{
       const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
       const facts=`<span class="sm-case-facts"><span title="Importance: ${imp} net votes">${icon('arrow-up-narrow-wide')}${imp}</span>${n>1?`<span title="The best-articulated of ${n} wordings">${icon('layers')}best of ${n}</span>`:''}</span>`;
@@ -1261,12 +1595,12 @@
       ].join('');
       const note=source.reportedBy==='you'?'You reported it can’t be opened.':'';
       const rows=[['Backs up',source.premise],['Limit',source.limit]].filter(([,v])=>v).map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('');
-      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}${card.aiCheck?.sources?.[id]?.[0]==='unopened'&&!source.unavailable?`<button type="button" class="sm-link-button sm-ai-offer cursor-interaction" data-action="report-source" ${ref} data-key="ai-unavailable-${key}">Mark unavailable</button>`:''}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]==='unopened'?'couldn’t be opened.':AI_VERDICT[card.aiCheck.sources[id][0]]+' the wording.'} ${card.aiCheck.sources[id][1]}`):''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
     }).join('');
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
     const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?${aiEvidenceControls(cardId)}</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
@@ -1282,8 +1616,96 @@
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
       +`<li class="sm-meta-author"><span class="sm-meta-avatar${q.author===ME?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
       +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></li>`
-      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li></ul>`
-      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li>`
+      +`<li class="sm-meta-rules">${rulesChip()}</li>`
+      +`<li class="sm-meta-access">${closedNow()?'Closed: read only.':escape(YOU_CAN[myRole()])+accessAsk()}</li></ul>`
+      +decisionMarkup()
+      +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="history" data-key="history" aria-label="History" aria-expanded="${state.drawer==='history'}" aria-controls="sm-drawer-body" data-tooltip="History">${icon('history')}</button><button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+  }
+  function rulesChip() {
+    const q=doc.question,r=q.rules,m=modeOf(r),c=closedOf(doc),inner=c?icon('lock')+`Closed ${shortDate(c.at.slice(0,10))}`:icon(m==='custom'?'sliders-horizontal':MODES[m].glyph)+escape(rulesLabel(r))+(r.closes?` · Closes ${shortDate(r.closes)}`:'');
+    return myRole()==='owner'?`<button type="button" class="sm-meta-pill sm-rules-chip cursor-interaction" data-action="settings" data-key="rules-chip" aria-label="How it runs: ${escape(rulesLabel(r))}. Change in Settings">${inner}</button>`:`<span class="sm-meta-pill">${inner}</span>`;
+  }
+  // The decision: the option chosen, why, and the arguments that mattered (from any side). The owner records it.
+  function decisionMarkup() {
+    const c=closedOf(doc); if(!c) return '';
+    const q=doc.question,dec=q.closed?.decision,owner=myRole()==='owner';
+    if(dec&&!state.decisionEditing) {
+      const args=(dec.cards||[]).filter(id=>cards[id]&&!cards[id].hidden).map(id=>`<li><button type="button" class="sm-decision-arg cursor-interaction" data-action="decision-show" data-id="${id}" data-key="decision-arg-${id}"><span>${escape(optionName(ideaOf(cards[id].idea).option))}</span>${escape(cards[id].claim)}</button></li>`).join('');
+      return `<section class="sm-decision" aria-label="Decision"><h2>${icon('gavel')}Decision</h2><p class="sm-decision-choice">${escape(optionName(dec.option))}</p>${dec.why?`<p class="sm-decision-why">${escape(dec.why)}</p>`:''}${args?`<ul class="sm-decision-args">${args}</ul>`:''}<p class="sm-decision-by">${dec.by==='you'?'You':escape(dec.by)} · ${shortDate(dec.at.slice(0,10))}${owner?` · <button type="button" class="sm-link-button cursor-interaction" data-action="decision-edit" data-key="decision-edit">Edit</button>`:''}</p></section>`;
+    }
+    if(!owner) return `<section class="sm-decision" aria-label="Decision"><h2>${icon('gavel')}Decision</h2><p class="sm-decision-why">Not recorded yet.</p></section>`;
+    const d=state.decisionDraft||{option:'',why:'',cards:[]};
+    const leads=doc.options.flatMap(o=>rowsOf(o.id).filter(i=>!cards[ordered(i)[0]].hidden).slice(0,3).map(i=>ordered(i)[0]));
+    return `<section class="sm-decision sm-decision-form" aria-label="Record the decision"><h2>${icon('gavel')}Decision</h2>`
+      +`<div class="sm-decision-options" role="radiogroup" aria-label="Chosen option">${doc.options.map(o=>`<button type="button" role="radio" class="sm-decision-option cursor-interaction" data-action="decision-option" data-id="${o.id}" data-key="decision-option-${o.id}" aria-checked="${d.option===o.id}">${escape(o.name)}</button>`).join('')}</div>`
+      +`<textarea id="sm-decision-why" data-key="decision-why" rows="2" maxlength="400" placeholder="Why" aria-label="Why this option">${escape(d.why)}</textarea>`
+      +`<p class="sm-decision-label">Arguments that mattered</p><ul class="sm-decision-picks">${leads.map(id=>`<li><button type="button" class="sm-decision-arg cursor-interaction" data-action="decision-arg" data-id="${id}" data-key="decision-pick-${id}" aria-pressed="${d.cards.includes(id)}">${icon(d.cards.includes(id)?'check':'plus')}<span>${escape(optionName(ideaOf(cards[id].idea).option))}</span>${escape(short(id))}</button></li>`).join('')}</ul>`
+      +`<div class="sm-decision-actions">${state.decisionEditing?`<button type="button" class="sm-link-button cursor-interaction" data-action="decision-cancel" data-key="decision-cancel">Cancel</button>`:''}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="decision-save" data-key="decision-save" ${d.option?'':'aria-disabled="true"'}>Record decision</button></div></section>`;
+  }
+  // Below "can contribute", offer the next step: sign in, or ask the owner for more access.
+  function accessAsk() {
+    const role=myRole();
+    if(role==='out') return ` <button type="button" class="sm-link-button cursor-interaction" data-action="sign-in" data-key="access-sign-in">Sign in</button>`;
+    if(RANK[role]>=RANK.contribute) return '';
+    return state.requested[state.boardId]?' <span>· Access requested.</span>':` <button type="button" class="sm-link-button cursor-interaction" data-action="request-access" data-key="request-access">Request access</button>`;
+  }
+  // "How it runs": the same controls when creating a board and in its Settings.
+  // Groups under small tracked headings, rows split by hairlines, the control on the right of each row.
+  function rulesMarkup(r,spaceId,scope) {
+    const k=scope+'-rule',mode=modeOf(r),left=(SPACE_AI[spaceId]?.credits||0)-(state.spent[spaceId]||0);
+    const group=(title,rows,aside='')=>`<section class="sm-rgroup"><h3>${title}${aside?`<span>${aside}</span>`:''}</h3>${rows}</section>`;
+    const row=(label,control,sub='',cls='')=>`<div class="sm-rrow ${cls}"><span class="sm-rrow-label">${label}${sub?`<small>${sub}</small>`:''}</span><span class="sm-rrow-control">${control}</span></div>`;
+    const sel=(rule,opts)=>`<select class="sm-rselect" data-rule="${rule}" data-key="${k}-${rule}" aria-label="${rule==='publish'?'New arguments':'Reorganizing'}">${Object.entries(opts).map(([v,l])=>`<option value="${v}" ${r[rule]===v?'selected':''}>${l}</option>`).join('')}</select>`;
+    const modes=`<div class="sm-modes" role="radiogroup" aria-label="Mode">${Object.entries(MODES).map(([id,m])=>`<button type="button" role="radio" class="sm-mode cursor-interaction" data-action="rule-mode" data-id="${id}" data-key="${k}-${id}" aria-checked="${mode===id}">${icon(m.glyph)}<span>${m.label}</span></button>`).join('')}</div>`;
+    const q=scope==='board'?doc.question:null,chosen=q?q.people.filter(x=>x.role==='edit').map(x=>x.user):r.editors;
+    const people=[...new Set([...(PEOPLE[spaceId]||[]),...(q?q.people.map(x=>x.user).filter(u=>!u.includes('@')):[])])];
+    const editors=r.publish==='review'||r.structure==='editors'
+      ?row('Editors',`<span class="sm-editors">${people.map(u=>`<button type="button" class="sm-editor cursor-interaction" data-action="rule-editor" data-id="${escape(u)}" data-key="${k}-${escape(u)}" aria-pressed="${chosen.includes(u)}" aria-label="${escape(u)}" data-tooltip="${escape(u)}">${escape(userInitials(u))}</button>`).join('')}</span>`,chosen.length?escape(chosen.join(', ')):'None yet','sm-rrow-stack'):'';
+    const votes=`<span class="sm-checks">${Object.entries(JUDGMENTS).map(([id,[g,l]])=>`<button type="button" class="sm-check cursor-interaction" data-action="rule-judgment" data-id="${id}" data-key="${k}-${id}" aria-pressed="${r.judgments[id]}">${icon(r.judgments[id]?'check':g)}${l}</button>`).join('')}</span>`;
+    const ai=Object.entries(AI_FEATURES).map(([id,[l,cost]])=>{const ok=aiAllowed(spaceId,id),on=ok&&r.ai[id];
+      return row(`${icon('bot')}${l}`,`<button type="button" role="switch" class="sm-switch cursor-interaction" data-action="rule-ai" data-id="${id}" data-key="${k}-${id}" aria-checked="${on}" aria-label="${l}" ${ok?'':`aria-disabled="true" data-tooltip="Off in ${escape(spaceOf(spaceId).name)}"`}></button>`,cost,'sm-rrow-ai'+(ok?'':' sm-rrow-off'));}).join('');
+    const closes=r.closes
+      ?`<input type="date" class="sm-rdate" data-rule="closes" data-key="${k}-closes" value="${escape(r.closes)}" min="2026-11-09" aria-label="Closes"><button type="button" class="sm-icon-button cursor-interaction" data-action="rule-closes" data-id="clear" data-key="${k}-closes-clear" aria-label="No closing date" data-tooltip="Remove">${icon('x')}</button>`
+      :`<button type="button" class="sm-link-button cursor-interaction" data-action="rule-closes" data-id="add" data-key="${k}-closes-add">Add a date</button>`;
+    return `<div class="sm-rules">`
+      +group('Mode',modes+row('New arguments',sel('publish',{now:'Publish right away',review:'Editors review first'}))+row('Reorganizing',sel('structure',{writers:'Anyone who can write',editors:'Editors',owner:'Only the owner'}))+editors)
+      +group('Votes',votes)
+      +group('AI',ai,`${left} credits`)
+      +group('Timing',row('Closes',closes)+(scope==='board'?row(closedNow()?`Closed ${shortDate(closedOf(doc).at.slice(0,10))}`:'Open',`<button type="button" class="sm-link-button cursor-interaction" data-action="${closedNow()?'rule-reopen':'rule-close'}" data-key="${k}-${closedNow()?'reopen':'close'}">${closedNow()?'Reopen':'Close now'}</button>`):''))
+      +`</div>`;
+  }
+  function rulesLabel(r) { const m=modeOf(r); return m==='custom'?'Custom rules':MODES[m].label; }
+  function rulesSummary(r,spaceId) {
+    const ai=Object.keys(AI_FEATURES).filter(f=>r.ai[f]&&aiAllowed(spaceId,f)).map(f=>({draft:'drafts',check:'checks',dupes:'duplicates'})[f]);
+    return [rulesLabel(r),ai.length?`AI ${ai.join(', ')}`:'',r.closes?`Closes ${shortDate(r.closes)}`:''].filter(Boolean).join(' · ');
+  }
+  // Who has taken part: wrote (a version), voted, or not yet. Simulated from authors and a sample of voters.
+  function weighedInMarkup() {
+    const q=doc.question,authors=new Set(Object.values(cards).map(c=>c.by==='you'?ME:c.by).filter(Boolean));
+    const votedYou=[state.importance,state.preference,state.assessments].some(m=>Object.keys(m).length);
+    const people=[...new Set([q.author,...q.people.map(p=>p.user),...(PEOPLE[q.org]||[]),ME])].filter(u=>!u.includes('@'));
+    const status=u=>authors.has(u)?'Wrote':(q.voted||[]).includes(u)||(u===ME&&votedYou)?'Voted':'';
+    const n=people.filter(status).length;
+    return `<section class="sm-drawer-section sm-rgroup" aria-label="Who’s weighed in"><h3>Who’s weighed in<span>${n} of ${people.length}</span></h3>${people.map(u=>`<div class="sm-rrow"><span class="sm-rrow-label sm-weighed"><span class="sm-avatar" aria-hidden="true">${escape(userInitials(u))}</span>${escape(u)}${u===ME?' <small>(you)</small>':''}</span><span class="sm-rrow-control ${status(u)?'':'sm-not-yet'}">${status(u)||'Not yet'}</span></div>`).join('')}</section>`;
+  }
+  // Which rules the board applies, in one place: what's hidden, and the target the controls change.
+  function rulesTarget() { return state.view==='home'&&state.creating?{r:state.createDraft.rules,space:state.createDraft.space,create:true}:{r:doc.question.rules,space:doc.question.org,create:false}; }
+  function applyRule(action,id,value,key) {
+    const t=rulesTarget(),r=t.r; if(!r) return;
+    if(action==='rule-mode') Object.assign(r,{publish:MODES[id].publish,structure:MODES[id].structure});
+    if(action==='rule-judgment') r.judgments[id]=!r.judgments[id];
+    if(action==='rule-ai') r.ai[id]=!r.ai[id];
+    if(action==='rule-editor') {
+      if(t.create) r.editors=r.editors.includes(id)?r.editors.filter(u=>u!==id):[...r.editors,id];
+      else {const people=doc.question.people,x=people.find(y=>y.user===id);if(!x)people.push({user:id,role:'edit'});else x.role=x.role==='edit'?'contribute':'edit';}
+    }
+    if(action==='rule-set') r[id]=value;
+    if(action==='rule-close') {doc.question.closed={at:new Date(NOW).toISOString(),by:'you'};logEvent('closed',doc.question.text);key=key.replace('-close','-reopen');}
+    if(action==='rule-reopen') {delete doc.question.closed;if(r.closes&&r.closes<=TODAY)r.closes='';logEvent('reopened',doc.question.text);key=key.replace('-reopen','-close');}
+    if(action==='rule-closes') {r.closes=id==='add'?'2026-11-16':'';key=id==='add'?key.replace('-add',''):key.replace('-clear','-add');}
+    if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
+    save();
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {
     return `<label class="sm-choice"><input type="radio" name="${name}" value="${value}" data-key="${name}-${value}" ${value===current?'checked':''} ${disabled?'disabled':''}>${glyph?icon(glyph):'<span></span>'}<span>${label}</span>${hint?`<small>${hint}</small>`:''}</label>`;
@@ -1293,14 +1715,16 @@
   }
   // Closing the drawer returns focus to the button that opened it.
   function closeDrawer() {
-    const back=state.drawer==='comments'?'comments-'+state.commentTarget:'settings';
-    announce(state.drawer==='comments'?'Comments closed.':'Settings closed.');
+    const back=state.drawer==='comments'?'comments-'+state.commentTarget:state.drawer==='history'?'history':'settings';
+    announce(state.drawer==='comments'?'Comments closed.':state.drawer==='history'?'History closed.':'Settings closed.');
     state.drawer=null;state.confirmReset=false;state.replyTo=null;return back;
   }
   function settingsMarkup() {
     const q=doc.question;
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
       +select('org',ORGS,q.org,'Space')
+      +`<section class="sm-drawer-section" aria-label="How it runs">${rulesMarkup(q.rules,q.org,'board')}</section>`
+      +weighedInMarkup()
       +`<div class="sm-field"><button type="button" class="sm-text-button cursor-interaction" data-action="open-share" data-key="open-share">${icon('user-plus')}Sharing and access →</button></div>`
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
@@ -1324,12 +1748,17 @@
   const linkButton = (action,id,label,extra='') => `<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${extra}>${label}</button>`;
   function commentItem(c,isReply) {
     const who=c.by==='you'?'You':c.by,initials=userInitials(c.by==='you'?ME:c.by);
-    const actions=c.deleted?'':[
+    const picking=state.commentPick?.id===c.id?state.commentPick.kind:null,others=c.by!=='you'&&!c.deleted;
+    const actions=c.deleted?'':c.hidden?(can('edit')?linkButton('comment-restore',c.id,'Restore'):'')
+      :picking?Object.entries(REASONS).map(([k,l])=>linkButton(picking==='report'?'comment-report':'comment-hide',c.id,l,`data-value="${k}"`)).join('')+linkButton('comment-pick-cancel',c.id,'Cancel'):[
       !isReply&&!c.resolved?linkButton('reply',c.id,'Reply'):'',
       !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
-      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
+      c.by==='you'?linkButton('delete-comment',c.id,'Delete'):'',
+      others&&can('view')?(c.reports?.some(r=>r.by==='you')?linkButton('comment-report-withdraw',c.id,'Reported · Undo'):linkButton('comment-report-open',c.id,'Report')):'',
+      others&&can('edit')?linkButton('comment-hide-open',c.id,'Hide'):''
     ].join('');
-    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar${c.by==='you'?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+    const flags=can('edit')&&c.reports?.length&&!c.hidden?`<span class="sm-comment-flag" data-tooltip="${escape(reasonsOf(c.reports))}">${icon('flag')}${c.reports.length}</span>`:'';
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar${c.by==='you'?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time>${flags}</header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':c.hidden?`<p class="sm-comment-deleted">Removed by a moderator · ${REASONS[c.hidden.reason]}</p>${can('edit')?`<p class="sm-removed-claim">${escape(c.text)}</p>`:''}`:`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -1350,10 +1779,10 @@
     const open=!!state.drawer;
     drawer.hidden=!open; root.toggleAttribute('data-drawer',open);
     if(!open){drawer.innerHTML='';return;}
-    const comments=state.drawer==='comments',title=comments?'Comments':'Settings';
+    const comments=state.drawer==='comments',title=comments?'Comments':state.drawer==='history'?'History':'Settings';
     const scroll=drawer.scrollTop;
     drawer.innerHTML=`<div class="sm-drawer-head"><h2 id="sm-drawer-title">${title}</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="close-drawer" data-key="close-drawer" aria-label="Close ${title.toLowerCase()}" data-tooltip="Close">${icon('x')}</button></div>`
-      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${settingsMarkup()}</div>`);
+      +(comments?commentsMarkup():`<div class="sm-drawer-body" id="sm-drawer-body">${state.drawer==='history'?historyMarkup():settingsMarkup()}</div>`);
     drawer.scrollTop=scroll;
   }
   const headEl=root.querySelector('.sm-head');
@@ -1375,7 +1804,7 @@
     menuEl.style.left=Math.max(8,Math.round(box.right-rootBox.left-menuEl.offsetWidth))+'px';
     menuEl.style.top=Math.round(box.bottom-rootBox.top+4)+'px';
   }
-  function closeMenu() { if(!state.menu) return; state.menu=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
+  function closeMenu() { if(!state.menu) return; state.menu=null; state.menuView=null; renderMenu(); board.querySelectorAll('.sm-card-menu-button[aria-expanded="true"]').forEach(b=>b.setAttribute('aria-expanded','false')); }
   // Deleting keeps a snapshot for a short Undo window; the snapshot is never saved.
   let undoTimer=0;
   const takeSnapshot = () => JSON.stringify({doc,importance:state.importance,preference:state.preference,assessments:state.assessments,openSources:state.openSources});
@@ -1491,7 +1920,8 @@
   function undoDelete() {
     const snap=JSON.parse(state.undo.snapshot),{card,idea,focus}=state.undo;
     clearTimeout(undoTimer);state.undo=null;
-    useDoc(snap.doc);
+    // The list and saves read docs[], so the restored board replaces the entry there too.
+    useDoc(snap.doc);docs[state.boardId]=doc;
     for(const key of ['importance','preference','assessments','openSources']) state[key]=snap[key];
     if(focus) return focus;
     const face=state.open===idea||ordered(ideaOf(idea))[0]===card;
@@ -1677,7 +2107,7 @@
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`<span><span class="sm-faces">${b.f.here.slice(0,3).map(u=>`<span title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>${here} here now</span>`:'';
     return `<li class="sm-post" data-board="${b.id}"><div class="sm-post-vote">${vote}</div><div class="sm-post-body">`
-      +`<div class="sm-post-meta"><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${b.space.id}" data-key="post-space-${b.id}">${escape(b.space.name)}</button><span>${escape(q.author)}</span><span class="sm-dot"></span><time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></div>`
+      +`<div class="sm-post-meta"><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${b.space.id}" data-key="post-space-${b.id}">${escape(b.space.name)}</button><span>${escape(q.author)}</span><span class="sm-dot"></span><time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time>${closedOf(b.d)?`<span class="sm-post-closed">${icon('lock')}${q.closed?.decision?'Decided: '+escape(b.d.options.find(o=>o.id===q.closed.decision.option)?.name||''):'Closed'}</span>`:''}</div>`
       +`<h2><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="open-${b.id}">${escape(q.text)}</button></h2>`
       +`<ul class="sm-post-options" aria-label="Options and how many arguments each has">${options}</ul>`
       +`<div class="sm-post-foot"><span>${icon('message-square')}${b.comments}</span>${faces}</div>`
@@ -1686,8 +2116,8 @@
   function sidebar() {
     const count=id=>Object.values(docs).filter(d=>d.question.org===id).length;
     const link=(id,label,n='')=>`<button type="button" class="sm-side-link cursor-interaction" data-action="space" data-id="${id}" data-key="side-${id}" aria-current="${state.space===id}">${label}${n!==''?`<span class="sm-side-count">${n}</span>`:''}</button>`;
-    const group=(title,list)=>`<h2>${title}</h2>`+list.map(s=>link(s.id,swatch(s)+spaceTag(s),count(s.id))).join('');
-    return `<nav class="sm-side" id="sm-side" aria-label="Spaces">${link('all',icon('house')+'<span>Home</span>')}`
+    const group=(title,list)=>list.length?`<h2>${title}</h2><div class="sm-side-box">${list.map(s=>link(s.id,swatch(s)+spaceTag(s),count(s.id))).join('')}</div>`:'';
+    return `<nav class="sm-side" id="sm-side" aria-label="Spaces"><div class="sm-side-box">${link('all',icon('house')+'<span>Home</span>')}</div>`
       +group('Your spaces',SPACES.filter(s=>s.kind==='private'))
       +group('Communities',SPACES.filter(s=>s.kind==='public'&&state.joined[s.id]))
       +`</nav>`;
@@ -1720,7 +2150,8 @@
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
   function renderSite() {
-    const me=`<span class="sm-me" title="kieran_lamee (you)">KL</span>`;
+    const persona=`<label class="sm-persona" data-tooltip="Prototype tool: try the board with another role"><span>Preview as</span><select id="sm-persona" data-key="persona" aria-label="Preview as (prototype tool)">${Object.entries(PERSONAS).map(([v,l])=>`<option value="${v}" ${v===state.persona?'selected':''}>${l}${v==='you'&&state.view==='board'?` (${realRole()==='owner'?'owner':ROLES[realRole()]})`:''}</option>`).join('')}</select></label>`;
+    const me=persona+(state.persona==='out'?`<button type="button" class="sm-button cursor-interaction" data-action="sign-in" data-key="sign-in">Sign in</button>`:`<span class="sm-me" title="kieran_lamee (you)">KL</span>`);
     let middle='',tools='',menu='';
     if(state.view==='board') {
       const s=spaceOf(doc.question.org);
@@ -1729,6 +2160,7 @@
       tools=`<div class="sm-zoom" role="group" aria-label="View">${viewBtn('read','layout-grid','Board')}${viewBtn('case','award','Strongest case')}</div>`
         // Who else has this board open: faces only. They don't appear on cards.
         +(f.here.length?`<span class="sm-site-faces" role="img" aria-label="Also here: ${escape(f.here.join(', '))}${f.more?` and ${f.more} more`:''}">${f.here.map(u=>`<span title="${escape(u)} is here">${escape(userInitials(u))}</span>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
+        +(can('edit')&&reviewCount()?`<button type="button" class="sm-review-button cursor-interaction" data-action="review-next" data-key="review-next" data-tooltip="Next to review">${icon('inbox')}<b>${reviewCount()}</b><span>to review</span></button>`:'')
         +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
       middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
     } else {
@@ -1749,7 +2181,6 @@
     if(d.options.some(o=>/^(yes|no)$/i.test(o.trim()))) hints.push('Name options as positions, not Yes or No.');
     return hints.map(h=>`<li>${escape(h)}</li>`).join('');
   }
-  function accessLine(spaceId) { return `Who can see it: ${visLabel(spaceId==='none'?'private':'org',spaceId)}.`; }
   function createMarkup() {
     const d=state.createDraft,yours=SPACES.filter(s=>s.kind==='private'||state.joined[s.id]);
     const options=d.options.map((o,i)=>`<div class="sm-create-option" ${state.createError&&!o.trim()&&i<2?'data-invalid':''}><input type="text" class="sm-create-opt" data-index="${i}" data-key="create-opt-${i}" maxlength="80" placeholder="${['First option','Second option','Third option','Fourth option'][i]}" aria-label="Option ${i+1}" value="${escape(o)}">${d.options.length>2?`<button type="button" class="cursor-interaction" data-action="create-remove-option" data-id="${i}" data-key="create-remove-${i}" aria-label="Remove option ${i+1}" data-tooltip="Remove">${icon('x')}</button>`:''}</div>`).join('');
@@ -1758,7 +2189,10 @@
       +`<div class="sm-create-q" ${state.createError&&!d.q.trim()?'data-invalid':''}><textarea id="sm-create-q" data-key="create-q" rows="2" maxlength="200" placeholder="Ask a question with more than one good answer" aria-label="Question">${escape(d.q)}</textarea></div>`
       +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
       +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
-      +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))}</p></div>`
+      +`<div class="sm-create-foot"><div class="sm-rgroup sm-create-basics">`
+      +`<div class="sm-rrow"><label class="sm-rrow-label" for="sm-create-space">Space<small id="sm-create-access">${escape(visLabel(d.space==='none'?'private':'org',d.space))}</small></label><span class="sm-rrow-control"><select id="sm-create-space" class="sm-rselect" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select></span></div>`
+      +`<button type="button" class="sm-rrow sm-rrow-button cursor-interaction" data-action="create-rules" data-key="create-rules" aria-expanded="${!!d.rulesOpen}"><span class="sm-rrow-label">How it runs</span><span class="sm-rrow-control"><span class="sm-rrow-value">${escape(rulesSummary(d.rules,d.space))}</span>${icon(d.rulesOpen?'chevron-up':'chevron-down')}</span></button></div>`
+      +`${d.rulesOpen?rulesMarkup(d.rules,d.space,'create'):''}</div>`
       +`<div class="sm-create-actions">${state.createError?`<span class="sm-create-error" role="alert">${escape(state.createError)}</span>`:''}<button type="button" class="sm-link-button cursor-interaction" data-action="create-close" data-key="create-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="create-submit" data-key="create-submit">Create steelman</button></div></div>`;
   }
   const createEl=root.querySelector('.sm-create'),scrimEl=root.querySelector('.sm-create-scrim');
@@ -1780,6 +2214,12 @@
     }
     const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
+    const rules=structuredClone(d.rules||defaultRules(d.space)),nd=docs[id];nd.question.rules=rules;
+    nd.question.people=rules.editors.map(user=>({user,role:'edit'}));rules.editors=[];
+    if(rules.ai.draft&&aiAllowed(d.space,'draft')) {
+      nd.options.forEach((o,oi)=>{const idea=`${id}-ai${oi}`,card=idea+'v';nd.ideas.push({id:idea,option:o.id,score:0,versions:[card]});nd.cards[card]={at:new Date(NOW).toISOString(),by:'ai',idea,claim:`AI draft: the strongest reason for “${o.name}”.`,yes:0,no:0,pref:0,sources:[],explanation:'',ai:{basis:'Drafted from the question and this option.',limits:'Simulated: no model ran.'},...(rules.ai.check&&aiAllowed(d.space,'check')?{aiCheck:{verdict:'none',summary:''}}:{})};});
+      state.spent[d.space]=(state.spent[d.space]||0)+20;
+    }
     const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError='';state.createDraft={q:'',options:['',''],space:null};
     leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);
@@ -1790,11 +2230,11 @@
 
   // ── Share: who has access to this board, and how anyone else can get in ──
   // Roles build on each other: viewers read and comment, voters also vote and assess evidence, contributors also write.
-  const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute'};
-  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write'};
+  const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute',edit:'can edit'};
+  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write',edit:'read, comment, vote, write, and review'};
   // Initials from a username's words, ignoring numbers: maya.chen → MC, samr_92 → SA.
   const userInitials = u => { const words=u.split(/[\s_.@]+/).filter(w=>/^[a-z]/i.test(w)); return (words.length>1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
-  const roleSelect = (id,current,attrs='',disabled=false) => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
+  const roleSelect = (id,current,attrs='',disabled=false,upTo='owner') => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).filter(([v])=>RANK[v]<=RANK[upTo]).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
   function shareSuggestions() {
     const q=doc.question,typed=state.shareQuery.trim().toLowerCase();
     if(!typed) return '';
@@ -1805,13 +2245,13 @@
       +(email?`<li><button type="button" class="cursor-interaction" data-action="share-invite" data-id="${escape(typed)}" data-key="suggest-email">${icon('mail')}Invite ${escape(typed)} by email</button></li>`:'');
   }
   function shareMarkup() {
-    const q=doc.question,owner=q.author===ME,space=spaceOf(q.org),personal=q.org==='none';
+    const q=doc.question,owner=myRole()==='owner',space=spaceOf(q.org),personal=q.org==='none';
     const person=(user,right,{pending=false,you=false}={})=>`<li class="sm-person"><span class="sm-avatar ${pending?'sm-pending':''} ${you?'sm-you':''}" aria-hidden="true">${pending?icon('mail'):escape(userInitials(user))}</span><span>${escape(user)}${you?' <small>(you)</small>':''}${pending?' <small>· invited</small>':''}</span>${right}</li>`;
     const others=q.people.map(p=>person(p.user,owner
       ?roleSelect(p.user,p.role,`data-share-person="${escape(p.user)}" data-key="role-${escape(p.user)}"`)+`<button type="button" class="sm-person-remove cursor-interaction" data-action="share-remove" data-id="${escape(p.user)}" data-key="remove-${escape(p.user)}" aria-label="Remove ${escape(p.user)}" data-tooltip="Remove">${icon('x')}</button>`
       :`<span class="sm-person-role">${ROLES[p.role]}</span>`,{pending:p.user.includes('@'),you:p.user===ME})).join('');
     // You always appear: as the owner, or with the access you have through the space or the link.
-    const youRole=q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole);
+    const youRole=myRole()==='owner'?'contribute':myRole();
     const people=person(q.author,`<span class="sm-person-role">Owner</span>`,{you:owner})+(owner||q.people.some(p=>p.user===ME)?'':person(ME,`<span class="sm-person-role">${ROLES[youRole]}</span>`,{you:true}))+others;
     const general=Object.fromEntries(['private','org','link'].map(v=>[v,[visIcon(v),visLabel(v,v==='org'?space.id:'')]]));
     const accessIcon=general[q.visibility]?.[0]||'lock';
@@ -1820,7 +2260,7 @@
     const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
     const link=`steelman.example/s/${state.boardId}`;
     return `<header><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></header>`
-      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',state.shareRole,'id="sm-share-role" data-key="share-role"')}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
+      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',RANK[state.shareRole]>RANK[myRole()]?myRole():state.shareRole,'id="sm-share-role" data-key="share-role"',false,myRole())}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
       +`<section aria-labelledby="sm-people-title"><h3 id="sm-people-title">People with access</h3><ul class="sm-people">${people}</ul></section>`
       +`<section aria-labelledby="sm-general-title"><h3 id="sm-general-title">General access</h3><div class="sm-person"><span class="sm-avatar sm-access" aria-hidden="true">${icon(accessIcon)}</span><span>${generalSelect}</span>${q.visibility==='private'?'':roleSelect('general',q.accessRole,'id="sm-share-access-role" data-key="share-access-role"',!owner)}</div><p class="sm-access-hint">${escape(accessHint)}</p>${ownerNote}</section></div>`
       +`<footer><input type="text" readonly value="${link}" aria-label="Link to this steelman" data-key="share-link">${button('share-copy',icon(state.copied==='yes'?'check':'link')+(state.copied==='yes'?' Copied':' Copy link'),'data-key="share-copy"')}</footer>`;
@@ -1901,16 +2341,18 @@
     else render();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-submit']);
+  const HOME_ACTIONS=new Set(['space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
       const d=state.createDraft;if(!d.space) d.space=state.space!=='all'&&(spaceOf(state.space).kind==='private'||state.joined[state.space])?state.space:'pod6';
+      if(!d.rules) d.rules=defaultRules(d.space);
       state.creating=true;state.navOpen=false;renderSite();renderCreate('create-q');root.scrollIntoView({block:'start'});announce('New steelman: write the question, then name the options.');return;
     }
     if(action==='create-close') {state.creating=false;state.createError='';renderCreate();root.querySelector('[data-key="create-open"]')?.focus();announce('Closed. Your draft is kept.');return;}
     if(action==='create-add-option') {const d=state.createDraft;if(d.options.length<MAX_OPTIONS)d.options.push('');renderCreate('create-opt-'+(d.options.length-1));return;}
     if(action==='create-remove-option') {const d=state.createDraft;d.options.splice(Number(id),1);renderCreate('create-opt-'+Math.min(Number(id),d.options.length-1));return;}
+    if(action==='create-rules') {const d=state.createDraft;d.rulesOpen=!d.rulesOpen;renderCreate('create-rules');return;}
     if(action==='create-submit') {createSubmit();return;}
     if(action==='nav-toggle') {state.navOpen=!state.navOpen;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(state.navOpen?'.sm-side-link[aria-current="true"]':'[data-key="nav-toggle"]')?.focus();return;}
     state.navOpen=false;
@@ -1932,7 +2374,28 @@
     root.querySelector(`[data-key="${trigger.dataset.key}"]`)?.focus({preventScroll:true});
   }
 
+  // After anything renders, controls your role can't use are marked unavailable, with the reason as their tooltip.
+  function applyAccess() {
+    root.dataset.role=myRole();
+    for(const el of root.querySelectorAll('[data-action]')) {
+      const need=NEEDS[el.dataset.action],blocked=need&&!can(need);
+      if(blocked&&!el.dataset.blocked) {const why=closedNow()&&LOCKED.has(need)?'Closed.':need==='structure'&&doc.question.rules.structure==='owner'?'Owner only.':WHY[need];el.dataset.blocked=why;el.dataset.tipWas=el.dataset.tooltip||'';el.dataset.tooltip=why;el.setAttribute('aria-disabled','true');el.removeAttribute('draggable');}
+      else if(!blocked&&el.dataset.blocked) {delete el.dataset.blocked;if(el.dataset.tipWas)el.dataset.tooltip=el.dataset.tipWas;else delete el.dataset.tooltip;delete el.dataset.tipWas;el.removeAttribute('aria-disabled');}
+    }
+    for(const t of root.querySelectorAll('#sm-comment,#sm-reply')) {t.disabled=!can('view');if(!can('view'))t.placeholder='Sign in to comment';}
+  }
+  new MutationObserver(applyAccess).observe(root,{childList:true,subtree:true});
+  // Switching role closes anything the new role couldn't have opened.
+  function setPersona(value) {
+    state.persona=PERSONAS[value]?value:'you';
+    Object.assign(state,{composing:false,composingIdea:null,editing:null,moving:null,sourceForm:null,menu:null,share:state.share&&can('view'),creating:state.creating&&can('view')});
+    if(state.drawer==='settings'&&!can('owner')) state.drawer=null;
+    renderView();applyAccess();save();
+    announce(`Previewing as ${PERSONAS[state.persona].toLowerCase()}. ${state.view==='board'?YOU_CAN[myRole()]:''}`);
+  }
   function render(focusKey, kind='') {
+    const rules=doc.question.rules;
+    root.dataset.off=[...Object.keys(JUDGMENTS).filter(j=>!rules.judgments[j]),...(rules.ai.check&&aiAllowed(doc.question.org,'check')?[]:['aicheck'])].join(' ');
     root.dataset.zoom=state.view==='board'?state.zoom:'';
     surfaceEl.dataset.canvas=spaceOf(doc.question.org).canvas;
     renderSite();renderShare();
@@ -2047,6 +2510,8 @@
     if(event.target.id==='sm-option-name') {state.optionDraft=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-claim') {state.editDraftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-edit-reason') {state.editDraftReason=event.target.value;}
+    if(event.target.id==='sm-decision-why') {(state.decisionDraft||={option:'',why:'',cards:[]}).why=event.target.value;return;}
+    if(event.target.id==='sm-decline-reason') {state.declineDraft=event.target.value;return;}
     if(event.target.id==='sm-draft') {state.draftClaim=event.target.value;event.target.removeAttribute('aria-invalid');}
     if(event.target.id==='sm-reason') {state.draftReason=event.target.value;event.target.removeAttribute('aria-invalid');}
   });
@@ -2055,7 +2520,9 @@
   root.addEventListener('change',event=>{
     const el=event.target,q=doc.question;
     if(el.id==='sm-share-role') {state.shareRole=el.value;return;}
-    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('.sm-create-canvas').dataset.canvas=spaceOf(el.value).canvas;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value);return;}
+    if(el.id==='sm-persona') {setPersona(el.value);root.querySelector('#sm-persona')?.focus();return;}
+    if(el.id==='sm-create-space') {const d=state.createDraft;d.space=el.value;if(!d.rulesTouched)d.rules=defaultRules(el.value);else d.rules.editors=d.rules.editors.filter(u=>(PEOPLE[el.value]||[]).includes(u));renderCreate('create-space');return;}
+    if(el.dataset.rule) {applyRule('rule-set',el.dataset.rule,el.value,el.dataset.key);return;}
     if(el.dataset.sharePerson) {const p=q.people.find(x=>x.user===el.dataset.sharePerson);if(p){p.role=el.value;announce(`${p.user} ${ROLES[p.role]}.`);}}
     else if(el.id==='sm-share-general') {q.visibility=el.value;announce(el.selectedOptions[0].textContent+'.');}
     else if(el.id==='sm-share-access-role') {q.accessRole=el.value;announce(`General access: ${ROLES[el.value]}.`);}
@@ -2089,15 +2556,23 @@
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
+    if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
+    if(action==='sign-in'){setPersona('you');announce('Signed in (simulated).');return;}
+    if(action==='request-access'){state.requested[state.boardId]=true;renderHead();save();root.querySelector('[data-key="settings"]')?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
       if(state.menu===id){closeMenu();trigger.focus();return;}
-      state.menu=id;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
+      state.menu=id;state.menuView=null;renderMenu();positionMenu();trigger.setAttribute('aria-expanded','true');
       if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
       positionMenu();menuEl.querySelector('[role="menuitem"]:not([aria-disabled])')?.focus();return;
     }
-    if(state.menu&&trigger.closest('.sm-menu')) state.menu=null;
+    if(action==='report-open'||action==='hide-open') {
+      state.menuView=action==='report-open'?'report':'hide';renderMenu();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});positionMenu();
+      menuEl.querySelector('[role="menuitem"]')?.focus();return;
+    }
+    if(state.menu&&trigger.closest('.sm-menu')) {state.menu=null;state.menuView=null;}
     // Any other action leaves pick mode.
     if(state.moving&&!['move-here','cancel-move'].includes(action)) state.moving=null;
     if(action==='add-option') {
@@ -2183,6 +2658,7 @@
       focus='draft';motion=wasOpen?'':'unfold';
       announce(kept?'You already have a draft version in progress in this row; it was kept.':'A new version starts from this wording. Change it, then say what it improves.');
     }
+    if(action==='delete-card'&&cards[id]&&cards[id].by!=='you') logEvent('deleted',cards[id].claim);
     if(action==='delete-card') {
       const rowGone=deleteVersion(id);focus='undo';
       announce(rowGone?'Argument deleted. Undo is available for ten seconds.':'Version deleted. Undo is available for ten seconds.');
@@ -2240,6 +2716,38 @@
       if(navigator.clipboard?.writeText) navigator.clipboard.writeText('https://'+link.value).then(done,fail); else fail();
       return;
     }
+    if(action.startsWith('decision-')) {
+      const q=doc.question,d=state.decisionDraft||={option:'',why:'',cards:[]};
+      if(action==='decision-option') {d.option=id;focus='decision-option-'+id;}
+      if(action==='decision-arg') {d.cards=d.cards.includes(id)?d.cards.filter(x=>x!==id):[...d.cards,id];focus='decision-pick-'+id;}
+      if(action==='decision-edit') {state.decisionEditing=true;state.decisionDraft=structuredClone({option:q.closed.decision.option,why:q.closed.decision.why||'',cards:q.closed.decision.cards||[]});focus='decision-why';}
+      if(action==='decision-cancel') {state.decisionEditing=false;state.decisionDraft=null;focus='decision-edit';}
+      if(action==='decision-save'&&d.option) {
+        q.closed={...(q.closed||closedOf(doc)),decision:{option:d.option,why:d.why.trim(),cards:d.cards,by:'you',at:new Date(NOW).toISOString()}};
+        logEvent('decided',optionName(d.option));state.decisionEditing=false;state.decisionDraft=null;focus='decision-edit';announce('Decision recorded.');
+      }
+      if(action==='decision-show'&&cards[id]) {
+        const i=ideaOf(cards[id].idea);if(ordered(i)[0]!==id)state.open=i.id;state.expanded=id;focus='claim-'+id;
+        render(focus,'detail');save();root.querySelector(`.sm-card[data-card="${id}"]`)?.scrollIntoView({block:'center',behavior:reducedMotion()?'auto':'smooth'});return;
+      }
+      render(focus);save();return;
+    }
+    if(action==='history') {state.share=false;state.drawer=state.drawer==='history'?null:'history';focus=state.drawer?'close-drawer':'history';announce(state.drawer?'History opened beside the board.':'History closed.');}
+    {
+      const c=cards[id],val=trigger.dataset.value;
+      if(action==='report-card'&&c) {(c.reports||=[]).push({by:'you',reason:val,at:new Date().toISOString()});focus='menu-'+id;announce('Reported. Moderators will see it.');}
+      if(action==='report-withdraw'&&c) {c.reports=(c.reports||[]).filter(r=>r.by!=='you');focus='menu-'+id;announce('Report withdrawn.');}
+      if(action==='hide-card'&&c) {c.hidden={by:'you',reason:val,at:new Date().toISOString()};logEvent('hid',c.claim,val);focus='menu-'+id;announce('Hidden.');}
+      if(action==='restore-card'&&c) {delete c.hidden;logEvent('restored',c.claim);focus='menu-'+id;announce('Restored.');}
+      if(action==='reports-dismiss'&&c) {c.reports=[];logEvent('dismissed',c.claim);focus='menu-'+id;announce('Reports dismissed.');}
+      const cm=doc.comments.find(x=>x.id===id);
+      if(action==='comment-report-open'||action==='comment-hide-open') {state.commentPick={id,kind:action==='comment-report-open'?'report':'hide'};focus='comment-pick-cancel-'+id;}
+      if(action==='comment-pick-cancel') {state.commentPick=null;focus='comment-report-open-'+id;}
+      if(action==='comment-report'&&cm) {(cm.reports||=[]).push({by:'you',reason:val,at:new Date().toISOString()});state.commentPick=null;focus='comment-report-withdraw-'+id;announce('Reported. Moderators will see it.');}
+      if(action==='comment-report-withdraw'&&cm) {cm.reports=(cm.reports||[]).filter(r=>r.by!=='you');focus='comment-report-open-'+id;announce('Report withdrawn.');}
+      if(action==='comment-hide'&&cm) {cm.hidden={by:'you',reason:val,at:new Date().toISOString()};state.commentPick=null;logEvent('hid',cm.text,val);focus='comment-restore-'+id;announce('Hidden.');}
+      if(action==='comment-restore'&&cm) {delete cm.hidden;logEvent('restored',cm.text);focus='comment-hide-open-'+id;announce('Restored.');}
+    }
     if(action==='settings') {state.share=false;state.drawer=state.drawer==='settings'?null:'settings';state.confirmReset=false;focus=state.drawer?'q-text':'settings';announce(state.drawer?'Settings opened beside the board.':'Settings closed.');}
     if(action==='close-drawer') {focus=closeDrawer();}
     if(action==='comments') {
@@ -2285,6 +2793,11 @@
     if(action==='add-idea') {
       const claim=state.ideaDraftClaim.trim(),field=root.querySelector('#sm-idea-claim');
       if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('Write your argument first.');return;}
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:'idea',option:id,claim:claim.slice(0,500),reason:state.ideaDraftReason.trim().slice(0,700),by:'you',at:new Date(NOW).toISOString()});
+        state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';focus='held-withdraw-'+pid;announce('Sent to the editors.');
+        render(focus);save();return;
+      }
       const added=addIdea(id,claim,state.ideaDraftReason.trim());
       state.composingIdea=null;state.ideaDraftClaim='';state.ideaDraftReason='';
       state.expanded=added;focus='claim-'+added;motion='added';
@@ -2301,12 +2814,43 @@
         form.querySelector(!claim?'#sm-draft':'#sm-reason').focus();
         announce('Add your version and what it improves.');return;
       }
+      if(held()) {
+        const pid=heldId();doc.pending.push({id:pid,kind:'version',idea:id,claim:claim.slice(0,500),reason:reason.slice(0,700),by:'you',at:new Date(NOW).toISOString()});
+        state.composing=false;state.draftClaim='';state.draftReason='';focus='held-withdraw-'+pid;announce('Sent to the editors.');
+        render(focus);save();return;
+      }
       const added=addVersion(id,claim,reason);if(!added)return;
       state.composing=false;state.draftClaim='';state.draftReason='';
       state.expanded=added;focus='claim-'+state.expanded;motion='added';
       announce('Your version was added at the end of the row. It starts unreviewed, with no articulation votes.');
     }
+    if(action.startsWith('held-')||action==='review-next') {
+      const p=doc.pending.find(x=>x.id===id),drop=()=>{doc.pending=doc.pending.filter(x=>x.id!==id);};
+      if(action==='held-accept'&&p) {
+        const card=p.kind==='idea'?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind==='idea'){i.by=p.by;i.at=p.at;}queueCheck(card);}
+        logEvent('accepted',p.claim);drop();focus=card?'claim-'+card:'review-next';announce('Accepted.');
+      }
+      if(action==='held-decline') {state.declining=id;state.declineDraft='';focus='decline-reason';}
+      if(action==='held-decline-cancel') {state.declining=null;focus='held-decline-'+id;}
+      if(action==='held-decline-confirm'&&p) {p.status='declined';p.reason=(state.declineDraft||'').trim();logEvent('declined',p.claim,p.reason);state.declining=null;focus='review-next';announce('Declined.');}
+      if(action==='held-withdraw'||action==='held-dismiss') {drop();focus=p?.kind==='idea'?'compose-idea-'+p.option:'';announce(action==='held-withdraw'?'Withdrawn.':'Dismissed.');}
+      // Step to the next item waiting for review: open its row's fold if needed and move focus to Accept.
+      if(action==='review-next') {
+        const onScreen=[...root.querySelectorAll('[data-held],.sm-card[data-card]')].map(e=>e.dataset.held||e.dataset.card),at=x=>{const i=onScreen.indexOf(x.id);return i<0?1e3:i;};
+        const list=[...toReview(),...reported().map(cid=>({id:cid,kind:'report',idea:cards[cid].idea}))].sort((a,b)=>at(a)-at(b));if(!list.length)return;
+        state.reviewStep=((state.reviewStep??-1)+1)%list.length;const next=list[state.reviewStep];
+        if(next.kind!=='idea'){const i=ideaOf(next.idea);const all=rowsOf(i.option);const at=all.indexOf(i);if(at>=shownRows(i.option,all))state.shownRows[colKey(i.option)]=at+1;if(next.kind==='report'&&ordered(i)[0]!==next.id)state.open=i.id;}
+        const target=next.kind==='report'?`.sm-card[data-card="${next.id}"]`:`[data-held="${next.id}"]`;
+        render(next.kind==='report'?'menu-'+next.id:'held-accept-'+next.id);root.querySelector(target)?.scrollIntoView({block:'center',behavior:reducedMotion()?'auto':'smooth'});
+        announce(`${state.reviewStep+1} of ${list.length} to review.`);save();return;
+      }
+      render(focus);save();return;
+    }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
+    if(action==='ai-recheck') {queueCheck(id);focus='ai-recheck-'+id;announce('Checking.');}
+    if(['add','add-idea'].includes(action)&&state.expanded&&cards[state.expanded]&&!cards[state.expanded].aiCheck) queueCheck(state.expanded);
+    refreshChecks();
     render(focus,motion);save();
     if(toast) voteToast(toast);
     if(revealAfter) reveal(revealAfter);

@@ -492,6 +492,129 @@ Added to “Why it might not”: “Anyone can modify open weights and strip out
 
 Test events from this check (“setup check”, “setup check 2”, “setup check (direct)”, and the prototype events above) are in the project, tagged `environment: local`.
 
+## November 10 — Roles enforced, and "Preview as" (permissions P1)
+
+Plan: `plans/permissions.md`. Roles from Share now control every action, not only combining. One map in the prototype (`NEEDS`) names the role each action needs. After any render, controls your role can't use fade, take the reason as their tooltip, and explain themselves instead of acting when clicked. Prompts to write a version in a row and **+ Option** are hidden rather than faded. A **Preview as** menu in the top bar (a prototype tool, with a dashed outline) switches between Your access, Owner, Contributor, Voter, Viewer, and Signed out. The board header says what you can do and offers **Request access** (below "can contribute") or **Sign in** (signed out). In Share, you can't invite anyone above your own access, and owner controls follow the previewed role.
+
+| Check | Observed result |
+| --- | --- |
+| Owner | Nothing blocked; header says "You own this board." |
+| Contributor | Only the settings cog is blocked |
+| Voter | Adding arguments and options blocked; voting works; "Request access" shown |
+| Viewer | Importance and articulation votes, evidence assessment, adding arguments, versions, and sources, and the card menu's "Suggest a revised version" all blocked; the merge handle is gone; comments still work |
+| Signed out | As Viewer, plus comments (the box reads "Sign in to comment"), reporting sources, Share, and New steelman on the list; Sign in replaces the avatar and returns to Your access |
+| Blocked click | A viewer's importance vote doesn't change; the status line reads the reason |
+| Request access | Header changes to "Access requested."; announcement says nothing is sent |
+| Phone width (375 px) | "Preview as" label hides and the menu narrows; no horizontal overflow on the board or the list |
+
+## November 10 — AI visual system (AI plan, A0)
+
+Plan: `plans/ai-integrations.md`. Ochre (`--sm-ai`) plus a dotted edge plus the word "AI" marks anything AI did. The fixtures add an AI draft argument (`community`, `by:'ai'`) and an AI evidence check on `influence` (`aiCheck`). Both are simulated. The example board's save version moved from 5 to 6, so returning visitors get the new fixtures (and lose earlier edits to the example boards, as with previous bumps). New tokens: `--sm-ai-wash`, `--sm-ai-hover`, `--sm-ai-rule`. The design specimen's AI section now uses the prototype's own classes.
+
+| Check | Observed result |
+| --- | --- |
+| AI draft card | Dotted ochre border (`rgb(201, 149, 43)`), "AI draft" tag on the top edge, importance 0, Unreviewed; clicking the tag opens the card |
+| AI draft, opened | Ochre section: "AI draft · Suggestion", written 4h ago, Basis and Limits; the human evidence vote is unchanged above it |
+| AI draft menu (owner) | "Drafted by AI: a suggestion until people vote on it…", Write a better version, Combine, Remove this AI draft; Remove then Undo restores it |
+| AI check | "AI Partly" mark beside the meter (the meter still shows people's 58%); opened card shows the verdict, a note per source (Supports / Doesn't / Couldn't open), Limits, and "Simulated example: no model ran" |
+| Design specimen | AI section shows the draft card, the footer mark, and the opened section at 280–320 px each |
+
+Also fixed: Undo after deleting a version restored the board but not the list's copy of it (`docs[]`), so the list's argument count went stale and the restored version could be lost on the next save. `undoDelete` now writes the restored board back. Checked: remove the AI draft, Undo, return to the list: "Why it makes sense" shows 6.
+
+Revision (same day): AI made briefer. The sparkle became a robot (Lucide `bot`); the sparkle read as decoration and already means **New** in the prototype. The "AI Partly" pill and the ochre section in opened cards are gone. Instead, an ochre robot sits right after the people's meter, on each source row AI read, and beside "Does the evidence back this wording?", and each explains itself in a hover tooltip (the prototype's tooltips pin on tap). The AI draft keeps its dotted border and "AI draft" tag, with its basis and limits in the tag's tooltip. Unused tokens `--sm-ai-wash` and `--sm-ai-rule` were removed. Checked: hovering the footer robot shows "AI check: partly supports this wording…"; clicking it opens the card; the three source rows and the evidence question each carry a robot; no separate AI section; no console errors.
+
+Revision (same day): a verdict at a glance. AI checks are meant to be on every card when switched on, so every example card now has one (6 supports, 5 partly, 2 doesn't, 2 nothing to check) and the board's save version moved to 7. The robot gains a 9 px dot that fills like the people's meter: full, half, empty, or dashed. Checked: 11 robots on the board's visible cards with their verdicts in order; the four dots are distinct at 1× and 2× in the specimen; hovering still gives the full sentence; source rows on the influence argument show their own dots; no console errors.
+
+Revision (same day): verdict dots now use the evidence meter's colors (green `--sm-cred-strong`, gray `--sm-cred-mid`, red `--sm-cred-weak`, dashed `--sm-quiet`) while the robot stays ochre. Fill still carries the verdict for colorblind readers.
+
+## November 10 — Polish batch
+
+| Change | Check |
+| --- | --- |
+| AI tooltips trimmed to the verdict and its reason ("A suggestion, not counted in the meter." and similar removed); AI draft menu note is now "Drafted by AI." | Footer robot tooltip reads only the verdict and summary |
+| Canvas textures stronger: contour lines 12% → 20% white (`make-contours.py` rerun), dots 16% → 24%, linen 6%/3% → 10%/5% | Contours visibly clearer on the POD 6 board at 1152 px |
+| Byline: each example version has an author (`by`), shown under the claim at 11 px, weight 300, `--sm-quiet` (#707070, about 4.9:1 on white, so it stays readable); "you" for yours; none on AI drafts. Save version moved to 8 | maya.chen, jordan_w, lin.zhao… under the first cards |
+| List: option chips are dark (`--sm-ink`) with white serif names, like board option headers; thin options keep a dashed edge in white | Open-weights and bike-lane items; "Keep parking, paint a lane" (1 argument) shows the dashed edge |
+| Sidebar: Home, Your spaces, and Communities each sit in a quiet box (`#ffffff0a` fill, `#ffffff1f` border) | Counts keep 7–8 px from the edge, including Northwind Studio |
+
+## November 10 — How it runs (create sheet and Settings; permissions P2, part of AI A1)
+
+One set of controls, `rulesMarkup`, appears folded in **New steelman** and open in Settings. Rules live on `question.rules` (`publish`, `structure`, `editors`, `judgments`, `ai`, `closes`); boards without them get `defaultRules(space)` in `useDoc`. Spaces gained simulated AI permissions and credits (`SPACE_AI`). Menu notes now name the author ("Written by maya.chen.") instead of explaining permissions.
+
+| Check | Observed result |
+| --- | --- |
+| Defaults | POD 6: "Open team · AI checks"; Brooklyn Streets: "Public · AI checks", with Draft and Duplicates faded ("Off in Brooklyn Streets" on click) |
+| Edited | Mode Edited sets New arguments to "Editors review first" and Reorganizing to "Editors"; the Editors row lists POD 6's 8 people; maya.chen toggles on |
+| Create with AI drafts + closing date | New board opens with one ochre AI draft per option ("AI draft: the strongest reason for “Live demo”.") and dashed AI dots; header pill "Edited · Closes Nov 20"; credits 480 → 460 |
+| Reorganizing enforced | Previewing as Contributor on an Edited board: + Option blocked ("Editors only."); Add an argument still works |
+| Votes off | Importance and Evidence off in Settings: vote arrows and meters disappear, cards keep their width (the importance lane stays, empty); Articulation off hides the articulation axis and votes |
+| Open-weights board | Pill "Open team"; nothing hidden; 11 AI dots |
+| Phone width (375 px) | List, create sheet with How it runs open, and board: no horizontal overflow (the Preview as menu narrowed to 84 px to fix a 6 px overflow) |
+
+Not built: holding new arguments for editors (P3), closing a board on its date (P5), the space admin's AI panel (A1).
+
+Revision (same day): the create sheet's lower half restyled to match Share and Settings. Space and How it runs are two hairline rows (quiet right-aligned selects, the summary and a chevron); the rules sit in groups under 11 px tracked headings: Mode (three tiles, the chosen one outlined in ink, not filled), New arguments and Reorganizing (quiet selects), Editors (initials as in Share; chosen ones inked; names listed under the label), Votes (outlined checks, dashed when off), AI (robot, name, cost underneath, a switch), and Timing (Add a date, then a date field with ×). Settings shows the same groups without a second heading. Checked: Edited mode with two editors, drafts on, articulation off, and a date; created board shows "Edited · Closes Nov 16"; drawer selects stay borderless; no row overflows in the 356 px drawer; no console errors.
+
+## November 10 — Editors and review (permissions P3)
+
+Share gains **can edit** (`RANK` contribute 3 → edit 4 → owner 5); Preview as gains Editor. Board editors are Share's "can edit" people (the create sheet converts its editor picks into them). Under "Editors review first", `held()` routes a below-editor submission into `doc.pending` (kept apart from `ideas` and `cards`, so counts, highlights, and the list never include it) until an editor accepts it. The capstone example runs Edited with two items waiting; the example save version moved to 9.
+
+| Check | Observed result |
+| --- | --- |
+| Editor view | Top bar "2 to review"; header "Edited", "You can write, review, and reorganize."; omar_h's wording under its row and tess.b's argument at the bottom of its column, each with Accept / Decline |
+| Contributor view | Neither held item shown; + Option blocked ("Editors only."); adding an argument shows it to its author as Awaiting review with Withdraw; status "Sent to the editors." |
+| Ids | A new held item no longer collides with the example's (fixed: `heldId()` skips ids in use) |
+| Step | "to review" steps p2 → p3 → p1, in screen order, focusing Accept |
+| Accept | omar_h's wording joins its row: the stack goes from one wording to "Compare 2 wordings"; count drops |
+| Decline | Reason field, then Decline: the item leaves the editor's view; its author (previewed as Contributor) sees Declined with the reason and Dismiss |
+| Share | Roles: can view / vote / contribute / edit; kieran_lamee listed as "can edit" on capstone |
+| Phone width (375 px) | List, open-weights, and capstone boards: no horizontal overflow (top bar gaps and padding tightened, Preview as menu 68 px) |
+
+Not built: holding new sources, "Ask for changes", per-option stewards.
+
+## November 10 — AI evidence checks run (AI plan, A2)
+
+Simulated checks: `simulateCheck` returns a verdict per source (unavailable or no location → couldn't open; otherwise a stable placeholder from the card and source ids) and an overall verdict; `queueCheck` spends one credit, shows a pulsing robot, and fills the result after 1.2 s (immediately with reduced motion). Each check stores the evidence it read (`sig`); after any action, `refreshChecks` re-checks cards whose evidence changed. New and accepted wordings are checked when they're added.
+
+| Check | Observed result |
+| --- | --- |
+| Report a source on "China controls AI where it's deployed" | Robot pulses, then the verdict changes (supports → partly); the reported source's row shows "couldn't open" |
+| Check again | The ochre button beside the evidence question re-runs it (pulse, then verdict) |
+| Add a source with no location (on "Releasing weights hands…") | Re-check; that row shows a dashed dot and **Mark unavailable**; clicking it marks the source Unavailable and checks again |
+| New argument | Pulses, then a dashed dot (no sources yet) |
+| Credits | POD 6: 480 → 477 after three checks |
+| Console | No errors |
+
+## November 10 — Moderation and history (permissions P4)
+
+Reports (`reports`), removals (`hidden`), and a per-board log (`doc.log`) on versions and comments. The ⋯ menu gains Report (anyone signed in), and Hide / Restore / Dismiss reports (editors), with a reason picker in the same menu. The bike-lane board in Brooklyn Streets is the public example (save version 10).
+
+| Check | Observed result |
+| --- | --- |
+| Moderator view | Pill "Public"; "1 to review"; "Spam ×2" flag on the parking-ad argument; the abusive argument shows "Removed by a moderator · Abusive" with its text struck through |
+| Hide | Menu: Write a better version, Combine, Report, Hide, Dismiss reports → Hide → reasons → Spam: card becomes a removed note, "to review" disappears, focus stays on its ⋯ |
+| History | "You hid “Cheap monthly parking…” Spam · 1m ago" above "rtorres hid “Drivers who complain…” Abusive · 18h ago" |
+| Voter view | Removed notes only (no original text), no flags, no review button; ⋯ offers Report; reporting as Off-topic adds a flag and "1 to review" for the moderator |
+| Comments | promo_bk's comment shows a flag (1) for moderators; Hide → Spam → "Removed by a moderator · Spam"; Restore brings back the text |
+| Phone width (375 px) | No horizontal overflow on the bike-lane board |
+| Console | No errors |
+
+## November 10 — Closing and the decision (permissions P5)
+
+`closedOf(board)` is true once the owner closes it (`question.closed`) or its closing date is on or before the prototype's today (Nov 9). Closed boards lock vote, contribute, edit, and structure actions in `can()`; comments stay open. The decision lives on `question.closed.decision` (option, why, cited cards, who, when). The standups example is closed and decided (save version 11).
+
+| Check | Observed result |
+| --- | --- |
+| List | Standups item shows "Decided: Go async" |
+| Decided board (not owner) | Pill "Closed Nov 7"; "Closed: read only."; importance votes, Add an argument, and + Option blocked with "Closed."; comments open; Decision block: Go async, why, one cited argument from each side, "priya_s · Nov 7"; clicking a cited argument opens and focuses its card |
+| Close now (owner, open-weights) | Pill "Closed Nov 9"; Timing shows Reopen; decision form appears in the question box |
+| Record decision | Option "Why it makes sense", why, two cited arguments → shown with "You · Nov 9 · Edit"; History: "You recorded the decision: “Why it makes sense”", "You closed the board" |
+| Reopen | Pill back to "Open team"; votes unblocked; decision cleared |
+| Closing date | Setting Closes to Nov 9 closes the board at once (22 vote controls blocked); Reopen clears the past date |
+| Who's weighed in | "8 of 9": maya.chen, jordan_w, priya_s, samr_92… Wrote; kieran_lamee Not yet |
+| Phone width (375 px) | List and standups board: no horizontal overflow |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

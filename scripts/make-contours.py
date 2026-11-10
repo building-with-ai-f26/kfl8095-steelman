@@ -15,7 +15,7 @@ import random
 TILE = 480      # tile size in px
 STEP = 6        # sampling grid in px
 LEVELS = 22     # contour levels across the field's range
-OPACITY = .12   # white lines this faint sit just above the canvas color: barely visible
+OPACITY = .2    # white lines a little above the canvas color: quiet but legible
 SEED = 5280
 
 root = Path(__file__).resolve().parents[1]
