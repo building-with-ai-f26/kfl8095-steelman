@@ -18,7 +18,7 @@ A short record of how Steelman should look and feel, and why. Change it when a d
    - articulation runs left to right, voted under each version.
    Importance and articulation share one vote control, a quarter turn apart, and one arrowhead.
 3. **Everything stays physically inside the diagram.** Detail unfolds in place (a stack fans out, a card extends downward) rather than opening a new view.
-4. **Grayscale first; color only carries meaning.** Two meanings so far: evidence strength and AI. Nothing decorative is colored.
+4. **Grayscale first; color only carries meaning.** Three meanings so far: evidence strength, AI, and which space a board belongs to (its canvas). Nothing decorative is colored.
 5. **Editorial, not app-like.** Inspiration: NYT graphics and maps, early FiveThirtyEight. Serif for questions and axis labels, a clean sans for claims and controls, generous whitespace, thin rules.
 
 ## Current choices
@@ -41,6 +41,56 @@ A short record of how Steelman should look and feel, and why. Change it when a d
 | Axis arrows | Keep both arrows; the texture shows values, the arrows name the axes. |
 | Reactivity | Static textures. They redraw when votes change, without animation. No cursor effects. |
 | Header boxes | **Inverted**: near-black boxes with white serif type for the question and option headers. (Sharp and ruled was compared and set aside.) |
+
+## Decisions from the November 9 design audit (batch A, in the prototype)
+
+| Topic | Decision |
+| --- | --- |
+| Italics | No italic serif anywhere. The serif is for questions and headings only. What italics used to set apart (dates, "Draft", empty states, deleted comments) is now Libre Franklin Light (300) in `--sm-quiet` (#707070, 4.9:1 on white). Vote messages ("Important.") are 12px medium sans. |
+| Dates | Relative everywhere ("4d ago"), with the full date on hover, using even-width figures. The prototype's "now" is fixed at November 9, 2026. |
+| Axis labels | Small tracked capitals (11px, medium) instead of light lowercase italic. Where the axes sit is batch B. |
+| Type scale | 11, 12, 13, 14, 16, 20, 24, 32 px, plus the 23px wordmark. Initials alone use 10px, in circles of at least 24px. Nothing else is below 11px. |
+| Host fonts | The page hosting the prototype sets `p`, `li`, and headings to the system font. Inside the prototype they inherit Libre Franklin. |
+| Typing | A writer shows as a still "•••" bubble beside their badge, with dots pulsing in place (no motion for reduced-motion users). The moving named cursor was removed as distracting. |
+| Icons | Lucide icons use a 1.75 stroke throughout. |
+
+## Decisions from the November 9 design audit (batch B, in the prototype)
+
+| Topic | Decision |
+| --- | --- |
+| Axes | Map-style halos are gone: they cut jagged holes in the hexagon texture. The importance axis runs in the canvas margin, outside the first column's panel. The articulation axis is a key strip ("BEST ARTICULATION ← → WEAKER") with its own white background and pill outline, above an unfolded row. On phones, "MORE IMPORTANT" is a small pill above the first card. This revisits the earlier "moving the axis outside the column" and "a box" studies, which predate the hexagon texture. |
+| Elevation | Flatter. `--sm-shadow-sm` is a single 1px shadow, used for list items, the question and option headers, and controls. Cards keep a soft two-layer `--sm-shadow`. Option panels barely lift. `--sm-shadow-lg` is for floating things only: menus, Share, comments, the create sheet. The sort bar has no shadow. List items lift on hover. |
+| Corners | Three radii: 6 px (controls, chips, headers), 10 px (cards, panels, list items, sheets), and pill. The board miniatures keep their small radii. |
+| List controls | The sort bar is text only. Your vote shows as a filled arrow with a bolder score. |
+| Phone axes | No axis arrows at 640 px and below. Each option header has a light subline, "Most important first". An unfolded row is a snapping carousel with a caption ("1 of 3 · best articulated", "2 of 3", "3 of 3 · weakest", "Add a better version") and dots, beside the fold button. The pills tried first were cramped: the arrowheads collapsed into "<=>" and the key was cut off. |
+| Phone board header | Logo mark without the word, no zoom switch, Share as an icon. |
+| Comments panel | On wide screens the canvas makes room for the panel, instead of leaving a white strip beside it. |
+
+## Decisions from the November 9 design audit (batch C, in the prototype)
+
+| Topic | Decision |
+| --- | --- |
+| Space canvases | Each space gives its boards a canvas, a pale tint plus a texture, so a board and its miniature show where it lives. POD 6: warm stone `--sm-canvas-stone` + contours (the original). Northwind Studio: cool gray + dot grid. Personal: sand + grain only. Brooklyn Streets: slate blue + contours. Campus Life: sage + linen hatching. Future of Work: lilac + dot grid. Tints are low in saturation and clear of the evidence red and green and the AI ochre. They were nudged up once after the first values were indistinguishable at miniature size. The textures are `--sm-contours`, `--sm-tex-dots`, `--sm-tex-linen`, and `--sm-grain`. |
+| Where the canvas shows | The board, its miniature in the list, a 14 px swatch beside each space in the sidebar, the banner on the space's card, and the New steelman sheet (it follows the chosen space). Space tags stay ink on white. |
+| The list | Plain gray (`--sm-list-bg` #ebebeb), with no texture, so the miniatures carry the color. |
+| Right rail | At 1280 px and wider: on Home, "Needs your help" (up to four boards in your spaces and joined communities where an option has fewer than two arguments, thinnest first) and "Your drafts" (Personal). On a space, its card (canvas banner, name, about, privacy, members, Join) and its own "Needs your help". The dark space header is gone. Below 1280 px the space card sits above the list. |
+
+## Decisions from the second audit (batch D, in the prototype)
+
+| Topic | Decision |
+| --- | --- |
+| Motion | Three speeds and one curve, as tokens: `--sm-fast` 120 ms (hovers), `--sm-medium` 200 ms (panels, small reveals), `--sm-slow` 420 ms (zoom, unfold, reorder), `--sm-ease`. The prototype's JavaScript reads them. The only other timing is how long a vote message stays (1.4 s). |
+| Hover | Every pressable element eases background, color, border, shadow, and lift over `--sm-fast`. In the list, the item lifts and its miniature rises with it; the space tag gets a quiet gray fill; the title no longer underlines. |
+| Panels | Share, comments, settings, menus, and the create sheet arrive with a 200 ms fade and 4 px rise; the create backdrop fades. They close instantly. Non-modal panels close on Escape or a click outside (the click still reaches what it was aimed at). Only the create sheet dims the page. |
+| Presence | Badges update in place. Only someone who just arrived, or just started writing, pops in, instead of every badge replaying its animation on each move. |
+| Opening a board | Jump to the top first, then grow the board from where its miniature was on screen. |
+| Avatars | One avatar: a light circle with two initials, everywhere (board header, comments, Share, faces, presence). Only you are dark. |
+| Buttons | One primary (dark) and one secondary (outlined) style, 32 px, 13 px, 6 px corners. Join, Invite, Create, and Comment follow it. |
+| Titles and labels | Panel titles are 16 px serif (Comments, Settings, Share, New steelman). Group headings are 11 px tracked capitals (sidebar, rail, Share, Context, Evidence, Example board). Form field labels stay sentence case. |
+| Visibility words | One set everywhere: "Invited only", "Everyone in POD 6", "Anyone with the link". Share's hint follows the role: "Everyone in POD 6 can read, comment, vote, and write." |
+| Concision | The board header no longer repeats the space; the breadcrumb names it and the pill says who can see it. Miniatures show the board's shape and canvas, not a block per argument (the chips carry the counts). Shorter create hints, rail reasons ("Keep five days · 1 argument"), and Settings ("Sharing and access →"). Discover is removed until it exists. |
+| Empty comment buttons | Visible at 40% on cards with no comments, full on hover or focus, so touch screens can find them. |
+| Phone importance caption | Below each option header: a small down arrow centered over the importance votes and "Most important first", in the same quiet voice as the version caption. It no longer sits inside the dark header. |
 
 ## Open questions
 

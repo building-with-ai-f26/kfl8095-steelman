@@ -311,12 +311,99 @@ Darker axes: labels `--sm-axis` #555 → #2e2e2e (the prototype's hard-coded #44
 | Widths | At 800 px three-up cards and two columns; at 390 px everything stacks; no horizontal overflow; all 11 icons render; the screenshot loads |
 | Browser errors | None |
 
+## November 9 — List, spaces, sharing, presence, zoom, and creating
+
+Checks run by the coding agent in the in-app browser against the decoded prototype page served locally (the sandboxed frame does not accept scripted clicks), at 1360 px, 700 px, and 375–390 px, after `python3 scripts/sync-prototype.py`. Not a user study.
+
+| Check | Observed result |
+| --- | --- |
+| List | Opens on Home with seven steelmen across six spaces; Hot order; dashed option chips where an option has fewer than two arguments; Personal draft shows "Draft" with no votes |
+| Votes | Library upvote 128 → 129, then withdrawn; pressed state shows |
+| Sorting and search | Needs help lists the five boards with a thin option; "bike" leaves one result; clearing restores the list |
+| Spaces | POD 6 shows two steelmen and its header; Brooklyn Streets Join/Joined toggles and the sidebar follows; space tags on items open their space |
+| Narrow list | Below 900 px the ☰ button opens the sidebar over the list; ×, Escape, an outside click, or choosing a space closes it; no horizontal overflow at 375 and 700 px |
+| Open and leave a board | Board grows out of its miniature; breadcrumb reads "POD 6"; going back shrinks it into the list and leaves no overlay styles behind |
+| Overview | Library board scene drops to about a third of its height; claims clamp to two lines; votes, menus, and Add slots hide; clicking "Sunday opening would require…" returns to Read focused on that card |
+| Zoom keys | − and + switch levels; Escape steps Read → Overview → list |
+| Presence | Two badges on the library board; top-bar face titles name the card; a "maya.chen writing a version…" cursor appeared within a few seconds; following samr_92 on the capstone board scrolls to and announces their card |
+| Share | Opens under the button and focuses the invite field; "te" suggests tess.b; inviting adds them with the chosen role; general access to "Anyone with the link" updates the pill and hint; unknown username explains itself; email invite shows "· invited"; on maya.chen's board general access is locked with a note; Escape and outside click close; Settings links to Share |
+| New steelman | Empty submit says "Write the question first."; typing clears it; "clearly" and "Why…" and a "Yes" option show hints; duplicate option names are refused with focus on the second; Escape keeps the draft; Personal changes the access line; creating opens the empty board focused on the first "Add an argument", and the list shows it with score 1, upvoted |
+| Browser errors | None in any flow |
+
+Known gaps: animations pause in background tabs (a fallback cleans up the list↔board overlay); inside the published, content-height frame, opening a board from far down the list can play part of the zoom off-screen before the page scrolls up. Presence and list details are illustrative and never change the board. Saved board edits from earlier versions were reset twice as sample data changed (votes kept).
+
+## November 9 — Design audit, batch A
+
+Checked by the coding agent on the decoded prototype at 1440 px after syncing.
+
+| Check | Observed result |
+| --- | --- |
+| Fonts | No visible text in a system font (option chips, meta rows, comments, and Share rows now use Libre Franklin) |
+| Italics | No visible italic text in the list, the board, or comments |
+| Dates | List: "2d ago" with the title "November 7, 2026"; board header "4d ago"; comments "3d ago" with the full date |
+| Type scale | Sizes in the stylesheet: 10 (initials only), 11, 12, 13, 14, 16, 20, 23 (wordmark), 24, 32 |
+| Typing | Within about 40 s a "•••" bubble appeared beside jordan_w's badge; its title reads "jordan_w is writing a version"; no cursor |
+| Contrast | "Add an argument" and "Add an option" use `--sm-muted`; the breadcrumb separator is #8a8a8a |
+| Small fixes | Share invite placeholder reads "Username or email"; the canvas reaches the bottom of the window on a short board; icons use a 1.75 stroke |
+| Browser errors | None |
+
+## November 9 — Design audit, batch B
+
+Checked by the coding agent on the decoded prototype at 1440 px, about 700 px, and 375 px.
+
+| Check | Observed result |
+| --- | --- |
+| Axes | "MORE IMPORTANT" runs in the canvas margin, left of the first panel. With "Sunday hours…" unfolded, the articulation key is a white pill strip. No holes in the hexagon texture |
+| Phone axes | At 375 px the first panel contains its cards (panel left 22 px, card left 78 px). "MORE IMPORTANT" is a pill above the first card. No horizontal overflow |
+| Elevation and corners | List items are flat with a hover lift. Headers carry a single small shadow. Radii in the stylesheet are 6, 10, and pill, plus 1.5–3 px in the miniatures |
+| List controls | The sort bar is text only. Upvoting "grade on a curve" fills the arrow and makes 897 bold |
+| Phone header | On a board: logo mark, POD 6 tag, Share icon, avatar. Back on the list the wordmark returns (the zoom marker is cleared on the list) |
+| Comments panel | At 1440 px the canvas runs under and beside the panel, with no white strip |
+| Browser errors | None |
+
+## November 9 — Design audit, batch C
+
+Checked by the coding agent on the decoded prototype at 1440 px and 1000 px.
+
+| Check | Observed result |
+| --- | --- |
+| List background | Plain gray, with no contours |
+| Miniatures | Campus Life sage, Brooklyn Streets slate, and POD 6 stone are distinguishable side by side (after raising the tints' saturation once) |
+| Sidebar swatches | A 14 px swatch beside each space tag. A flex rule first stretched them into bars; fixed |
+| Boards | Campus Life board on sage with linen hatching, Northwind board on cool gray with dots, library board on warm stone with contours |
+| Right rail | At 1440 px Home shows four "Needs your help" boards (standups first) and the Denver draft. Campus Life shows its card (sage banner, Public community, 12,406 members, Joined) and "Every option here has at least two arguments." Leaving and rejoining from the card updates the sidebar and keeps focus on the button |
+| Narrower | At 1000 px the rail is hidden and the Northwind card sits above the list. No horizontal overflow |
+| Browser errors | None |
+
+## November 9 — Phone axes
+
+At 375 px on the library board, with "Sunday hours…" unfolded: the option header reads "Open on Sundays / Most important first". No axis pills or arrows show. The row caption starts at "1 of 3 · best articulated" with the first dot filled. Scrolling the carousel to the second and third versions gives "2 of 3" and "3 of 3 · weakest", with one dot filled each time. No horizontal page overflow and no browser errors. At 1440 px the caption and subline are hidden, and both axes show as before.
+
+## November 9 — Second audit (batch D)
+
+Checked by the coding agent on the decoded prototype at 1440 px and 375 px.
+
+| Check | Observed result |
+| --- | --- |
+| Hover | Sort buttons, sidebar links, list items, and miniatures transition over 0.12 s (before: 17 of 20 sampled controls changed instantly) |
+| Panels | Share and the create sheet animate in with `sm-enter`; the create sheet stays centered |
+| Presence | Over 12 s: 3 badges re-inserted, 2 pop animations (before: every badge re-popped on every move, 6 in 9 s with two people) |
+| Outside click | With comments open, clicking an importance vote on another card closes the panel and the vote still counts |
+| Avatars | Board header: dark "KL" (your board). Comments: light "MC" and "JW". Share: your row dark "KL" |
+| Words | Board pill "Everyone in POD 6"; Share's options "Invited only", "Everyone in POD 6", "Anyone with the link"; hint "Everyone in POD 6 can read, comment, vote, and write."; Settings link "Sharing and access →"; rail "Keep five days · 1 argument" |
+| Concision | Board meta: author, date, pill (no space name). Miniatures show three blocks per option for every board. Discover is gone |
+| Titles | Comments title 16 px; Example board heading in tracked capitals |
+| Phone caption | At 375 px "↓ Most important first" sits below the option header, arrow centered over the votes (52 px vs 51 px) |
+| Browser errors | None |
+
+Known gap: panels close instantly; only their entrance animates.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
 - No claim of full screen-reader, cross-browser, or device coverage.
 - Standalone state persists in browser local storage when available; it does not sync with other users or devices. Fonts and icons need internet access.
-- Material revision history and shared collaboration are not implemented.
+- Material revision history and shared collaboration are not implemented. Presence, other viewers, spaces, and invitations are simulated.
 - The order-update control simulates a change; it does not validate an aggregation algorithm.
 
 ## Re-run manually
