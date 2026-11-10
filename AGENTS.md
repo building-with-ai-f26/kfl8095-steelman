@@ -5,7 +5,7 @@
 ## 1. Project Overview
 - **What this repo builds:** Steelman, a shared argument document for understanding the strongest case for each option. Build 1 is a static Product Page plus a supplied browser-local card prototype.
 - **Primary user & core workflow:** Pod 6 classmates are the initial reachable testers. Read the two cases, compare wording, inspect evidence, and suggest a better version. The class PRD is in `docs/index.html`; the original long-term vision is preserved in `docs/reference/steelman-prd-v0.4.md`.
-- **Tech stack:** Buildless HTML, CSS, and JavaScript. GitHub Pages serves `main:/docs`. No backend, API keys, package installation, or live AI calls.
+- **Tech stack:** Buildless HTML, CSS, and JavaScript. GitHub Pages serves `main:/docs`. No backend, private keys, package installation, or live AI calls. Usage analytics and session replay go to PostHog (US cloud) through `docs/analytics.js`, using PostHog's public project key; the prototype's frame posts action names to its page, which forwards them.
 - **Visual identity:** Design tokens live in `docs/design/tokens.css`; the specimen is `docs/design/index.html` and the identity brief is `docs/design/README.md`. After changing tokens or the prototype source, run `python3 scripts/sync-prototype.py`. The canvas contour tile comes from `python3 scripts/make-contours.py`.
 
 ## 2. Commands
