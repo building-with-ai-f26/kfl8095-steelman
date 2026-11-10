@@ -100,9 +100,9 @@
 
       <section class="spec" aria-labelledby="type-title">
         <div class="spec-head"><h2 id="type-title">Type</h2><span>Source Serif 4 · Libre Franklin</span></div>
-        <div class="type-sample"><span class="label">Question · serif 700</span><span style="font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px">Should our library open on Sundays?</span></div>
-        <div class="type-sample"><span class="label">Option · sans 600</span><span style="font-size:17px; font-weight:600; letter-spacing:-.3px">Open on Sundays</span></div>
-        <div class="type-sample"><span class="label">Claim · sans 400</span><span class="sm-claim">Sunday hours would give some weekday workers their only practical time to visit.</span></div>
+        <div class="type-sample"><span class="label">Question · serif 700</span><span style="font:700 32px/1.16 var(--sm-serif); letter-spacing:-.8px">Is open-weight AI a smart bet for China?</span></div>
+        <div class="type-sample"><span class="label">Option · sans 600</span><span style="font-size:17px; font-weight:600; letter-spacing:-.3px">Why it makes sense</span></div>
+        <div class="type-sample"><span class="label">Claim · sans 400</span><span class="sm-claim">If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.</span></div>
         <div class="type-sample"><span class="label">Axis · serif 300 italic</span><span class="sm-axis" style="justify-content:flex-start"><span class="sm-axis-label">best articulation</span></span></div>
         <div class="type-sample"><span class="label">Meta · sans 11</span><span style="font-size:11px; color:var(--sm-muted)">75% · 32 assessments</span></div>
       </section>
@@ -214,9 +214,9 @@
       {pct: 100, n: 18, label: '100%'}, {pct: 75, n: 4, label: 'Few assessments'}, {n: 0, label: 'Unreviewed'}
     ].map(c => `<div class="item"><span class="label">${c.label}</span>${cred(c)}</div>`).join('');
     document.getElementById('card-row').innerHTML = [
-      ['One version', 'A public library should be available on the day families can spend time together.', {n: 0}, 0, 0],
-      ['Two versions', 'Sunday study space could improve outcomes for students without a quiet place at home.', {pct: 33, n: 6}, 1, 1],
-      ['Three or more', 'Sunday hours would give some weekday workers their only practical time to visit.', {pct: 75, n: 32}, 3, 2]
+      ['One version', 'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', {pct: 58, n: 12}, 0, 0],
+      ['Two versions', 'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', {pct: 80, n: 20}, 1, 1],
+      ['Three or more', 'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', {pct: 70, n: 20}, 3, 2]
     ].map(([label, claim, c, edges, sources]) => `<div class="item"><span class="label">${label}</span>${card(claim, c, edges, sources)}</div>`).join('');
 
     // Credibility icon options.
@@ -246,20 +246,20 @@
 
     // AI contribution study.
     document.getElementById('ai-row').innerHTML = `
-      <div class="item"><span class="label">Suggested version</span><div class="sm-card-wrap demo-card" style="padding-right:0"><article class="sm-card ai-card"><span class="ai-tag">${icon('sparkle')}Suggested</span><div class="sm-claim-button" style="padding-top:10px"><span class="sm-claim">Sunday hours would give some weekday workers, about one in five survey respondents, their only practical time to visit.</span></div><div class="sm-card-meta"><span class="sm-cred"><span class="sm-evidence-symbol sm-unreviewed">${icon('files')}<span class="sm-stamp">${icon('circle-help')}</span></span><span class="sm-percentage">Unreviewed</span></span><div class="sm-card-tools"><span class="sm-source-button">${icon('x')}</span><span class="sm-source-button" style="color:var(--sm-ai-ink)">${icon('check')}</span></div></div></article></div></div>
-      <div class="item" style="max-width:420px"><span class="label">AI-written phrase inside human text</span><div class="sm-card"><div class="sm-claim-button"><span class="sm-claim">Opening on Sundays would help <span class="ai-mark">the roughly 22% of surveyed residents</span> who said Sunday was their only option.</span></div></div></div>`;
+      <div class="item"><span class="label">Suggested version</span><div class="sm-card-wrap demo-card" style="padding-right:0"><article class="sm-card ai-card"><span class="ai-tag">${icon('sparkle')}Suggested</span><div class="sm-claim-button" style="padding-top:10px"><span class="sm-claim">Open weights let Western companies run Chinese models on their own servers, the main thing regulators objected to in DeepSeek’s app.</span></div><div class="sm-card-meta"><span class="sm-cred"><span class="sm-evidence-symbol sm-unreviewed">${icon('files')}<span class="sm-stamp">${icon('circle-help')}</span></span><span class="sm-percentage">Unreviewed</span></span><div class="sm-card-tools"><span class="sm-source-button">${icon('x')}</span><span class="sm-source-button" style="color:var(--sm-ai-ink)">${icon('check')}</span></div></div></article></div></div>
+      <div class="item" style="max-width:420px"><span class="label">AI-written phrase inside human text</span><div class="sm-card"><div class="sm-claim-button"><span class="sm-claim">Open weights let Western companies use Chinese models <span class="ai-mark">without sending their data to servers in China</span>, which is what regulators objected to.</span></div></div></div>`;
 
     // Board study: one hex grid per column. Size = importance (per row), darkness = articulation (per version).
     const ideas = {
       open: [
-        {imp: 42, versions: [['Sunday hours would give some weekday workers their only practical time to visit.', 26, {pct: 75, n: 32}], ['Opening on Sundays would make the library accessible to everyone who works during the week.', 8, {pct: 0, n: 8}], ['For 18 surveyed residents, Sunday was the only day they reported being able to visit.', 4, {pct: 75, n: 4}]]},
-        {imp: 31, versions: [['Sunday study space could improve outcomes for students without a quiet place at home.', 12, {pct: 33, n: 6}]]},
-        {imp: 12, versions: [['A public library should be available on the day families can spend time together.', 7, {n: 0}]]}
+        {imp: 44, versions: [['If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', 24, {pct: 70, n: 20}], ['Without its own open models, China would be completely dependent on American AI.', 7, {pct: 10, n: 10}], ['Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', 5, {pct: 100, n: 4}]]},
+        {imp: 39, versions: [['A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', 19, {pct: 80, n: 20}]]},
+        {imp: 30, versions: [['China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', 10, {pct: 88, n: 17}]]}
       ],
       keep: [
-        {imp: 39, versions: [['Sunday opening would require additional staffing unless hours are reduced elsewhere.', 21, {pct: 50, n: 20}]]},
-        {imp: 25, versions: [['Improving evening hours may reach more residents for the same budget.', 5, {n: 0}]]},
-        {imp: 8, versions: [['Sunday opening would add one more day of building services each week.', 9, {pct: 100, n: 18}]]}
+        {imp: 41, versions: [['Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', 17, {pct: 80, n: 15}]]},
+        {imp: 33, versions: [['Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', 14, {pct: 87, n: 15}]]},
+        {imp: 12, versions: [['The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', 3, {n: 0}]]}
       ]
     };
     const face = (claim, c) => `<article class="sm-card"><div class="sm-claim-button"><span class="sm-claim">${claim}</span></div><div class="sm-card-meta">${cred(c)}<div class="sm-card-tools"><span class="sm-expand">${icon('chevron-down')}</span></div></div></article>`;
@@ -268,9 +268,9 @@
       if (idea.versions.length === 1) return `<section class="sm-idea" data-row="${id}" data-importance="${idea.imp}">${vote('v', 0, idea.imp)}<div class="sm-card-wrap">${stack(0)}<div data-art="${idea.versions[0][1]}">${face(idea.versions[0][0], idea.versions[0][2])}</div></div></section>`;
       return `<section class="sm-idea sm-open" data-row="${id}" data-importance="${idea.imp}"><div class="sm-track-axis">${axis('h', 'best articulation', 'weaker')}</div>${vote('v', 0, idea.imp)}<div class="sm-card-wrap"><div class="sm-track">${idea.versions.map(([claim, art, c]) => `<div data-art="${art}">${face(claim, c)}</div><div class="sm-version-vote">${vote('h', 0, art)}</div>`).join('')}</div></div></section>`;
     };
-    const column = option => `<section class="sm-column" data-option="${option}"><canvas aria-hidden="true"></canvas>${option === 'open' ? `<div class="col-axis">${axis('v', 'more important', 'less important')}</div>` : ''}<div class="sm-column-head"><h2>${option === 'open' ? 'Open on Sundays' : 'Keep current hours'}</h2></div>${ideas[option].map((idea, i) => row(idea, option, i)).join('')}</section>`;
+    const column = option => `<section class="sm-column" data-option="${option}"><canvas aria-hidden="true"></canvas>${option === 'open' ? `<div class="col-axis">${axis('v', 'more important', 'less important')}</div>` : ''}<div class="sm-column-head"><h2>${option === 'open' ? 'Why it makes sense' : 'Why it might not'}</h2></div>${ideas[option].map((idea, i) => row(idea, option, i)).join('')}</section>`;
     const study = document.getElementById('board-study');
-    study.innerHTML = `<header class="sm-head"><h1>Should our library open on Sundays?</h1></header><div class="sm-board" data-open="open">${column('open')}<div aria-hidden="true"></div>${column('keep')}</div>`;
+    study.innerHTML = `<header class="sm-head"><h1>Is open-weight AI a smart bet for China?</h1></header><div class="sm-board" data-open="open">${column('open')}<div aria-hidden="true"></div>${column('keep')}</div>`;
 
     const hexPath = (ctx, cx, cy, r) => { ctx.moveTo(cx + r * Math.cos(Math.PI / 6), cy + r * Math.sin(Math.PI / 6)); for (let k = 1; k <= 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a)); } };
     function drawHex() {

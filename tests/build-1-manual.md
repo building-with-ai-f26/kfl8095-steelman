@@ -459,7 +459,13 @@ The arguments came from desk research (November 10). Why it makes sense: indepen
 | Connector fix | With the first row unfolded and scrolled 214 px sideways, every wire runs from the spine to the row’s edge (none run backwards); before, the wire ran left to the off-screen first card |
 | Browser errors | None |
 
-Not updated: the design specimen (`docs/design/index.html`) and the Product Page screenshot (`docs/assets/prototype-board.jpg`) still show the library example.
+Follow-up the same day: the design specimen and the Product Page screenshot now show the open-weights example.
+
+| Check | Observed result |
+| --- | --- |
+| Specimen | Type samples, version-count samples, the AI-contribution study, and the board study use the open-weights question, options, and claims; no “library” or “Sunday” text remains; both hex canvases draw |
+| Screenshot | New `assets/prototype-board.jpg` (2160 × 1350, 474 KB), captured with headless Chrome at 1440 × 900 @1.5x with reduced motion: the board with the independence argument unfolded into three wordings |
+| Product Page | The new image loads (after a cache refresh) with updated alt text naming the open-weights debate |
 
 ## Limits
 
