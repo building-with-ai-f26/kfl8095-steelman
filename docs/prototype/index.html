@@ -2232,6 +2232,12 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-ai-glyph { display:inline-flex; align-items:center; gap:2px; flex:none; height:22px; padding:0 4px; border:0; border-radius:999px; background:transparent; color:var(--sm-ai); cursor:help; vertical-align:middle; }
   #steelman-study .sm-ai-glyph svg.lucide { width:14px; height:14px; }
   #steelman-study .sm-ai-glyph .sm-ai-dot { width:9px; height:9px; }
+  #steelman-study .sm-ai-busy svg { animation:sm-pulse 1s ease-in-out infinite alternate; }
+  @keyframes sm-pulse { from { opacity:.25; } to { opacity:1; } }
+  #steelman-study .sm-ai-run { display:inline-grid; place-items:center; width:24px; height:24px; margin-left:2px; padding:0; border:1px dotted var(--sm-ai); border-radius:50%; background:var(--sm-card); color:var(--sm-ai); vertical-align:middle; }
+  #steelman-study .sm-ai-run svg { width:13px; height:13px; }
+  #steelman-study .sm-ai-run:hover { background:var(--sm-ai-hover); }
+  #steelman-study .sm-ai-offer { font-size:11px; color:var(--sm-ai-ink); white-space:nowrap; }
   /* The robot stays ochre (it says who); the dot uses the evidence meter&#x27;s colors (it says what): green supports, gray partly, red doesn&#x27;t. Its fill carries the same meaning for colorblind readers. */
   #steelman-study .sm-ai-glyph[data-verdict=&quot;supports&quot;] .sm-ai-dot { color:var(--sm-cred-strong); }
   #steelman-study .sm-ai-glyph[data-verdict=&quot;partly&quot;] .sm-ai-dot { color:var(--sm-cred-mid); }
@@ -2861,7 +2867,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     &#x27;comment-add&#x27;:&#x27;view&#x27;,reply:&#x27;view&#x27;,&#x27;reply-add&#x27;:&#x27;view&#x27;,resolve:&#x27;view&#x27;,&#x27;delete-comment&#x27;:&#x27;view&#x27;,&#x27;report-source&#x27;:&#x27;view&#x27;,&#x27;unreport-source&#x27;:&#x27;view&#x27;,share:&#x27;view&#x27;,&#x27;open-share&#x27;:&#x27;view&#x27;,&#x27;create-open&#x27;:&#x27;view&#x27;,join:&#x27;view&#x27;,&#x27;request-access&#x27;:&#x27;view&#x27;,
     importance:&#x27;vote&#x27;,preference:&#x27;vote&#x27;,assess:&#x27;vote&#x27;,
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
-    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
+    &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
     settings:&#x27;owner&#x27;};
   const WHY = {view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
   const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
@@ -2924,7 +2930,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[];
+    for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
       &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
@@ -3100,9 +3107,48 @@ html&gt;body{padding:0}&lt;/style&gt;
   };
   const aiGlyph = (verdict,tip) =&gt; `&lt;span class=&quot;sm-ai-glyph&quot; data-verdict=&quot;${verdict}&quot; role=&quot;img&quot; tabindex=&quot;0&quot; aria-label=&quot;${escape(tip)}&quot; data-tooltip=&quot;${escape(tip)}&quot;&gt;${icon(&#x27;bot&#x27;)}${aiDot(verdict)}&lt;/span&gt;`;
   const aiCheckTip = c =&gt; `AI check: ${c.verdict===&#x27;none&#x27;?&#x27;no sources to check yet.&#x27;:AI_VERDICT[c.verdict]+&#x27; this wording.&#x27;} ${c.summary||&#x27;&#x27;}`.replace(/\s+/g,&#x27; &#x27;);
+  // AI evidence checks (simulated: no model runs). With checks on, new wordings and changed evidence are checked
+  // automatically, one credit each; anyone who can write can ask for a check from an opened card.
+  const checksOn = () =&gt; doc.question.rules.ai.check&amp;&amp;aiAllowed(doc.question.org,&#x27;check&#x27;);
+  const creditsLeft = () =&gt; (SPACE_AI[doc.question.org]?.credits||0)-(state.spent[doc.question.org]||0);
+  // Declared as functions so loading a board (useDoc, early in the script) can use them.
+  function evidenceSig(d,c) { return c.sources.map(s=&gt;s+(d.sources[s]?.unavailable?&#x27;!&#x27;:&#x27;&#x27;)).join(&#x27;,&#x27;); }
+  function pseudo(str) { let h=0; for(const ch of str) h=(h*31+ch.charCodeAt(0))|0; return [&#x27;supports&#x27;,&#x27;partly&#x27;,&#x27;doesnt&#x27;][Math.abs(h)%3]; }
+  function simulateCheck(d,cardId) {
+    const AI_NOTE={supports:&#x27;Backs the wording.&#x27;,partly:&#x27;Backs part of the wording.&#x27;,doesnt:&#x27;Doesn’t back the wording as put.&#x27;,unopened:&#x27;Couldn’t open it.&#x27;};
+    const c=d.cards[cardId],per={};
+    // A source it can&#x27;t reach: one already marked unavailable, or one with nowhere given to find it.
+    c.sources.forEach(sid=&gt;{const src=d.sources[sid],v=src?.unavailable||!src?.locator?.trim()?&#x27;unopened&#x27;:pseudo(cardId+sid+c.claim.length);per[sid]=[v,AI_NOTE[v]];});
+    const opened=Object.values(per).map(x=&gt;x[0]).filter(v=&gt;v!==&#x27;unopened&#x27;);
+    const verdict=!c.sources.length?&#x27;none&#x27;:!opened.length?&#x27;unopened&#x27;:opened.every(v=&gt;v===&#x27;supports&#x27;)?&#x27;supports&#x27;:opened.every(v=&gt;v===&#x27;doesnt&#x27;)?&#x27;doesnt&#x27;:&#x27;partly&#x27;;
+    return {verdict,summary:&#x27;&#x27;,sources:per,sig:evidenceSig(d,c),at:new Date(NOW).toISOString()};
+  }
+  function queueCheck(cardId) {
+    if(!checksOn()||creditsLeft()&lt;1||!cards[cardId]) return;
+    const org=doc.question.org,board=state.boardId;
+    state.spent[org]=(state.spent[org]||0)+1;cards[cardId].aiCheck={pending:true};
+    setTimeout(()=&gt;{
+      const d=docs[board],c=d?.cards[cardId];if(!c?.aiCheck?.pending) return;
+      c.aiCheck=simulateCheck(d,cardId);
+      if(state.boardId===board&amp;&amp;state.view===&#x27;board&#x27;){const k=document.activeElement?.dataset?.key;render(k);}
+      save();
+    },reducedMotion()?0:1200);
+  }
+  // After anything that can change evidence, re-check checked cards whose sources (or their availability) changed.
+  function refreshChecks() {
+    if(!checksOn()) return;
+    for(const [id,c] of Object.entries(cards)) if(c.aiCheck&amp;&amp;!c.aiCheck.pending){c.aiCheck.sig??=evidenceSig(doc,c);if(c.aiCheck.sig!==evidenceSig(doc,c))queueCheck(id);}
+  }
+  function aiEvidenceControls(cardId) {
+    const c=cards[cardId].aiCheck,canRun=checksOn()&amp;&amp;creditsLeft()&gt;0;
+    const glyph=!c?&#x27;&#x27;:c.pending?`&lt;span class=&quot;sm-ai-glyph sm-ai-busy&quot; role=&quot;img&quot; tabindex=&quot;0&quot; aria-label=&quot;AI is checking&quot; data-tooltip=&quot;AI is checking&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;/span&gt;`:aiGlyph(c.verdict,`${aiCheckTip(c)} ${c.limits||&#x27;&#x27;}`);
+    const run=canRun&amp;&amp;!c?.pending?`&lt;button type=&quot;button&quot; class=&quot;sm-ai-run cursor-interaction&quot; data-action=&quot;ai-recheck&quot; data-id=&quot;${cardId}&quot; data-key=&quot;ai-recheck-${cardId}&quot; aria-label=&quot;${c?&#x27;Check again with AI&#x27;:&#x27;Check with AI&#x27;}&quot; data-tooltip=&quot;${c?&#x27;Check again · 1 credit&#x27;:&#x27;Check with AI · 1 credit&#x27;}&quot;&gt;${icon(c?&#x27;refresh-cw&#x27;:&#x27;bot&#x27;)}&lt;/button&gt;`:&#x27;&#x27;;
+    return glyph+run;
+  }
   // In the footer, right after the people&#x27;s meter. Clicking it opens the card.
   function aiCheckMark(id) {
     const c=cards[id].aiCheck; if(!c) return &#x27;&#x27;;
+    if(c.pending) return `&lt;span class=&quot;sm-ai-glyph sm-ai-busy&quot; role=&quot;img&quot; tabindex=&quot;0&quot; aria-label=&quot;AI is checking&quot; data-tooltip=&quot;AI is checking&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;/span&gt;`;
     const tip=aiCheckTip(c);
     return `&lt;button type=&quot;button&quot; class=&quot;sm-ai-glyph cursor-interaction&quot; data-verdict=&quot;${c.verdict}&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;ai-check-${id}&quot; aria-label=&quot;${escape(tip)}&quot; data-tooltip=&quot;${escape(tip)}&quot;&gt;${icon(&#x27;bot&#x27;)}${aiDot(c.verdict)}&lt;/button&gt;`;
   }
@@ -3334,12 +3380,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       ].join(&#x27;&#x27;);
       const note=source.reportedBy===&#x27;you&#x27;?&#x27;You reported it can’t be opened.&#x27;:&#x27;&#x27;;
       const rows=[[&#x27;Backs up&#x27;,source.premise],[&#x27;Limit&#x27;,source.limit]].filter(([,v])=&gt;v).map(([k,v])=&gt;`&lt;dt&gt;${k}&lt;/dt&gt;&lt;dd&gt;${escape(v)}&lt;/dd&gt;`).join(&#x27;&#x27;);
-      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note?`&lt;p class=&quot;sm-source-note&quot;&gt;${note}&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
+      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?.[0]===&#x27;unopened&#x27;&amp;&amp;!source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-ai-offer cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;ai-unavailable-${key}&quot;&gt;Mark unavailable&lt;/button&gt;`:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note?`&lt;p class=&quot;sm-source-note&quot;&gt;${note}&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-add-source cursor-interaction&quot; data-action=&quot;add-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;add-source-${cardId}&quot;&gt;${icon(&#x27;plus&#x27;)}Add a source&lt;/button&gt;`;
     const changed=card.evidenceChanged?`&lt;p class=&quot;sm-evidence-changed&quot;&gt;${icon(&#x27;info&#x27;)}The evidence changed after some people assessed this wording.&lt;/p&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${changed}${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}${addControl}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Does the evidence back this wording?${card.aiCheck?aiGlyph(card.aiCheck.verdict,`${aiCheckTip(card.aiCheck)} ${card.aiCheck.limits||&#x27;&#x27;}`):&#x27;&#x27;}&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence back this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
+    return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${changed}${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}${addControl}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Does the evidence back this wording?${aiEvidenceControls(cardId)}&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence back this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
 
   // Question header and document settings.
@@ -4494,7 +4540,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const p=doc.pending.find(x=&gt;x.id===id),drop=()=&gt;{doc.pending=doc.pending.filter(x=&gt;x.id!==id);};
       if(action===&#x27;held-accept&#x27;&amp;&amp;p) {
         const card=p.kind===&#x27;idea&#x27;?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
-        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind===&#x27;idea&#x27;){i.by=p.by;i.at=p.at;}}
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind===&#x27;idea&#x27;){i.by=p.by;i.at=p.at;}queueCheck(card);}
         drop();focus=card?&#x27;claim-&#x27;+card:&#x27;review-next&#x27;;announce(&#x27;Accepted.&#x27;);
       }
       if(action===&#x27;held-decline&#x27;) {state.declining=id;state.declineDraft=&#x27;&#x27;;focus=&#x27;decline-reason&#x27;;}
@@ -4513,6 +4559,9 @@ html&gt;body{padding:0}&lt;/style&gt;
       render(focus);save();return;
     }
     if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
+    if(action===&#x27;ai-recheck&#x27;) {queueCheck(id);focus=&#x27;ai-recheck-&#x27;+id;announce(&#x27;Checking.&#x27;);}
+    if([&#x27;add&#x27;,&#x27;add-idea&#x27;].includes(action)&amp;&amp;state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;!cards[state.expanded].aiCheck) queueCheck(state.expanded);
+    refreshChecks();
     render(focus,motion);save();
     if(toast) voteToast(toast);
     if(revealAfter) reveal(revealAfter);

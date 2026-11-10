@@ -109,7 +109,7 @@ The board owner can turn each workflow off for their board but can't turn on any
 |---|---|---|
 | A0 | Ochre visual system + Steelman AI as a participant in the fixtures (one AI draft and one evidence check on the open-weights board) + specimen entry in `docs/design/` | — |
 | A1 | Space settings → AI panel with simulated credits and cost previews *(board-level toggles, costs, and credits built in “How it runs”; space admin panel not yet)* | P1 (roles) for "who can run" |
-| A2 | Evidence check on an expanded card | A0 |
+| A2 | Evidence check on an expanded card *(built Nov 10, simulated: automatic on new wordings and evidence changes, on request from an opened card, Mark unavailable offer, 1 credit each)* | A0 |
 | A3 | Draft: in the New steelman sheet and as "fill this side" | A0, A1 |
 | A4 | Duplicate check before posting + board audit as suggestions | A0 |
 | A5 | AI's take lens + Disagreements filter | A0 |

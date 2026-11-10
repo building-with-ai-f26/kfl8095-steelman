@@ -350,6 +350,12 @@
   #steelman-study .sm-ai-glyph { display:inline-flex; align-items:center; gap:2px; flex:none; height:22px; padding:0 4px; border:0; border-radius:999px; background:transparent; color:var(--sm-ai); cursor:help; vertical-align:middle; }
   #steelman-study .sm-ai-glyph svg.lucide { width:14px; height:14px; }
   #steelman-study .sm-ai-glyph .sm-ai-dot { width:9px; height:9px; }
+  #steelman-study .sm-ai-busy svg { animation:sm-pulse 1s ease-in-out infinite alternate; }
+  @keyframes sm-pulse { from { opacity:.25; } to { opacity:1; } }
+  #steelman-study .sm-ai-run { display:inline-grid; place-items:center; width:24px; height:24px; margin-left:2px; padding:0; border:1px dotted var(--sm-ai); border-radius:50%; background:var(--sm-card); color:var(--sm-ai); vertical-align:middle; }
+  #steelman-study .sm-ai-run svg { width:13px; height:13px; }
+  #steelman-study .sm-ai-run:hover { background:var(--sm-ai-hover); }
+  #steelman-study .sm-ai-offer { font-size:11px; color:var(--sm-ai-ink); white-space:nowrap; }
   /* The robot stays ochre (it says who); the dot uses the evidence meter's colors (it says what): green supports, gray partly, red doesn't. Its fill carries the same meaning for colorblind readers. */
   #steelman-study .sm-ai-glyph[data-verdict="supports"] .sm-ai-dot { color:var(--sm-cred-strong); }
   #steelman-study .sm-ai-glyph[data-verdict="partly"] .sm-ai-dot { color:var(--sm-cred-mid); }
@@ -979,7 +985,7 @@
     'comment-add':'view',reply:'view','reply-add':'view',resolve:'view','delete-comment':'view','report-source':'view','unreport-source':'view',share:'view','open-share':'view','create-open':'view',join:'view','request-access':'view',
     importance:'vote',preference:'vote',assess:'vote',
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
-    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
+    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     settings:'owner'};
   const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -1042,7 +1048,8 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[];
+    for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -1218,9 +1225,48 @@
   };
   const aiGlyph = (verdict,tip) => `<span class="sm-ai-glyph" data-verdict="${verdict}" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(verdict)}</span>`;
   const aiCheckTip = c => `AI check: ${c.verdict==='none'?'no sources to check yet.':AI_VERDICT[c.verdict]+' this wording.'} ${c.summary||''}`.replace(/\s+/g,' ');
+  // AI evidence checks (simulated: no model runs). With checks on, new wordings and changed evidence are checked
+  // automatically, one credit each; anyone who can write can ask for a check from an opened card.
+  const checksOn = () => doc.question.rules.ai.check&&aiAllowed(doc.question.org,'check');
+  const creditsLeft = () => (SPACE_AI[doc.question.org]?.credits||0)-(state.spent[doc.question.org]||0);
+  // Declared as functions so loading a board (useDoc, early in the script) can use them.
+  function evidenceSig(d,c) { return c.sources.map(s=>s+(d.sources[s]?.unavailable?'!':'')).join(','); }
+  function pseudo(str) { let h=0; for(const ch of str) h=(h*31+ch.charCodeAt(0))|0; return ['supports','partly','doesnt'][Math.abs(h)%3]; }
+  function simulateCheck(d,cardId) {
+    const AI_NOTE={supports:'Backs the wording.',partly:'Backs part of the wording.',doesnt:'Doesn’t back the wording as put.',unopened:'Couldn’t open it.'};
+    const c=d.cards[cardId],per={};
+    // A source it can't reach: one already marked unavailable, or one with nowhere given to find it.
+    c.sources.forEach(sid=>{const src=d.sources[sid],v=src?.unavailable||!src?.locator?.trim()?'unopened':pseudo(cardId+sid+c.claim.length);per[sid]=[v,AI_NOTE[v]];});
+    const opened=Object.values(per).map(x=>x[0]).filter(v=>v!=='unopened');
+    const verdict=!c.sources.length?'none':!opened.length?'unopened':opened.every(v=>v==='supports')?'supports':opened.every(v=>v==='doesnt')?'doesnt':'partly';
+    return {verdict,summary:'',sources:per,sig:evidenceSig(d,c),at:new Date(NOW).toISOString()};
+  }
+  function queueCheck(cardId) {
+    if(!checksOn()||creditsLeft()<1||!cards[cardId]) return;
+    const org=doc.question.org,board=state.boardId;
+    state.spent[org]=(state.spent[org]||0)+1;cards[cardId].aiCheck={pending:true};
+    setTimeout(()=>{
+      const d=docs[board],c=d?.cards[cardId];if(!c?.aiCheck?.pending) return;
+      c.aiCheck=simulateCheck(d,cardId);
+      if(state.boardId===board&&state.view==='board'){const k=document.activeElement?.dataset?.key;render(k);}
+      save();
+    },reducedMotion()?0:1200);
+  }
+  // After anything that can change evidence, re-check checked cards whose sources (or their availability) changed.
+  function refreshChecks() {
+    if(!checksOn()) return;
+    for(const [id,c] of Object.entries(cards)) if(c.aiCheck&&!c.aiCheck.pending){c.aiCheck.sig??=evidenceSig(doc,c);if(c.aiCheck.sig!==evidenceSig(doc,c))queueCheck(id);}
+  }
+  function aiEvidenceControls(cardId) {
+    const c=cards[cardId].aiCheck,canRun=checksOn()&&creditsLeft()>0;
+    const glyph=!c?'':c.pending?`<span class="sm-ai-glyph sm-ai-busy" role="img" tabindex="0" aria-label="AI is checking" data-tooltip="AI is checking">${icon('bot')}</span>`:aiGlyph(c.verdict,`${aiCheckTip(c)} ${c.limits||''}`);
+    const run=canRun&&!c?.pending?`<button type="button" class="sm-ai-run cursor-interaction" data-action="ai-recheck" data-id="${cardId}" data-key="ai-recheck-${cardId}" aria-label="${c?'Check again with AI':'Check with AI'}" data-tooltip="${c?'Check again · 1 credit':'Check with AI · 1 credit'}">${icon(c?'refresh-cw':'bot')}</button>`:'';
+    return glyph+run;
+  }
   // In the footer, right after the people's meter. Clicking it opens the card.
   function aiCheckMark(id) {
     const c=cards[id].aiCheck; if(!c) return '';
+    if(c.pending) return `<span class="sm-ai-glyph sm-ai-busy" role="img" tabindex="0" aria-label="AI is checking" data-tooltip="AI is checking">${icon('bot')}</span>`;
     const tip=aiCheckTip(c);
     return `<button type="button" class="sm-ai-glyph cursor-interaction" data-verdict="${c.verdict}" data-action="toggle" data-id="${id}" data-key="ai-check-${id}" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(c.verdict)}</button>`;
   }
@@ -1452,12 +1498,12 @@
       ].join('');
       const note=source.reportedBy==='you'?'You reported it can’t be opened.':'';
       const rows=[['Backs up',source.premise],['Limit',source.limit]].filter(([,v])=>v).map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('');
-      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]==='unopened'?'couldn’t be opened.':AI_VERDICT[card.aiCheck.sources[id][0]]+' the wording.'} ${card.aiCheck.sources[id][1]}`):''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}${card.aiCheck?.sources?.[id]?.[0]==='unopened'&&!source.unavailable?`<button type="button" class="sm-link-button sm-ai-offer cursor-interaction" data-action="report-source" ${ref} data-key="ai-unavailable-${key}">Mark unavailable</button>`:''}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]==='unopened'?'couldn’t be opened.':AI_VERDICT[card.aiCheck.sources[id][0]]+' the wording.'} ${card.aiCheck.sources[id][1]}`):''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
     }).join('');
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
     const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?${card.aiCheck?aiGlyph(card.aiCheck.verdict,`${aiCheckTip(card.aiCheck)} ${card.aiCheck.limits||''}`):''}</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?${aiEvidenceControls(cardId)}</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
@@ -2612,7 +2658,7 @@
       const p=doc.pending.find(x=>x.id===id),drop=()=>{doc.pending=doc.pending.filter(x=>x.id!==id);};
       if(action==='held-accept'&&p) {
         const card=p.kind==='idea'?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
-        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind==='idea'){i.by=p.by;i.at=p.at;}}
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind==='idea'){i.by=p.by;i.at=p.at;}queueCheck(card);}
         drop();focus=card?'claim-'+card:'review-next';announce('Accepted.');
       }
       if(action==='held-decline') {state.declining=id;state.declineDraft='';focus='decline-reason';}
@@ -2631,6 +2677,9 @@
       render(focus);save();return;
     }
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
+    if(action==='ai-recheck') {queueCheck(id);focus='ai-recheck-'+id;announce('Checking.');}
+    if(['add','add-idea'].includes(action)&&state.expanded&&cards[state.expanded]&&!cards[state.expanded].aiCheck) queueCheck(state.expanded);
+    refreshChecks();
     render(focus,motion);save();
     if(toast) voteToast(toast);
     if(revealAfter) reveal(revealAfter);

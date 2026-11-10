@@ -572,6 +572,19 @@ Share gains **can edit** (`RANK` contribute 3 → edit 4 → owner 5); Preview a
 
 Not built: holding new sources, "Ask for changes", per-option stewards.
 
+## November 10 — AI evidence checks run (AI plan, A2)
+
+Simulated checks: `simulateCheck` returns a verdict per source (unavailable or no location → couldn't open; otherwise a stable placeholder from the card and source ids) and an overall verdict; `queueCheck` spends one credit, shows a pulsing robot, and fills the result after 1.2 s (immediately with reduced motion). Each check stores the evidence it read (`sig`); after any action, `refreshChecks` re-checks cards whose evidence changed. New and accepted wordings are checked when they're added.
+
+| Check | Observed result |
+| --- | --- |
+| Report a source on "China controls AI where it's deployed" | Robot pulses, then the verdict changes (supports → partly); the reported source's row shows "couldn't open" |
+| Check again | The ochre button beside the evidence question re-runs it (pulse, then verdict) |
+| Add a source with no location (on "Releasing weights hands…") | Re-check; that row shows a dashed dot and **Mark unavailable**; clicking it marks the source Unavailable and checks again |
+| New argument | Pulses, then a dashed dot (no sources yet) |
+| Credits | POD 6: 480 → 477 after three checks |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
