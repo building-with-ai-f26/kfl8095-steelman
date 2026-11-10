@@ -68,11 +68,6 @@
     /* Credibility scale */
     .ramp { height:10px; width:min(520px,100%); border-radius:5px; background:linear-gradient(to right,var(--sm-cred-weak),var(--sm-cred-mid) 50%,var(--sm-cred-strong)); }
     .ramp-labels { display:flex; justify-content:space-between; width:min(520px,100%); font:italic 300 13px/1 var(--sm-serif); color:var(--sm-muted); margin-top:6px; text-transform:lowercase; }
-    /* AI suggestion: ochre plus a dotted treatment, never color alone */
-    #steelman-study .ai-card.sm-card { border:1.5px dashed var(--sm-ai); background-color:var(--sm-card); background-image:radial-gradient(circle,color-mix(in srgb,var(--sm-ai) 22%,transparent) .9px,transparent 1.2px); background-size:9px 9px; box-shadow:none; }
-    .ai-tag { display:inline-flex; align-items:center; gap:6px; margin:14px 18px 0; padding:2px 8px 2px 6px; border:1px dotted var(--sm-ai); border-radius:20px; color:var(--sm-ai-ink); font-size:11px; background:var(--sm-card); }
-    .ai-tag i, .ai-tag svg { width:13px; height:13px; color:var(--sm-ai); }
-    .ai-mark { text-decoration:underline dotted var(--sm-ai) 2px; text-underline-offset:4px; }
     @media(max-width:640px) {
       .page { padding:0 18px 48px; }
       .type-sample { grid-template-columns:1fr; gap:4px; }
@@ -155,8 +150,8 @@
       </section>
 
       <section class="spec" aria-labelledby="ai-title">
-        <div class="spec-head"><h2 id="ai-title">AI contribution</h2><span>Study · ochre + dotted</span></div>
-        <p class="note">Anything AI drafted or suggested uses ochre together with dotted lines, so it reads as a suggestion and never relies on color alone. Accepting it makes it an ordinary card with fresh votes.</p>
+        <div class="spec-head"><h2 id="ai-title">AI contribution</h2><span>In the prototype · robot + verdict dot, hover to explain</span></div>
+        <p class="note">Ochre always means “AI did this”, and it always comes with the robot icon, so color never carries the meaning alone. When AI checks are on, every card carries one, so it stays small and wordless: an ochre robot (who) and a dot in the meter’s colors (what): green and full supports, gray and half partly, red and empty doesn’t, dashed nothing to check. Hover for the explanation. AI never adds to people’s counts, and ochre is used for nothing else.</p>
         <div class="row" id="ai-row"></div>
       </section>
     </main>
@@ -244,10 +239,16 @@
     document.getElementById('icon-grid').innerHTML = `<div class="head">Option</div>${states.map(st => `<div class="head">${st.label}</div>`).join('')}` +
       options.map(([name, sub, draw]) => `<div class="opt"><strong>${name}</strong><span>${sub}</span></div>${states.map(st => `<div>${draw(st)}<span class="pct">${st.n ? st.pct + '%' : ''}</span></div>`).join('')}`).join('');
 
-    // AI contribution study.
+    // AI contribution: the prototype's own classes (sm-ai, sm-ai-tag, sm-ai-glyph). Hover a robot for its explanation.
+    // The verdict dot is colored and filled like the people's meter: green full = supports, gray half = partly, red empty = doesn't, dashed = nothing to check.
+    const aiClaim = 'Open release brings outside developers to Chinese models: they fine-tune them, test them, and build tools around them, and the labs can learn from that work for free.';
+    const dotShape = {supports: '<circle cx="5" cy="5" r="3.9" fill="currentColor" stroke="currentColor"/>', partly: '<circle cx="5" cy="5" r="3.9" fill="none" stroke="currentColor"/><path d="M5 1.1a3.9 3.9 0 0 0 0 7.8z" fill="currentColor"/>', doesnt: '<circle cx="5" cy="5" r="3.9" fill="none" stroke="currentColor"/>', none: '<circle cx="5" cy="5" r="3.9" fill="none" stroke="currentColor" stroke-dasharray="1.6 1.4"/>'};
+    const robot = (verdict, tip) => `<span class="sm-ai-glyph" data-verdict="${verdict}" role="img" tabindex="0" aria-label="${tip}" title="${tip}">${icon('bot')}<svg class="sm-ai-dot" viewBox="0 0 10 10" aria-hidden="true" stroke-width="1.3">${dotShape[verdict]}</svg></span>`;
+    const verdicts = [['supports', 'Supports', 80, 15], ['partly', 'Partly supports', 58, 12], ['doesnt', 'Doesn’t support', 30, 10], ['none', 'Nothing to check yet', null, 0]];
     document.getElementById('ai-row').innerHTML = `
-      <div class="item"><span class="label">Suggested version</span><div class="sm-card-wrap demo-card" style="padding-right:0"><article class="sm-card ai-card"><span class="ai-tag">${icon('sparkle')}Suggested</span><div class="sm-claim-button" style="padding-top:10px"><span class="sm-claim">Open weights let Western companies run Chinese models on their own servers, the main thing regulators objected to in DeepSeek’s app.</span></div><div class="sm-card-meta"><span class="sm-cred"><span class="sm-evidence-symbol sm-unreviewed">${icon('files')}<span class="sm-stamp">${icon('circle-help')}</span></span><span class="sm-percentage">Unreviewed</span></span><div class="sm-card-tools"><span class="sm-source-button">${icon('x')}</span><span class="sm-source-button" style="color:var(--sm-ai-ink)">${icon('check')}</span></div></div></article></div></div>
-      <div class="item" style="max-width:420px"><span class="label">AI-written phrase inside human text</span><div class="sm-card"><div class="sm-claim-button"><span class="sm-claim">Open weights let Western companies use Chinese models <span class="ai-mark">without sending their data to servers in China</span>, which is what regulators objected to.</span></div></div></div>`;
+      <div class="item" style="flex:0 1 280px"><span class="label">AI draft</span><div class="sm-card-wrap demo-card" style="padding-right:0"><article class="sm-card sm-ai"><span class="sm-ai-tag" title="Drafted by AI: a suggestion until people vote on it.">${icon('bot')}AI draft</span><div class="sm-claim-button"><span class="sm-claim">${aiClaim}</span></div><div class="sm-card-meta"><span class="sm-cred-group">${cred({pct: null, n: 0})}${robot('none', 'AI check: no sources to check yet.')}</span><div class="sm-card-tools"><span class="sm-expand">${icon('chevron-down')}</span></div></div></article></div></div>
+      <div class="item" style="flex:0 1 300px"><span class="label">AI check, right after the people’s meter</span><div class="sm-card" style="padding:4px 0">${verdicts.map(([v, label, pct, n]) => `<div class="sm-card-meta" style="border-top:0"><span class="sm-cred-group">${cred({pct, n})}${robot(v, 'AI check: ' + label.toLowerCase())}</span><span style="font-size:12px;color:var(--sm-muted)">${label}</span></div>`).join('')}</div></div>
+      <div class="item" style="flex:0 1 300px"><span class="label">On a source AI read</span><div class="sm-card"><div class="sm-evidence-group" style="border-top:0;border-radius:10px"><div class="sm-source-list"><div class="sm-source-row"><div style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px">${icon('file-text')}<span style="flex:1">“AI+” action plan</span>${robot('doesnt', 'AI: this source doesn’t support the wording.')}</div></div></div></div></div></div>`;
 
     // Board study: one hex grid per column. Size = importance (per row), darkness = articulation (per version).
     const ideas = {

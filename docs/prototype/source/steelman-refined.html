@@ -245,6 +245,7 @@
   #steelman-study .sm-card { container-type:inline-size; }
   @container (max-width:250px) { #steelman-study .sm-card-meta :is(.sm-count,.sm-unreviewed-copy) { display:none; } }
   @container (max-width:190px) { #steelman-study .sm-card-meta .sm-cred-copy { display:none; } }
+  #steelman-study .sm-byline { margin:-8px 0 0; padding:0 18px 10px; font:300 11px/1.3 var(--sm-sans); color:var(--sm-quiet); }
   #steelman-study .sm-card-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:4px 9px; border-top:1px solid var(--sm-line); min-height:39px; }
   #steelman-study .sm-card-tools { display:flex; align-items:center; gap:6px; flex:none; }
   #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:6px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
@@ -324,6 +325,22 @@
   #steelman-study .sm-button:hover { background:var(--sm-soft); }
   #steelman-study .sm-button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
   #steelman-study .sm-card-reveal { overflow:hidden; border-radius:0 0 10px 10px; }
+  /* AI: ochre plus a dotted edge on an AI draft, and an ochre robot wherever AI weighed in. Ochre means nothing else anywhere in the product. */
+  #steelman-study .sm-card.sm-ai { border:1.5px dotted var(--sm-ai); }
+  #steelman-study .sm-ai-tag { position:absolute; top:-10px; right:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px dotted var(--sm-ai); border-radius:999px; background:var(--sm-card); color:var(--sm-ai-ink); font:600 11px/1 var(--sm-sans); white-space:nowrap; box-shadow:0 0 0 2px var(--sm-card); cursor:help; }
+  #steelman-study .sm-ai-tag svg { width:13px; height:13px; color:var(--sm-ai); }
+  #steelman-study .sm-ai-glyph { display:inline-flex; align-items:center; gap:2px; flex:none; height:22px; padding:0 4px; border:0; border-radius:999px; background:transparent; color:var(--sm-ai); cursor:help; vertical-align:middle; }
+  #steelman-study .sm-ai-glyph svg.lucide { width:14px; height:14px; }
+  #steelman-study .sm-ai-glyph .sm-ai-dot { width:9px; height:9px; }
+  /* The robot stays ochre (it says who); the dot uses the evidence meter's colors (it says what): green supports, gray partly, red doesn't. Its fill carries the same meaning for colorblind readers. */
+  #steelman-study .sm-ai-glyph[data-verdict="supports"] .sm-ai-dot { color:var(--sm-cred-strong); }
+  #steelman-study .sm-ai-glyph[data-verdict="partly"] .sm-ai-dot { color:var(--sm-cred-mid); }
+  #steelman-study .sm-ai-glyph[data-verdict="doesnt"] .sm-ai-dot { color:var(--sm-cred-weak); }
+  #steelman-study .sm-ai-glyph[data-verdict="none"] .sm-ai-dot, #steelman-study .sm-ai-glyph[data-verdict="unopened"] .sm-ai-dot { color:var(--sm-quiet); }
+  #steelman-study .sm-ai-glyph:hover, #steelman-study .sm-ai-tag:hover { background:var(--sm-ai-hover); }
+  #steelman-study .sm-ai-glyph:focus-visible, #steelman-study .sm-ai-tag:focus-visible { outline:2px solid var(--sm-ai); outline-offset:1px; }
+  #steelman-study .sm-cred-group { display:inline-flex; align-items:center; gap:2px; min-width:0; }
+  #steelman-study .sm-evidence-vote h4 .sm-ai-glyph { margin-left:4px; }
   #steelman-study .sm-card-context { padding:17px 18px 19px; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font:600 11px/1.5 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
   #steelman-study .sm-brief { font-size:13px; line-height:1.65; color:var(--sm-muted); margin:0; }
@@ -470,6 +487,14 @@
   #steelman-study .sm-search:focus-within { border-color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-search svg { width:15px; height:15px; }
   #steelman-study .sm-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); color:var(--sm-ink); }
+  /* "Preview as": a prototype tool, so it gets a dashed outline rather than the product's own control style. */
+  #steelman-study .sm-persona { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 4px 0 10px; border:1px dashed var(--sm-wire); border-radius:6px; color:var(--sm-muted); font:600 10px/1 var(--sm-sans); letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+  #steelman-study .sm-persona select { border:0; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); letter-spacing:0; text-transform:none; cursor:pointer; }
+  #steelman-study .sm-meta-access .sm-link-button { color:#fff; font-size:inherit; text-decoration:underline; text-underline-offset:2px; }
+  /* Controls your role can't use: arrows and buttons fade; prompts to write in a row or add an option disappear. */
+  #steelman-study [data-blocked] { opacity:.38; cursor:not-allowed; }
+  #steelman-study .sm-add-card[data-action="compose"][data-blocked], #steelman-study .sm-add-option-col:has([data-blocked]) { display:none; }
+  #steelman-study .sm-comment-compose textarea:disabled { background:var(--sm-soft); cursor:not-allowed; }
   #steelman-study .sm-me { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 11px/1 var(--sm-sans); letter-spacing:.03em; }
   /* A space is always named the same way: its name in tracked capitals, in a rounded box. */
   #steelman-study .sm-tag { display:inline-flex; align-items:center; height:21px; padding:1px 7px 0; flex:none; border:1px solid var(--sm-ink); border-radius:6px; background:#fff; color:var(--sm-ink); font:600 11px/1 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; white-space:nowrap; }
@@ -485,6 +510,8 @@
   #steelman-study .sm-side :focus-visible { outline-color:#fff; }
   #steelman-study .sm-side h2 { margin:16px 10px 7px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
   #steelman-study .sm-side-link { display:flex; align-items:center; gap:10px; width:100%; min-height:36px; padding:6px 10px; border:0; border-radius:6px; background:transparent; color:#fff; font-size:13px; text-align:left; }
+  #steelman-study .sm-side-box .sm-side-link { gap:8px; padding:6px 8px; }
+  #steelman-study .sm-side-box { display:flex; flex-direction:column; gap:2px; padding:4px; border:1px solid #ffffff1f; border-radius:10px; background:#ffffff0a; }
   #steelman-study .sm-side-link:hover { background:#ffffff1a; }
   #steelman-study .sm-side .sm-tag { background:transparent; border-color:#ffffffb3; color:#fff; }
   #steelman-study .sm-side-link[aria-current="true"] { background:#fff; color:var(--sm-ink); }
@@ -527,10 +554,10 @@
   #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
   #steelman-study .sm-post:hover .sm-thumb { transform:translateY(-2px); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
-  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font-size:12px; }
-  #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:var(--sm-soft); font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-ink); color:#fff; font:600 12px/1.3 var(--sm-serif); }
+  #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:#ffffff26; color:#fff; font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
   /* Dashed, as on the board: an option with fewer than two arguments is an invitation. */
-  #steelman-study .sm-post-options li.sm-thin { border-style:dashed; border-color:#9a9a9a; }
+  #steelman-study .sm-post-options li.sm-thin { border:1px dashed #ffffffa6; box-shadow:0 0 0 1px var(--sm-ink); }
   #steelman-study .sm-post-foot { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:13px; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-post-foot > span { display:inline-flex; align-items:center; gap:5px; }
   #steelman-study .sm-post-foot svg { width:14px; height:14px; stroke-width:1.75; }
@@ -593,6 +620,9 @@
     #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
+    #steelman-study .sm-persona { padding-left:6px; }
+    #steelman-study .sm-persona span { display:none; }
+    #steelman-study .sm-persona select { max-width:84px; }
     #steelman-study:is([data-zoom="read"],[data-zoom="case"]) .sm-wordmark-text { display:none; }
   }
 
@@ -648,6 +678,39 @@
   #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:#666; font-size:13px; }
   #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-create-add svg { width:15px; height:15px; }
+  /* How it runs: the mode, its two settings, editors, votes, AI, and a closing date. */
+  #steelman-study .sm-rules { display:grid; gap:10px; font-size:12px; }
+  #steelman-study .sm-seg { display:inline-flex; flex-wrap:wrap; justify-self:start; gap:2px; padding:3px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-panel); }
+  #steelman-study .sm-pill { display:inline-flex; align-items:center; gap:5px; min-height:28px; padding:4px 10px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-pill:hover { color:var(--sm-ink); border-color:var(--sm-wire); }
+  #steelman-study .sm-seg .sm-pill { border-color:transparent; border-radius:6px; background:transparent; }
+  #steelman-study .sm-pill[aria-pressed="true"] { background:var(--sm-ink); border-color:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-pill[aria-disabled="true"] { opacity:.45; cursor:not-allowed; }
+  #steelman-study .sm-pill svg { width:14px; height:14px; }
+  #steelman-study .sm-pill small { font-weight:400; opacity:.7; }
+  #steelman-study .sm-pill[data-action="rule-ai"] svg { color:var(--sm-ai); }
+  #steelman-study .sm-rule-row { display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:10px; }
+  #steelman-study .sm-rule-row > span { font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-rule-row > span small { display:block; font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-rule-row select, #steelman-study .sm-rule-row input { justify-self:start; max-width:100%; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
+  #steelman-study .sm-pills { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-rule-none { color:var(--sm-muted); }
+  #steelman-study .sm-drawer .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; }
+  @media(max-width:560px) { #steelman-study .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; } }
+  #steelman-study .sm-create-rules { display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-create-rules-toggle { display:flex; align-items:center; gap:6px; padding:0; border:0; background:none; font:600 13px var(--sm-sans); color:var(--sm-ink); text-align:left; }
+  #steelman-study .sm-create-rules-toggle svg { width:15px; height:15px; }
+  #steelman-study .sm-create-rules-toggle span { margin-left:6px; font-weight:400; color:var(--sm-muted); }
+  #steelman-study button.sm-meta-pill { background:transparent; cursor:pointer; }
+  #steelman-study button.sm-meta-pill:hover { border-color:#ffffff8c; color:#fff; }
+  #steelman-study .sm-meta-pill svg { width:13px; height:13px; }
+  /* Votes or AI checks a board's rules switch off. */
+  /* The importance lane keeps its width (the grid depends on it); only its contents go. */
+  #steelman-study[data-off~="importance"] .sm-vote[data-axis="v"], #steelman-study[data-off~="importance"] .sm-col-vaxis { visibility:hidden !important; }
+  #steelman-study[data-off~="importance"] .sm-col-axis { display:none !important; }
+  #steelman-study[data-off~="articulation"] .sm-vote[data-axis="h"], #steelman-study[data-off~="articulation"] .sm-track-axis { display:none !important; }
+  #steelman-study[data-off~="evidence"] .sm-cred, #steelman-study[data-off~="evidence"] .sm-evidence-group, #steelman-study[data-off~="evidence"] .sm-card-meta .sm-ai-glyph, #steelman-study[data-off~="evidence"] .sm-card-tools > .sm-source-button[role="img"] { display:none !important; }
+  #steelman-study[data-off~="aicheck"] .sm-ai-glyph { display:none !important; }
   #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
   #steelman-study .sm-create-where { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; }
   #steelman-study .sm-create-where label { font-weight:600; }
@@ -765,20 +828,23 @@
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
-    independence: {at:'2026-11-05T15:00:00Z', brief:'The case is about dependence: whoever makes the best open models decides what everyone else builds on, and can stop.', idea:'independence', claim:'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', yes:14, no:6, pref:24, sources:['openaiblock','metaclosed'], explanation:'A US provider has already cut China off, and the supply of American open weights depends on US companies’ choices. Whether China would refuse good American weights today is the contested part.'},
-    independenceBold: {at:'2026-11-06T11:00:00Z', brief:'China has strong closed models too; “completely dependent” goes past the evidence.', idea:'independence', claim:'Without its own open models, China would be completely dependent on American AI.', yes:1, no:9, pref:7, sources:['openaiblock'], explanation:'Easy to read, but overstated: Chinese labs also build closed models, and the sources show a risk of dependence, not total dependence.'},
-    independenceNarrow: {at:'2026-11-08T19:30:00Z', brief:'This sticks to what happened and leaves the reader to draw the conclusion.', idea:'independence', claim:'Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', yes:4, no:0, pref:5, sources:['llamachina','openaiblock'], explanation:'Precise about the record. It doesn’t claim what China would do now.'},
-    trust: {at:'2026-11-05T15:20:00Z', brief:'A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.', idea:'trust', claim:'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', yes:16, no:4, pref:19, sources:['deepseekbans','clouds','airbnb'], explanation:'Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.'},
-    trustDomain: {at:'2026-11-06T16:00:00Z', brief:'The concern is where data goes and which country’s law governs it, not the domain name.', idea:'trust', claim:'Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.', yes:3, no:7, pref:6, sources:['deepseekbans'], explanation:'The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.'},
-    control: {at:'2026-11-07T10:00:00Z', brief:'China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.', idea:'control', claim:'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', yes:15, no:2, pref:10, sources:['genaimeasures','cacfilings'], explanation:'Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.'},
-    influence: {at:'2026-11-06T12:00:00Z', brief:'Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.', idea:'influence', claim:'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', yes:7, no:5, pref:8, sources:['haibrief','aiplus','downloads'], explanation:'Adoption is well documented; whether it turns into lasting influence is a judgment.'},
-    trustDup: {at:'2026-11-09T08:30:00Z', idea:'trustDup', claim:'Nobody abroad will trust a Chinese AI service, but they’ll happily download free weights.', yes:0, no:0, pref:1, sources:[], explanation:'Another way to put the trust argument, written before its author saw that row.'},
-    revenue: {at:'2026-11-05T16:00:00Z', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
-    revenueBlunt: {at:'2026-11-07T09:00:00Z', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
-    backlash: {at:'2026-11-06T14:00:00Z', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
-    stripped: {at:'2026-11-09T10:00:00Z', brief:'China’s rules govern services offered at home. Once weights are out, anyone can retrain them, and that includes removing what the rules require.', idea:'stripped', claim:'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', yes:9, no:2, pref:6, sources:['r1776','finetune','genaimeasures'], explanation:'The direct answer to “China controls AI where it’s deployed”: that control covers services inside China, not copies of the weights elsewhere. Whether China cares about copies abroad is the open question.'},
-    rivals: {at:'2026-11-08T09:00:00Z', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
-    reversal: {at:'2026-11-07T12:00:00Z', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], explanation:'A forecast, not a fact. It can still matter to the decision.'}
+    independence: {at:'2026-11-05T15:00:00Z', by:'maya.chen', brief:'The case is about dependence: whoever makes the best open models decides what everyone else builds on, and can stop.', idea:'independence', claim:'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', yes:14, no:6, pref:24, sources:['openaiblock','metaclosed'], aiCheck:{verdict: "partly", summary: "The sources show a US provider can cut China off and that Meta may stop releasing its best models. They show the risk of dependence, not that China’s own releases remove it."}, explanation:'A US provider has already cut China off, and the supply of American open weights depends on US companies’ choices. Whether China would refuse good American weights today is the contested part.'},
+    independenceBold: {at:'2026-11-06T11:00:00Z', by:'omar_h', brief:'China has strong closed models too; “completely dependent” goes past the evidence.', idea:'independence', claim:'Without its own open models, China would be completely dependent on American AI.', yes:1, no:9, pref:7, sources:['openaiblock'], aiCheck:{verdict: "doesnt", summary: "One cut-off service doesn’t show complete dependence, and Chinese labs also build closed models."}, explanation:'Easy to read, but overstated: Chinese labs also build closed models, and the sources show a risk of dependence, not total dependence.'},
+    independenceNarrow: {at:'2026-11-08T19:30:00Z', by:'priya_s', brief:'This sticks to what happened and leaves the reader to draw the conclusion.', idea:'independence', claim:'Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.', yes:4, no:0, pref:5, sources:['llamachina','openaiblock'], aiCheck:{verdict: "supports", summary: "Both events are in the sources as described."}, explanation:'Precise about the record. It doesn’t claim what China would do now.'},
+    trust: {at:'2026-11-05T15:20:00Z', by:'jordan_w', brief:'A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.', idea:'trust', claim:'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', yes:16, no:4, pref:19, sources:['deepseekbans','clouds','airbnb'], aiCheck:{verdict: "supports", summary: "The sources show limits on DeepSeek’s app, and Western clouds and companies running Chinese weights themselves."}, explanation:'Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.'},
+    trustDomain: {at:'2026-11-06T16:00:00Z', by:'tess.b', brief:'The concern is where data goes and which country’s law governs it, not the domain name.', idea:'trust', claim:'Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.', yes:3, no:7, pref:6, sources:['deepseekbans'], aiCheck:{verdict: "doesnt", summary: "The concern in the source is where data goes and which law applies, not the .cn address."}, explanation:'The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.'},
+    control: {at:'2026-11-07T10:00:00Z', by:'lin.zhao', brief:'China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.', idea:'control', claim:'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', yes:15, no:2, pref:10, sources:['genaimeasures','cacfilings'], aiCheck:{verdict: "supports", summary: "The rules cover public services, and the filing counts show services pass through the regulator."}, explanation:'Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.'},
+    influence: {at:'2026-11-06T12:00:00Z', by:'maya.chen', brief:'Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.', idea:'influence', claim:'Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.', yes:7, no:5, pref:8, sources:['haibrief','aiplus','downloads'], aiCheck:{verdict:'partly',at:'2026-11-08T20:00:00Z',summary:'The sources show that Chinese open models are widely built on. None shows that this gives China influence over tools or norms.',sources:{haibrief:['supports','Says Chinese open models have caught up in capability and adoption.'],aiplus:['doesnt','Shows the state wants international influence, not that it has it.'],downloads:['unopened','The attachment couldn’t be opened.']},limits:'Read the source summaries on this board, not the full documents. “Influence over norms” is hard to measure, so a person may reasonably read the sources differently.'}, explanation:'Adoption is well documented; whether it turns into lasting influence is a judgment.'},
+    // by is the author's username (or 'you' for yours). by:'ai' marks an AI draft. It starts like any new argument: no votes, unreviewed, no sources. ai says how it was drafted.
+    community: {at:'2026-11-09T08:00:00Z', by:'ai', idea:'community', claim:'Open release brings outside developers to Chinese models: they fine-tune them, test them, and build tools around them, and the labs can learn from that work for free.', yes:0, no:0, pref:0, sources:[], aiCheck:{verdict: "none", summary: "An AI draft with no sources yet."}, brief:'A missing argument for this side: open weights as a way to recruit help, not only to spread influence.',
+      ai:{basis:'Drafted from the question and the arguments already on this side, as a reason none of them makes.',limits:'Not checked against any source. Evidence to look for: how many fine-tuned versions of Qwen and DeepSeek are published, and whether the labs have adopted outside improvements.'}},
+    trustDup: {at:'2026-11-09T08:30:00Z', by:'dev_oka17', idea:'trustDup', claim:'Nobody abroad will trust a Chinese AI service, but they’ll happily download free weights.', yes:0, no:0, pref:1, sources:[], aiCheck:{verdict: "none", summary: "Once it has a source, AI can check it."}, explanation:'Another way to put the trust argument, written before its author saw that row.'},
+    revenue: {at:'2026-11-05T16:00:00Z', by:'priya_s', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], aiCheck:{verdict: "supports", summary: "US clouds serve DeepSeek’s models, and the labs’ filings show large losses."}, explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
+    revenueBlunt: {at:'2026-11-07T09:00:00Z', by:'omar_h', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], aiCheck:{verdict: "partly", summary: "DeepSeek says serving its own open models could pay well, so “no money” holds only for the weights themselves."}, explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
+    backlash: {at:'2026-11-06T14:00:00Z', by:'jordan_w', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], aiCheck:{verdict: "supports", summary: "A US evaluation treats DeepSeek’s models as risky, and a bill would bar them from federal use. The bill isn’t law yet."}, explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
+    stripped: {at:'2026-11-09T10:00:00Z', by:'samr_92', brief:'China’s rules govern services offered at home. Once weights are out, anyone can retrain them, and that includes removing what the rules require.', idea:'stripped', claim:'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', yes:9, no:2, pref:6, sources:['r1776','finetune','genaimeasures'], aiCheck:{verdict: "supports", summary: "Perplexity retrained R1 to remove censorship, and research shows safeguards can be fine-tuned away."}, explanation:'The direct answer to “China controls AI where it’s deployed”: that control covers services inside China, not copies of the weights elsewhere. Whether China cares about copies abroad is the open question.'},
+    rivals: {at:'2026-11-08T09:00:00Z', by:'tess.b', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], aiCheck:{verdict: "partly", summary: "The example is an American model used by China’s military: it shows the mechanism, not China’s own case."}, explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
+    reversal: {at:'2026-11-07T12:00:00Z', by:'lin.zhao', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], aiCheck:{verdict: "partly", summary: "A forecast: it backs “may not last”, not that the strategy will end."}, explanation:'A forecast, not a fact. It can still matter to the decision.'}
   };
   // Sources point to public documents and reporting. Findings are summarized, not quoted; votes and assessments are illustrative.
   const seedSources = {
@@ -808,6 +874,7 @@
     {id:'control',option:'sense',score:30,versions:['control']},
     {id:'influence',option:'sense',score:16,versions:['influence']},
     {id:'trustDup',option:'sense',score:3,versions:['trustDup']},
+    {id:'community',option:'sense',score:0,versions:['community']},
     {id:'revenue',option:'not',score:41,versions:['revenue','revenueBlunt']},
     {id:'backlash',option:'not',score:33,versions:['backlash']},
     {id:'stripped',option:'not',score:28,versions:['stripped']},
@@ -845,6 +912,16 @@
     {id:'worklab',name:'Future of Work',kind:'public',canvas:'lilac',members:8290,about:'How teams work and organize'}
   ];
   const spaceOf = id => SPACES.find(s=>s.id===id) || SPACES[2];
+  // How a board runs. A mode is a preset of two settings: whether new arguments publish right away, and who can change the structure.
+  const MODES = {team:{label:'Open team',glyph:'users',publish:'now',structure:'writers'},edited:{label:'Edited',glyph:'user-check',publish:'review',structure:'editors'},public:{label:'Public',glyph:'globe',publish:'now',structure:'editors'}};
+  const JUDGMENTS = {importance:['arrow-up-down','Importance'],articulation:['arrow-left-right','Articulation'],evidence:['file-check','Evidence']};
+  // Each space allows some AI features and holds the credits they spend (simulated).
+  const SPACE_AI = {pod6:{credits:480,allow:['draft','check','dupes']},northwind:{credits:2000,allow:['draft','check','dupes']},none:{credits:50,allow:['draft','check','dupes']},brooklyn:{credits:1200,allow:['check']},campus:{credits:0,allow:[]},worklab:{credits:800,allow:['check','dupes']}};
+  const AI_FEATURES = {draft:['Draft arguments','20 credits'],check:['Check evidence','1 per card'],dupes:['Flag duplicates','5 per run']};
+  const aiAllowed = (spaceId,feature) => (SPACE_AI[spaceId]?.allow||[]).includes(feature);
+  function defaultRules(spaceId) { const m=MODES[spaceOf(spaceId).kind==='public'?'public':'team']; return {publish:m.publish,structure:m.structure,editors:[],judgments:{importance:true,articulation:true,evidence:true},ai:{draft:false,check:aiAllowed(spaceId,'check'),dupes:false},closes:''}; }
+  const modeOf = r => Object.keys(MODES).find(k=>MODES[k].publish===r.publish&&MODES[k].structure===r.structure)||'custom';
+  const shortDate = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
   // People you could invite, by space. Anyone else can be invited by email.
   const PEOPLE = {
     pod6:['maya.chen','jordan_w','priya_s','samr_92','tess.b','omar_h','lin.zhao','dev_oka17'],
@@ -853,6 +930,18 @@
     brooklyn:['dev_oka17','ana.lu','rtorres','kwame_b'],campus:['samr_92','bwells','kt_nguyen'],worklab:['alexkim.dev','june.o']
   };
   const ME = 'kieran_lamee';
+  // Roles build on each other. Signed out can only read.
+  const RANK = {out:0,view:1,vote:2,contribute:3,owner:4};
+  const PERSONAS = {you:'Your access',owner:'Owner',contribute:'Contributor',vote:'Voter',view:'Viewer',out:'Signed out'};
+  // What each action needs. Anything not listed (reading, folding, highlighting, opening comments) is open to everyone.
+  const NEEDS = {
+    'comment-add':'view',reply:'view','reply-add':'view',resolve:'view','delete-comment':'view','report-source':'view','unreport-source':'view',share:'view','open-share':'view','create-open':'view',join:'view','request-access':'view',
+    importance:'vote',preference:'vote',assess:'vote',
+    compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
+    'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
+    settings:'owner'};
+  const WHY = {view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
+  const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',owner:'You own this board.'};
   const swatch = s => `<span class="sm-swatch" data-canvas="${s.canvas}" aria-hidden="true"></span>`;
   const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
@@ -903,7 +992,7 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -923,7 +1012,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:'you',requested:{},spent:{}});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -947,13 +1036,14 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 5) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===5 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 8) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===8 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
-    for (const key of ['lens','hiddenCols','joined']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
+    if (PERSONAS[saved.persona]) state.persona=saved.persona;
+    for (const key of ['lens','hiddenCols','joined','requested','spent']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
     useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version>=3) {
@@ -967,7 +1057,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:5,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,docs,docsVersion:8,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -1020,9 +1110,14 @@
   const ideaOf = id => ideas.find(i=>i.id===id);
   // Who may reorganize arguments. The board owner and a version's author combine or separate it directly;
   // anyone else who can contribute suggests it, and the owner or author decides. Viewers and voters can't.
-  function myRole() { const q=doc.question; if(q.author===ME) return 'owner'; return q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole); }
-  const canMove = id => myRole()==='owner'||cards[id]?.by==='you';
-  const canSuggest = () => myRole()==='contribute';
+  // Your access through Share. "Preview as" in the top bar (a prototype tool) can stand in for it, so testers can try each role.
+  function realRole() { const q=doc.question; if(q.author===ME) return 'owner'; return q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole); }
+  function myRole() { return state.persona==='you'?realRole():state.persona; }
+  const can = level => level==='structure'?canStructure():RANK[myRole()]>=RANK[level];
+  // The board's rules say who changes its structure: anyone who can write, its editors, or only the owner.
+  function canStructure() { const r=doc.question.rules; if(myRole()==='owner') return true; if(!can('contribute')) return false; return r.structure==='writers'||(r.structure==='editors'&&state.persona==='you'&&r.editors.includes(ME)); }
+  const canMove = id => can('contribute')&&(canStructure()||cards[id]?.by==='you');
+  const canSuggest = () => can('contribute')&&!canStructure();
   const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
   function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote==='yes'?1:0), no=(card.no||0)+(vote==='no'?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
 
@@ -1059,6 +1154,24 @@
     const aria=s.n?`${s.pct}% supported as worded; ${s.yes} of ${s.n} assessments${s.n<5?'; few assessments':''}`:'Unreviewed; no assessments';
     return `<span class="sm-cred" role="img" aria-label="${aria}" title="${aria}"><span class="sm-meter">${meter(s)}</span><span class="sm-cred-copy"><span class="sm-percentage ${s.n?'':'sm-unreviewed-copy'}">${s.n?s.pct+'%':'Unreviewed'}</span>${s.n?`<span class="sm-count ${s.n<5?'sm-few':''}">· ${s.n}${s.n<5?' · few':''}</span>`:''}</span></span>`;
   }
+  // AI: an ochre robot inside the existing components, with the explanation on hover (tap on touch screens).
+  // Ochre means nothing else, and AI never adds to people's counts.
+  // AI's verdict is a small dot beside the ochre robot, colored and filled like the people's meter: full = supports, half = partly,
+  // empty = doesn't, dashed = nothing it could check. When AI checks are on, every card has one, so it stays small and wordless.
+  const AI_VERDICT = {supports:'supports',partly:'partly supports',doesnt:'doesn’t support',unopened:'couldn’t open',none:'has no sources to check for'};
+  const aiDot = verdict => {
+    const c='cx="5" cy="5" r="3.9"';
+    const shape={supports:`<circle ${c} fill="currentColor" stroke="currentColor"/>`,partly:`<circle ${c} fill="none" stroke="currentColor"/><path d="M5 1.1a3.9 3.9 0 0 0 0 7.8z" fill="currentColor"/>`,doesnt:`<circle ${c} fill="none" stroke="currentColor"/>`}[verdict]||`<circle ${c} fill="none" stroke="currentColor" stroke-dasharray="1.6 1.4"/>`;
+    return `<svg class="sm-ai-dot" viewBox="0 0 10 10" aria-hidden="true" stroke-width="1.3">${shape}</svg>`;
+  };
+  const aiGlyph = (verdict,tip) => `<span class="sm-ai-glyph" data-verdict="${verdict}" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(verdict)}</span>`;
+  const aiCheckTip = c => `AI check: ${c.verdict==='none'?'no sources to check yet.':AI_VERDICT[c.verdict]+' this wording.'} ${c.summary||''}`.replace(/\s+/g,' ');
+  // In the footer, right after the people's meter. Clicking it opens the card.
+  function aiCheckMark(id) {
+    const c=cards[id].aiCheck; if(!c) return '';
+    const tip=aiCheckTip(c);
+    return `<button type="button" class="sm-ai-glyph cursor-interaction" data-verdict="${c.verdict}" data-action="toggle" data-id="${id}" data-key="ai-check-${id}" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}${aiDot(c.verdict)}</button>`;
+  }
   // Source count: information only, and absent when there are none.
   function sourceCount(id) { const n=cards[id].sources.length; if(!n) return ''; const label=`${n} ${n===1?'source':'sources'}`; return `<span class="sm-source-button" role="img" aria-label="${label}" title="${label}">${icon('paperclip')} ${n}</span>`; }
   function cardMeta(id) {
@@ -1066,15 +1179,19 @@
     const idea=ideaOf(cards[id].idea),others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
     // The merge handle: drag it onto another argument in the same option (or click it to pick one).
     const direct=canMove(id),handle=others&&(direct||canSuggest())?`<button type="button" class="sm-source-button sm-merge-handle cursor-interaction" draggable="true" data-drag="${id}" data-action="move-card" data-id="${id}" data-key="merge-${id}" aria-label="${direct?'Combine with another argument':'Suggest combining with another argument'}" data-tooltip="${direct?'Drag onto the argument it repeats':'Drag to suggest combining'}">${icon('merge')}</button>`:'';
-    return `${credibility(id)}<div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    return `<span class="sm-cred-group">${credibility(id)}${aiCheckMark(id)}</span><div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
+  // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
+  const byline = id => { const by=cards[id].by; return by&&by!=='ai'?`<p class="sm-byline">${by==='you'?'you':escape(by)}</p>`:''; };
   // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark='', lit=false) {
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
     const menuOpen=state.menu===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}">${mark}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:'';
+    const ai=cards[id].by==='ai'?`<span class="sm-ai-tag" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}AI draft</span>`:'';
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''} ${ai?'sm-ai':''}" data-card="${id}">${mark}${ai}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button>${byline(id)}<div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
@@ -1094,11 +1211,15 @@
     }
     const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
-    if(!mine&&myRole()==='owner') return `<p class="sm-menu-note">Written by another contributor. Only they can edit or delete it. As the board’s owner, you can combine or separate it.</p>`
+    if(card.by==='ai') return `<p class="sm-menu-note">Drafted by AI.</p>`
+      +item('revise-card','pen-line','Write a better version')
+      +(myRole()==='owner'?item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)+item('delete-card','trash-2','Remove this AI draft'):'');
+    const author=`<p class="sm-menu-note">Written by ${escape(card.by||'another contributor')}.</p>`;
+    if(!mine&&canStructure()) return author
       +item('revise-card','pen-line','Suggest a revised version')
       +item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)
       +(last?'':item('split-card','split','Make it a separate argument'));
-    if(!mine) return `<p class="sm-menu-note">Written by another contributor. Only they can edit, move, or delete it.</p>`+item('revise-card','pen-line','Suggest a revised version')
+    if(!mine) return author+item('revise-card','pen-line','Suggest a revised version')
       +(canSuggest()&&others?item('move-card','merge','Suggest combining with another argument','The owner or the author decides.'):'');
     return `<p class="sm-menu-note">You wrote this version.</p>`
       +item('edit-card','pencil','Edit wording and context')
@@ -1261,12 +1382,12 @@
       ].join('');
       const note=source.reportedBy==='you'?'You reported it can’t be opened.':'';
       const rows=[['Backs up',source.premise],['Limit',source.limit]].filter(([,v])=>v).map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('');
-      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
+      return `<details class="sm-source-row" data-source-key="${key}" ${state.openSources?.[key]?'open':''}><summary class="cursor-interaction" data-key="src-${key}">${icon('file-text')}<span>${escape(source.name)}${mine?'<span class="sm-you-tag">You</span>':''}</span>${source.unavailable?'<span class="sm-source-note">Unavailable</span>':''}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]==='unopened'?'couldn’t be opened.':AI_VERDICT[card.aiCheck.sources[id][0]]+' the wording.'} ${card.aiCheck.sources[id][1]}`):''}<i data-lucide="chevron-right" class="sm-chevron" aria-hidden="true"></i></summary><div class="sm-source-packet">${source.locator?`<span class="sm-source-note">${escape(source.locator)}</span>`:''}<p>${escape(source.finding)}</p>${rows?`<dl>${rows}</dl>`:''}${note?`<p class="sm-source-note">${note}</p>`:''}<div class="sm-source-actions">${actions}</div></div></details>`;
     }).join('');
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
     const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
-    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
+    return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?${card.aiCheck?aiGlyph(card.aiCheck.verdict,`${aiCheckTip(card.aiCheck)} ${card.aiCheck.limits||''}`):''}</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
   // Question header and document settings.
@@ -1282,8 +1403,53 @@
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
       +`<li class="sm-meta-author"><span class="sm-meta-avatar${q.author===ME?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
       +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></li>`
-      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li></ul>`
+      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li>`
+      +`<li class="sm-meta-rules">${rulesChip()}</li>`
+      +`<li class="sm-meta-access">${escape(YOU_CAN[myRole()])}${accessAsk()}</li></ul>`
       +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
+  }
+  function rulesChip() {
+    const q=doc.question,r=q.rules,m=modeOf(r),inner=icon(m==='custom'?'sliders-horizontal':MODES[m].glyph)+escape(rulesLabel(r))+(r.closes?` · Closes ${shortDate(r.closes)}`:'');
+    return myRole()==='owner'?`<button type="button" class="sm-meta-pill sm-rules-chip cursor-interaction" data-action="settings" data-key="rules-chip" aria-label="How it runs: ${escape(rulesLabel(r))}. Change in Settings">${inner}</button>`:`<span class="sm-meta-pill">${inner}</span>`;
+  }
+  // Below "can contribute", offer the next step: sign in, or ask the owner for more access.
+  function accessAsk() {
+    const role=myRole();
+    if(role==='out') return ` <button type="button" class="sm-link-button cursor-interaction" data-action="sign-in" data-key="access-sign-in">Sign in</button>`;
+    if(RANK[role]>=RANK.contribute) return '';
+    return state.requested[state.boardId]?' <span>· Access requested.</span>':` <button type="button" class="sm-link-button cursor-interaction" data-action="request-access" data-key="request-access">Request access</button>`;
+  }
+  // "How it runs": the same controls when creating a board and in its Settings.
+  function rulesMarkup(r,spaceId,scope) {
+    const k=scope+'-rule',mode=modeOf(r),left=(SPACE_AI[spaceId]?.credits||0)-(state.spent[spaceId]||0);
+    const pill=(action,id,on,glyph,label,extra='',off='')=>`<button type="button" class="sm-pill cursor-interaction" data-action="${action}" data-id="${escape(id)}" data-key="${k}-${escape(id)}" aria-pressed="${on}" ${off?`aria-disabled="true" data-tooltip="${escape(off)}"`:''}>${glyph?icon(glyph):''}<span>${label}</span>${extra}</button>`;
+    const sel=(rule,label,opts)=>`<label class="sm-rule-row"><span>${label}</span><select data-rule="${rule}" data-key="${k}-${rule}">${Object.entries(opts).map(([v,l])=>`<option value="${v}" ${r[rule]===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
+    const row=(label,body)=>`<div class="sm-rule-row"><span>${label}</span><div class="sm-pills">${body}</div></div>`;
+    const editors=r.publish==='review'||r.structure==='editors'?row('Editors',(PEOPLE[spaceId]||[]).map(u=>pill('rule-editor',u,r.editors.includes(u),'',escape(u))).join('')||'<span class="sm-rule-none">Invite people first</span>'):'';
+    return `<div class="sm-rules"><div class="sm-seg" role="group" aria-label="Mode">${Object.entries(MODES).map(([id,m])=>pill('rule-mode',id,mode===id,m.glyph,m.label)).join('')}</div>`
+      +sel('publish','New arguments',{now:'Publish right away',review:'Editors review first'})
+      +sel('structure','Reorganizing',{writers:'Anyone who can write',editors:'Editors',owner:'Only the owner'})
+      +editors
+      +row('Votes',Object.entries(JUDGMENTS).map(([id,[g,l]])=>pill('rule-judgment',id,r.judgments[id],g,l)).join(''))
+      +row(`AI <small>${left} credits</small>`,Object.entries(AI_FEATURES).map(([id,[l,cost]])=>{const ok=aiAllowed(spaceId,id);return pill('rule-ai',id,ok&&r.ai[id],'bot',l,`<small>${cost}</small>`,ok?'':`Off in ${spaceOf(spaceId).name}`);}).join(''))
+      +`<label class="sm-rule-row"><span>Closes</span><input type="date" data-rule="closes" data-key="${k}-closes" value="${escape(r.closes||'')}" min="2026-11-09"></label></div>`;
+  }
+  function rulesLabel(r) { const m=modeOf(r); return m==='custom'?'Custom rules':MODES[m].label; }
+  function rulesSummary(r,spaceId) {
+    const ai=Object.keys(AI_FEATURES).filter(f=>r.ai[f]&&aiAllowed(spaceId,f)).map(f=>({draft:'drafts',check:'checks',dupes:'duplicates'})[f]);
+    return [rulesLabel(r),ai.length?`AI ${ai.join(', ')}`:'',r.closes?`Closes ${shortDate(r.closes)}`:''].filter(Boolean).join(' · ');
+  }
+  // Which rules the board applies, in one place: what's hidden, and the target the controls change.
+  function rulesTarget() { return state.view==='home'&&state.creating?{r:state.createDraft.rules,space:state.createDraft.space,create:true}:{r:doc.question.rules,space:doc.question.org,create:false}; }
+  function applyRule(action,id,value,key) {
+    const t=rulesTarget(),r=t.r; if(!r) return;
+    if(action==='rule-mode') Object.assign(r,{publish:MODES[id].publish,structure:MODES[id].structure});
+    if(action==='rule-judgment') r.judgments[id]=!r.judgments[id];
+    if(action==='rule-ai') r.ai[id]=!r.ai[id];
+    if(action==='rule-editor') r.editors=r.editors.includes(id)?r.editors.filter(u=>u!==id):[...r.editors,id];
+    if(action==='rule-set') r[id]=value;
+    if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
+    save();
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {
     return `<label class="sm-choice"><input type="radio" name="${name}" value="${value}" data-key="${name}-${value}" ${value===current?'checked':''} ${disabled?'disabled':''}>${glyph?icon(glyph):'<span></span>'}<span>${label}</span>${hint?`<small>${hint}</small>`:''}</label>`;
@@ -1301,6 +1467,7 @@
     const q=doc.question;
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
       +select('org',ORGS,q.org,'Space')
+      +`<section class="sm-drawer-section" aria-labelledby="sm-rules-title"><h3 id="sm-rules-title">How it runs</h3>${rulesMarkup(q.rules,q.org,'board')}</section>`
       +`<div class="sm-field"><button type="button" class="sm-text-button cursor-interaction" data-action="open-share" data-key="open-share">${icon('user-plus')}Sharing and access →</button></div>`
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
@@ -1491,7 +1658,8 @@
   function undoDelete() {
     const snap=JSON.parse(state.undo.snapshot),{card,idea,focus}=state.undo;
     clearTimeout(undoTimer);state.undo=null;
-    useDoc(snap.doc);
+    // The list and saves read docs[], so the restored board replaces the entry there too.
+    useDoc(snap.doc);docs[state.boardId]=doc;
     for(const key of ['importance','preference','assessments','openSources']) state[key]=snap[key];
     if(focus) return focus;
     const face=state.open===idea||ordered(ideaOf(idea))[0]===card;
@@ -1686,8 +1854,8 @@
   function sidebar() {
     const count=id=>Object.values(docs).filter(d=>d.question.org===id).length;
     const link=(id,label,n='')=>`<button type="button" class="sm-side-link cursor-interaction" data-action="space" data-id="${id}" data-key="side-${id}" aria-current="${state.space===id}">${label}${n!==''?`<span class="sm-side-count">${n}</span>`:''}</button>`;
-    const group=(title,list)=>`<h2>${title}</h2>`+list.map(s=>link(s.id,swatch(s)+spaceTag(s),count(s.id))).join('');
-    return `<nav class="sm-side" id="sm-side" aria-label="Spaces">${link('all',icon('house')+'<span>Home</span>')}`
+    const group=(title,list)=>list.length?`<h2>${title}</h2><div class="sm-side-box">${list.map(s=>link(s.id,swatch(s)+spaceTag(s),count(s.id))).join('')}</div>`:'';
+    return `<nav class="sm-side" id="sm-side" aria-label="Spaces"><div class="sm-side-box">${link('all',icon('house')+'<span>Home</span>')}</div>`
       +group('Your spaces',SPACES.filter(s=>s.kind==='private'))
       +group('Communities',SPACES.filter(s=>s.kind==='public'&&state.joined[s.id]))
       +`</nav>`;
@@ -1720,7 +1888,8 @@
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
   function renderSite() {
-    const me=`<span class="sm-me" title="kieran_lamee (you)">KL</span>`;
+    const persona=`<label class="sm-persona" data-tooltip="Prototype tool: try the board with another role"><span>Preview as</span><select id="sm-persona" data-key="persona" aria-label="Preview as (prototype tool)">${Object.entries(PERSONAS).map(([v,l])=>`<option value="${v}" ${v===state.persona?'selected':''}>${l}${v==='you'&&state.view==='board'?` (${realRole()==='owner'?'owner':ROLES[realRole()]})`:''}</option>`).join('')}</select></label>`;
+    const me=persona+(state.persona==='out'?`<button type="button" class="sm-button cursor-interaction" data-action="sign-in" data-key="sign-in">Sign in</button>`:`<span class="sm-me" title="kieran_lamee (you)">KL</span>`);
     let middle='',tools='',menu='';
     if(state.view==='board') {
       const s=spaceOf(doc.question.org);
@@ -1759,6 +1928,7 @@
       +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
       +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
       +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))}</p></div>`
+      +`<div class="sm-create-rules"><button type="button" class="sm-create-rules-toggle cursor-interaction" data-action="create-rules" data-key="create-rules" aria-expanded="${!!d.rulesOpen}">${icon(d.rulesOpen?'chevron-down':'chevron-right')}How it runs<span>${escape(rulesSummary(d.rules,d.space))}</span></button>${d.rulesOpen?rulesMarkup(d.rules,d.space,'create'):''}</div>`
       +`<div class="sm-create-actions">${state.createError?`<span class="sm-create-error" role="alert">${escape(state.createError)}</span>`:''}<button type="button" class="sm-link-button cursor-interaction" data-action="create-close" data-key="create-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="create-submit" data-key="create-submit">Create steelman</button></div></div>`;
   }
   const createEl=root.querySelector('.sm-create'),scrimEl=root.querySelector('.sm-create-scrim');
@@ -1780,6 +1950,11 @@
     }
     const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
+    const rules=structuredClone(d.rules||defaultRules(d.space)),nd=docs[id];nd.question.rules=rules;
+    if(rules.ai.draft&&aiAllowed(d.space,'draft')) {
+      nd.options.forEach((o,oi)=>{const idea=`${id}-ai${oi}`,card=idea+'v';nd.ideas.push({id:idea,option:o.id,score:0,versions:[card]});nd.cards[card]={at:new Date(NOW).toISOString(),by:'ai',idea,claim:`AI draft: the strongest reason for “${o.name}”.`,yes:0,no:0,pref:0,sources:[],explanation:'',ai:{basis:'Drafted from the question and this option.',limits:'Simulated: no model ran.'},...(rules.ai.check&&aiAllowed(d.space,'check')?{aiCheck:{verdict:'none',summary:''}}:{})};});
+      state.spent[d.space]=(state.spent[d.space]||0)+20;
+    }
     const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError='';state.createDraft={q:'',options:['',''],space:null};
     leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);
@@ -1794,7 +1969,7 @@
   const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write'};
   // Initials from a username's words, ignoring numbers: maya.chen → MC, samr_92 → SA.
   const userInitials = u => { const words=u.split(/[\s_.@]+/).filter(w=>/^[a-z]/i.test(w)); return (words.length>1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
-  const roleSelect = (id,current,attrs='',disabled=false) => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
+  const roleSelect = (id,current,attrs='',disabled=false,upTo='owner') => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).filter(([v])=>RANK[v]<=RANK[upTo]).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
   function shareSuggestions() {
     const q=doc.question,typed=state.shareQuery.trim().toLowerCase();
     if(!typed) return '';
@@ -1805,13 +1980,13 @@
       +(email?`<li><button type="button" class="cursor-interaction" data-action="share-invite" data-id="${escape(typed)}" data-key="suggest-email">${icon('mail')}Invite ${escape(typed)} by email</button></li>`:'');
   }
   function shareMarkup() {
-    const q=doc.question,owner=q.author===ME,space=spaceOf(q.org),personal=q.org==='none';
+    const q=doc.question,owner=myRole()==='owner',space=spaceOf(q.org),personal=q.org==='none';
     const person=(user,right,{pending=false,you=false}={})=>`<li class="sm-person"><span class="sm-avatar ${pending?'sm-pending':''} ${you?'sm-you':''}" aria-hidden="true">${pending?icon('mail'):escape(userInitials(user))}</span><span>${escape(user)}${you?' <small>(you)</small>':''}${pending?' <small>· invited</small>':''}</span>${right}</li>`;
     const others=q.people.map(p=>person(p.user,owner
       ?roleSelect(p.user,p.role,`data-share-person="${escape(p.user)}" data-key="role-${escape(p.user)}"`)+`<button type="button" class="sm-person-remove cursor-interaction" data-action="share-remove" data-id="${escape(p.user)}" data-key="remove-${escape(p.user)}" aria-label="Remove ${escape(p.user)}" data-tooltip="Remove">${icon('x')}</button>`
       :`<span class="sm-person-role">${ROLES[p.role]}</span>`,{pending:p.user.includes('@'),you:p.user===ME})).join('');
     // You always appear: as the owner, or with the access you have through the space or the link.
-    const youRole=q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole);
+    const youRole=myRole()==='owner'?'contribute':myRole();
     const people=person(q.author,`<span class="sm-person-role">Owner</span>`,{you:owner})+(owner||q.people.some(p=>p.user===ME)?'':person(ME,`<span class="sm-person-role">${ROLES[youRole]}</span>`,{you:true}))+others;
     const general=Object.fromEntries(['private','org','link'].map(v=>[v,[visIcon(v),visLabel(v,v==='org'?space.id:'')]]));
     const accessIcon=general[q.visibility]?.[0]||'lock';
@@ -1820,7 +1995,7 @@
     const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
     const link=`steelman.example/s/${state.boardId}`;
     return `<header><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></header>`
-      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',state.shareRole,'id="sm-share-role" data-key="share-role"')}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
+      +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',RANK[state.shareRole]>RANK[myRole()]?myRole():state.shareRole,'id="sm-share-role" data-key="share-role"',false,myRole())}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
       +`<section aria-labelledby="sm-people-title"><h3 id="sm-people-title">People with access</h3><ul class="sm-people">${people}</ul></section>`
       +`<section aria-labelledby="sm-general-title"><h3 id="sm-general-title">General access</h3><div class="sm-person"><span class="sm-avatar sm-access" aria-hidden="true">${icon(accessIcon)}</span><span>${generalSelect}</span>${q.visibility==='private'?'':roleSelect('general',q.accessRole,'id="sm-share-access-role" data-key="share-access-role"',!owner)}</div><p class="sm-access-hint">${escape(accessHint)}</p>${ownerNote}</section></div>`
       +`<footer><input type="text" readonly value="${link}" aria-label="Link to this steelman" data-key="share-link">${button('share-copy',icon(state.copied==='yes'?'check':'link')+(state.copied==='yes'?' Copied':' Copy link'),'data-key="share-copy"')}</footer>`;
@@ -1901,16 +2076,18 @@
     else render();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-submit']);
+  const HOME_ACTIONS=new Set(['space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
       const d=state.createDraft;if(!d.space) d.space=state.space!=='all'&&(spaceOf(state.space).kind==='private'||state.joined[state.space])?state.space:'pod6';
+      if(!d.rules) d.rules=defaultRules(d.space);
       state.creating=true;state.navOpen=false;renderSite();renderCreate('create-q');root.scrollIntoView({block:'start'});announce('New steelman: write the question, then name the options.');return;
     }
     if(action==='create-close') {state.creating=false;state.createError='';renderCreate();root.querySelector('[data-key="create-open"]')?.focus();announce('Closed. Your draft is kept.');return;}
     if(action==='create-add-option') {const d=state.createDraft;if(d.options.length<MAX_OPTIONS)d.options.push('');renderCreate('create-opt-'+(d.options.length-1));return;}
     if(action==='create-remove-option') {const d=state.createDraft;d.options.splice(Number(id),1);renderCreate('create-opt-'+Math.min(Number(id),d.options.length-1));return;}
+    if(action==='create-rules') {const d=state.createDraft;d.rulesOpen=!d.rulesOpen;renderCreate('create-rules');return;}
     if(action==='create-submit') {createSubmit();return;}
     if(action==='nav-toggle') {state.navOpen=!state.navOpen;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(state.navOpen?'.sm-side-link[aria-current="true"]':'[data-key="nav-toggle"]')?.focus();return;}
     state.navOpen=false;
@@ -1932,7 +2109,28 @@
     root.querySelector(`[data-key="${trigger.dataset.key}"]`)?.focus({preventScroll:true});
   }
 
+  // After anything renders, controls your role can't use are marked unavailable, with the reason as their tooltip.
+  function applyAccess() {
+    root.dataset.role=myRole();
+    for(const el of root.querySelectorAll('[data-action]')) {
+      const need=NEEDS[el.dataset.action],blocked=need&&!can(need);
+      if(blocked&&!el.dataset.blocked) {const why=need==='structure'&&doc.question.rules.structure==='owner'?'Owner only.':WHY[need];el.dataset.blocked=why;el.dataset.tipWas=el.dataset.tooltip||'';el.dataset.tooltip=why;el.setAttribute('aria-disabled','true');el.removeAttribute('draggable');}
+      else if(!blocked&&el.dataset.blocked) {delete el.dataset.blocked;if(el.dataset.tipWas)el.dataset.tooltip=el.dataset.tipWas;else delete el.dataset.tooltip;delete el.dataset.tipWas;el.removeAttribute('aria-disabled');}
+    }
+    for(const t of root.querySelectorAll('#sm-comment,#sm-reply')) {t.disabled=!can('view');if(!can('view'))t.placeholder='Sign in to comment';}
+  }
+  new MutationObserver(applyAccess).observe(root,{childList:true,subtree:true});
+  // Switching role closes anything the new role couldn't have opened.
+  function setPersona(value) {
+    state.persona=PERSONAS[value]?value:'you';
+    Object.assign(state,{composing:false,composingIdea:null,editing:null,moving:null,sourceForm:null,menu:null,share:state.share&&can('view'),creating:state.creating&&can('view')});
+    if(state.drawer==='settings'&&!can('owner')) state.drawer=null;
+    renderView();applyAccess();save();
+    announce(`Previewing as ${PERSONAS[state.persona].toLowerCase()}. ${state.view==='board'?YOU_CAN[myRole()]:''}`);
+  }
   function render(focusKey, kind='') {
+    const rules=doc.question.rules;
+    root.dataset.off=[...Object.keys(JUDGMENTS).filter(j=>!rules.judgments[j]),...(rules.ai.check&&aiAllowed(doc.question.org,'check')?[]:['aicheck'])].join(' ');
     root.dataset.zoom=state.view==='board'?state.zoom:'';
     surfaceEl.dataset.canvas=spaceOf(doc.question.org).canvas;
     renderSite();renderShare();
@@ -2055,7 +2253,9 @@
   root.addEventListener('change',event=>{
     const el=event.target,q=doc.question;
     if(el.id==='sm-share-role') {state.shareRole=el.value;return;}
-    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('.sm-create-canvas').dataset.canvas=spaceOf(el.value).canvas;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value);return;}
+    if(el.id==='sm-persona') {setPersona(el.value);root.querySelector('#sm-persona')?.focus();return;}
+    if(el.id==='sm-create-space') {const d=state.createDraft;d.space=el.value;if(!d.rulesTouched)d.rules=defaultRules(el.value);else d.rules.editors=d.rules.editors.filter(u=>(PEOPLE[el.value]||[]).includes(u));renderCreate('create-space');return;}
+    if(el.dataset.rule) {applyRule('rule-set',el.dataset.rule,el.value,el.dataset.key);return;}
     if(el.dataset.sharePerson) {const p=q.people.find(x=>x.user===el.dataset.sharePerson);if(p){p.role=el.value;announce(`${p.user} ${ROLES[p.role]}.`);}}
     else if(el.id==='sm-share-general') {q.visibility=el.value;announce(el.selectedOptions[0].textContent+'.');}
     else if(el.id==='sm-share-access-role') {q.accessRole=el.value;announce(`General access: ${ROLES[el.value]}.`);}
@@ -2089,6 +2289,10 @@
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
+    if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
+    if(action==='sign-in'){setPersona('you');announce('Signed in (simulated).');return;}
+    if(action==='request-access'){state.requested[state.boardId]=true;renderHead();save();root.querySelector('[data-key="settings"]')?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
