@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://us-assets.i.posthog.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data: https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2.00 -7.65 59.95 59.95' color='%23242424'%3E%3Cpolygon points='10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75' fill='currentColor'/%3E%3Cpolygon points='33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter' stroke-linecap='butt' pathLength='18' stroke-dasharray='.5 .5' stroke-dashoffset='.25'/%3E%3C/svg%3E">
 <title>Steelman — Core Cards Prototype</title>
 <style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
 
+<script src="../analytics.js"></script>
 </head>
 <body>
-<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Steelman — Core Cards Prototype" data-srcdoc="&lt;!doctype html&gt;
+<iframe id="codex-visualization" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer" title="Steelman — Core Cards Prototype" data-srcdoc="&lt;!doctype html&gt;
 &lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
 &lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
@@ -2637,6 +2638,9 @@ html&gt;body{padding:0}&lt;/style&gt;
   const icon = name =&gt; `&lt;i data-lucide=&quot;${name}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;`;
   const escape = text =&gt; String(text).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[c]));
   const EASE = &#x27;cubic-bezier(.2,.7,.2,1)&#x27;; // matches --sm-ease
+  // Analytics: tell the page around the prototype which action was taken (names and ids only, never anything typed).
+  // That page forwards it to PostHog (docs/analytics.js); opened on its own, this does nothing.
+  const report = (event, props={}) =&gt; { try { if (window.parent!==window) window.parent.postMessage({type:&#x27;steelman-analytics&#x27;,event,props},&#x27;*&#x27;); } catch {} };
   // Motion speeds come from the tokens (--sm-fast / --sm-medium / --sm-slow).
   const motion = name =&gt; parseFloat(getComputedStyle(document.getElementById(&#x27;steelman-study&#x27;)).getPropertyValue(&#x27;--sm-&#x27;+name))||{fast:120,medium:200,slow:420}[name];
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
@@ -3965,6 +3969,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;,revealAfter=null;
+    report(action,{board:state.boardId,view:state.view,id:id||&#x27;&#x27;,value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||&#x27;&#x27;});
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)!==&#x27;true&#x27;||action===&#x27;browse&#x27;)homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.querySelector(&#x27;small&#x27;)?.textContent||&#x27;Not available.&#x27;);return;}
     if(action===&#x27;card-menu&#x27;) {
@@ -4294,6 +4299,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(!dragCard)return;
     const t=event.target.closest?.(&#x27;.sm-drop-target&#x27;);if(!t)return;
     event.preventDefault();const card=dragCard,split=t.classList.contains(&#x27;sm-drop-split&#x27;);endDrag();
+    report(split?&#x27;drag-separate&#x27;:&#x27;drag-combine&#x27;,{board:state.boardId,id:card});
     if(split){splitVersion(card);render(&#x27;undo&#x27;,&#x27;reorder&#x27;);save();announce(&#x27;Separated into a new argument at the bottom of this option. Undo is available for ten seconds.&#x27;);return;}
     const r=combine(card,t.dataset.node);render(r.focus,r.motion);save();
   });

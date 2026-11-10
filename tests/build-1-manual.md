@@ -478,6 +478,20 @@ Added to “Why it might not”: “Anyone can modify open weights and strip out
 | Strongest case | Still the top three per option; “2 more arguments on the board” under “Why it might not” |
 | Browser errors | None |
 
+## November 10 — PostHog analytics
+
+`docs/analytics.js` loads PostHog (US cloud; the project was identified by asking each region's endpoint about the key: US accepted it, EU rejected it). It's included on the Product Page and on the prototype's page. The prototype page's security rules now allow PostHog's two hosts, and its frame's sandbox adds `allow-same-origin` so session replays can see inside it. Inside the prototype, `report()` posts each button action (name, board, id, value) and drag-and-drop combines to the page, which sends them as `prototype: <action>`.
+
+| Check | Observed result |
+| --- | --- |
+| Product Page | PostHog loads, assigns an anonymous id, tags `environment: local` and `page: product`; debug log shows events sent |
+| Prototype page | PostHog loads under the page's security rules with no blocked requests; `$pageview`, then `prototype: open-board` and `prototype: unfold` after clicks inside the frame |
+| Ingestion | A direct test event to PostHog's capture endpoint returned 200 |
+| Session replay | Not recording yet: the project's settings return `sessionRecording: false`, so replay has to be turned on in PostHog |
+| Console | Only the browser's expected warning that a frame with `allow-scripts` and `allow-same-origin` can escape its sandbox |
+
+Test events from this check (“setup check”, “setup check 2”, “setup check (direct)”, and the prototype events above) are in the project, tagged `environment: local`.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

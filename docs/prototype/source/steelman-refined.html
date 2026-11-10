@@ -757,6 +757,9 @@
   const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
   const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const EASE = 'cubic-bezier(.2,.7,.2,1)'; // matches --sm-ease
+  // Analytics: tell the page around the prototype which action was taken (names and ids only, never anything typed).
+  // That page forwards it to PostHog (docs/analytics.js); opened on its own, this does nothing.
+  const report = (event, props={}) => { try { if (window.parent!==window) window.parent.postMessage({type:'steelman-analytics',event,props},'*'); } catch {} };
   // Motion speeds come from the tokens (--sm-fast / --sm-medium / --sm-slow).
   const motion = name => parseFloat(getComputedStyle(document.getElementById('steelman-study')).getPropertyValue('--sm-'+name))||{fast:120,medium:200,slow:420}[name];
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
@@ -2085,6 +2088,7 @@
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
+    report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
@@ -2414,6 +2418,7 @@
     if(!dragCard)return;
     const t=event.target.closest?.('.sm-drop-target');if(!t)return;
     event.preventDefault();const card=dragCard,split=t.classList.contains('sm-drop-split');endDrag();
+    report(split?'drag-separate':'drag-combine',{board:state.boardId,id:card});
     if(split){splitVersion(card);render('undo','reorder');save();announce('Separated into a new argument at the bottom of this option. Undo is available for ten seconds.');return;}
     const r=combine(card,t.dataset.node);render(r.focus,r.motion);save();
   });
