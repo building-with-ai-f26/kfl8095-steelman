@@ -553,6 +553,8 @@ One set of controls, `rulesMarkup`, appears folded in **New steelman** and open 
 
 Not built: holding new arguments for editors (P3), closing a board on its date (P5), the space admin's AI panel (A1).
 
+Revision (same day): the create sheet's lower half restyled to match Share and Settings. Space and How it runs are two hairline rows (quiet right-aligned selects, the summary and a chevron); the rules sit in groups under 11 px tracked headings: Mode (three tiles, the chosen one outlined in ink, not filled), New arguments and Reorganizing (quiet selects), Editors (initials as in Share; chosen ones inked; names listed under the label), Votes (outlined checks, dashed when off), AI (robot, name, cost underneath, a switch), and Timing (Add a date, then a date field with ×). Settings shows the same groups without a second heading. Checked: Edited mode with two editors, drafts on, articulation off, and a date; created board shows "Edited · Closes Nov 16"; drawer selects stay borderless; no row overflows in the 356 px drawer; no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

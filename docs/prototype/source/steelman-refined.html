@@ -678,29 +678,52 @@
   #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:#666; font-size:13px; }
   #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-create-add svg { width:15px; height:15px; }
-  /* How it runs: the mode, its two settings, editors, votes, AI, and a closing date. */
-  #steelman-study .sm-rules { display:grid; gap:10px; font-size:12px; }
-  #steelman-study .sm-seg { display:inline-flex; flex-wrap:wrap; justify-self:start; gap:2px; padding:3px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-panel); }
-  #steelman-study .sm-pill { display:inline-flex; align-items:center; gap:5px; min-height:28px; padding:4px 10px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1 var(--sm-sans); white-space:nowrap; }
-  #steelman-study .sm-pill:hover { color:var(--sm-ink); border-color:var(--sm-wire); }
-  #steelman-study .sm-seg .sm-pill { border-color:transparent; border-radius:6px; background:transparent; }
-  #steelman-study .sm-pill[aria-pressed="true"] { background:var(--sm-ink); border-color:var(--sm-ink); color:#fff; }
-  #steelman-study .sm-pill[aria-disabled="true"] { opacity:.45; cursor:not-allowed; }
-  #steelman-study .sm-pill svg { width:14px; height:14px; }
-  #steelman-study .sm-pill small { font-weight:400; opacity:.7; }
-  #steelman-study .sm-pill[data-action="rule-ai"] svg { color:var(--sm-ai); }
-  #steelman-study .sm-rule-row { display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:10px; }
-  #steelman-study .sm-rule-row > span { font-weight:600; color:var(--sm-ink); }
-  #steelman-study .sm-rule-row > span small { display:block; font-weight:400; color:var(--sm-muted); }
-  #steelman-study .sm-rule-row select, #steelman-study .sm-rule-row input { justify-self:start; max-width:100%; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
-  #steelman-study .sm-pills { display:flex; flex-wrap:wrap; gap:6px; }
-  #steelman-study .sm-rule-none { color:var(--sm-muted); }
-  #steelman-study .sm-drawer .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; }
-  @media(max-width:560px) { #steelman-study .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; } }
-  #steelman-study .sm-create-rules { display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-create-rules-toggle { display:flex; align-items:center; gap:6px; padding:0; border:0; background:none; font:600 13px var(--sm-sans); color:var(--sm-ink); text-align:left; }
-  #steelman-study .sm-create-rules-toggle svg { width:15px; height:15px; }
-  #steelman-study .sm-create-rules-toggle span { margin-left:6px; font-weight:400; color:var(--sm-muted); }
+  /* How it runs: groups under small tracked headings (as in Share and Settings), rows split by hairlines, quiet controls on the right. */
+  #steelman-study .sm-rules { display:grid; gap:18px; }
+  #steelman-study .sm-rgroup { display:grid; }
+  #steelman-study .sm-rgroup h3 { display:flex; justify-content:space-between; margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-rgroup h3 span { letter-spacing:.04em; text-transform:none; font-weight:500; }
+  #steelman-study .sm-rrow { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; padding:6px 0; border-top:1px solid var(--sm-line); font-size:13px; color:var(--sm-ink); }
+  #steelman-study .sm-rgroup > .sm-rrow:last-child { border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-modes + .sm-rrow { margin-top:10px; }
+  #steelman-study .sm-rrow-label { display:flex; flex-direction:column; gap:2px; min-width:0; font-weight:500; }
+  #steelman-study .sm-rrow-label small { font-size:11px; font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-rrow-control { display:flex; align-items:center; gap:6px; min-width:0; }
+  #steelman-study .sm-rrow-stack { flex-direction:column; align-items:stretch; gap:8px; }
+  #steelman-study .sm-rules .sm-rselect, #steelman-study .sm-create .sm-rselect { width:auto; line-height:1.3; max-width:100%; padding:4px 2px; border:0; border-radius:4px; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); text-align:right; text-align-last:right; cursor:pointer; }
+  #steelman-study .sm-rules .sm-rselect:hover, #steelman-study .sm-create .sm-rselect:hover { background:var(--sm-soft); }
+  #steelman-study .sm-rrow-button { width:100%; border-left:0; border-right:0; border-bottom:0; background:none; text-align:left; font:400 13px var(--sm-sans); }
+  #steelman-study .sm-rrow-button:hover .sm-rrow-label { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-rrow-value { color:var(--sm-muted); font-size:12px; text-align:right; }
+  #steelman-study .sm-rrow-control > svg { width:15px; height:15px; color:var(--sm-muted); flex:none; }
+  /* Mode: three tiles; the chosen one gets an ink outline rather than a fill. */
+  #steelman-study .sm-modes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  #steelman-study .sm-mode { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px 10px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1.2 var(--sm-sans); }
+  #steelman-study .sm-mode svg { width:18px; height:18px; }
+  #steelman-study .sm-mode:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-mode[aria-checked="true"] { border-color:var(--sm-ink); box-shadow:inset 0 0 0 1px var(--sm-ink); color:var(--sm-ink); font-weight:600; }
+  /* Editors: initials, as in Share; chosen ones are inked. */
+  #steelman-study .sm-editors { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-editor { display:grid; place-items:center; width:28px; height:28px; padding:0; border:1px solid var(--sm-line); border-radius:50%; background:#f3f1ec; color:var(--sm-muted); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-editor:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-editor[aria-pressed="true"] { border-color:var(--sm-ink); background:var(--sm-ink); color:#fff; }
+  /* Votes: outlined checks; off ones go quiet and dashed. */
+  #steelman-study .sm-checks { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-check { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 12px 0 10px; border:1px dashed var(--sm-line); border-radius:6px; background:transparent; color:var(--sm-quiet); font:500 12px/1 var(--sm-sans); }
+  #steelman-study .sm-check svg { width:14px; height:14px; }
+  #steelman-study .sm-check[aria-pressed="true"] { border:1px solid var(--sm-ink); background:var(--sm-card); color:var(--sm-ink); }
+  /* AI: the ochre robot, the cost under the name, a switch on the right. */
+  #steelman-study .sm-rrow-ai .sm-rrow-label { display:grid; grid-template-columns:auto 1fr; column-gap:8px; }
+  #steelman-study .sm-rrow-ai .sm-rrow-label svg { grid-row:span 2; align-self:center; width:16px; height:16px; color:var(--sm-ai); }
+  #steelman-study .sm-rrow-off { opacity:.45; }
+  #steelman-study .sm-switch { position:relative; flex:none; width:32px; height:18px; padding:0; border:0; border-radius:999px; background:#cfcfcf; transition:background var(--sm-fast); }
+  #steelman-study .sm-switch::after { content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; box-shadow:0 1px 2px #0003; transition:transform var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-switch[aria-checked="true"] { background:var(--sm-ink); }
+  #steelman-study .sm-switch[aria-checked="true"]::after { transform:translateX(14px); }
+  #steelman-study .sm-switch[aria-disabled="true"] { cursor:not-allowed; }
+  #steelman-study .sm-rdate { padding:4px 6px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:500 13px var(--sm-sans); color:var(--sm-ink); }
+  /* Create sheet: Space and How it runs sit as two rows; the rules open below them. */
+  #steelman-study .sm-create-foot .sm-rules { padding-top:4px; }
   #steelman-study button.sm-meta-pill { background:transparent; cursor:pointer; }
   #steelman-study button.sm-meta-pill:hover { border-color:#ffffff8c; color:#fff; }
   #steelman-study .sm-meta-pill svg { width:13px; height:13px; }
@@ -712,9 +735,6 @@
   #steelman-study[data-off~="evidence"] .sm-cred, #steelman-study[data-off~="evidence"] .sm-evidence-group, #steelman-study[data-off~="evidence"] .sm-card-meta .sm-ai-glyph, #steelman-study[data-off~="evidence"] .sm-card-tools > .sm-source-button[role="img"] { display:none !important; }
   #steelman-study[data-off~="aicheck"] .sm-ai-glyph { display:none !important; }
   #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
-  #steelman-study .sm-create-where { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; }
-  #steelman-study .sm-create-where label { font-weight:600; }
-  #steelman-study .sm-create-where select { padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
   #steelman-study .sm-create-access { margin:0; font-size:12px; line-height:1.5; color:var(--sm-muted); }
   #steelman-study .sm-create-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
   #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
@@ -1420,19 +1440,28 @@
     return state.requested[state.boardId]?' <span>· Access requested.</span>':` <button type="button" class="sm-link-button cursor-interaction" data-action="request-access" data-key="request-access">Request access</button>`;
   }
   // "How it runs": the same controls when creating a board and in its Settings.
+  // Groups under small tracked headings, rows split by hairlines, the control on the right of each row.
   function rulesMarkup(r,spaceId,scope) {
     const k=scope+'-rule',mode=modeOf(r),left=(SPACE_AI[spaceId]?.credits||0)-(state.spent[spaceId]||0);
-    const pill=(action,id,on,glyph,label,extra='',off='')=>`<button type="button" class="sm-pill cursor-interaction" data-action="${action}" data-id="${escape(id)}" data-key="${k}-${escape(id)}" aria-pressed="${on}" ${off?`aria-disabled="true" data-tooltip="${escape(off)}"`:''}>${glyph?icon(glyph):''}<span>${label}</span>${extra}</button>`;
-    const sel=(rule,label,opts)=>`<label class="sm-rule-row"><span>${label}</span><select data-rule="${rule}" data-key="${k}-${rule}">${Object.entries(opts).map(([v,l])=>`<option value="${v}" ${r[rule]===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
-    const row=(label,body)=>`<div class="sm-rule-row"><span>${label}</span><div class="sm-pills">${body}</div></div>`;
-    const editors=r.publish==='review'||r.structure==='editors'?row('Editors',(PEOPLE[spaceId]||[]).map(u=>pill('rule-editor',u,r.editors.includes(u),'',escape(u))).join('')||'<span class="sm-rule-none">Invite people first</span>'):'';
-    return `<div class="sm-rules"><div class="sm-seg" role="group" aria-label="Mode">${Object.entries(MODES).map(([id,m])=>pill('rule-mode',id,mode===id,m.glyph,m.label)).join('')}</div>`
-      +sel('publish','New arguments',{now:'Publish right away',review:'Editors review first'})
-      +sel('structure','Reorganizing',{writers:'Anyone who can write',editors:'Editors',owner:'Only the owner'})
-      +editors
-      +row('Votes',Object.entries(JUDGMENTS).map(([id,[g,l]])=>pill('rule-judgment',id,r.judgments[id],g,l)).join(''))
-      +row(`AI <small>${left} credits</small>`,Object.entries(AI_FEATURES).map(([id,[l,cost]])=>{const ok=aiAllowed(spaceId,id);return pill('rule-ai',id,ok&&r.ai[id],'bot',l,`<small>${cost}</small>`,ok?'':`Off in ${spaceOf(spaceId).name}`);}).join(''))
-      +`<label class="sm-rule-row"><span>Closes</span><input type="date" data-rule="closes" data-key="${k}-closes" value="${escape(r.closes||'')}" min="2026-11-09"></label></div>`;
+    const group=(title,rows,aside='')=>`<section class="sm-rgroup"><h3>${title}${aside?`<span>${aside}</span>`:''}</h3>${rows}</section>`;
+    const row=(label,control,sub='',cls='')=>`<div class="sm-rrow ${cls}"><span class="sm-rrow-label">${label}${sub?`<small>${sub}</small>`:''}</span><span class="sm-rrow-control">${control}</span></div>`;
+    const sel=(rule,opts)=>`<select class="sm-rselect" data-rule="${rule}" data-key="${k}-${rule}" aria-label="${rule==='publish'?'New arguments':'Reorganizing'}">${Object.entries(opts).map(([v,l])=>`<option value="${v}" ${r[rule]===v?'selected':''}>${l}</option>`).join('')}</select>`;
+    const modes=`<div class="sm-modes" role="radiogroup" aria-label="Mode">${Object.entries(MODES).map(([id,m])=>`<button type="button" role="radio" class="sm-mode cursor-interaction" data-action="rule-mode" data-id="${id}" data-key="${k}-${id}" aria-checked="${mode===id}">${icon(m.glyph)}<span>${m.label}</span></button>`).join('')}</div>`;
+    const people=PEOPLE[spaceId]||[];
+    const editors=r.publish==='review'||r.structure==='editors'
+      ?row('Editors',`<span class="sm-editors">${people.map(u=>`<button type="button" class="sm-editor cursor-interaction" data-action="rule-editor" data-id="${escape(u)}" data-key="${k}-${escape(u)}" aria-pressed="${r.editors.includes(u)}" aria-label="${escape(u)}" data-tooltip="${escape(u)}">${escape(userInitials(u))}</button>`).join('')}</span>`,r.editors.length?escape(r.editors.join(', ')):'None yet','sm-rrow-stack'):'';
+    const votes=`<span class="sm-checks">${Object.entries(JUDGMENTS).map(([id,[g,l]])=>`<button type="button" class="sm-check cursor-interaction" data-action="rule-judgment" data-id="${id}" data-key="${k}-${id}" aria-pressed="${r.judgments[id]}">${icon(r.judgments[id]?'check':g)}${l}</button>`).join('')}</span>`;
+    const ai=Object.entries(AI_FEATURES).map(([id,[l,cost]])=>{const ok=aiAllowed(spaceId,id),on=ok&&r.ai[id];
+      return row(`${icon('bot')}${l}`,`<button type="button" role="switch" class="sm-switch cursor-interaction" data-action="rule-ai" data-id="${id}" data-key="${k}-${id}" aria-checked="${on}" aria-label="${l}" ${ok?'':`aria-disabled="true" data-tooltip="Off in ${escape(spaceOf(spaceId).name)}"`}></button>`,cost,'sm-rrow-ai'+(ok?'':' sm-rrow-off'));}).join('');
+    const closes=r.closes
+      ?`<input type="date" class="sm-rdate" data-rule="closes" data-key="${k}-closes" value="${escape(r.closes)}" min="2026-11-09" aria-label="Closes"><button type="button" class="sm-icon-button cursor-interaction" data-action="rule-closes" data-id="clear" data-key="${k}-closes-clear" aria-label="No closing date" data-tooltip="Remove">${icon('x')}</button>`
+      :`<button type="button" class="sm-link-button cursor-interaction" data-action="rule-closes" data-id="add" data-key="${k}-closes-add">Add a date</button>`;
+    return `<div class="sm-rules">`
+      +group('Mode',modes+row('New arguments',sel('publish',{now:'Publish right away',review:'Editors review first'}))+row('Reorganizing',sel('structure',{writers:'Anyone who can write',editors:'Editors',owner:'Only the owner'}))+editors)
+      +group('Votes',votes)
+      +group('AI',ai,`${left} credits`)
+      +group('Timing',row('Closes',closes))
+      +`</div>`;
   }
   function rulesLabel(r) { const m=modeOf(r); return m==='custom'?'Custom rules':MODES[m].label; }
   function rulesSummary(r,spaceId) {
@@ -1448,6 +1477,7 @@
     if(action==='rule-ai') r.ai[id]=!r.ai[id];
     if(action==='rule-editor') r.editors=r.editors.includes(id)?r.editors.filter(u=>u!==id):[...r.editors,id];
     if(action==='rule-set') r[id]=value;
+    if(action==='rule-closes') {r.closes=id==='add'?'2026-11-16':'';key=id==='add'?key.replace('-add',''):key.replace('-clear','-add');}
     if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
     save();
   }
@@ -1467,7 +1497,7 @@
     const q=doc.question;
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
       +select('org',ORGS,q.org,'Space')
-      +`<section class="sm-drawer-section" aria-labelledby="sm-rules-title"><h3 id="sm-rules-title">How it runs</h3>${rulesMarkup(q.rules,q.org,'board')}</section>`
+      +`<section class="sm-drawer-section" aria-label="How it runs">${rulesMarkup(q.rules,q.org,'board')}</section>`
       +`<div class="sm-field"><button type="button" class="sm-text-button cursor-interaction" data-action="open-share" data-key="open-share">${icon('user-plus')}Sharing and access →</button></div>`
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
@@ -1918,7 +1948,6 @@
     if(d.options.some(o=>/^(yes|no)$/i.test(o.trim()))) hints.push('Name options as positions, not Yes or No.');
     return hints.map(h=>`<li>${escape(h)}</li>`).join('');
   }
-  function accessLine(spaceId) { return `Who can see it: ${visLabel(spaceId==='none'?'private':'org',spaceId)}.`; }
   function createMarkup() {
     const d=state.createDraft,yours=SPACES.filter(s=>s.kind==='private'||state.joined[s.id]);
     const options=d.options.map((o,i)=>`<div class="sm-create-option" ${state.createError&&!o.trim()&&i<2?'data-invalid':''}><input type="text" class="sm-create-opt" data-index="${i}" data-key="create-opt-${i}" maxlength="80" placeholder="${['First option','Second option','Third option','Fourth option'][i]}" aria-label="Option ${i+1}" value="${escape(o)}">${d.options.length>2?`<button type="button" class="cursor-interaction" data-action="create-remove-option" data-id="${i}" data-key="create-remove-${i}" aria-label="Remove option ${i+1}" data-tooltip="Remove">${icon('x')}</button>`:''}</div>`).join('');
@@ -1927,8 +1956,10 @@
       +`<div class="sm-create-q" ${state.createError&&!d.q.trim()?'data-invalid':''}><textarea id="sm-create-q" data-key="create-q" rows="2" maxlength="200" placeholder="Ask a question with more than one good answer" aria-label="Question">${escape(d.q)}</textarea></div>`
       +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
       +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
-      +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))}</p></div>`
-      +`<div class="sm-create-rules"><button type="button" class="sm-create-rules-toggle cursor-interaction" data-action="create-rules" data-key="create-rules" aria-expanded="${!!d.rulesOpen}">${icon(d.rulesOpen?'chevron-down':'chevron-right')}How it runs<span>${escape(rulesSummary(d.rules,d.space))}</span></button>${d.rulesOpen?rulesMarkup(d.rules,d.space,'create'):''}</div>`
+      +`<div class="sm-create-foot"><div class="sm-rgroup sm-create-basics">`
+      +`<div class="sm-rrow"><label class="sm-rrow-label" for="sm-create-space">Space<small id="sm-create-access">${escape(visLabel(d.space==='none'?'private':'org',d.space))}</small></label><span class="sm-rrow-control"><select id="sm-create-space" class="sm-rselect" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select></span></div>`
+      +`<button type="button" class="sm-rrow sm-rrow-button cursor-interaction" data-action="create-rules" data-key="create-rules" aria-expanded="${!!d.rulesOpen}"><span class="sm-rrow-label">How it runs</span><span class="sm-rrow-control"><span class="sm-rrow-value">${escape(rulesSummary(d.rules,d.space))}</span>${icon(d.rulesOpen?'chevron-up':'chevron-down')}</span></button></div>`
+      +`${d.rulesOpen?rulesMarkup(d.rules,d.space,'create'):''}</div>`
       +`<div class="sm-create-actions">${state.createError?`<span class="sm-create-error" role="alert">${escape(state.createError)}</span>`:''}<button type="button" class="sm-link-button cursor-interaction" data-action="create-close" data-key="create-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="create-submit" data-key="create-submit">Create steelman</button></div></div>`;
   }
   const createEl=root.querySelector('.sm-create'),scrimEl=root.querySelector('.sm-create-scrim');

@@ -2560,29 +2560,52 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-create-add { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:46px; border:1px dashed #9a9a9a; border-radius:6px; background:#ffffff80; color:#666; font-size:13px; }
   #steelman-study .sm-create-add:hover { border-color:var(--sm-ink); color:var(--sm-ink); background:#fff; }
   #steelman-study .sm-create-add svg { width:15px; height:15px; }
-  /* How it runs: the mode, its two settings, editors, votes, AI, and a closing date. */
-  #steelman-study .sm-rules { display:grid; gap:10px; font-size:12px; }
-  #steelman-study .sm-seg { display:inline-flex; flex-wrap:wrap; justify-self:start; gap:2px; padding:3px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-panel); }
-  #steelman-study .sm-pill { display:inline-flex; align-items:center; gap:5px; min-height:28px; padding:4px 10px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1 var(--sm-sans); white-space:nowrap; }
-  #steelman-study .sm-pill:hover { color:var(--sm-ink); border-color:var(--sm-wire); }
-  #steelman-study .sm-seg .sm-pill { border-color:transparent; border-radius:6px; background:transparent; }
-  #steelman-study .sm-pill[aria-pressed=&quot;true&quot;] { background:var(--sm-ink); border-color:var(--sm-ink); color:#fff; }
-  #steelman-study .sm-pill[aria-disabled=&quot;true&quot;] { opacity:.45; cursor:not-allowed; }
-  #steelman-study .sm-pill svg { width:14px; height:14px; }
-  #steelman-study .sm-pill small { font-weight:400; opacity:.7; }
-  #steelman-study .sm-pill[data-action=&quot;rule-ai&quot;] svg { color:var(--sm-ai); }
-  #steelman-study .sm-rule-row { display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:10px; }
-  #steelman-study .sm-rule-row &gt; span { font-weight:600; color:var(--sm-ink); }
-  #steelman-study .sm-rule-row &gt; span small { display:block; font-weight:400; color:var(--sm-muted); }
-  #steelman-study .sm-rule-row select, #steelman-study .sm-rule-row input { justify-self:start; max-width:100%; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
-  #steelman-study .sm-pills { display:flex; flex-wrap:wrap; gap:6px; }
-  #steelman-study .sm-rule-none { color:var(--sm-muted); }
-  #steelman-study .sm-drawer .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; }
-  @media(max-width:560px) { #steelman-study .sm-rule-row { grid-template-columns:minmax(0,1fr); gap:6px; } }
-  #steelman-study .sm-create-rules { display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-create-rules-toggle { display:flex; align-items:center; gap:6px; padding:0; border:0; background:none; font:600 13px var(--sm-sans); color:var(--sm-ink); text-align:left; }
-  #steelman-study .sm-create-rules-toggle svg { width:15px; height:15px; }
-  #steelman-study .sm-create-rules-toggle span { margin-left:6px; font-weight:400; color:var(--sm-muted); }
+  /* How it runs: groups under small tracked headings (as in Share and Settings), rows split by hairlines, quiet controls on the right. */
+  #steelman-study .sm-rules { display:grid; gap:18px; }
+  #steelman-study .sm-rgroup { display:grid; }
+  #steelman-study .sm-rgroup h3 { display:flex; justify-content:space-between; margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-rgroup h3 span { letter-spacing:.04em; text-transform:none; font-weight:500; }
+  #steelman-study .sm-rrow { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; padding:6px 0; border-top:1px solid var(--sm-line); font-size:13px; color:var(--sm-ink); }
+  #steelman-study .sm-rgroup &gt; .sm-rrow:last-child { border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-modes + .sm-rrow { margin-top:10px; }
+  #steelman-study .sm-rrow-label { display:flex; flex-direction:column; gap:2px; min-width:0; font-weight:500; }
+  #steelman-study .sm-rrow-label small { font-size:11px; font-weight:400; color:var(--sm-muted); }
+  #steelman-study .sm-rrow-control { display:flex; align-items:center; gap:6px; min-width:0; }
+  #steelman-study .sm-rrow-stack { flex-direction:column; align-items:stretch; gap:8px; }
+  #steelman-study .sm-rules .sm-rselect, #steelman-study .sm-create .sm-rselect { width:auto; line-height:1.3; max-width:100%; padding:4px 2px; border:0; border-radius:4px; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); text-align:right; text-align-last:right; cursor:pointer; }
+  #steelman-study .sm-rules .sm-rselect:hover, #steelman-study .sm-create .sm-rselect:hover { background:var(--sm-soft); }
+  #steelman-study .sm-rrow-button { width:100%; border-left:0; border-right:0; border-bottom:0; background:none; text-align:left; font:400 13px var(--sm-sans); }
+  #steelman-study .sm-rrow-button:hover .sm-rrow-label { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-rrow-value { color:var(--sm-muted); font-size:12px; text-align:right; }
+  #steelman-study .sm-rrow-control &gt; svg { width:15px; height:15px; color:var(--sm-muted); flex:none; }
+  /* Mode: three tiles; the chosen one gets an ink outline rather than a fill. */
+  #steelman-study .sm-modes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  #steelman-study .sm-mode { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px 10px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-card); color:var(--sm-muted); font:500 12px/1.2 var(--sm-sans); }
+  #steelman-study .sm-mode svg { width:18px; height:18px; }
+  #steelman-study .sm-mode:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-mode[aria-checked=&quot;true&quot;] { border-color:var(--sm-ink); box-shadow:inset 0 0 0 1px var(--sm-ink); color:var(--sm-ink); font-weight:600; }
+  /* Editors: initials, as in Share; chosen ones are inked. */
+  #steelman-study .sm-editors { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-editor { display:grid; place-items:center; width:28px; height:28px; padding:0; border:1px solid var(--sm-line); border-radius:50%; background:#f3f1ec; color:var(--sm-muted); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-editor:hover { border-color:var(--sm-wire); color:var(--sm-ink); }
+  #steelman-study .sm-editor[aria-pressed=&quot;true&quot;] { border-color:var(--sm-ink); background:var(--sm-ink); color:#fff; }
+  /* Votes: outlined checks; off ones go quiet and dashed. */
+  #steelman-study .sm-checks { display:flex; flex-wrap:wrap; gap:6px; }
+  #steelman-study .sm-check { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 12px 0 10px; border:1px dashed var(--sm-line); border-radius:6px; background:transparent; color:var(--sm-quiet); font:500 12px/1 var(--sm-sans); }
+  #steelman-study .sm-check svg { width:14px; height:14px; }
+  #steelman-study .sm-check[aria-pressed=&quot;true&quot;] { border:1px solid var(--sm-ink); background:var(--sm-card); color:var(--sm-ink); }
+  /* AI: the ochre robot, the cost under the name, a switch on the right. */
+  #steelman-study .sm-rrow-ai .sm-rrow-label { display:grid; grid-template-columns:auto 1fr; column-gap:8px; }
+  #steelman-study .sm-rrow-ai .sm-rrow-label svg { grid-row:span 2; align-self:center; width:16px; height:16px; color:var(--sm-ai); }
+  #steelman-study .sm-rrow-off { opacity:.45; }
+  #steelman-study .sm-switch { position:relative; flex:none; width:32px; height:18px; padding:0; border:0; border-radius:999px; background:#cfcfcf; transition:background var(--sm-fast); }
+  #steelman-study .sm-switch::after { content:&quot;&quot;; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; box-shadow:0 1px 2px #0003; transition:transform var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-switch[aria-checked=&quot;true&quot;] { background:var(--sm-ink); }
+  #steelman-study .sm-switch[aria-checked=&quot;true&quot;]::after { transform:translateX(14px); }
+  #steelman-study .sm-switch[aria-disabled=&quot;true&quot;] { cursor:not-allowed; }
+  #steelman-study .sm-rdate { padding:4px 6px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font:500 13px var(--sm-sans); color:var(--sm-ink); }
+  /* Create sheet: Space and How it runs sit as two rows; the rules open below them. */
+  #steelman-study .sm-create-foot .sm-rules { padding-top:4px; }
   #steelman-study button.sm-meta-pill { background:transparent; cursor:pointer; }
   #steelman-study button.sm-meta-pill:hover { border-color:#ffffff8c; color:#fff; }
   #steelman-study .sm-meta-pill svg { width:13px; height:13px; }
@@ -2594,9 +2617,6 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study[data-off~=&quot;evidence&quot;] .sm-cred, #steelman-study[data-off~=&quot;evidence&quot;] .sm-evidence-group, #steelman-study[data-off~=&quot;evidence&quot;] .sm-card-meta .sm-ai-glyph, #steelman-study[data-off~=&quot;evidence&quot;] .sm-card-tools &gt; .sm-source-button[role=&quot;img&quot;] { display:none !important; }
   #steelman-study[data-off~=&quot;aicheck&quot;] .sm-ai-glyph { display:none !important; }
   #steelman-study .sm-create-foot { display:grid; gap:12px; padding:16px 20px 18px; }
-  #steelman-study .sm-create-where { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; }
-  #steelman-study .sm-create-where label { font-weight:600; }
-  #steelman-study .sm-create-where select { padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:500 13px var(--sm-sans); }
   #steelman-study .sm-create-access { margin:0; font-size:12px; line-height:1.5; color:var(--sm-muted); }
   #steelman-study .sm-create-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
   #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
@@ -3302,19 +3322,28 @@ html&gt;body{padding:0}&lt;/style&gt;
     return state.requested[state.boardId]?&#x27; &lt;span&gt;· Access requested.&lt;/span&gt;&#x27;:` &lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;request-access&quot; data-key=&quot;request-access&quot;&gt;Request access&lt;/button&gt;`;
   }
   // &quot;How it runs&quot;: the same controls when creating a board and in its Settings.
+  // Groups under small tracked headings, rows split by hairlines, the control on the right of each row.
   function rulesMarkup(r,spaceId,scope) {
     const k=scope+&#x27;-rule&#x27;,mode=modeOf(r),left=(SPACE_AI[spaceId]?.credits||0)-(state.spent[spaceId]||0);
-    const pill=(action,id,on,glyph,label,extra=&#x27;&#x27;,off=&#x27;&#x27;)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-pill cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${escape(id)}&quot; data-key=&quot;${k}-${escape(id)}&quot; aria-pressed=&quot;${on}&quot; ${off?`aria-disabled=&quot;true&quot; data-tooltip=&quot;${escape(off)}&quot;`:&#x27;&#x27;}&gt;${glyph?icon(glyph):&#x27;&#x27;}&lt;span&gt;${label}&lt;/span&gt;${extra}&lt;/button&gt;`;
-    const sel=(rule,label,opts)=&gt;`&lt;label class=&quot;sm-rule-row&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;select data-rule=&quot;${rule}&quot; data-key=&quot;${k}-${rule}&quot;&gt;${Object.entries(opts).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${r[rule]===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/label&gt;`;
-    const row=(label,body)=&gt;`&lt;div class=&quot;sm-rule-row&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;div class=&quot;sm-pills&quot;&gt;${body}&lt;/div&gt;&lt;/div&gt;`;
-    const editors=r.publish===&#x27;review&#x27;||r.structure===&#x27;editors&#x27;?row(&#x27;Editors&#x27;,(PEOPLE[spaceId]||[]).map(u=&gt;pill(&#x27;rule-editor&#x27;,u,r.editors.includes(u),&#x27;&#x27;,escape(u))).join(&#x27;&#x27;)||&#x27;&lt;span class=&quot;sm-rule-none&quot;&gt;Invite people first&lt;/span&gt;&#x27;):&#x27;&#x27;;
-    return `&lt;div class=&quot;sm-rules&quot;&gt;&lt;div class=&quot;sm-seg&quot; role=&quot;group&quot; aria-label=&quot;Mode&quot;&gt;${Object.entries(MODES).map(([id,m])=&gt;pill(&#x27;rule-mode&#x27;,id,mode===id,m.glyph,m.label)).join(&#x27;&#x27;)}&lt;/div&gt;`
-      +sel(&#x27;publish&#x27;,&#x27;New arguments&#x27;,{now:&#x27;Publish right away&#x27;,review:&#x27;Editors review first&#x27;})
-      +sel(&#x27;structure&#x27;,&#x27;Reorganizing&#x27;,{writers:&#x27;Anyone who can write&#x27;,editors:&#x27;Editors&#x27;,owner:&#x27;Only the owner&#x27;})
-      +editors
-      +row(&#x27;Votes&#x27;,Object.entries(JUDGMENTS).map(([id,[g,l]])=&gt;pill(&#x27;rule-judgment&#x27;,id,r.judgments[id],g,l)).join(&#x27;&#x27;))
-      +row(`AI &lt;small&gt;${left} credits&lt;/small&gt;`,Object.entries(AI_FEATURES).map(([id,[l,cost]])=&gt;{const ok=aiAllowed(spaceId,id);return pill(&#x27;rule-ai&#x27;,id,ok&amp;&amp;r.ai[id],&#x27;bot&#x27;,l,`&lt;small&gt;${cost}&lt;/small&gt;`,ok?&#x27;&#x27;:`Off in ${spaceOf(spaceId).name}`);}).join(&#x27;&#x27;))
-      +`&lt;label class=&quot;sm-rule-row&quot;&gt;&lt;span&gt;Closes&lt;/span&gt;&lt;input type=&quot;date&quot; data-rule=&quot;closes&quot; data-key=&quot;${k}-closes&quot; value=&quot;${escape(r.closes||&#x27;&#x27;)}&quot; min=&quot;2026-11-09&quot;&gt;&lt;/label&gt;&lt;/div&gt;`;
+    const group=(title,rows,aside=&#x27;&#x27;)=&gt;`&lt;section class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;${title}${aside?`&lt;span&gt;${aside}&lt;/span&gt;`:&#x27;&#x27;}&lt;/h3&gt;${rows}&lt;/section&gt;`;
+    const row=(label,control,sub=&#x27;&#x27;,cls=&#x27;&#x27;)=&gt;`&lt;div class=&quot;sm-rrow ${cls}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}${sub?`&lt;small&gt;${sub}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${control}&lt;/span&gt;&lt;/div&gt;`;
+    const sel=(rule,opts)=&gt;`&lt;select class=&quot;sm-rselect&quot; data-rule=&quot;${rule}&quot; data-key=&quot;${k}-${rule}&quot; aria-label=&quot;${rule===&#x27;publish&#x27;?&#x27;New arguments&#x27;:&#x27;Reorganizing&#x27;}&quot;&gt;${Object.entries(opts).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${r[rule]===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
+    const modes=`&lt;div class=&quot;sm-modes&quot; role=&quot;radiogroup&quot; aria-label=&quot;Mode&quot;&gt;${Object.entries(MODES).map(([id,m])=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-mode cursor-interaction&quot; data-action=&quot;rule-mode&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-checked=&quot;${mode===id}&quot;&gt;${icon(m.glyph)}&lt;span&gt;${m.label}&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const people=PEOPLE[spaceId]||[];
+    const editors=r.publish===&#x27;review&#x27;||r.structure===&#x27;editors&#x27;
+      ?row(&#x27;Editors&#x27;,`&lt;span class=&quot;sm-editors&quot;&gt;${people.map(u=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-editor cursor-interaction&quot; data-action=&quot;rule-editor&quot; data-id=&quot;${escape(u)}&quot; data-key=&quot;${k}-${escape(u)}&quot; aria-pressed=&quot;${r.editors.includes(u)}&quot; aria-label=&quot;${escape(u)}&quot; data-tooltip=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;`,r.editors.length?escape(r.editors.join(&#x27;, &#x27;)):&#x27;None yet&#x27;,&#x27;sm-rrow-stack&#x27;):&#x27;&#x27;;
+    const votes=`&lt;span class=&quot;sm-checks&quot;&gt;${Object.entries(JUDGMENTS).map(([id,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-check cursor-interaction&quot; data-action=&quot;rule-judgment&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-pressed=&quot;${r.judgments[id]}&quot;&gt;${icon(r.judgments[id]?&#x27;check&#x27;:g)}${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;`;
+    const ai=Object.entries(AI_FEATURES).map(([id,[l,cost]])=&gt;{const ok=aiAllowed(spaceId,id),on=ok&amp;&amp;r.ai[id];
+      return row(`${icon(&#x27;bot&#x27;)}${l}`,`&lt;button type=&quot;button&quot; role=&quot;switch&quot; class=&quot;sm-switch cursor-interaction&quot; data-action=&quot;rule-ai&quot; data-id=&quot;${id}&quot; data-key=&quot;${k}-${id}&quot; aria-checked=&quot;${on}&quot; aria-label=&quot;${l}&quot; ${ok?&#x27;&#x27;:`aria-disabled=&quot;true&quot; data-tooltip=&quot;Off in ${escape(spaceOf(spaceId).name)}&quot;`}&gt;&lt;/button&gt;`,cost,&#x27;sm-rrow-ai&#x27;+(ok?&#x27;&#x27;:&#x27; sm-rrow-off&#x27;));}).join(&#x27;&#x27;);
+    const closes=r.closes
+      ?`&lt;input type=&quot;date&quot; class=&quot;sm-rdate&quot; data-rule=&quot;closes&quot; data-key=&quot;${k}-closes&quot; value=&quot;${escape(r.closes)}&quot; min=&quot;2026-11-09&quot; aria-label=&quot;Closes&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;rule-closes&quot; data-id=&quot;clear&quot; data-key=&quot;${k}-closes-clear&quot; aria-label=&quot;No closing date&quot; data-tooltip=&quot;Remove&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;`
+      :`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;rule-closes&quot; data-id=&quot;add&quot; data-key=&quot;${k}-closes-add&quot;&gt;Add a date&lt;/button&gt;`;
+    return `&lt;div class=&quot;sm-rules&quot;&gt;`
+      +group(&#x27;Mode&#x27;,modes+row(&#x27;New arguments&#x27;,sel(&#x27;publish&#x27;,{now:&#x27;Publish right away&#x27;,review:&#x27;Editors review first&#x27;}))+row(&#x27;Reorganizing&#x27;,sel(&#x27;structure&#x27;,{writers:&#x27;Anyone who can write&#x27;,editors:&#x27;Editors&#x27;,owner:&#x27;Only the owner&#x27;}))+editors)
+      +group(&#x27;Votes&#x27;,votes)
+      +group(&#x27;AI&#x27;,ai,`${left} credits`)
+      +group(&#x27;Timing&#x27;,row(&#x27;Closes&#x27;,closes))
+      +`&lt;/div&gt;`;
   }
   function rulesLabel(r) { const m=modeOf(r); return m===&#x27;custom&#x27;?&#x27;Custom rules&#x27;:MODES[m].label; }
   function rulesSummary(r,spaceId) {
@@ -3330,6 +3359,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;rule-ai&#x27;) r.ai[id]=!r.ai[id];
     if(action===&#x27;rule-editor&#x27;) r.editors=r.editors.includes(id)?r.editors.filter(u=&gt;u!==id):[...r.editors,id];
     if(action===&#x27;rule-set&#x27;) r[id]=value;
+    if(action===&#x27;rule-closes&#x27;) {r.closes=id===&#x27;add&#x27;?&#x27;2026-11-16&#x27;:&#x27;&#x27;;key=id===&#x27;add&#x27;?key.replace(&#x27;-add&#x27;,&#x27;&#x27;):key.replace(&#x27;-clear&#x27;,&#x27;-add&#x27;);}
     if(t.create){state.createDraft.rulesTouched=true;renderCreate(key);} else render(key);
     save();
   }
@@ -3349,7 +3379,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const q=doc.question;
     return `&lt;div class=&quot;sm-field&quot;&gt;&lt;label for=&quot;sm-question&quot;&gt;Question&lt;/label&gt;&lt;textarea id=&quot;sm-question&quot; data-key=&quot;q-text&quot; maxlength=&quot;200&quot; rows=&quot;2&quot; aria-describedby=&quot;sm-question-hint&quot;&gt;${escape(q.text)}&lt;/textarea&gt;&lt;p class=&quot;sm-field-hint&quot; id=&quot;sm-question-hint&quot;&gt;Ask it neutrally, so each option can make its strongest case.&lt;/p&gt;&lt;/div&gt;`
       +select(&#x27;org&#x27;,ORGS,q.org,&#x27;Space&#x27;)
-      +`&lt;section class=&quot;sm-drawer-section&quot; aria-labelledby=&quot;sm-rules-title&quot;&gt;&lt;h3 id=&quot;sm-rules-title&quot;&gt;How it runs&lt;/h3&gt;${rulesMarkup(q.rules,q.org,&#x27;board&#x27;)}&lt;/section&gt;`
+      +`&lt;section class=&quot;sm-drawer-section&quot; aria-label=&quot;How it runs&quot;&gt;${rulesMarkup(q.rules,q.org,&#x27;board&#x27;)}&lt;/section&gt;`
       +`&lt;div class=&quot;sm-field&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;open-share&quot; data-key=&quot;open-share&quot;&gt;${icon(&#x27;user-plus&#x27;)}Sharing and access →&lt;/button&gt;&lt;/div&gt;`
       +`&lt;section class=&quot;sm-drawer-section&quot; aria-labelledby=&quot;sm-reset-title&quot;&gt;&lt;h3 id=&quot;sm-reset-title&quot;&gt;Example board&lt;/h3&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Saved in this browser only.&lt;/p&gt;&lt;div&gt;${button(&#x27;reset&#x27;,icon(&#x27;rotate-ccw&#x27;)+(state.confirmReset?&#x27; Click again to reset everything&#x27;:&#x27; Reset to the original example&#x27;),`data-key=&quot;reset&quot; ${state.confirmReset?&#x27;data-armed&#x27;:&#x27;&#x27;}`)}&lt;/div&gt;&lt;/section&gt;`;
   }
@@ -3800,7 +3830,6 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(d.options.some(o=&gt;/^(yes|no)$/i.test(o.trim()))) hints.push(&#x27;Name options as positions, not Yes or No.&#x27;);
     return hints.map(h=&gt;`&lt;li&gt;${escape(h)}&lt;/li&gt;`).join(&#x27;&#x27;);
   }
-  function accessLine(spaceId) { return `Who can see it: ${visLabel(spaceId===&#x27;none&#x27;?&#x27;private&#x27;:&#x27;org&#x27;,spaceId)}.`; }
   function createMarkup() {
     const d=state.createDraft,yours=SPACES.filter(s=&gt;s.kind===&#x27;private&#x27;||state.joined[s.id]);
     const options=d.options.map((o,i)=&gt;`&lt;div class=&quot;sm-create-option&quot; ${state.createError&amp;&amp;!o.trim()&amp;&amp;i&lt;2?&#x27;data-invalid&#x27;:&#x27;&#x27;}&gt;&lt;input type=&quot;text&quot; class=&quot;sm-create-opt&quot; data-index=&quot;${i}&quot; data-key=&quot;create-opt-${i}&quot; maxlength=&quot;80&quot; placeholder=&quot;${[&#x27;First option&#x27;,&#x27;Second option&#x27;,&#x27;Third option&#x27;,&#x27;Fourth option&#x27;][i]}&quot; aria-label=&quot;Option ${i+1}&quot; value=&quot;${escape(o)}&quot;&gt;${d.options.length&gt;2?`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;create-remove-option&quot; data-id=&quot;${i}&quot; data-key=&quot;create-remove-${i}&quot; aria-label=&quot;Remove option ${i+1}&quot; data-tooltip=&quot;Remove&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;`).join(&#x27;&#x27;);
@@ -3809,8 +3838,10 @@ html&gt;body{padding:0}&lt;/style&gt;
       +`&lt;div class=&quot;sm-create-q&quot; ${state.createError&amp;&amp;!d.q.trim()?&#x27;data-invalid&#x27;:&#x27;&#x27;}&gt;&lt;textarea id=&quot;sm-create-q&quot; data-key=&quot;create-q&quot; rows=&quot;2&quot; maxlength=&quot;200&quot; placeholder=&quot;Ask a question with more than one good answer&quot; aria-label=&quot;Question&quot;&gt;${escape(d.q)}&lt;/textarea&gt;&lt;/div&gt;`
       +`&lt;ul class=&quot;sm-create-hints&quot; id=&quot;sm-create-hints&quot; aria-live=&quot;polite&quot;&gt;${createHints()}&lt;/ul&gt;`
       +`&lt;div class=&quot;sm-create-options&quot; role=&quot;group&quot; aria-label=&quot;Options&quot;&gt;${options}${add}&lt;/div&gt;&lt;/div&gt;`
-      +`&lt;div class=&quot;sm-create-foot&quot;&gt;&lt;div class=&quot;sm-create-where&quot;&gt;&lt;label for=&quot;sm-create-space&quot;&gt;Space&lt;/label&gt;&lt;select id=&quot;sm-create-space&quot; data-key=&quot;create-space&quot;&gt;${yours.map(s=&gt;`&lt;option value=&quot;${s.id}&quot; ${s.id===d.space?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${escape(s.name)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;p class=&quot;sm-create-access&quot; id=&quot;sm-create-access&quot;&gt;${escape(accessLine(d.space))}&lt;/p&gt;&lt;/div&gt;`
-      +`&lt;div class=&quot;sm-create-rules&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-create-rules-toggle cursor-interaction&quot; data-action=&quot;create-rules&quot; data-key=&quot;create-rules&quot; aria-expanded=&quot;${!!d.rulesOpen}&quot;&gt;${icon(d.rulesOpen?&#x27;chevron-down&#x27;:&#x27;chevron-right&#x27;)}How it runs&lt;span&gt;${escape(rulesSummary(d.rules,d.space))}&lt;/span&gt;&lt;/button&gt;${d.rulesOpen?rulesMarkup(d.rules,d.space,&#x27;create&#x27;):&#x27;&#x27;}&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-create-foot&quot;&gt;&lt;div class=&quot;sm-rgroup sm-create-basics&quot;&gt;`
+      +`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;label class=&quot;sm-rrow-label&quot; for=&quot;sm-create-space&quot;&gt;Space&lt;small id=&quot;sm-create-access&quot;&gt;${escape(visLabel(d.space===&#x27;none&#x27;?&#x27;private&#x27;:&#x27;org&#x27;,d.space))}&lt;/small&gt;&lt;/label&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;select id=&quot;sm-create-space&quot; class=&quot;sm-rselect&quot; data-key=&quot;create-space&quot;&gt;${yours.map(s=&gt;`&lt;option value=&quot;${s.id}&quot; ${s.id===d.space?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${escape(s.name)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/span&gt;&lt;/div&gt;`
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-rrow sm-rrow-button cursor-interaction&quot; data-action=&quot;create-rules&quot; data-key=&quot;create-rules&quot; aria-expanded=&quot;${!!d.rulesOpen}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;How it runs&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(rulesSummary(d.rules,d.space))}&lt;/span&gt;${icon(d.rulesOpen?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`
+      +`${d.rulesOpen?rulesMarkup(d.rules,d.space,&#x27;create&#x27;):&#x27;&#x27;}&lt;/div&gt;`
       +`&lt;div class=&quot;sm-create-actions&quot;&gt;${state.createError?`&lt;span class=&quot;sm-create-error&quot; role=&quot;alert&quot;&gt;${escape(state.createError)}&lt;/span&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;create-close&quot; data-key=&quot;create-cancel&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;create-submit&quot; data-key=&quot;create-submit&quot;&gt;Create steelman&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
   }
   const createEl=root.querySelector(&#x27;.sm-create&#x27;),scrimEl=root.querySelector(&#x27;.sm-create-scrim&#x27;);
