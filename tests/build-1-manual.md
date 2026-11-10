@@ -467,6 +467,17 @@ Follow-up the same day: the design specimen and the Product Page screenshot now 
 | Screenshot | New `assets/prototype-board.jpg` (2160 × 1350, 474 KB), captured with headless Chrome at 1440 × 900 @1.5x with reduced motion: the board with the independence argument unfolded into three wordings |
 | Product Page | The new image loads (after a cache refresh) with updated alt text naming the open-weights debate |
 
+## November 10 — Fragile-control argument
+
+Added to “Why it might not”: “Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.” It answers the “China controls AI where it’s deployed” argument. Sources: Perplexity’s R1 1776 (DeepSeek-R1 retrained to remove censorship on about 300 topics, February 2025), research on fine-tuning away safeguards (Qi et al., 2023), and the 2023 Interim Measures. The saved-state version moved to 5, so browsers holding the previous board load the updated one.
+
+| Check | Observed result |
+| --- | --- |
+| Placement | Third in “Why it might not” (importance 28), level with “China controls AI where it’s deployed” |
+| Evidence | 82% supported, 9 of 11; three sources open in the card |
+| Strongest case | Still the top three per option; “2 more arguments on the board” under “Why it might not” |
+| Browser errors | None |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
