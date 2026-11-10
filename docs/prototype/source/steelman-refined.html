@@ -773,6 +773,7 @@
     revenue: {at:'2026-11-05T16:00:00Z', brief:'Open weights earn no licence fees, and anyone can serve them. The labs releasing them are losing money.', idea:'revenue', claim:'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', yes:12, no:3, pref:17, sources:['clouds','ipolosses'], explanation:'US clouds already sell DeepSeek’s models. Labs can still earn from their own hosting, which is the disputed part.'},
     revenueBlunt: {at:'2026-11-07T09:00:00Z', brief:'True of the weights themselves, but labs earn from serving them.', idea:'revenue', claim:'They don’t make any money directly from open weights.', yes:5, no:4, pref:9, sources:['deepseekmargin'], explanation:'Accurate but incomplete: DeepSeek says serving its own open models can be very profitable in theory, if users pay.'},
     backlash: {at:'2026-11-06T14:00:00Z', brief:'The West’s concern is the model’s origin as much as where it runs, so open weights don’t settle it.', idea:'backlash', claim:'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', yes:13, no:2, pref:14, sources:['caisi','noadversarial'], explanation:'A US evaluation found DeepSeek’s models less secure and more likely to echo CCP narratives, and a bill would bar Chinese models from federal agencies.'},
+    stripped: {at:'2026-11-09T10:00:00Z', brief:'China’s rules govern services offered at home. Once weights are out, anyone can retrain them, and that includes removing what the rules require.', idea:'stripped', claim:'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', yes:9, no:2, pref:6, sources:['r1776','finetune','genaimeasures'], explanation:'The direct answer to “China controls AI where it’s deployed”: that control covers services inside China, not copies of the weights elsewhere. Whether China cares about copies abroad is the open question.'},
     rivals: {at:'2026-11-08T09:00:00Z', brief:'Released weights can’t be recalled or restricted in practice.', idea:'rivals', claim:'Releasing weights hands China’s best work to its rivals, including their militaries, with no way to take it back.', yes:3, no:1, pref:4, sources:['plallama'], explanation:'The example runs the other way, an American model used by China’s military, but the mechanism is the same.'},
     reversal: {at:'2026-11-07T12:00:00Z', brief:'Free releases are funded by a price war and state support that may not last.', idea:'reversal', claim:'The strategy is subsidized and may not last: Beijing could restrict releases once the market consolidates.', yes:0, no:0, pref:3, sources:['takshashila'], explanation:'A forecast, not a fact. It can still matter to the decision.'}
   };
@@ -793,6 +794,8 @@
     deepseekmargin: {name:'DeepSeek’s inference cost disclosure',locator:'DeepSeek, March 1, 2025',finding:'DeepSeek said its theoretical daily cost-profit ratio for serving V3 and R1 was 545% if every user paid, and that actual revenue is much lower.',premise:'A lab can earn from serving its own open models.',limit:'A hypothetical figure from the company itself.'},
     caisi: {name:'Evaluation of DeepSeek models',locator:'NIST Center for AI Standards and Innovation, September 30, 2025',finding:'The US evaluation found DeepSeek models trailed US models, were far more vulnerable to agent hijacking and jailbreaks, and repeated misleading CCP narratives about four times as often.',premise:'US agencies treat Chinese models as risky wherever they run.',limit:'A US government evaluation of one lab’s models; it doesn’t measure effects on adoption.'},
     noadversarial: {name:'“No Adversarial AI Act”',locator:'Introduced in Congress, June 2025',finding:'A bipartisan bill would bar federal agencies from buying or using AI models from China and other adversary countries, kept on a public list.',premise:'Western governments are moving to exclude Chinese models, not just Chinese apps.',limit:'Introduced, not enacted, as of this example.'},
+    r1776: {name:'R1 1776: DeepSeek-R1 with its censorship removed',locator:'Perplexity, February 2025; weights published on Hugging Face',finding:'Perplexity post-trained DeepSeek-R1 on about 300 topics it identified as censored by the CCP, and released the modified weights; it reported that reasoning ability was unaffected.',premise:'Released Chinese weights can be retrained to drop behavior that China’s rules require.',limit:'Perplexity’s own account of its results; one well-resourced company, not a typical user.'},
+    finetune: {name:'Research on fine-tuning away safeguards',locator:'e.g. Qi et al., 2023, “Fine-tuning Aligned Language Models Compromises Safety”',finding:'Safety training in a model can be weakened with a small amount of further fine-tuning.',premise:'Whatever is trained into released weights can be trained back out.',limit:'Tested on US models; it doesn’t measure how often this is done to Chinese models in practice.'},
     plallama: {name:'Military model built on Llama 2',locator:'Reuters, November 2024',finding:'Researchers linked to China’s military built a military-focused model on Meta’s Llama 2, despite a license forbidding military use.',premise:'Once weights are released, rivals can use them however they like.',limit:'An American model used in China, and an older, small one.'},
     takshashila: {name:'“Why Is China Giving Away Its AI Models?”',locator:'Takshashila Institution, August 2026',finding:'The paper argues consolidation and market saturation could lead Beijing to restrict releases, possibly around late 2028.',premise:'The open strategy may not last.',limit:'A forecast, not evidence of a reversal.'}
   };
@@ -804,6 +807,7 @@
     {id:'trustDup',option:'sense',score:3,versions:['trustDup']},
     {id:'revenue',option:'not',score:41,versions:['revenue','revenueBlunt']},
     {id:'backlash',option:'not',score:33,versions:['backlash']},
+    {id:'stripped',option:'not',score:28,versions:['stripped']},
     {id:'rivals',option:'not',score:25,versions:['rivals']},
     {id:'reversal',option:'not',score:12,versions:['reversal']}
   ];
@@ -940,8 +944,8 @@
       for (const key of ['preference','assessments','openSources']) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=>[renamed(k),v]));
       if (typeof saved.expanded==='string') saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves from before the open-weights example (docsVersion 3) are dropped.
-    if (saved.docsVersion===4 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 5) are dropped, so returning visitors get the current one.
+    if (saved.docsVersion===5 && saved.docs && typeof saved.docs==='object' && Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : 'openweights';
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
@@ -960,7 +964,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,docs,docsVersion:4,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,docs,docsVersion:5,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
