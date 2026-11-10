@@ -138,10 +138,19 @@
   /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
   #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
   /* The importance axis runs in the canvas margin, outside the first column's panel, so the hexagons stay whole. */
-  #steelman-study .sm-column:first-of-type { padding-left:40px; }
-  #steelman-study .sm-column:first-of-type::before { left:28px; }
-  #steelman-study .sm-column:first-of-type > .sm-texture { left:28px; width:calc(100% - 28px); }
-  #steelman-study .sm-col-vaxis { position:absolute; left:2px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
+  #steelman-study .sm-column.sm-first { padding-left:40px; }
+  #steelman-study .sm-column.sm-first::before { left:28px; }
+  #steelman-study .sm-column.sm-first > .sm-texture { left:28px; width:calc(100% - 28px); }
+  #steelman-study .sm-col-vaxis { position:absolute; left:-4px; top:100px; bottom:20px; width:20px; display:flex; justify-content:center; z-index:1; }
+  /* The importance axis sits in a white pill, like the articulation axis of an unfolded row. */
+  #steelman-study .sm-col-vaxis .sm-axis { width:20px; padding:9px 0; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+  /* A hidden column: a narrow dark strip with its name, which brings it back. */
+  #steelman-study .sm-col-hidden { position:relative; z-index:1; min-width:0; padding-top:17px; }
+  #steelman-study .sm-col-hidden .sm-column-head { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; min-height:220px; margin:0; padding:12px 0; border:0; cursor:pointer; container-type:normal; }
+  #steelman-study .sm-col-hidden .sm-column-head:hover { background:#3a3a3a; }
+  #steelman-study .sm-col-hidden .sm-column-head svg { width:16px; height:16px; flex:none; }
+  #steelman-study .sm-col-hidden-name { writing-mode:vertical-rl; font:600 15px/1.2 var(--sm-serif); max-height:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-col-hidden-count { writing-mode:vertical-rl; font:400 11px/1 var(--sm-sans); color:#ffffffa6; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
   #steelman-study .sm-column > .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:10px; z-index:0; pointer-events:none; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
@@ -151,18 +160,61 @@
   #steelman-study .sm-head, #steelman-study .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-column-head h2 { font:600 20px/1.3 var(--sm-serif); letter-spacing:-.3px; }
   #steelman-study .sm-col-axis { display:none; }
+  /* A column sorted by something other than Top says so under its header, and drops the importance axis. */
+  /* ── Highlight: marks wordings worth a look (New, Hot) without moving anything, and steps your view through them. ── */
+  #steelman-study .sm-col-axis svg { width:13px; height:13px; }
+  #steelman-study .sm-head-button.sm-lens-button { display:inline-flex; align-items:center; gap:5px; width:auto; min-width:32px; padding:0 8px; justify-content:center; font:500 12px/1 var(--sm-sans); }
+  #steelman-study .sm-head-button.sm-lens-button svg { width:15px; height:15px; }
+  #steelman-study .sm-head-button.sm-lens-button.sm-on { background:#fff; color:var(--sm-ink); }
+  #steelman-study .sm-menu-item[role="menuitemradio"] > span { flex:1; }
+  #steelman-study .sm-menu-item[role="menuitemradio"] > svg:last-child { color:var(--sm-ink); }
+  #steelman-study .sm-column-head { container-type:inline-size; }
+  @container (max-width:300px) { #steelman-study .sm-lens-button span { display:none; } #steelman-study .sm-head-button.sm-lens-button { padding:0; } }
+  /* Under the header: the count of matches, and up/down to step through them. Lined up with the cards. */
+  #steelman-study .sm-lens-bar { position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-18px 24px 14px var(--sm-lane,40px); padding:4px 4px 4px 10px; border-radius:999px; background:var(--sm-ink); color:#fff; font:500 12px/1 var(--sm-sans); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-lens-bar :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-lens-count { display:inline-flex; align-items:center; gap:6px; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #steelman-study .sm-lens-count svg { width:14px; height:14px; flex:none; }
+  #steelman-study .sm-lens-step { display:inline-flex; align-items:center; gap:2px; flex:none; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-lens-step > span { min-width:44px; text-align:center; color:#ffffffc0; }
+  #steelman-study .sm-lens-step button { display:grid; place-items:center; width:26px; height:24px; padding:0; border:0; border-radius:999px; background:#ffffff1f; color:#fff; }
+  #steelman-study .sm-lens-step button:hover { background:#ffffff40; }
+  #steelman-study .sm-lens-step button svg { width:15px; height:15px; }
+  /* A highlighted card: a small inverted tag on its top edge and a darker border. Rows without a match recede. */
+  #steelman-study .sm-lens-tag { display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border-radius:999px; background:var(--sm-ink); color:#fff; font:600 11px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-lens-tag svg { width:12px; height:12px; }
+  #steelman-study .sm-card > .sm-lens-tag { position:absolute; top:-10px; left:14px; z-index:3; box-shadow:0 0 0 2px var(--sm-card); }
+  #steelman-study .sm-card > .sm-lens-tag.sm-lens-inside { background:var(--sm-card); color:var(--sm-ink); border:1px solid var(--sm-ink); box-shadow:none; }
+  #steelman-study .sm-card.sm-lit { border-color:var(--sm-ink); }
+  #steelman-study :is(.sm-idea.sm-dim > .sm-card-wrap, .sm-idea.sm-dim > .sm-vote, .sm-lensing > .sm-card:not(.sm-lit)) { opacity:.42; transition:opacity var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-idea.sm-dim:hover > :is(.sm-card-wrap,.sm-vote), .sm-lensing > .sm-card:not(.sm-lit):hover { opacity:1; }
+  #steelman-study .sm-stack-button.sm-stack-lit .sm-stack-count { box-shadow:0 0 0 2px var(--sm-card),0 0 0 3.5px var(--sm-ink); }
+  /* Folds at scale: the less important tail of a long column, and the weaker tail of a long row. */
+  #steelman-study .sm-row-fold { position:relative; z-index:1; display:flex; align-items:center; gap:14px; margin:-6px 24px 20px var(--sm-lane,40px); }
+  #steelman-study .sm-row-fold-open { justify-content:flex-end; margin-top:-12px; }
+  #steelman-study .sm-more-rows { position:relative; flex:1; display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; min-height:52px; padding:10px 14px; border:1px solid #c8c8c8; border-radius:10px; background:var(--sm-grain) var(--sm-card); box-shadow:var(--sm-shadow-sm); text-align:left; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-more-rows strong { color:var(--sm-ink); font-size:13px; font-weight:600; }
+  #steelman-study .sm-more-rows:hover { border-color:#999; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-more-edges i { position:absolute; left:6px; right:6px; height:6px; border:1px solid #c8c8c8; border-top:0; border-radius:0 0 10px 10px; background:#f4f4f4; }
+  #steelman-study .sm-more-edges i:first-child { bottom:-6px; } #steelman-study .sm-more-edges i:last-child { bottom:-11px; left:12px; right:12px; }
+  #steelman-study .sm-more-rows .sm-lens-tag { margin-left:auto; }
+  #steelman-study .sm-more-card { display:flex; flex-direction:column; gap:6px; font-size:12px; }
+  #steelman-study .sm-more-card strong { font:600 20px/1 var(--sm-sans); color:var(--sm-ink); }
   #steelman-study h2 { font-size:16px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
   #steelman-study .sm-idea > .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and small tracked capitals at each end. */
-  #steelman-study .sm-axis { display:flex; align-items:center; gap:10px; color:var(--sm-axis); font:500 11px/1 var(--sm-sans); letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; min-width:0; }
+  #steelman-study .sm-axis { display:flex; align-items:center; gap:7px; color:var(--sm-axis); font:500 10px/1 var(--sm-sans); letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; min-width:0; }
   #steelman-study .sm-axis-line { position:relative; flex:1; height:1px; min-width:24px; background:var(--sm-axis-line); }
-  #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; color:var(--sm-axis-line); overflow:visible; }
-  #steelman-study .sm-axis-head path { fill:none; stroke:currentColor; stroke-width:1; stroke-linecap:round; }
+  /* max-width:none: the vertical line is 1 px wide, and a host's svg { max-width:100% } would squash its arrowhead to nothing. */
+  #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; max-width:none; max-height:none; color:var(--sm-axis-line); overflow:visible; }
+  #steelman-study .sm-axis-head path { fill:currentColor; stroke:currentColor; stroke-width:1; stroke-linejoin:round; }
+  /* Each axis is one arrow, pointing the way the board is ordered: down to less important, right to weaker. */
+  #steelman-study .sm-axis-head:first-child { display:none; }
   #steelman-study .sm-axis[data-axis="h"] .sm-axis-head { top:-3.5px; left:-1px; }
   #steelman-study .sm-axis[data-axis="h"] .sm-axis-head + .sm-axis-head { left:auto; right:-1px; transform:scaleX(-1); }
-  #steelman-study .sm-axis[data-axis="v"] { flex-direction:column; height:100%; gap:12px; }
+  #steelman-study .sm-axis[data-axis="v"] { flex-direction:column; height:100%; gap:7px; }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-line { width:1px; min-width:0; height:auto; min-height:24px; }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head { top:1px; left:-5.5px; transform:rotate(90deg); }
   #steelman-study .sm-axis[data-axis="v"] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
@@ -220,18 +272,26 @@
   #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:10px; pointer-events:none; transition:transform var(--sm-fast) var(--sm-ease); box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
-  #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
-  #steelman-study .sm-stack-button:hover .sm-stack-count { color:var(--sm-ink); border-color:#aaa; }
+  /* The count of wordings, inverted (white on near-black) so it reads as the way into comparing. ≫ when there is no other wording yet. */
+  #steelman-study .sm-stack-count { position:absolute; right:-6px; top:50%; translate:0 -50%; z-index:1; display:grid; place-items:center; min-width:22px; height:22px; padding:0 6px; border:2px solid var(--sm-card); border-radius:999px; background:var(--sm-ink); color:#fff; font:700 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; transition:transform var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-stack-count svg { width:13px; height:13px; stroke-width:2.5; }
+  #steelman-study .sm-stack-button.sm-empty .sm-stack-count { padding:0; }
+  #steelman-study .sm-stack-button:hover .sm-stack-count { transform:scale(1.12); }
+  #steelman-study .sm-stack-button:hover span { border-color:#aaa; }
 
   /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
   #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:max(210px,calc((100% - 36px - 44px) / 3)); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
   #steelman-study .sm-version-vote { justify-self:center; }
   #steelman-study .sm-idea.sm-open { row-gap:0; }
-  #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:30px; margin-bottom:10px; padding:0 4px 0 14px; overflow:hidden; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
+  #steelman-study .sm-open > .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:8px; height:24px; margin-bottom:8px; padding:0 2px 0 11px; overflow:hidden; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
   #steelman-study .sm-open > .sm-vote { grid-column:1; grid-row:2; margin-top:calc(12px + var(--sm-hvote,31px) + 10px); }
   #steelman-study .sm-open > .sm-card-wrap { grid-column:2; grid-row:2; }
   #steelman-study .sm-track-axis .sm-axis { flex:1; }
-  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:6px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-track-note > span { display:flex; align-items:center; gap:6px; flex:1; min-width:0; font-size:12px; color:var(--sm-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #steelman-study .sm-track-note > span svg { width:14px; height:14px; color:var(--sm-ink); }
+  #steelman-study .sm-single .sm-version-vote { display:none; }
+  #steelman-study .sm-single.sm-open > .sm-vote { margin-top:12px; }
+  #steelman-study .sm-fold { display:grid; place-items:center; width:20px; height:20px; padding:3px; border:1px solid #c8c8c8; border-radius:6px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-fold:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-fold svg { width:14px; height:14px; }
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:10px; background:transparent; color:var(--sm-muted); }
@@ -328,6 +388,23 @@
   #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
   #steelman-study .sm-move-here svg { width:14px; height:14px; }
   #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
+  /* Merge handle in the card footer: quiet until the card is hovered. */
+  #steelman-study .sm-merge-handle { cursor:grab; }
+  #steelman-study .sm-merge-handle:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-merge-handle:active { cursor:grabbing; }
+  #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-merge-handle { opacity:.55; }
+  /* While dragging: the source recedes; targets get a dashed outline and say what dropping does. */
+  #steelman-study[data-dragging] .sm-drag-source { opacity:.45; }
+  #steelman-study .sm-drop-target::after { content:attr(data-drop-label); position:absolute; inset:-4px 20px -4px 36px; z-index:6; display:grid; place-items:center; border:2px dashed #8a8a8a; border-radius:12px; background:#ffffffa6; color:var(--sm-ink); font:600 13px/1 var(--sm-sans); pointer-events:none; transition:background-color var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-new-idea.sm-drop-target::after { inset:-4px 20px -4px 36px; }
+  #steelman-study .sm-drop-target.sm-drop-over::after { border-style:solid; border-color:var(--sm-ink); background:#ffffffe0; }
+  /* A suggested combination, under the card it would move. */
+  #steelman-study .sm-suggest { position:relative; z-index:2; display:flex; align-items:center; gap:8px; margin:6px 0 0; padding:5px 6px 5px 10px; border:1px dashed #9a9a9a; border-radius:8px; background:var(--sm-card); font-size:12px; line-height:1.4; }
+  #steelman-study .sm-suggest > svg { width:14px; height:14px; flex:none; color:var(--sm-muted); }
+  #steelman-study .sm-suggest p { flex:1; min-width:0; margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #steelman-study .sm-suggest-actions { display:flex; gap:12px; flex:none; padding-right:4px; }
+  #steelman-study .sm-suggest .sm-link-button { font-size:12px; font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-open .sm-suggest { margin-right:0; }
   /* Undo bar: where the deleted card was, in the card lane. */
   #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:6px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
@@ -346,9 +423,11 @@
     #steelman-study h1 { font-size:23px; }
     #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
-    #steelman-study .sm-column:first-of-type { padding-left:8px; }
-    #steelman-study .sm-column:first-of-type::before { left:0; }
-    #steelman-study .sm-column:first-of-type > .sm-texture { left:0; width:100%; }
+    #steelman-study .sm-col-hidden .sm-column-head { flex-direction:row; min-height:44px; padding:0 14px; }
+    #steelman-study :is(.sm-col-hidden-name,.sm-col-hidden-count) { writing-mode:horizontal-tb; }
+    #steelman-study .sm-column.sm-first { padding-left:8px; }
+    #steelman-study .sm-column.sm-first::before { left:0; }
+    #steelman-study .sm-column.sm-first > .sm-texture { left:0; width:100%; }
     #steelman-study .sm-col-gap { display:none; }
     #steelman-study .sm-add-option { width:100%; height:48px; }
     #steelman-study .sm-add-option .sm-add-long { display:inline; }
@@ -361,6 +440,7 @@
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-open > .sm-vote { --sm-hvote:42px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-column { --sm-lane:48px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea > :last-child { margin-right:44px; }
@@ -431,15 +511,11 @@
   /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
   #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer;  }
   #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-shadow); }
-  #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; }
-  #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
-  #steelman-study .sm-post-vote button:hover { background:var(--sm-soft); color:var(--sm-ink); }
-  /* Your vote: a filled arrow and a heavier score. */
-  #steelman-study .sm-post-vote button[aria-pressed="true"] { color:var(--sm-ink); }
-  #steelman-study .sm-post-vote button[aria-pressed="true"] svg { fill:currentColor; }
-  #steelman-study .sm-post-vote:has([aria-pressed="true"]) .sm-post-score { font-weight:700; }
+  /* Activity: everything people have done on the board, added up (importance, articulation, evidence, comments). */
+  #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; padding-top:4px; }
+  #steelman-study .sm-post-activity { display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--sm-muted); }
+  #steelman-study .sm-post-activity svg { width:16px; height:16px; stroke-width:1.75; }
   #steelman-study .sm-post-score { color:var(--sm-ink); }
-  #steelman-study .sm-post-vote svg { width:17px; height:17px; stroke-width:1.75; }
   #steelman-study .sm-post-score { font:600 13px/1.5 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:300 12px var(--sm-sans); letter-spacing:.06em; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; color:var(--sm-muted); }
@@ -517,46 +593,31 @@
     #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
-    #steelman-study:is([data-zoom="read"],[data-zoom="overview"]) :is(.sm-wordmark-text,.sm-zoom) { display:none; }
+    #steelman-study:is([data-zoom="read"],[data-zoom="case"]) .sm-wordmark-text { display:none; }
   }
 
-  /* ── Zoom: Read (the board as is) and Overview (the whole board, condensed). ── */
+  /* ── Views: Board (everything) and Strongest case (each option's top arguments, best wording). ── */
   #steelman-study .sm-zoom { display:flex; padding:2px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); }
-  #steelman-study .sm-zoom button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-zoom button { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); font:500 12px/1 var(--sm-sans); white-space:nowrap; }
   #steelman-study .sm-zoom button:hover { color:var(--sm-ink); }
   #steelman-study .sm-zoom button[aria-pressed="true"] { background:#fff; color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-zoom svg { width:15px; height:15px; }
-  #steelman-study[data-zoom="overview"] .sm-head { padding:16px 20px 18px; }
-  #steelman-study[data-zoom="overview"] .sm-head h1 { font-size:24px; }
-  #steelman-study[data-zoom="overview"] :is(.sm-head-tools,.sm-column-tools,.sm-card-tools,.sm-card-menu-button,.sm-idea > .sm-vote,.sm-col-vaxis,.sm-col-axis,.sm-new-idea,.sm-add-option-col,.sm-col-gap + .sm-add-option-col,.sm-toolbar,.sm-move-here) { display:none; }
-  #steelman-study[data-zoom="overview"] .sm-board { padding-top:40px; }
-  #steelman-study[data-zoom="overview"] .sm-column-head { min-height:44px; padding:9px 14px; }
-  #steelman-study[data-zoom="overview"] .sm-column-head h2, #steelman-study[data-zoom="overview"] .sm-column-head :is(h2,h3) { font-size:16px; }
-  #steelman-study[data-zoom="overview"] .sm-idea { grid-template-columns:minmax(0,1fr); gap:0; margin-bottom:10px; }
-  #steelman-study[data-zoom="overview"] .sm-card { cursor:zoom-in; border-radius:6px; }
-  #steelman-study[data-zoom="overview"] .sm-card .sm-claim-button { padding:10px 34px 8px 12px; cursor:zoom-in; }
-  #steelman-study[data-zoom="overview"] .sm-claim { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13px; line-height:1.4; }
-  #steelman-study[data-zoom="overview"] .sm-card-meta { min-height:0; padding:3px 8px 5px; border-top:0; }
-  #steelman-study[data-zoom="overview"] .sm-stack-button { pointer-events:none; }
-  #steelman-study[data-zoom="overview"] :is(.sm-column-head,.sm-head) { cursor:zoom-in; }
+  #steelman-study[data-zoom="case"] :is(.sm-head-tools,.sm-toolbar) { display:none; }
+  #steelman-study .sm-case-caption { position:relative; z-index:1; margin:-14px 0 16px var(--sm-lane,40px); color:var(--sm-muted); font:400 12px/1.4 var(--sm-sans); }
+  #steelman-study .sm-case-column .sm-idea { margin-bottom:16px; }
+  #steelman-study .sm-case-rank { justify-self:center; margin-top:14px; display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 13px/1 var(--sm-serif); }
+  #steelman-study .sm-case-card { margin-right:24px; }
+  #steelman-study .sm-case-card .sm-claim-button { padding-right:18px; }
+  #steelman-study .sm-case-card .sm-claim { font:400 17px/1.5 var(--sm-serif); }
+  #steelman-study .sm-case-facts { display:flex; align-items:center; gap:12px; flex:none; padding-right:6px; font-size:11px; color:var(--sm-muted); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-case-facts span { display:inline-flex; align-items:center; gap:4px; }
+  #steelman-study .sm-case-facts svg { width:13px; height:13px; }
+  #steelman-study .sm-case-note { position:relative; z-index:1; margin:0 24px 6px 40px; color:var(--sm-muted); font:400 12px/1.5 var(--sm-sans); }
+  #steelman-study .sm-case-thin { padding:10px 12px; border:1px dashed #9a9a9a; border-radius:8px; color:var(--sm-ink); }
+  @media(max-width:640px) { #steelman-study .sm-zoom button span { display:none; } #steelman-study .sm-zoom button { padding:0 8px; } #steelman-study .sm-case-card { margin-right:0; } #steelman-study .sm-case-note { margin-right:0; } }
   /* Where a zoom lands: a brief ring on the card. */
   #steelman-study .sm-card.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; transition:outline-color .8s; }
 
-  /* ── Presence: who is looking at which card, and a named cursor while someone writes. ── */
-  #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
-  #steelman-study .sm-site-faces button:hover { position:relative; z-index:1; box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--sm-ink); }
-  #steelman-study .sm-presence { position:absolute; top:-12px; left:14px; z-index:3; display:flex; align-items:center; pointer-events:none; }
-  #steelman-study .sm-pbadge { display:grid; place-items:center; width:24px; height:24px; margin-right:-5px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; font:700 10px/1 var(--sm-sans); }
-  #steelman-study :is(.sm-pbadge,.sm-typing).sm-arrive { animation:sm-pop var(--sm-medium) var(--sm-ease); }
-  /* Someone writing: a still bubble with three softly pulsing dots beside their badge, as in a messages app. */
-  #steelman-study .sm-typing { display:inline-flex; align-items:center; gap:3px; height:22px; margin-left:9px; padding:0 8px; border-radius:10px; background:#fff; box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; }
-  #steelman-study .sm-typing i { width:4px; height:4px; border-radius:50%; background:var(--sm-ink); animation:sm-dot 1.2s ease-in-out infinite; }
-  #steelman-study .sm-typing i:nth-child(2) { animation-delay:.2s; }
-  #steelman-study .sm-typing i:nth-child(3) { animation-delay:.4s; }
-  #steelman-study .sm-card.sm-followed { outline:2px dashed var(--sm-ink); outline-offset:5px; }
-  @keyframes sm-pop { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
-  @keyframes sm-dot { 0%,60%,100% { opacity:.25; } 30% { opacity:1; } }
-  @media(prefers-reduced-motion:reduce) { #steelman-study :is(.sm-typing,.sm-typing i,.sm-pbadge) { animation:none; opacity:1; } }
 
   /* ── New steelman: the sheet is the board's skeleton, written in place: a question box, then its options. ── */
   #steelman-study .sm-create-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
@@ -640,7 +701,7 @@
   #steelman-study .sm-pager { display:none; }
   @media(max-width:640px) {
     /* Below each option header: a small arrow and "Most important first", in the same quiet voice as the version caption. */
-    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px 14px; padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
+    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px var(--sm-lane,40px); padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
     #steelman-study .sm-col-axis svg { width:13px; height:13px; }
     #steelman-study .sm-open > .sm-track-axis { height:40px; padding:0 4px 0 12px; border:0; background:transparent; }
     #steelman-study .sm-track-axis .sm-axis { display:none; }
@@ -701,14 +762,15 @@
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
-    access: {brief:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.', idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
-    accessBold: {brief:'The survey shows a need among some residents. It doesn’t establish access for everyone.', idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
-    accessNarrow: {brief:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.', idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
-    study: {brief:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.', idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
-    purpose: {brief:'This puts family access at the heart of the library’s public purpose.', idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
-    staffing: {brief:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.', idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
-    evenings: {brief:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.', idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
-    services: {brief:'The agreement provides cleaning and closing services for each day the building opens.', idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'}
+    access: {at:'2026-11-05T15:00:00Z', brief:'Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.', idea:'access', claim:'Sunday hours would give some weekday workers their only practical time to visit.', yes:24, no:8, pref:26, sources:['survey','hours'], explanation:'The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.'},
+    accessBold: {at:'2026-11-06T11:00:00Z', brief:'The survey shows a need among some residents. It doesn’t establish access for everyone.', idea:'access', claim:'Opening on Sundays would make the library accessible to everyone who works during the week.', yes:0, no:8, pref:8, sources:['survey'], explanation:'This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.'},
+    accessNarrow: {at:'2026-11-08T19:30:00Z', brief:'This describes the survey respondents. It doesn’t tell us how common the need is across the community.', idea:'access', claim:'For 18 surveyed residents, Sunday was the only day they reported being able to visit.', yes:3, no:1, pref:4, sources:['survey'], explanation:'This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.'},
+    study: {at:'2026-11-05T15:20:00Z', brief:'Students asked for quiet weekend space. The effect on learning hasn’t been measured.', idea:'study', claim:'Sunday study space could improve outcomes for students without a quiet place at home.', yes:2, no:4, pref:12, sources:['study'], explanation:'If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.'},
+    purpose: {at:'2026-11-07T10:00:00Z', brief:'This puts family access at the heart of the library’s public purpose.', idea:'purpose', claim:'A public library should be available on the day families can spend time together.', yes:0, no:0, pref:7, sources:[], explanation:'This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.'},
+    staffing: {at:'2026-11-05T16:00:00Z', brief:'The current rota has no Sunday coverage. Reallocating duties might free up some capacity.', idea:'staffing', claim:'Sunday opening would require additional staffing unless hours are reduced elsewhere.', yes:10, no:10, pref:21, sources:['roster','budget'], explanation:'The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.'},
+    evenings: {at:'2026-11-08T09:00:00Z', brief:'Evenings could be another way to extend access. The cost comparison isn’t available to inspect.', idea:'evenings', claim:'Improving evening hours may reach more residents for the same budget.', yes:0, no:0, pref:5, sources:['unavailable'], explanation:'This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.'},
+    services: {at:'2026-11-06T14:00:00Z', brief:'The agreement provides cleaning and closing services for each day the building opens.', idea:'services', claim:'Sunday opening would add one more day of building services each week.', yes:18, no:0, pref:9, sources:['contract'], explanation:'The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.'},
+    weekend: {at:'2026-11-09T08:30:00Z', idea:'weekend', claim:'Weekend opening would help people who work Monday to Friday.', yes:0, no:0, pref:2, sources:[], explanation:'Another way to put the access argument, written before its author saw the first row.'}
   };
   const seedSources = {
     survey: {name:'Resident access survey',locator:'Example packet · p. 2, question 4',finding:'18 of 80 respondents selected Sunday as their only available day to visit.',premise:'Some respondents cannot visit during the current opening hours.',limit:'Voluntary sample; not representative of all residents. Availability was self-reported.'},
@@ -723,6 +785,7 @@
     {id:'access',option:'open',score:42,versions:['access','accessBold','accessNarrow']},
     {id:'study',option:'open',score:31,versions:['study']},
     {id:'purpose',option:'open',score:12,versions:['purpose']},
+    {id:'weekend',option:'open',score:3,versions:['weekend']},
     {id:'staffing',option:'keep',score:39,versions:['staffing']},
     {id:'evenings',option:'keep',score:25,versions:['evenings']},
     {id:'services',option:'keep',score:8,versions:['services']}
@@ -741,7 +804,9 @@
     question:{text:'Should our library open on Sundays?',author:'kieran_lamee',posted:'2026-11-05',org:'pod6',visibility:'org',accessRole:'contribute',contribute:'viewers',vote:'viewers',
       people:[{user:'maya.chen',role:'contribute'},{user:'jordan_w',role:'contribute'},{user:'priya_s',role:'vote'},{user:'samr_92',role:'view'}]},
     options:[{id:'open',name:'Open on Sundays'},{id:'keep',name:'Keep current hours'}],
-    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
+    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1,
+    // A contributor's suggestion that two arguments make the same point. The owner or the version's author decides.
+    suggestions:[{id:'sg1',card:'weekend',into:'access',by:'jordan_w',at:'2026-11-09T09:10:00Z'}]
   });
 
   // ── Spaces and the list of steelmen ──
@@ -768,10 +833,10 @@
   const spaceTag = s => `<span class="sm-tag">${escape(s.name)}</span>`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
   function sketchDoc(key,{q,author,posted,org,visibility,options}) {
-    const d={question:{text:q,author,posted,org,visibility,accessRole:visibility==='link'?'vote':'contribute',people:[],contribute:'viewers',vote:'viewers'},options:[],ideas:[],cards:{},sources:{},comments:[],nextId:1};
+    const d={question:{text:q,author,posted,org,visibility,accessRole:visibility==='link'?'vote':'contribute',people:[],contribute:'viewers',vote:'viewers'},options:[],ideas:[],cards:{},sources:{},comments:[],suggestions:[],nextId:1};
     options.forEach(([name,args],oi)=>{
       const option=`${key}-o${oi}`; d.options.push({id:option,name});
-      args.forEach(([claim,score,yes=0,no=0],ai)=>{const idea=`${key}-${oi}-${ai}`,card=idea+'v';d.cards[card]={idea,claim,yes,no,pref:0,sources:[],explanation:''};d.ideas.push({id:idea,option,score,versions:[card]});});
+      args.forEach(([claim,score,yes=0,no=0],ai)=>{const idea=`${key}-${oi}-${ai}`,card=idea+'v';const at=new Date(Date.parse(posted+'T09:00:00Z')+(ai*7+oi*3)*36e5).toISOString();d.cards[card]={at,idea,claim,yes,no,pref:0,sources:[],explanation:''};d.ideas.push({id:idea,option,score,versions:[card]});});
     });
     return d;
   }
@@ -797,16 +862,16 @@
       ['Take the offer',[['The role is a step up I would otherwise wait two years for.',3]]],
       ['Stay in New York',[]]]})
   });
-  // List-only details that a single board doesn't hold: its whole-steelman vote, recent activity, and who has it open.
-  // Comments here are added to the board's own count. A private draft in Personal has no audience, so it takes no votes.
+  // List-only details that a single board doesn't hold: recent activity, who has it open, and earlier comments.
+  // Comments here are added to the board's own count. A board's score is computed from its own votes (see boardInfo).
   const FEED = {
-    library:{score:128,at:'2026-11-09T09:40:00Z',did:'Jordan replied to a comment',here:['maya.chen','jordan_w'],people:7,comments:0},
-    capstone:{score:64,at:'2026-11-09T08:05:00Z',did:'Sam added an argument',here:['samr_92'],people:5,comments:4},
-    standups:{score:21,at:'2026-11-06T15:20:00Z',did:'Priya added an option',here:[],people:6,comments:9},
-    bikelane:{score:412,at:'2026-11-09T07:12:00Z',did:'23 people voted on importance',here:['dev_oka17','ana.lu','rtorres'],more:11,people:58,comments:141},
-    curve:{score:896,at:'2026-11-08T22:30:00Z',did:'A source was reported unavailable',here:['samr_92','bwells','kt_nguyen'],more:28,people:203,comments:388},
-    fourday:{score:233,at:'2026-11-07T18:00:00Z',did:'Alex added a version',here:['alexkim.dev'],more:3,people:77,comments:96},
-    denver:{score:null,at:'2026-11-09T11:30:00Z',did:'You started this draft',here:[],people:1,comments:0}
+    library:{at:'2026-11-09T09:40:00Z',did:'Jordan suggested combining two arguments',here:['maya.chen','jordan_w'],people:7,comments:0},
+    capstone:{at:'2026-11-09T08:05:00Z',did:'Sam added an argument',here:['samr_92'],people:5,comments:4},
+    standups:{at:'2026-11-06T15:20:00Z',did:'Priya added an option',here:[],people:6,comments:9},
+    bikelane:{at:'2026-11-09T07:12:00Z',did:'23 people voted on importance',here:['dev_oka17','ana.lu','rtorres'],more:11,people:58,comments:141},
+    curve:{at:'2026-11-08T22:30:00Z',did:'A source was reported unavailable',here:['samr_92','bwells','kt_nguyen'],more:28,people:203,comments:388},
+    fourday:{at:'2026-11-07T18:00:00Z',did:'Alex added a version',here:['alexkim.dev'],more:3,people:77,comments:96},
+    denver:{at:'2026-11-09T11:30:00Z',did:'You started this draft',here:[],people:1,comments:0}
   };
   const NOW = Date.parse('2026-11-09T12:00:00Z'); // the prototype's fixed "now", so relative times stay stable
   const fullDate = iso => new Date(iso).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'});
@@ -814,7 +879,7 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
       && d.ideas.every(i=>Array.isArray(i.versions) && i.versions.length && i.versions.every(id=>d.cards[id]) && d.options.some(o=>o.id===i.option));
@@ -823,18 +888,18 @@
   // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
   function addIdea(option,claim,reason) {
     const ideaId='i'+(doc.nextId++),cardId='v'+(doc.nextId++);
-    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
-    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:'you'});
+    cards[cardId]={at:new Date().toISOString(),idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:'you',at:new Date().toISOString()});
     return cardId;
   }
   function addVersion(ideaId,claim,reason) {
     const idea=ideaOf(ideaId); if(!idea) return null;
     const id='v'+(doc.nextId++);
-    cards[id]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
+    cards[id]={at:new Date().toISOString(),idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:'you'};
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'library',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',feedVotes:{},joined:{brooklyn:true,campus:true,worklab:true}});
+  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'library',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
   let state = freshState();
   useDoc(docs.library);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -864,7 +929,7 @@
     state.view = saved.view==='board' ? 'board' : 'home';
     if (saved.space==='all'||SPACES.some(s=>s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
-    for (const key of ['feedVotes','joined']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
+    for (const key of ['lens','hiddenCols','joined']) if (saved[key] && typeof saved[key]==='object') state[key]=saved[key];
     useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version>=3) {
@@ -884,9 +949,56 @@
   function announce(message) { status.textContent=message; }
   const optionName = option => doc.options.find(o=>o.id===option)?.name || '';
   const short = id => { const c=cards[id].claim; return c.length>60 ? c.slice(0,57)+'…' : c; };
-  // Shared articulation order: the shared preference score, best first. Your own vote does not move cards.
-  const ordered = idea => [...idea.versions].sort((a,b)=>cards[b].pref-cards[a].pref);
+  // Order is fixed and shared: rows by importance, wordings by articulation. Your own votes never move cards.
+  // (A stable sort, so ties keep their saved order.)
+  const byVotes = (list,votes) => [...list].sort((a,b)=>votes(b)-votes(a));
+  // The shared importance score (the example's "Simulate a reorder" adds 20 to two rows).
+  const sharedImportance = idea => idea.score+(state.updated&&['study','evenings'].includes(idea.id)?20:0);
+  const ordered = idea => byVotes(idea.versions,id=>cards[id].pref);
+  const rowsOf = option => byVotes(ideas.filter(i=>i.option===option),sharedImportance);
+  // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
+  // New: added in the last two days. Hot: the three wordings with the most votes for their age (articulation and evidence
+  // assessments), so the set stays small however big the board gets.
+  const ageHours = iso => iso ? Math.max(0,(NOW-Date.parse(iso))/36e5) : 24*14;
+  const hotness = (votes,iso) => (Math.max(0,votes)+1)/Math.pow(ageHours(iso)+2,1.2);
+  const LENSES = {
+    new:{glyph:'sparkles',label:'New',hint:'Wordings added in the last two days.',noun:n=>`new ${n===1?'wording':'wordings'}`,none:'Nothing new in the last two days.'},
+    hot:{glyph:'flame',label:'Hot',hint:'The three wordings gaining votes fastest.',noun:n=>`hot ${n===1?'wording':'wordings'}`,none:'No votes here yet.'}
+  };
+  const colKey = option => state.boardId+':'+option;
+  // Hidden columns fold to a strip so the others get the room. At least one stays visible.
+  const isHidden = option => !!state.hiddenCols?.[colKey(option)] && doc.options.some(o=>o.id!==option&&!state.hiddenCols[colKey(o.id)]);
+  const firstVisible = () => doc.options.find(o=>!isHidden(o.id))?.id;
+  const lensOf = option => LENSES[state.lens?.[colKey(option)]] ? state.lens[colKey(option)] : null;
+  function matchesIn(option) {
+    const mode=lensOf(option);if(!mode) return new Set();
+    const ids=ideas.filter(i=>i.option===option).flatMap(i=>i.versions);
+    if(mode==='new') return new Set(ids.filter(id=>cards[id].at&&ageHours(cards[id].at)<=48));
+    const votes=id=>(cards[id].pref||0)+(cards[id].yes||0)+(cards[id].no||0);
+    return new Set(ids.filter(id=>votes(id)>0).sort((a,b)=>hotness(votes(b),cards[b].at)-hotness(votes(a),cards[a].at)).slice(0,3));
+  }
+  // Matches in the order you meet them on the board: down the column, then left to right along each row.
+  const matchList = option => { const lit=matchesIn(option); return rowsOf(option).flatMap(i=>ordered(i).filter(id=>lit.has(id))); };
+  // Folding at scale. A column shows its most important arguments and folds the rest; a row shows its best wordings
+  // and folds the rest. Whatever is open, being edited, or being stepped to is always shown.
+  const ROW_LIMIT=10, ROW_PAGE=20, VERSION_LIMIT=5, VERSION_PAGE=10;
+  function shownRows(option,rows) {
+    if(state.moving&&movingFrom()?.option===option) return rows.length; // pick mode needs every target
+    let n=state.shownRows[colKey(option)]||ROW_LIMIT;
+    for(const id of [state.open,cards[state.expanded]?.idea,cards[state.editing]?.idea,state.undo?.afterIdea]){const i=rows.findIndex(r=>r.id===id);if(i>=n)n=i+1;}
+    return rows.length-n<=2?rows.length:n; // never fold away just one or two
+  }
+  function shownVersions(idea,versions) {
+    let n=state.shownVersions[idea.id]||VERSION_LIMIT;
+    for(const id of [state.expanded,state.editing,state.moving]){const i=versions.indexOf(id);if(i>=n)n=i+1;}
+    return versions.length-n<=1?versions.length:n;
+  }
   const ideaOf = id => ideas.find(i=>i.id===id);
+  // Who may reorganize arguments. The board owner and a version's author combine or separate it directly;
+  // anyone else who can contribute suggests it, and the owner or author decides. Viewers and voters can't.
+  function myRole() { const q=doc.question; if(q.author===ME) return 'owner'; return q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole); }
+  const canMove = id => myRole()==='owner'||cards[id]?.by==='you';
+  const canSuggest = () => myRole()==='contribute';
   const button = (action,label,extra='') => `<button type="button" class="sm-button cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
   function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote==='yes'?1:0), no=(card.no||0)+(vote==='no'?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
 
@@ -900,7 +1012,7 @@
     const btn=(v,glyph,label)=>`<button type="button" class="sm-vote-btn cursor-interaction" data-action="${action}" data-id="${id}" data-vote="${v}" data-key="${action}-${v>0?'up':'down'}-${id}" aria-pressed="${value===v}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
     return `<div class="sm-vote" data-axis="${dir}" role="group" aria-label="${escape(group)}">${btn(1,'chevron-up',forward)}<span class="sm-vote-score" aria-label="Net ${score}">${score}</span>${btn(-1,'chevron-down',back)}</div>`;
   }
-  function importanceScore(idea) { return idea.score+(state.importance[idea.id]||0)+(state.updated&&['study','evenings'].includes(idea.id)?20:0); }
+  function importanceScore(idea) { return sharedImportance(idea)+(state.importance[idea.id]||0); }
   function importanceVote(idea) {
     return vote({axis:'v',action:'importance',id:idea.id,value:state.importance[idea.id]||0,score:importanceScore(idea),group:`Importance: ${short(idea.versions[0])}`,forward:'More important if true',back:'Less important if true'});
   }
@@ -927,26 +1039,43 @@
   function sourceCount(id) { const n=cards[id].sources.length; if(!n) return ''; const label=`${n} ${n===1?'source':'sources'}`; return `<span class="sm-source-button" role="img" aria-label="${label}" title="${label}">${icon('paperclip')} ${n}</span>`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}<div class="sm-card-tools">${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
+    const idea=ideaOf(cards[id].idea),others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
+    // The merge handle: drag it onto another argument in the same option (or click it to pick one).
+    const direct=canMove(id),handle=others&&(direct||canSuggest())?`<button type="button" class="sm-source-button sm-merge-handle cursor-interaction" draggable="true" data-drag="${id}" data-action="move-card" data-id="${id}" data-key="merge-${id}" aria-label="${direct?'Combine with another argument':'Suggest combining with another argument'}" data-tooltip="${direct?'Drag onto the argument it repeats':'Drag to suggest combining'}">${icon('merge')}</button>`:'';
+    return `${credibility(id)}<div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
-  function cardFace(id, inTrack=false) {
+  // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
+  function cardFace(id, inTrack=false, mark='', lit=false) {
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
     const menuOpen=state.menu===id;
-    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}"><button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
+    return `<article class="sm-card ${inTrack?'sm-version-face':''} ${lit?'sm-lit':''} ${expanded?'sm-expanded':''} ${commenting('card:'+id)?'sm-commenting':''}" data-card="${id}">${mark}<button type="button" class="sm-card-menu-button cursor-interaction" data-action="card-menu" data-id="${id}" data-key="menu-${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="Options for this version" data-tooltip="Options">${icon('ellipsis')}</button><button type="button" class="sm-claim-button cursor-interaction" data-action="toggle" data-id="${id}" data-key="claim-${id}" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}"><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${cardMeta(id)}</div><div class="sm-card-reveal" id="sm-reveal-${id}" ${expanded?'':'hidden'}>${expanded?evidenceContent(id):''}</div></article>`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
     const item=(action,glyph,label,hint='',disabled=false)=>`<button type="button" role="menuitem" class="sm-menu-item cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${disabled?'aria-disabled="true"':''}>${icon(glyph)}<span>${label}${hint?`<small>${hint}</small>`:''}</span></button>`;
+    if(id.startsWith('lens:')) {
+      const option=id.slice(5),mode=lensOf(option)||'off';
+      const opts={off:{glyph:'circle-off',label:'Off',hint:'No highlight.'},...LENSES};
+      return `<p class="sm-menu-note">Highlight wordings in this option. The order doesn’t change; ↑ ↓ under the header step through them.</p>`+Object.entries(opts).map(([k,v])=>`<button type="button" role="menuitemradio" aria-checked="${k===mode}" class="sm-menu-item cursor-interaction" data-action="lens-set" data-id="${option}" data-lens="${k}" data-key="lens-set-${k}">${icon(v.glyph)}<span>${v.label}<small>${v.hint}</small></span>${k===mode?icon('check'):''}</button>`).join('');
+    }
     if(id.startsWith('option:')) {
       const option=id.slice(7),rows=ideas.filter(i=>i.option===option).length,few=doc.options.length<=2;
-      return item('rename-option','pencil','Rename option')
+      const visible=doc.options.filter(o=>!isHidden(o.id)).length;
+      return item('hide-col','eye-off','Hide this column',visible<=1?'At least one column stays visible.':'It folds to a strip; click the strip to bring it back.',visible<=1)
+        +(visible>1?item('solo-col','maximize-2','Show only this column','Hides the others.'):'')
+        +item('rename-option','pencil','Rename option')
         +item('delete-option','trash-2','Delete option',few?'A question needs at least two options.':rows?'Move or delete its arguments first.':'It has no arguments.',few||rows>0);
     }
     const card=cards[id],mine=card.by==='you',idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=>i.option===idea.option&&i.id!==idea.id);
-    if(!mine) return `<p class="sm-menu-note">Written by another contributor. Only they can edit, move, or delete it.</p>`+item('revise-card','pen-line','Suggest a revised version');
+    if(!mine&&myRole()==='owner') return `<p class="sm-menu-note">Written by another contributor. Only they can edit or delete it. As the board’s owner, you can combine or separate it.</p>`
+      +item('revise-card','pen-line','Suggest a revised version')
+      +item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)
+      +(last?'':item('split-card','split','Make it a separate argument'));
+    if(!mine) return `<p class="sm-menu-note">Written by another contributor. Only they can edit, move, or delete it.</p>`+item('revise-card','pen-line','Suggest a revised version')
+      +(canSuggest()&&others?item('move-card','merge','Suggest combining with another argument','The owner or the author decides.'):'');
     return `<p class="sm-menu-note">You wrote this version.</p>`
       +item('edit-card','pencil','Edit wording and context')
       +item('move-card','merge','Combine with another argument',others?'':'No other argument here yet.',!others)
@@ -954,11 +1083,12 @@
       +item('delete-card','trash-2',last?'Delete argument':'Delete version',last?'Removes the row.':'');
   }
   const undoMarkup = () => `<div class="sm-undo" role="status"><span>${state.undo.label}</span><button type="button" class="sm-link-button cursor-interaction" data-action="undo" data-key="undo">Undo</button></div>`;
-  function stack(idea) {
+  // The stack beside every card: its count of wordings in color, or ≫ when there's no other wording yet (an invitation).
+  function stack(idea,inside=0) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
     const spans=(empty?[1]:Array.from({length:edges},(_,k)=>edges-k)).map(i=>`<span aria-hidden="true" style="right:${24-7*i}px;top:${3*i}px;bottom:${3*i}px"></span>`).join('');
-    const label=empty?'Suggest another version of this argument':`Unfold ${idea.versions.length} versions of this argument`;
-    return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}" data-tooltip="${empty?'Add a version':idea.versions.length+' versions'}">${spans}${empty?'':`<b class="sm-stack-count" aria-hidden="true">${idea.versions.length}</b>`}</button>`;
+    const label=empty?'Write another wording of this argument':`Compare ${idea.versions.length} wordings of this argument`;
+    return `<button type="button" class="sm-stack-button ${empty?'sm-empty':''} ${inside?'sm-stack-lit':''} cursor-interaction" data-action="unfold" data-id="${idea.id}" data-key="stack-${idea.id}" aria-label="${label}${inside?`, ${inside} highlighted`:''}" data-tooltip="${empty?'Write another wording':idea.versions.length+' wordings'}">${spans}<b class="sm-stack-count" aria-hidden="true">${empty?icon('chevrons-right'):idea.versions.length}</b></button>`;
   }
   function addSlot(idea) {
     if(state.composing) return `<span aria-hidden="true"></span><form class="sm-card sm-compose-card" id="sm-form" aria-label="Suggest a version"><textarea id="sm-draft" class="sm-draft-claim" data-key="draft" maxlength="500" placeholder="A better version of this argument" aria-label="Your version">${escape(state.draftClaim)}</textarea><textarea id="sm-reason" class="sm-draft-reason" data-key="reason" maxlength="700" placeholder="What it improves" aria-label="What your version improves">${escape(state.draftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-compose" data-id="${idea.id}" data-key="cancel-compose" aria-label="Discard draft" data-tooltip="Discard">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="add" data-id="${idea.id}" data-key="add" aria-label="Add your version" data-tooltip="Add">${icon('check')}</button></div></form>`;
@@ -966,26 +1096,54 @@
   }
   function trackAxis(idea) {
     const n=idea.versions.length;
+    const fold=`<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button>`;
+    // One wording has nothing to compare against, so there is no articulation axis (or vote) until a second arrives.
+    if(n<2) return `<div class="sm-track-axis sm-track-note"><span>${icon('chevrons-right')}Only one wording so far. Write a second to compare them.</span>${fold}</div>`;
     // Phones swap the axis for a carousel caption: which version you're on, and dots.
-    const pager=`<div class="sm-pager" aria-live="polite"><span class="sm-pager-text">1 of ${n} · best articulated</span><span class="sm-pager-dots" aria-hidden="true"><i data-on></i>${'<i></i>'.repeat(n-1)}</span></div>`;
-    return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}${pager}<button type="button" class="sm-fold cursor-interaction" data-action="fold" data-id="${idea.id}" data-key="fold-${idea.id}" aria-label="Fold versions back into the stack" data-tooltip="Fold back">${icon('fold-horizontal')}</button></div>`;
+    // Dots only while they fit; a long row keeps just the caption.
+    const pager=`<div class="sm-pager" aria-live="polite"><span class="sm-pager-text">1 of ${n} · best articulated</span>${n<=8?`<span class="sm-pager-dots" aria-hidden="true"><i data-on></i>${'<i></i>'.repeat(n-1)}</span>`:''}</div>`;
+    return `<div class="sm-track-axis">${axis('h','best articulation','weaker')}${pager}${fold}</div>`;
   }
-  function track(idea) {
-    const versions=ordered(idea);
-    return `<div class="sm-track" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>`<div class="sm-version-vote" data-vote-for="${id}">${preferenceVote(id)}</div>`+cardFace(id,true)).join('')}${addSlot(idea)}</div>`;
+  function track(idea,lit=new Set()) {
+    const all=ordered(idea),single=all.length<2,n=shownVersions(idea,all),versions=all.slice(0,n),rest=all.slice(n);
+    const mode=lensOf(idea.option),restLit=rest.filter(id=>lit.has(id)).length;
+    // The folded tail of a long row: one card saying how many more, and how many of them are highlighted.
+    const more=rest.length?`<span aria-hidden="true"></span><button type="button" class="sm-add-card sm-more-card cursor-interaction" data-action="more-versions" data-id="${idea.id}" data-key="more-versions-${idea.id}"><strong>+${rest.length}</strong><span>more ${rest.length===1?'wording':'wordings'}</span>${restLit?`<span class="sm-lens-tag">${icon(LENSES[mode].glyph)}${restLit} ${LENSES[mode].label.toLowerCase()}</span>`:''}</button>`:'';
+    return `<div class="sm-track ${mode?'sm-lensing':''}" role="region" tabindex="0" aria-label="Versions, best articulated first">${versions.map(id=>`<div class="sm-version-vote" data-vote-for="${id}">${single?'':preferenceVote(id)}</div>`+cardFace(id,true,lit.has(id)?lensTag(mode):'',lit.has(id))).join('')}${more}${addSlot(idea)}</div>`;
+  }
+  // The small tag on a highlighted card: "New" or "Hot". With a count, it marks a folded row whose match is in its stack.
+  function lensTag(mode,inside=0) {
+    const L=LENSES[mode];if(!L) return '';
+    return `<span class="sm-lens-tag ${inside?'sm-lens-inside':''}" aria-hidden="true">${icon(L.glyph)}${inside?`${inside} ${L.noun(inside)} inside`:L.label}</span>`;
+  }
+  // Suggested combinations on this row's versions. The owner or the version's author can combine or dismiss;
+  // whoever suggested it can withdraw it; everyone else just sees it.
+  const liveSuggestions = () => doc.suggestions.filter(g=>cards[g.card]&&ideaOf(g.into)&&cards[g.card].idea!==g.into);
+  function suggestionsFor(idea) {
+    return liveSuggestions().filter(g=>cards[g.card].idea===idea.id).map(g=>{
+      const lead=cards[ordered(ideaOf(g.into))[0]].claim,clip=lead.length>34?lead.slice(0,32).trimEnd()+'…':lead,mine=g.by==='you';
+      const text=`<span title="${mine?'You':escape(g.by)} suggested combining this with “${escape(lead)}”">${mine?'You':`<strong>${escape(g.by)}</strong>`}: same as “${escape(clip)}”</span>`;
+      const actions=canMove(g.card)?linkButton('suggest-accept',g.id,'Combine')+linkButton('suggest-dismiss',g.id,'Dismiss'):mine?linkButton('suggest-dismiss',g.id,'Withdraw'):'';
+      return `<div class="sm-suggest" role="note">${icon('merge')}<p>${text}</p>${actions?`<div class="sm-suggest-actions">${actions}</div>`:''}</div>`;
+    }).join('');
   }
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
-  function row(idea) {
-    const open=state.open===idea.id,from=movingFrom();
+  function row(idea,lit=new Set()) {
+    const open=state.open===idea.id,from=movingFrom(),mode=lensOf(idea.option);
+    const lead=ordered(idea)[0],hits=idea.versions.filter(id=>lit.has(id)).length,leadLit=lit.has(lead),inside=hits-(leadLit?1:0);
+    // With a highlight on, rows without a match recede; a folded row with a match in its stack says so on its card.
+    const dim=mode&&!hits;
+    const face=open?track(idea,lit):stack(idea,inside)+cardFace(lead,false,leadLit?lensTag(mode):inside?lensTag(mode,inside):'',leadLit);
     const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
-    const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="Move here: join “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}Move here</span></button>`:'';
-    return `<section class="sm-idea ${open?'sm-open':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(ordered(idea)[0]))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}${here}</div></section>`;
+    const verb=target&&canMove(state.moving)?'Combine here':'Suggest combining here';
+    const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="${verb}: same point as “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}${verb}</span></button>`:'';
+    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}</div></section>`;
   }
   function moveBanner(option) {
     const from=movingFrom();
     if(!from||from.option!==option) return '';
-    return `<div class="sm-move-banner" role="status"><span>Pick the argument it belongs with.</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
+    return `<div class="sm-move-banner" role="status"><span>${canMove(state.moving)?'Pick the argument that makes the same point.':'Pick the argument that makes the same point. The owner or the author decides.'}</span><button type="button" class="sm-link-button cursor-interaction" data-action="cancel-move" data-key="cancel-move">Cancel</button></div>`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
   function addArgument(option) {
@@ -998,30 +1156,72 @@
     if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}</h2>`;
     return `<input id="sm-option-name" class="sm-option-input" type="text" data-key="option-name" data-select maxlength="80" placeholder="Name this option" aria-label="Option name" value="${escape(state.optionDraft)}">`;
   }
+  // The column's highlight control: an icon (and the lens's name when on) in the header, opening a small menu.
+  function lensControl(option) {
+    const mode=lensOf(option),L=LENSES[mode],key='lens:'+option;
+    return `<button type="button" class="sm-head-button sm-lens-button ${mode?'sm-on':''} cursor-interaction" data-action="card-menu" data-id="${key}" data-key="menu-${key}" aria-haspopup="menu" aria-expanded="${state.menu===key}" aria-label="Highlight in ${escape(optionName(option))}: ${mode?L.label:'off'}" data-tooltip="Highlight">${icon(mode?L.glyph:'highlighter')}${mode?`<span>${L.label}</span>`:''}</button>`;
+  }
+  // Under the header: "Most important first", or, with a highlight on, how many matches and up/down to move between them.
+  function lensBar(option) {
+    const mode=lensOf(option);
+    if(!mode) return `<div class="sm-col-axis" aria-hidden="true">${icon('arrow-down')}Most important first</div>`;
+    const L=LENSES[mode],n=matchList(option).length,k=state.step[colKey(option)];
+    const at=Number.isInteger(k)&&k>=0&&k<n?`${k+1} of ${n}`:`${n}`;
+    const btn=(dir,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="lens-step" data-id="${option}" data-dir="${dir}" data-key="lens-${dir>0?'next':'prev'}-${option}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
+    return `<div class="sm-lens-bar" role="group" aria-label="${L.label} in ${escape(optionName(option))}"><span class="sm-lens-count">${icon(L.glyph)}${n?`${n} ${L.noun(n)}`:L.none}</span>${n?`<span class="sm-lens-step">${btn(-1,'chevron-up','Previous')}<span aria-live="polite">${at}</span>${btn(1,'chevron-down','Next')}</span>`:''}</div>`;
+  }
+  // The folded tail of a long column: a paper stack of the less important arguments, with how many are highlighted.
+  function rowFold(option,rest,shown,lit) {
+    const mode=lensOf(option),restLit=rest.filter(i=>i.versions.some(id=>lit.has(id))).length;
+    const less=shown>ROW_LIMIT?`<button type="button" class="sm-link-button cursor-interaction" data-action="less-rows" data-id="${option}" data-key="less-rows-${option}">Fold back to ${ROW_LIMIT}</button>`:'';
+    if(!rest.length) return less?`<div class="sm-row-fold sm-row-fold-open">${less}</div>`:'';
+    return `<div class="sm-row-fold"><button type="button" class="sm-more-rows cursor-interaction" data-action="more-rows" data-id="${option}" data-key="more-rows-${option}"><span class="sm-more-edges" aria-hidden="true"><i></i><i></i></span><strong>${rest.length} more ${rest.length===1?'argument':'arguments'}</strong><span>less important · show ${Math.min(ROW_PAGE,rest.length)}</span>${restLit?`<span class="sm-lens-tag">${icon(LENSES[mode].glyph)}${restLit} with ${LENSES[mode].label.toLowerCase()}</span>`:''}</button>${less}</div>`;
+  }
+  function hiddenColumn(option) {
+    const n=ideas.filter(i=>i.option===option).length,name=escape(optionName(option));
+    return `<section class="sm-col-hidden" data-option="${option}" aria-label="${name} (hidden)"><button type="button" class="sm-column-head cursor-interaction" data-action="show-col" data-id="${option}" data-key="show-col-${option}" aria-label="Show ${name}" data-tooltip="Show column">${icon('eye')}<span class="sm-col-hidden-name">${name}</span><span class="sm-col-hidden-count">${n} ${n===1?'argument':'arguments'}</span></button></section>`;
+  }
   function column(option) {
-    const rows=ideas.filter(i=>i.option===option);
-    if(state.updated&&rows.length>1)[rows[0],rows[1]]=[rows[1],rows[0]];
+    if(isHidden(option)) return hiddenColumn(option);
+    const all=rowsOf(option),lit=matchesIn(option),n=shownRows(option,all),rows=all.slice(0,n),rest=all.slice(n);
     // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
     let rowsHtml='',undoShown=false;
     const undo=state.undo?.option===option?undoMarkup():'';
     rowsHtml+=moveBanner(option);
     if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
-    rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
+    rows.forEach(r=>{rowsHtml+=row(r,lit);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&&!undoShown) rowsHtml+=undo;
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div><div class="sm-col-axis" aria-hidden="true">${icon('arrow-down')}Most important first</div>${rowsHtml}${addArgument(option)}</section>`;
+    rowsHtml+=rowFold(option,rest,n,lit);
+    const first=option===firstVisible();
+    return `<section class="sm-column ${first?'sm-first':''}" data-option="${option}" ${lensOf(option)?`data-lens="${lensOf(option)}"`:''} aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${first?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${lensControl(option)}${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div>${lensBar(option)}${rowsHtml}${addArgument(option)}</section>`;
   }
   const MAX_OPTIONS=4;
+  // ── Strongest case: each option's three most important arguments, each in its best-articulated wording. ──
+  const CASE_SIZE=3;
+  function caseColumn(option) {
+    const rows=rowsOf(option),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const items=top.map((idea,k)=>{
+      const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
+      const facts=`<span class="sm-case-facts"><span title="Importance: ${imp} net votes">${icon('arrow-up-narrow-wide')}${imp}</span>${n>1?`<span title="The best-articulated of ${n} wordings">${icon('layers')}best of ${n}</span>`:''}</span>`;
+      return `<section class="sm-idea sm-case-item" data-node="${idea.id}"><span class="sm-case-rank" aria-hidden="true">${k+1}</span><article class="sm-card sm-case-card" data-card="${id}"><button type="button" class="sm-claim-button cursor-interaction" data-action="case-open" data-id="${id}" data-key="claim-${id}" aria-label="Argument ${k+1}: ${escape(cards[id].claim)}. Open it on the board."><span class="sm-claim">${escape(cards[id].claim)}</span></button><div class="sm-card-meta">${credibility(id)}${facts}</div></article></section>`;
+    }).join('');
+    const note=!rows.length?`<p class="sm-case-note sm-case-thin">No arguments yet: this side has no case.</p>`:rows.length<2?`<p class="sm-case-note sm-case-thin">Only one argument so far. This side needs a stronger case.</p>`:'';
+    const more=rest>0?`<p class="sm-case-note">${rest} more ${rest===1?'argument':'arguments'} on the board.</p>`:'';
+    return `<section class="sm-column sm-case-column ${option===doc.options[0].id?'sm-first':''}" data-option="${option}" aria-label="The case for ${escape(optionName(option))}"><canvas class="sm-texture" aria-hidden="true"></canvas><div class="sm-column-head"><h2>${escape(optionName(option))}</h2></div><p class="sm-case-caption">${top.length?`Its ${top.length===1?'argument':`${top.length} most important arguments`}, in the best wording`:'The case for this option'}</p>${items}${note}${more}</section>`;
+  }
   function boardMarkup() {
+    if(state.zoom==='case') return doc.options.map(o=>caseColumn(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>');
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&&!doc.options.some(o=>o.id===state.undo.option)?`<div class="sm-board-undo">${undoMarkup()}</div>`:'';
     const add=doc.options.length<MAX_OPTIONS?`<div class="sm-col-gap" aria-hidden="true"></div><div class="sm-add-option-col"><button type="button" class="sm-add-option cursor-interaction" data-action="add-option" data-key="add-option" aria-label="Add an option" data-tooltip="Add an option">${icon('plus')}<span class="sm-add-short">Option</span><span class="sm-add-long">Add an option</span></button></div>`:'';
     return orphanUndo+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
   }
   function boardColumns() {
-    const wide=state.open?ideaOf(state.open)?.option:null;
+    if(state.zoom==='case') return doc.options.map(()=>'minmax(0,1fr)').join(' 32px ');
+    const wide=state.open?ideaOf(state.open)?.option:null,hiddenN=doc.options.filter(o=>isHidden(o.id)).length;
     // While a row is unfolded, the other columns keep a readable width (when there is room for it).
-    const rest=!wide||doc.options.length>3?'minmax(0,1fr)':`minmax(${doc.options.length===2?260:200}px,1fr)`;
-    return doc.options.map(o=>o.id===wide?'minmax(0,2.6fr)':rest).join(' 32px ')+(doc.options.length<MAX_OPTIONS?' 20px max-content':'');
+    const visibleN=doc.options.length-hiddenN,rest=!wide||visibleN>3?'minmax(0,1fr)':`minmax(${visibleN===2?260:200}px,1fr)`;
+    return doc.options.map(o=>isHidden(o.id)?'44px':o.id===wide?'minmax(0,2.6fr)':rest).join(' 32px ')+(doc.options.length<MAX_OPTIONS?' 20px max-content':'');
   }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
@@ -1137,8 +1337,8 @@
 
   const menuEl=root.querySelector('.sm-menu');
   function renderMenu() {
-    const open=!!state.menu&&(!!cards[state.menu]||doc.options.some(o=>'option:'+o.id===state.menu));
-    menuEl.setAttribute('aria-label',state.menu?.startsWith('option:')?'Option settings':'Version options');
+    const open=!!state.menu&&(!!cards[state.menu]||doc.options.some(o=>'option:'+o.id===state.menu||'lens:'+o.id===state.menu));
+    menuEl.setAttribute('aria-label',state.menu?.startsWith('option:')?'Option settings':state.menu?.startsWith('lens:')?'Highlight':'Version options');
     if(!open) state.menu=null;
     menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):'';
   }
@@ -1216,12 +1416,12 @@
     detachVersion(card);
     cards[card].idea=targetId;target.versions.push(card);
     state.open=targetId;state.composing=false;state.expanded=card;
-    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:'Version moved.',card,idea:from});
+    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:'Combined.',card,idea:from});
   }
   function splitVersion(card) {
     const snapshot=takeSnapshot(),old=ideaOf(cards[card].idea),ideaId='i'+(doc.nextId++);
     detachVersion(card);
-    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:'you'});
+    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:'you',at:new Date().toISOString()});
     cards[card].idea=ideaId;
     if(state.expanded===card&&state.open===old.id) state.expanded=null;
     startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:'Split into its own argument.',card,idea:old.id});
@@ -1320,7 +1520,8 @@
     board.querySelectorAll('.sm-column').forEach(col=>{
       const canvas=col.querySelector('.sm-texture'),box=canvas.getBoundingClientRect();
       if(!box.width||!box.height) return;
-      const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
+      // A long column can be very tall; keep the canvas under browsers' size limits by lowering its resolution.
+      const dpr=Math.min(2,window.devicePixelRatio||1,16000/box.height),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
       if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}
       const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,box.width,box.height);
       const rows=[...col.querySelectorAll('[data-node]')].map(node=>{
@@ -1333,14 +1534,20 @@
       // Filled cells of one size. Importance sets density: the most important row is a full honeycomb,
       // the least important keeps only a scattering (sparse). Articulation fades tone across an unfolded row.
       ctx.fillStyle=ink;
-      for(let j=0;j*dy<box.height+R;j++) for(let i=-1;i*dx<box.width+R;i++) {
-        const cx=i*dx+(j%2?dx/2:0),cy=j*dy;
-        const row=rows.reduce((a,b)=>Math.abs(b.mid-cy)<Math.abs(a.mid-cy)?b:a);
+      // Rows run top to bottom, so the nearest row is found once per line of cells by walking forward.
+      let near=0;
+      for(let j=0;j*dy<box.height+R;j++) {
+        const cy=j*dy;
+        while(near<rows.length-1&&Math.abs(rows[near+1].mid-cy)<=Math.abs(rows[near].mid-cy)) near++;
+        const row=rows[near];
+        for(let i=-1;i*dx<box.width+R;i++) {
+        const cx=i*dx+(j%2?dx/2:0);
         if(cellChance(i,j)>sparse+(1-sparse)*row.imp) continue;
         let art=1;
         if(row.versions.length>1){const gapTo=v=>cx<v.l?v.l-cx:cx>v.r?cx-v.r:0;art=row.versions.reduce((a,b)=>gapTo(b)<gapTo(a)?b:a).art/row.maxArt;}
         ctx.globalAlpha=fill*(floor+(1-floor)*Math.max(0,art));
         ctx.beginPath();hexPath(ctx,cx,cy,R*size);ctx.fill();
+        }
       }
       ctx.globalAlpha=1;
     });
@@ -1370,7 +1577,7 @@
     const line=(x1,y1,x2,y2)=>`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=>`<path d="${d}"/>`;
     const port=(x,y)=>`<circle cx="${x}" cy="${y}" r="3"/>`;
-    const columns=[...board.querySelectorAll('.sm-column')];
+    const columns=[...board.querySelectorAll('.sm-column,.sm-col-hidden')];
     const narrow=window.matchMedia('(max-width:640px)').matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=>{
@@ -1400,13 +1607,23 @@
   const LOGO=siteEl.querySelector('.sm-logo').outerHTML;
   const SORTS = {hot:['flame','Hot'],new:['sparkles','New'],top:['trophy','Top'],help:['hand-helping','Needs help']};
   // What the list shows about each board, computed from the board itself so edits there show up here.
+  // A board's score is not a separate up/down vote: it adds up the work on the board itself. Importance votes,
+  // articulation votes, evidence assessments, and comments each count once (yours included).
+  function activity(d,comments) {
+    const cs=Object.entries(d.cards);
+    const importance=d.ideas.reduce((n,i)=>n+Math.max(0,i.score)+(state.importance[i.id]?1:0),0);
+    const wording=cs.reduce((n,[id,c])=>n+Math.max(0,c.pref||0)+(state.preference[id]?1:0),0);
+    const evidence=cs.reduce((n,[id,c])=>n+(c.yes||0)+(c.no||0)+(state.assessments[id]?1:0),0);
+    return {importance,wording,evidence,comments,total:importance+wording+evidence+comments};
+  }
   function boardInfo(id) {
-    // Boards created in the prototype have no list details yet: new, unvoted, nobody else here.
-    const d=docs[id],f=FEED[id]||{score:d.question.org==='none'?null:0,at:new Date(NOW).toISOString(),here:[],people:1,comments:0},vote=state.feedVotes[id]||0;
+    // Boards created in the prototype have no list details yet: new, nobody else here.
+    const d=docs[id],f=FEED[id]||{at:new Date(NOW).toISOString(),here:[],people:1,comments:0};
     const options=d.options.map(o=>({name:o.name,n:d.ideas.filter(i=>i.option===o.id).length}));
     const thin=options.filter(o=>o.n<2);
-    return {id,d,f,options,thin,space:spaceOf(d.question.org),score:f.score===null?null:f.score+vote,vote,
-      comments:d.comments.filter(c=>!c.deleted).length+f.comments,hours:(NOW-Date.parse(f.at))/3.6e6};
+    const comments=d.comments.filter(c=>!c.deleted).length+f.comments,act=activity(d,comments);
+    // A private draft in Personal has no audience yet, so it shows as a draft instead of a score.
+    return {id,d,f,options,thin,space:spaceOf(d.question.org),score:d.question.org==='none'?null:act.total,act,comments,hours:(NOW-Date.parse(f.at))/3.6e6};
   }
   // Home shows your private spaces and the communities you've joined; a space shows only its own steelmen.
   function visibleBoards() {
@@ -1427,9 +1644,10 @@
   }
   // A list item keeps to the essentials: votes, where and who, the question, its options, and a miniature.
   function post(b) {
-    const q=b.d.question,vb=(v,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="feed-vote" data-id="${b.id}" data-vote="${v}" data-key="feed-${v>0?'up':'down'}-${b.id}" aria-pressed="${b.vote===v}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
+    const q=b.d.question,a=b.act;
+    const why=`${b.score} contributions: ${a.importance} importance votes, ${a.wording} articulation votes, ${a.evidence} evidence checks, ${a.comments} comments`;
     const vote=b.score===null?`<span class="sm-post-draft">Draft</span>`
-      :`${vb(1,'arrow-big-up','Upvote')}<span class="sm-post-score" aria-label="${b.score} points">${b.score}</span>${vb(-1,'arrow-big-down','Downvote')}`;
+      :`<span class="sm-post-activity" role="img" aria-label="${why}" title="${why}">${icon('activity')}<span class="sm-post-score">${b.score>=1000?(b.score/1000).toFixed(1).replace(/\.0$/,'')+'k':b.score}</span></span>`;
     const options=b.options.map(o=>`<li class="${o.n<2?'sm-thin':''}">${escape(o.name)}<b title="${o.n} ${o.n===1?'argument':'arguments'}">${o.n}</b></li>`).join('');
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`<span><span class="sm-faces">${b.f.here.slice(0,3).map(u=>`<span title="${escape(u)}">${escape(userInitials(u))}</span>`).join('')}</span>${here} here now</span>`:'';
@@ -1482,9 +1700,10 @@
     if(state.view==='board') {
       const s=spaceOf(doc.question.org);
       const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility==='link';
-      const zoomBtn=(level,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="zoom" data-id="${level}" data-key="zoom-${level}" aria-pressed="${state.zoom===level}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}</button>`;
-      tools=`<div class="sm-zoom" role="group" aria-label="Zoom">${zoomBtn('overview','zoom-out','Overview (−)')}${zoomBtn('read','zoom-in','Read (+)')}</div>`
-        +(f.here.length?`<span class="sm-site-faces" aria-label="Also here">${f.here.map(u=>`<button type="button" class="cursor-interaction" data-action="follow" data-id="${escape(u)}" data-key="follow-${escape(u)}" data-follow="${escape(u)}" aria-label="Go to where ${escape(u)} is">${escape(userInitials(u))}</button>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
+      const viewBtn=(level,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="zoom" data-id="${level}" data-key="zoom-${level}" aria-pressed="${state.zoom===level}" data-tooltip="${label}">${icon(glyph)}<span>${label}</span></button>`;
+      tools=`<div class="sm-zoom" role="group" aria-label="View">${viewBtn('read','layout-grid','Board')}${viewBtn('case','award','Strongest case')}</div>`
+        // Who else has this board open: faces only. They don't appear on cards.
+        +(f.here.length?`<span class="sm-site-faces" role="img" aria-label="Also here: ${escape(f.here.join(', '))}${f.more?` and ${f.more} more`:''}">${f.here.map(u=>`<span title="${escape(u)} is here">${escape(userInitials(u))}</span>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
         +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
       middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
     } else {
@@ -1536,7 +1755,6 @@
     }
     const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
-    if(d.space!=='none') state.feedVotes[id]=1; // your own steelman starts with your upvote
     const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError='';state.createDraft={q:'',options:['',''],space:null};
     leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);
@@ -1597,56 +1815,8 @@
     return null;
   }
 
-  // ── Presence (simulated): classmates move between cards; now and then one starts writing (a typing bubble). Nothing they do changes the board. ──
-  let presence={},presenceTimer=0;
-  const reducedMotion2=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function visibleCards() { return [...board.querySelectorAll('.sm-card[data-card]')].map(el=>el.dataset.card); }
-  function startPresence() {
-    stopPresence();
-    const people=FEED[state.boardId]?.here||[],ids=visibleCards();
-    presence=Object.fromEntries(people.map((u,i)=>[u,{card:ids[(i*2+1)%Math.max(ids.length,1)],writing:false}]));
-    const tick=()=>{
-      const users=Object.keys(presence),ids=visibleCards();
-      if(users.length&&ids.length){
-        const u=users[Math.floor(Math.random()*users.length)],p=presence[u];
-        if(!p.writing&&Math.random()<.3&&ids.includes(p.card)) p.writing=true;
-        else {p.writing=false;p.card=ids[Math.floor(Math.random()*ids.length)];}
-        paintPresence();
-      }
-      presenceTimer=setTimeout(tick,2600+Math.random()*2600);
-    };
-    presenceTimer=setTimeout(tick,1800);
-    paintPresence();
-  }
-  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};painted={};root.querySelectorAll('.sm-presence').forEach(el=>el.remove()); }
-  // Badges are painted onto the cards directly, so focus and drafts are never disturbed.
-  // Only cards whose viewers changed are repainted, and only someone who just arrived (or just started writing) pops in.
-  let painted={};
-  function paintPresence() {
-    if(state.view!=='board'){root.querySelectorAll('.sm-presence').forEach(el=>el.remove());painted={};return;}
-    const byCard={};
-    for(const [u,p] of Object.entries(presence)) (byCard[p.card] ||= []).push(u);
-    const sig=id=>(byCard[id]||[]).map(u=>u+(presence[u].writing?'*':'')).join(',');
-    board.querySelectorAll('.sm-presence').forEach(el=>{const id=el.parentElement.dataset.card;if(sig(id)!==el.dataset.sig)el.remove();});
-    for(const [id,users] of Object.entries(byCard)){
-      const el=board.querySelector(`.sm-card[data-card="${id}"]`);if(!el||el.querySelector(':scope > .sm-presence'))continue;
-      const before=painted[id]||'',writer=users.find(u=>presence[u].writing);
-      const arrive=u=>before.split(',').includes(u)||before.split(',').includes(u+'*')?'':' sm-arrive';
-      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" data-sig="${sig(id)}" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge${arrive(u)}" title="${escape(u)}${presence[u].writing?' is writing a version':''}">${escape(userInitials(u))}</span>`).join('')}${writer?`<span class="sm-typing${before.includes(writer+'*')?'':' sm-arrive'}"><i></i><i></i><i></i></span>`:''}</span>`);
-    }
-    painted=Object.fromEntries(Object.keys(byCard).map(id=>[id,sig(id)]));
-    siteEl.querySelectorAll('[data-follow]').forEach(b=>{const p=presence[b.dataset.follow],c=p&&cards[p.card];b.title=c?`${b.dataset.follow} · ${p.writing?'writing on':'viewing'} “${short(p.card)}”`:b.dataset.follow;});
-  }
-  function follow(user) {
-    const p=presence[user],el=p&&board.querySelector(`.sm-card[data-card="${p.card}"]`);
-    if(!el){announce(`${user} is somewhere you can’t see right now.`);return;}
-    el.scrollIntoView({block:'center',behavior:reducedMotion2()?'auto':'smooth'});
-    el.classList.add('sm-followed');setTimeout(()=>el.classList.remove('sm-followed'),1600);
-    announce(`${user} is ${p.writing?'writing a version of':'looking at'} “${short(p.card)}”.`);
-  }
-
-  // ── Zoom ──
-  // Two levels: Read is the board as it is; Overview condenses every card so the whole debate fits.
+  // ── Views ──
+  // Board is the full board; Strongest case shows each option's top arguments in their best wording.
   // Moving between them scales the scene around one card, so you keep your place.
   const sceneEl=root.querySelector('.sm-scene');
   function centerCard() {
@@ -1658,32 +1828,32 @@
     if(state.zoom===level) return;
     const sel=cardId?`.sm-card[data-card="${cardId}"]`:'.sm-head';
     const before=root.querySelector(sel)?.getBoundingClientRect();
-    if(level==='overview') Object.assign(state,{open:null,expanded:null,drawer:null,menu:null,share:false,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null});
+    if(level==='case') Object.assign(state,{open:null,expanded:null,drawer:null,menu:null,share:false,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null});
     state.zoom=level;render(level==='read'&&cardId?'claim-'+cardId:'zoom-'+level);save();
     const target=root.querySelector(sel);if(!target)return;
     target.scrollIntoView({block:'center'});
     if(cardId&&level==='read'){target.classList.add('sm-arrived');setTimeout(()=>target.classList.remove('sm-arrived'),900);}
-    if(!before||reducedMotion2())return;
+    if(!before||reducedMotion())return;
     const after=target.getBoundingClientRect(),scene=sceneEl.getBoundingClientRect(),k=before.width/after.width;
     const tx=before.left-scene.left-(after.left-scene.left)*k,ty=before.top-scene.top-(after.top-scene.top)*k;
     sceneEl.style.transformOrigin='0 0';
     play(sceneEl,[{transform:`translate(${tx}px,${ty}px) scale(${k})`},{transform:'none'}],{duration:motion('slow')});
     animateWires(460);
-    announce(level==='overview'?'Overview: the whole board, condensed. Choose a card to read it.':'Reading.');
+    announce(level==='case'?'Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.':'Board.');
   }
   // Opening a board grows it out of its miniature in the list; leaving shrinks it back. Positions are relative to the prototype.
   const relBox=el=>{const r=el.getBoundingClientRect(),o=root.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top,w:r.width,h:r.height};};
   // A rect seen on screen before a jump, expressed in the prototype's coordinates after it.
   const fromViewport=tv=>{if(!tv)return null;const o=root.getBoundingClientRect();return {x:tv.left-o.left,y:tv.top-o.top,w:tv.width,h:tv.height};};
   function growFrom(T) {
-    if(!T||reducedMotion2())return;
+    if(!T||reducedMotion())return;
     const F=relBox(surfaceEl),k=T.w/F.w;
     play(surfaceEl,[{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`},{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)'}],{duration:motion('slow')});
     animateWires(520);
   }
   function shrinkInto(F,boardId) {
     const thumb=root.querySelector(`.sm-post[data-board="${boardId}"] .sm-thumb`);
-    if(!thumb||reducedMotion2())return;
+    if(!thumb||reducedMotion())return;
     thumb.closest('.sm-post').scrollIntoView({block:'center'});
     const T=relBox(thumb),k=T.w/F.w;
     const done=()=>{surfaceEl.getAnimations().forEach(x=>x.cancel());if(state.view==='home')surfaceEl.hidden=true;surfaceEl.removeAttribute('style');};
@@ -1696,18 +1866,17 @@
 
   // Leaving a board closes whatever was open on it; votes stay, keyed by card.
   function leaveBoard() {
-    stopPresence();
-    Object.assign(state,{zoom:'read',share:false,shareQuery:'',copied:'',open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
+    Object.assign(state,{zoom:'read',step:{},shownRows:{},shownVersions:{},share:false,shareQuery:'',copied:'',open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
   }
   function renderView(focusKey) {
     const home=state.view==='home';
     homeEl.hidden=!home; surfaceEl.hidden=home; root.toggleAttribute('data-drawer',false);
     if(home) root.dataset.zoom='';
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
-    else {render();startPresence();}
+    else render();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space','sort','feed-vote','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-submit']);
+  const HOME_ACTIONS=new Set(['space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
@@ -1734,12 +1903,11 @@
       announce(id==='all'?'Home: steelmen from your spaces and communities.':`${spaceOf(id).name}.`);return;
     }
     if(action==='sort') {state.sort=id;renderHome();announce(`Sorted by ${SORTS[id][1].toLowerCase()}.`);}
-    if(action==='feed-vote') {const v=Number(trigger.dataset.vote);state.feedVotes[id]=state.feedVotes[id]===v?0:v;renderHome();announce(state.feedVotes[id]?(v>0?'Upvoted.':'Downvoted.'):'Vote withdrawn.');}
     if(action==='join') {state.joined[id]=!state.joined[id];renderHome();announce(state.joined[id]?`Joined ${spaceOf(id).name}.`:`Left ${spaceOf(id).name}.`);}
     root.querySelector(`[data-key="${trigger.dataset.key}"]`)?.focus({preventScroll:true});
   }
 
-  function render(focusKey, motion='') {
+  function render(focusKey, kind='') {
     root.dataset.zoom=state.view==='board'?state.zoom:'';
     surfaceEl.dataset.canvas=spaceOf(doc.question.org).canvas;
     renderSite();renderShare();
@@ -1755,43 +1923,69 @@
     renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
-    if(newTrack&&trackIdea===state.open&&motion!=='added') newTrack.scrollLeft=scrollLeft;
+    if(newTrack&&trackIdea===state.open&&kind!=='added') newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
     if(focusKey){const el=root.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});if(el?.matches('input[data-select]'))el.select();}
-    if(!reduced&&motion) {
+    if(!reduced&&kind) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
       if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:motion('slow')});
-      if(motion==='unfold'||motion==='fold') {
+      if(kind==='unfold'||kind==='fold') {
         // The leading card is the same card before and after: ease its width instead of swapping it.
         const lead=ordered(ideaOf(state.open||lastToggled))[0], face=board.querySelector(`.sm-card[data-card="${lead}"]`), from=beforeFaces.get(lead);
         if(face&&from) play(face,[{width:from.width+'px'},{width:face.getBoundingClientRect().width+'px'}],{duration:motion('slow')});
       }
-      if(motion==='unfold'&&newTrack) {
+      if(kind==='unfold'&&newTrack) {
         const first=newTrack.querySelector('.sm-version-face'), x=first.getBoundingClientRect().left;
         const bar=board.querySelector('.sm-track-axis');
         if(bar) play(bar,[{height:'0px',marginBottom:'0px',opacity:0},{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1}],{duration:motion('slow')});
         const arriving=[...newTrack.children].slice(2);
         arriving.forEach((el,index)=>play(el,[{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0},{transform:'none',opacity:1}],{duration:motion('slow'),delay:Math.floor(index/2)*45,fill:'backwards'}));
       }
-      if(motion==='detail'&&state.expanded) {
+      if(kind==='detail'&&state.expanded) {
         const reveal=board.querySelector(`#sm-reveal-${state.expanded}`);
         if(reveal) play(reveal,[{height:'0px',opacity:0},{height:reveal.offsetHeight+'px',opacity:1}]);
       }
-      if(motion==='added') {
+      if(kind==='added') {
         const face=board.querySelector(`.sm-card[data-card="${state.expanded}"]`);
         if(face) play(face,[{transform:'translateY(8px)',opacity:0},{transform:'none',opacity:1}],{duration:motion('medium')});
       }
-      if(motion==='reorder') board.querySelectorAll('[data-node]').forEach(el=>{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:motion('slow'),easing:EASE});}});
+      if(kind==='reorder') board.querySelectorAll('[data-node]').forEach(el=>{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:motion('slow'),easing:EASE});}});
     }
-    if(motion==='unfold'&&newTrack) {
+    if(kind==='unfold'&&newTrack) {
       // Keep the unfolded row in view without jumping the page.
       const box=newTrack.closest('[data-node]').getBoundingClientRect();
       if(box.bottom>window.innerHeight) newTrack.closest('[data-node]').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
     }
-    animateWires(motion&&!reduced?720:0);
-    paintPresence();
+    animateWires(kind&&!reduced?720:0);
   }
   let lastToggled=null;
+  // Moving your view to the k-th highlighted wording in a column: unfold whatever hides it (the column's fold, its row's
+  // stack, the row's own fold), then reveal() scrolls down and along to it and rings it. The order never changes.
+  function goTo(option,k) {
+    const id=matchList(option)[k];if(!id) return null;
+    state.step[colKey(option)]=k;
+    const idea=ideaOf(cards[id].idea),rows=rowsOf(option),r=rows.indexOf(idea);
+    if(r>=(state.shownRows[colKey(option)]||ROW_LIMIT)) state.shownRows[colKey(option)]=r+1;
+    const all=ordered(idea),v=all.indexOf(id);
+    if(v>0){ if(state.open!==idea.id){state.open=idea.id;state.composing=false;lastToggled=idea.id;} if(v>=(state.shownVersions[idea.id]||VERSION_LIMIT)) state.shownVersions[idea.id]=v+1; }
+    return id;
+  }
+  function reveal(cardId) {
+    const el=board.querySelector(`.sm-card[data-card="${cardId}"]`);if(!el) return;
+    el.scrollIntoView({block:'center',inline:'center',behavior:reducedMotion()?'auto':'smooth'});
+    el.classList.remove('sm-arrived');void el.offsetWidth;el.classList.add('sm-arrived');setTimeout(()=>el.classList.remove('sm-arrived'),1400);
+  }
+  // Combining: a direct move for the owner or the version's author; a suggestion for other contributors.
+  function combine(card,targetId) {
+    if(canMove(card)) {
+      moveVersion(card,targetId);lastToggled=targetId;
+      announce('Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+      return {focus:'undo',motion:'unfold'};
+    }
+    const id='sg'+(doc.nextId++);doc.suggestions.push({id,card,into:targetId,by:'you',at:new Date().toISOString()});
+    announce('Suggestion added. The board’s owner or the version’s author decides.');
+    return {focus:'suggest-dismiss-'+id,motion:''};
+  }
   async function fold(id, focus) {
     busy=true; await foldOut(id); busy=false;
     lastToggled=id;
@@ -1868,7 +2062,7 @@
   });
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
-    const {action,id,key,vote}=trigger.dataset; let focus=key,motion='';
+    const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.querySelector('small')?.textContent||'Not available.');return;}
     if(action==='card-menu') {
@@ -1891,8 +2085,57 @@
     if(action==='move-card') {state.moving=id;state.expanded=null;const first=ideas.find(i=>i.option===ideaOf(cards[id].idea).option&&i.id!==cards[id].idea);focus='move-here-'+first.id;announce('Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.');}
     if(action==='cancel-move') {const card=state.moving;state.moving=null;focus='menu-'+card;announce('Move cancelled.');}
     if(action==='move-here') {
-      const card=state.moving;state.moving=null;moveVersion(card,id);focus='undo';motion='unfold';lastToggled=id;
-      announce('Moved. It now sits with the other versions of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+      const card=state.moving;state.moving=null;const r=combine(card,id);focus=r.focus;motion=r.motion;
+    }
+    if(action==='suggest-accept') {
+      const g=doc.suggestions.find(x=>x.id===id);if(!g||!canMove(g.card))return;
+      moveVersion(g.card,g.into);doc.suggestions=doc.suggestions.filter(x=>x.id!==id);focus='undo';motion='unfold';lastToggled=g.into;
+      announce('Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+    }
+    if(action==='suggest-dismiss') {
+      const g=doc.suggestions.find(x=>x.id===id);doc.suggestions=doc.suggestions.filter(x=>x.id!==id);
+      focus=g?'stack-'+cards[g.card]?.idea:null;announce(g?.by==='you'?'Suggestion withdrawn.':'Suggestion dismissed.');
+    }
+    if(['hide-col','solo-col','show-col'].includes(action)) {
+      const option=action==='show-col'?id:id.slice(7);
+      if(action==='show-col') delete state.hiddenCols[colKey(option)];
+      if(action==='hide-col') state.hiddenCols[colKey(option)]=true;
+      if(action==='solo-col') doc.options.forEach(o=>{if(o.id===option)delete state.hiddenCols[colKey(o.id)];else state.hiddenCols[colKey(o.id)]=true;});
+      if(state.open&&isHidden(ideaOf(state.open)?.option)){state.open=null;state.composing=false;}
+      if(state.composingIdea&&isHidden(state.composingIdea)) state.composingIdea=null;
+      state.menu=null;motion='reorder';
+      focus=action==='show-col'?'menu-option:'+option:action==='hide-col'?'show-col-'+option:'menu-option:'+option;
+      announce(action==='show-col'?`${optionName(option)} is showing again.`:action==='hide-col'?`${optionName(option)} is hidden. Its strip brings it back.`:`Showing only ${optionName(option)}. The other options are strips at the side.`);
+    }
+    if(action==='lens-set') {
+      const mode=trigger.dataset.lens,k=colKey(id);state.menu=null;
+      if(mode==='off'){delete state.lens[k];delete state.step[k];focus='menu-lens:'+id;announce('Highlight off.');}
+      else {
+        state.lens[k]=mode;delete state.step[k];
+        // Turning a highlight on moves your view to the first match.
+        const first=matchList(id)[0];
+        if(first){revealAfter=goTo(id,0);focus='lens-next-'+id;}else focus='menu-lens:'+id;
+        announce(first?`${LENSES[mode].label}: ${matchList(id).length} in ${optionName(id)}. Showing the first; use the arrows under the header for the next.`:`${LENSES[mode].none}`);
+      }
+    }
+    if(action==='lens-step') {
+      const n=matchList(id).length;if(!n)return;
+      const k=state.step[colKey(id)],next=Number.isInteger(k)?(k+Number(trigger.dataset.dir)+n)%n:(Number(trigger.dataset.dir)>0?0:n-1);
+      revealAfter=goTo(id,next);announce(`${next+1} of ${n}: “${short(revealAfter)}”.`);
+    }
+    if(action==='more-rows') {
+      const all=rowsOf(id),n=shownRows(id,all);state.shownRows[colKey(id)]=n+ROW_PAGE;
+      focus=all[n]?'stack-'+all[n].id:key;announce(`Showing ${Math.min(all.length,n+ROW_PAGE)} of ${all.length} arguments.`);
+    }
+    if(action==='less-rows') {state.shownRows[colKey(id)]=ROW_LIMIT;if(state.open&&rowsOf(id).findIndex(r=>r.id===state.open)>=ROW_LIMIT){state.open=null;state.composing=false;}focus='more-rows-'+id;announce(`Folded back to the ${ROW_LIMIT} most important arguments.`);}
+    if(action==='more-versions') {
+      const idea=ideaOf(id),all=ordered(idea),n=shownVersions(idea,all);state.shownVersions[id]=n+VERSION_PAGE;
+      focus=all[n]?'claim-'+all[n]:key;revealAfter=all[n]||null;announce(`Showing ${Math.min(all.length,n+VERSION_PAGE)} of ${all.length} wordings.`);
+    }
+    if(action==='case-open') {
+      // Open the card on the board; if it isn't its row's leading wording, unfold the row.
+      const idea=cards[id].idea;if(ordered(ideaOf(idea))[0]!==id){state.open=idea;lastToggled=idea;}
+      zoomTo('read',id);return;
     }
     if(action==='split-card') {splitVersion(id);focus='undo';announce('Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.');}
     if(action==='edit-card') {
@@ -1945,11 +2188,13 @@
       if(state.open&&state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
       lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?'draft':'claim-'+ordered(ideaOf(id))[0];motion='unfold';
+      // With a highlight on, the row opens on its first highlighted wording (and shows it, if it was folded away).
+      const lit=matchesIn(ideaOf(id).option),hit=ordered(ideaOf(id)).find(v=>lit.has(v));
+      if(hit&&!state.composing){const all=ordered(ideaOf(id)),i=all.indexOf(hit);if(i>=(state.shownVersions[id]||VERSION_LIMIT))state.shownVersions[id]=i+1;revealAfter=hit;}
       announce('Versions unfolded in place, best articulated first. Browsing does not cast a vote.');
     }
     if(action==='fold') {fold(id);return;}
     if(action==='zoom') {zoomTo(id);return;}
-    if(action==='follow') {follow(id);return;}
     if(action==='share') {
       state.share=!state.share;state.copied='';state.shareQuery='';
       if(state.share){state.drawer=null;focus='share-q';announce('Sharing opened. Invite people, or change who can get in with the link.');}
@@ -2038,6 +2283,7 @@
     if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     render(focus,motion);save();
     if(toast) voteToast(toast);
+    if(revealAfter) reveal(revealAfter);
   });
   root.addEventListener('keydown',event=>{
     if(event.key==='Enter'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
@@ -2061,11 +2307,6 @@
       if(event.key==='Tab'){closeMenu();return;}
     }
     if(event.key==='Escape'&&state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector('[data-key="nav-toggle"]')?.focus();return;}
-    const typing=event.target.closest?.('input,textarea,select,[contenteditable]');
-    if(state.view==='board'&&!typing&&!event.metaKey&&!event.ctrlKey&&!busy){
-      if(event.key==='-'||(event.shiftKey&&event.key==='!')){event.preventDefault();zoomTo('overview');return;}
-      if(event.key==='='||event.key==='+'||(event.shiftKey&&event.key===')')){event.preventDefault();zoomTo('read');return;}
-    }
     if(event.key!=='Escape'||busy||state.view!=='board')return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery='';render('share');announce('Sharing closed.');return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}
@@ -2078,9 +2319,9 @@
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render('compose-'+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);return;}
-    // With nothing open, Escape zooms out: Read → Overview → back to the list.
+    // With nothing open, Escape steps back: Strongest case → Board → the list.
     event.preventDefault();
-    if(state.zoom==='read') zoomTo('overview');
+    if(state.zoom==='case') zoomTo('read');
     else root.querySelector('[data-key="crumb-space"]')?.click();
   });
   root.addEventListener('click',event=>{
@@ -2096,16 +2337,8 @@
     const faces=[...t.querySelectorAll(':scope > .sm-card, :scope > .sm-add-card, :scope > form')],x=t.getBoundingClientRect().left;
     let i=0,best=Infinity;faces.forEach((f,k)=>{const d=Math.abs(f.getBoundingClientRect().left-x-14);if(d<best){best=d;i=k;}});
     const n=pager.querySelectorAll('.sm-pager-dots i').length;
-    pager.querySelector('.sm-pager-text').textContent=i>=n?'Add a better version':`${i+1} of ${n}${i===0?' · best articulated':i===n-1&&n>1?' · weakest':''}`;
+    pager.querySelector('.sm-pager-text').textContent=i>=n?'Add a better version':`${i+1} of ${n}${i===0?' · '+pager.dataset.first:i===n-1&&n>1?' · '+pager.dataset.last:''}`;
     pager.querySelectorAll('.sm-pager-dots i').forEach((d,k)=>d.toggleAttribute('data-on',k===i));
-  },true);
-  // In Overview, choosing a card (or a header) zooms in to read it.
-  root.addEventListener('click',event=>{
-    if(state.view!=='board'||state.zoom!=='overview'||!event.target.closest('.sm-scene'))return;
-    const card=event.target.closest('.sm-card[data-card]'),header=event.target.closest('.sm-head,.sm-column-head');
-    if(!card&&!header)return;
-    event.preventDefault();event.stopPropagation();
-    zoomTo('read',card?.dataset.card||null);
   },true);
   // A click outside the comments or settings panel closes it (buttons that open or switch it keep working).
   root.addEventListener('click',event=>{
@@ -2128,6 +2361,41 @@
     const item=event.target.closest('.sm-post');if(!item||event.target.closest('button,a,input'))return;
     homeAction('open-board',item.dataset.board,item);save();
   });
+  // Drag to combine: the merge handle in a card's footer. Other rows in the same option light up as targets; for a version
+  // in a row with several wordings, the column's "Add an argument" slot becomes "Make it a separate argument".
+  // The board is not re-rendered while dragging, so the drag isn't interrupted. Touch screens use the handle's click instead.
+  let dragCard=null;
+  function endDrag() {
+    dragCard=null;root.removeAttribute('data-dragging');
+    board.querySelectorAll('.sm-drop-target,.sm-drag-source').forEach(n=>{n.classList.remove('sm-drop-target','sm-drop-over','sm-drop-split','sm-drag-source');delete n.dataset.dropLabel;});
+  }
+  root.addEventListener('dragstart',event=>{
+    const handle=event.target.closest?.('[data-drag]');if(!handle||!cards[handle.dataset.drag])return;
+    dragCard=handle.dataset.drag;closeMenu();
+    event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragCard);
+    const face=handle.closest('.sm-card');if(face)event.dataTransfer.setDragImage(face,30,20);
+    const from=ideaOf(cards[dragCard].idea),direct=canMove(dragCard);
+    root.setAttribute('data-dragging','');
+    board.querySelector(`[data-node="${from.id}"]`)?.classList.add('sm-drag-source');
+    board.querySelectorAll('.sm-idea[data-node]').forEach(n=>{const i=ideaOf(n.dataset.node);if(i&&i.option===from.option&&i.id!==from.id){n.classList.add('sm-drop-target');n.dataset.dropLabel=direct?'Combine here':'Suggest combining here';}});
+    if(direct&&from.versions.length>1){const slot=board.querySelector(`.sm-column[data-option="${from.option}"] .sm-new-idea`);if(slot){slot.classList.add('sm-drop-target','sm-drop-split');slot.dataset.dropLabel='Make it a separate argument';}}
+    announce(direct?'Dragging. Drop it on the argument it makes the same point as.':'Dragging. Drop it on an argument to suggest combining them.');
+  });
+  root.addEventListener('dragover',event=>{
+    if(!dragCard)return;
+    const t=event.target.closest?.('.sm-drop-target');
+    board.querySelectorAll('.sm-drop-over').forEach(n=>{if(n!==t)n.classList.remove('sm-drop-over');});
+    if(!t)return;
+    event.preventDefault();event.dataTransfer.dropEffect='move';t.classList.add('sm-drop-over');
+  });
+  root.addEventListener('drop',event=>{
+    if(!dragCard)return;
+    const t=event.target.closest?.('.sm-drop-target');if(!t)return;
+    event.preventDefault();const card=dragCard,split=t.classList.contains('sm-drop-split');endDrag();
+    if(split){splitVersion(card);render('undo','reorder');save();announce('Separated into a new argument at the bottom of this option. Undo is available for ten seconds.');return;}
+    const r=combine(card,t.dataset.node);render(r.focus,r.motion);save();
+  });
+  root.addEventListener('dragend',endDrag);
   restore(window.openai?.widgetState);
   renderView();
   window.addEventListener('openai:set_globals',event=>{const incoming=event.detail?.globals?.widgetState;if(incoming&&JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});

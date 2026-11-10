@@ -398,6 +398,50 @@ Checked by the coding agent on the decoded prototype at 1440 px and 375 px.
 
 Known gap: panels close instantly; only their entrance animates.
 
+## November 10 — PM review changes
+
+Checked by the coding agent in the in-app browser at 1440 × 900 and 375 × 812 with storage cleared. Drag and drop was checked with scripted drag events on an unsandboxed copy of the export, because the sandboxed iframe doesn't receive synthetic mouse drags.
+
+| Check | Observed result |
+| --- | --- |
+| Presence | Top bar shows MC and JW faces; no badges or typing bubbles on cards |
+| Stack badge | Count (3) on the access row and ≫ on single-wording rows, both white on near-black; ≫ opens a draft with the note "Only one wording so far" and no articulation vote |
+| Column sort | Open on Sundays → Hot: the newer "Weekend opening…" row rises to the top, the survey-based "For 18 surveyed residents…" wording leads the access row, the caption reads "Hot: recent votes count for more", the axis reads hottest → cooler, and the importance axis is hidden |
+| Feed score | Library shows 348 (importance 160 + articulation 94 + evidence 88 + comments 6); no up/down buttons; Personal draft still shows "Draft" |
+| Strongest case | Each option shows its top 3 by shared importance, best wording, rank 1–3, importance and "best of 3"; "1 more argument on the board" under Open on Sundays; clicking a card returns to the board on that card |
+| Suggested combination (owner) | jordan_w's suggestion shows under "Weekend opening…"; Combine moves it into the access row as a fourth wording with an Undo bar; Undo restores both rows and the suggestion |
+| Drag to combine (owner) | Dragging "purpose" onto the study row: targets are labelled "Combine here", the hovered one turns solid; the drop leaves study with two wordings and shows Undo |
+| Drag to separate | Dragging that wording onto the column's Add-an-argument slot ("Make it a separate argument") creates a new row; first attempt failed because the drop handler cleared the target's class before reading it, fixed and rechecked |
+| Contributor (capstone board) | Handles read "Suggest combining…"; targets read "Suggest combining here"; the drop leaves rows unchanged and shows "You suggested… Withdraw" |
+| Voter (bike-lane board) | No merge handles |
+| Phone | Sort control collapses to its icon; view switch is icon-only; badges visible |
+| Browser errors | None |
+
+Follow-up the same day: the blue accent was removed (badge, merge icon, drop targets, and suggestion are grayscale again), the sort caption now starts at the card edge instead of on the connector line, and the suggestion is one line ("jordan_w: same as “Sunday hours would give some wee…”" with Combine and Dismiss). Rechecked at 1440 × 900.
+
+Known gaps: drag and drop needs a mouse (touch uses the handle's click and the pick mode); the seeded suggestion only appears on a fresh or reset library board, because saved boards keep their earlier document.
+
+## November 10 — Highlight, scale, and hidden columns
+
+Checked by the coding agent on an unsandboxed copy of the export: the library board, and a generated scale-test board (not shipped) with 200 arguments under one option and 60 under the other, four rows of 12 wordings, and random ages.
+
+| Check | Observed result |
+| --- | --- |
+| Fixed order | Library, Open on Sundays with New, Hot, and Off: rows stay access, study, purpose, weekend |
+| New (library) | "2 new wordings": the survey-based access wording and "Weekend opening…"; turning it on opened the access row on its new wording; ↓ moved to "Weekend opening…" |
+| Hot (library) | "3 hot wordings": access, its survey-based wording, and "Weekend opening…" |
+| Folded match | With the access row folded: "1 new wording inside" on its card and a ring on its badge; rows with no match fade |
+| Column fold (scale) | 10 rows per column, then "190 more arguments · less important · show 20" (and "50 more…" in the other); with New on, the fold also reads "99 with new" |
+| Stepping (scale) | ↑ from the first match wrapped to 142 of 142 and opened the fold down to row 200 (about 30,000 px of page); the card landed in view. A render with all 200 rows took about 130 ms |
+| Row fold (scale) | A 12-wording row shows 5 then "+7 more wordings · 2 new"; stepping to wording 6 opened the fold to 6, scrolled the row 1,014 px sideways, and the card was inside the row and the window |
+| Hide columns | Hiding "Keep cars" leaves a 44 px strip (name and "60 arguments"), still wired to the question; "Ban cars" widens to 1,195 px; the last visible column can't be hidden; Show only this column and the strip's click both work |
+| Importance axis | A 20 px white pill, nudged into the canvas margin, in the first visible column. Each axis is now one solid arrow toward the weaker end (down to less important, right to weaker); type is 10 px and the articulation strip is 24 px tall. The vertical arrowheads had never shown: a host `svg { max-width:100% }` squashed them to the 1 px line's width. Fixed with `max-width:none`; the head now measures 8 × 12 px |
+| Browser errors | None after the fix below |
+
+Fixed while checking: `render()` named its animation parameter `motion`, which hid the `motion()` speed function, so every animated render (unfold, fold, reorder) threw after updating the page. That skipped saving and anything after it. This predates the change; the parameter is now `kind`.
+
+Known gaps: stepping to a match deep in a long column opens every row above it (the list is contiguous), so the page can get very long; drag targets are limited to the rows shown (pick mode shows all); the scale board was generated for testing and isn't in the prototype.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

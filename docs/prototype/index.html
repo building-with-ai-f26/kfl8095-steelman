@@ -2018,10 +2018,19 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* Two to four option columns with 32px gaps; render() sets --sm-cols, widening the column with an unfolded row. */
   #steelman-study .sm-board { display:grid; grid-template-columns:var(--sm-cols,minmax(0,1fr) 32px minmax(0,1fr)); padding-top:56px; }
   /* The importance axis runs in the canvas margin, outside the first column&#x27;s panel, so the hexagons stay whole. */
-  #steelman-study .sm-column:first-of-type { padding-left:40px; }
-  #steelman-study .sm-column:first-of-type::before { left:28px; }
-  #steelman-study .sm-column:first-of-type &gt; .sm-texture { left:28px; width:calc(100% - 28px); }
-  #steelman-study .sm-col-vaxis { position:absolute; left:2px; top:100px; bottom:20px; width:16px; display:flex; justify-content:center; z-index:1; }
+  #steelman-study .sm-column.sm-first { padding-left:40px; }
+  #steelman-study .sm-column.sm-first::before { left:28px; }
+  #steelman-study .sm-column.sm-first &gt; .sm-texture { left:28px; width:calc(100% - 28px); }
+  #steelman-study .sm-col-vaxis { position:absolute; left:-4px; top:100px; bottom:20px; width:20px; display:flex; justify-content:center; z-index:1; }
+  /* The importance axis sits in a white pill, like the articulation axis of an unfolded row. */
+  #steelman-study .sm-col-vaxis .sm-axis { width:20px; padding:9px 0; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+  /* A hidden column: a narrow dark strip with its name, which brings it back. */
+  #steelman-study .sm-col-hidden { position:relative; z-index:1; min-width:0; padding-top:17px; }
+  #steelman-study .sm-col-hidden .sm-column-head { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; min-height:220px; margin:0; padding:12px 0; border:0; cursor:pointer; container-type:normal; }
+  #steelman-study .sm-col-hidden .sm-column-head:hover { background:#3a3a3a; }
+  #steelman-study .sm-col-hidden .sm-column-head svg { width:16px; height:16px; flex:none; }
+  #steelman-study .sm-col-hidden-name { writing-mode:vertical-rl; font:600 15px/1.2 var(--sm-serif); max-height:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-col-hidden-count { writing-mode:vertical-rl; font:400 11px/1 var(--sm-sans); color:#ffffffa6; }
   /* Per-column hex texture: cell size = importance, darkness = articulation. Drawn by drawTexture(). */
   #steelman-study .sm-column &gt; .sm-texture { position:absolute; left:0; top:17px; width:100%; height:calc(100% - 17px); border-radius:10px; z-index:0; pointer-events:none; }
   #steelman-study .sm-column { min-width:0; position:relative; padding:0 12px 16px; }
@@ -2031,18 +2040,61 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-head, #steelman-study .sm-column-head { background:var(--sm-ink); color:#fff; border-color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-column-head h2 { font:600 20px/1.3 var(--sm-serif); letter-spacing:-.3px; }
   #steelman-study .sm-col-axis { display:none; }
+  /* A column sorted by something other than Top says so under its header, and drops the importance axis. */
+  /* ── Highlight: marks wordings worth a look (New, Hot) without moving anything, and steps your view through them. ── */
+  #steelman-study .sm-col-axis svg { width:13px; height:13px; }
+  #steelman-study .sm-head-button.sm-lens-button { display:inline-flex; align-items:center; gap:5px; width:auto; min-width:32px; padding:0 8px; justify-content:center; font:500 12px/1 var(--sm-sans); }
+  #steelman-study .sm-head-button.sm-lens-button svg { width:15px; height:15px; }
+  #steelman-study .sm-head-button.sm-lens-button.sm-on { background:#fff; color:var(--sm-ink); }
+  #steelman-study .sm-menu-item[role=&quot;menuitemradio&quot;] &gt; span { flex:1; }
+  #steelman-study .sm-menu-item[role=&quot;menuitemradio&quot;] &gt; svg:last-child { color:var(--sm-ink); }
+  #steelman-study .sm-column-head { container-type:inline-size; }
+  @container (max-width:300px) { #steelman-study .sm-lens-button span { display:none; } #steelman-study .sm-head-button.sm-lens-button { padding:0; } }
+  /* Under the header: the count of matches, and up/down to step through them. Lined up with the cards. */
+  #steelman-study .sm-lens-bar { position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-18px 24px 14px var(--sm-lane,40px); padding:4px 4px 4px 10px; border-radius:999px; background:var(--sm-ink); color:#fff; font:500 12px/1 var(--sm-sans); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-lens-bar :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-lens-count { display:inline-flex; align-items:center; gap:6px; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #steelman-study .sm-lens-count svg { width:14px; height:14px; flex:none; }
+  #steelman-study .sm-lens-step { display:inline-flex; align-items:center; gap:2px; flex:none; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-lens-step &gt; span { min-width:44px; text-align:center; color:#ffffffc0; }
+  #steelman-study .sm-lens-step button { display:grid; place-items:center; width:26px; height:24px; padding:0; border:0; border-radius:999px; background:#ffffff1f; color:#fff; }
+  #steelman-study .sm-lens-step button:hover { background:#ffffff40; }
+  #steelman-study .sm-lens-step button svg { width:15px; height:15px; }
+  /* A highlighted card: a small inverted tag on its top edge and a darker border. Rows without a match recede. */
+  #steelman-study .sm-lens-tag { display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border-radius:999px; background:var(--sm-ink); color:#fff; font:600 11px/1 var(--sm-sans); white-space:nowrap; }
+  #steelman-study .sm-lens-tag svg { width:12px; height:12px; }
+  #steelman-study .sm-card &gt; .sm-lens-tag { position:absolute; top:-10px; left:14px; z-index:3; box-shadow:0 0 0 2px var(--sm-card); }
+  #steelman-study .sm-card &gt; .sm-lens-tag.sm-lens-inside { background:var(--sm-card); color:var(--sm-ink); border:1px solid var(--sm-ink); box-shadow:none; }
+  #steelman-study .sm-card.sm-lit { border-color:var(--sm-ink); }
+  #steelman-study :is(.sm-idea.sm-dim &gt; .sm-card-wrap, .sm-idea.sm-dim &gt; .sm-vote, .sm-lensing &gt; .sm-card:not(.sm-lit)) { opacity:.42; transition:opacity var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-idea.sm-dim:hover &gt; :is(.sm-card-wrap,.sm-vote), .sm-lensing &gt; .sm-card:not(.sm-lit):hover { opacity:1; }
+  #steelman-study .sm-stack-button.sm-stack-lit .sm-stack-count { box-shadow:0 0 0 2px var(--sm-card),0 0 0 3.5px var(--sm-ink); }
+  /* Folds at scale: the less important tail of a long column, and the weaker tail of a long row. */
+  #steelman-study .sm-row-fold { position:relative; z-index:1; display:flex; align-items:center; gap:14px; margin:-6px 24px 20px var(--sm-lane,40px); }
+  #steelman-study .sm-row-fold-open { justify-content:flex-end; margin-top:-12px; }
+  #steelman-study .sm-more-rows { position:relative; flex:1; display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; min-height:52px; padding:10px 14px; border:1px solid #c8c8c8; border-radius:10px; background:var(--sm-grain) var(--sm-card); box-shadow:var(--sm-shadow-sm); text-align:left; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-more-rows strong { color:var(--sm-ink); font-size:13px; font-weight:600; }
+  #steelman-study .sm-more-rows:hover { border-color:#999; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-more-edges i { position:absolute; left:6px; right:6px; height:6px; border:1px solid #c8c8c8; border-top:0; border-radius:0 0 10px 10px; background:#f4f4f4; }
+  #steelman-study .sm-more-edges i:first-child { bottom:-6px; } #steelman-study .sm-more-edges i:last-child { bottom:-11px; left:12px; right:12px; }
+  #steelman-study .sm-more-rows .sm-lens-tag { margin-left:auto; }
+  #steelman-study .sm-more-card { display:flex; flex-direction:column; gap:6px; font-size:12px; }
+  #steelman-study .sm-more-card strong { font:600 20px/1 var(--sm-sans); color:var(--sm-ink); }
   #steelman-study h2 { font-size:16px; line-height:1.4; font-weight:600; letter-spacing:-.3px; margin:0; }
   #steelman-study .sm-idea { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; align-items:start; position:relative; z-index:1; }
   #steelman-study .sm-idea &gt; .sm-vote { margin-top:12px; justify-self:center; }
 
   /* Axis: hairline with swept arrowheads and small tracked capitals at each end. */
-  #steelman-study .sm-axis { display:flex; align-items:center; gap:10px; color:var(--sm-axis); font:500 11px/1 var(--sm-sans); letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; min-width:0; }
+  #steelman-study .sm-axis { display:flex; align-items:center; gap:7px; color:var(--sm-axis); font:500 10px/1 var(--sm-sans); letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; min-width:0; }
   #steelman-study .sm-axis-line { position:relative; flex:1; height:1px; min-width:24px; background:var(--sm-axis-line); }
-  #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; color:var(--sm-axis-line); overflow:visible; }
-  #steelman-study .sm-axis-head path { fill:none; stroke:currentColor; stroke-width:1; stroke-linecap:round; }
+  /* max-width:none: the vertical line is 1 px wide, and a host&#x27;s svg { max-width:100% } would squash its arrowhead to nothing. */
+  #steelman-study .sm-axis-head { position:absolute; width:12px; height:8px; max-width:none; max-height:none; color:var(--sm-axis-line); overflow:visible; }
+  #steelman-study .sm-axis-head path { fill:currentColor; stroke:currentColor; stroke-width:1; stroke-linejoin:round; }
+  /* Each axis is one arrow, pointing the way the board is ordered: down to less important, right to weaker. */
+  #steelman-study .sm-axis-head:first-child { display:none; }
   #steelman-study .sm-axis[data-axis=&quot;h&quot;] .sm-axis-head { top:-3.5px; left:-1px; }
   #steelman-study .sm-axis[data-axis=&quot;h&quot;] .sm-axis-head + .sm-axis-head { left:auto; right:-1px; transform:scaleX(-1); }
-  #steelman-study .sm-axis[data-axis=&quot;v&quot;] { flex-direction:column; height:100%; gap:12px; }
+  #steelman-study .sm-axis[data-axis=&quot;v&quot;] { flex-direction:column; height:100%; gap:7px; }
   #steelman-study .sm-axis[data-axis=&quot;v&quot;] .sm-axis-line { width:1px; min-width:0; height:auto; min-height:24px; }
   #steelman-study .sm-axis[data-axis=&quot;v&quot;] .sm-axis-head { top:1px; left:-5.5px; transform:rotate(90deg); }
   #steelman-study .sm-axis[data-axis=&quot;v&quot;] .sm-axis-head + .sm-axis-head { top:auto; bottom:1px; transform:rotate(-90deg); }
@@ -2100,18 +2152,26 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:10px; pointer-events:none; transition:transform var(--sm-fast) var(--sm-ease); box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
-  #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
-  #steelman-study .sm-stack-button:hover .sm-stack-count { color:var(--sm-ink); border-color:#aaa; }
+  /* The count of wordings, inverted (white on near-black) so it reads as the way into comparing. ≫ when there is no other wording yet. */
+  #steelman-study .sm-stack-count { position:absolute; right:-6px; top:50%; translate:0 -50%; z-index:1; display:grid; place-items:center; min-width:22px; height:22px; padding:0 6px; border:2px solid var(--sm-card); border-radius:999px; background:var(--sm-ink); color:#fff; font:700 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; transition:transform var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-stack-count svg { width:13px; height:13px; stroke-width:2.5; }
+  #steelman-study .sm-stack-button.sm-empty .sm-stack-count { padding:0; }
+  #steelman-study .sm-stack-button:hover .sm-stack-count { transform:scale(1.12); }
+  #steelman-study .sm-stack-button:hover span { border-color:#aaa; }
 
   /* Unfolded row: cards on top, articulation votes on the axis beneath them. */
   #steelman-study .sm-track { display:grid; grid-template-rows:auto auto; grid-auto-flow:column; grid-auto-columns:max(210px,calc((100% - 36px - 44px) / 3)); gap:10px 18px; align-items:start; overflow-x:auto; overscroll-behavior-x:contain; padding:4px 14px 22px; margin:-4px -14px -18px; scrollbar-width:thin; scrollbar-color:#999 transparent; scroll-padding:2px; }
   #steelman-study .sm-version-vote { justify-self:center; }
   #steelman-study .sm-idea.sm-open { row-gap:0; }
-  #steelman-study .sm-open &gt; .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:10px; height:30px; margin-bottom:10px; padding:0 4px 0 14px; overflow:hidden; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
+  #steelman-study .sm-open &gt; .sm-track-axis { grid-column:2; grid-row:1; display:flex; align-items:center; gap:8px; height:24px; margin-bottom:8px; padding:0 2px 0 11px; overflow:hidden; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
   #steelman-study .sm-open &gt; .sm-vote { grid-column:1; grid-row:2; margin-top:calc(12px + var(--sm-hvote,31px) + 10px); }
   #steelman-study .sm-open &gt; .sm-card-wrap { grid-column:2; grid-row:2; }
   #steelman-study .sm-track-axis .sm-axis { flex:1; }
-  #steelman-study .sm-fold { display:grid; place-items:center; width:24px; height:24px; padding:4px; border:1px solid #c8c8c8; border-radius:6px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-track-note &gt; span { display:flex; align-items:center; gap:6px; flex:1; min-width:0; font-size:12px; color:var(--sm-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #steelman-study .sm-track-note &gt; span svg { width:14px; height:14px; color:var(--sm-ink); }
+  #steelman-study .sm-single .sm-version-vote { display:none; }
+  #steelman-study .sm-single.sm-open &gt; .sm-vote { margin-top:12px; }
+  #steelman-study .sm-fold { display:grid; place-items:center; width:20px; height:20px; padding:3px; border:1px solid #c8c8c8; border-radius:6px; background:var(--sm-card); color:var(--sm-muted); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-fold:hover { background:var(--sm-soft); color:var(--sm-ink); }
   #steelman-study .sm-fold svg { width:14px; height:14px; }
   #steelman-study .sm-add-card { display:grid; place-items:center; width:100%; min-height:110px; border:1px dashed #b9b9b9; border-radius:10px; background:transparent; color:var(--sm-muted); }
@@ -2208,6 +2268,23 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
   #steelman-study .sm-move-here svg { width:14px; height:14px; }
   #steelman-study .sm-move-here:hover span, #steelman-study .sm-move-here:focus-visible span { box-shadow:0 0 0 3px #fff,0 0 0 5px var(--sm-ink); }
+  /* Merge handle in the card footer: quiet until the card is hovered. */
+  #steelman-study .sm-merge-handle { cursor:grab; }
+  #steelman-study .sm-merge-handle:hover { color:var(--sm-ink); background:var(--sm-soft); }
+  #steelman-study .sm-merge-handle:active { cursor:grabbing; }
+  #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-merge-handle { opacity:.55; }
+  /* While dragging: the source recedes; targets get a dashed outline and say what dropping does. */
+  #steelman-study[data-dragging] .sm-drag-source { opacity:.45; }
+  #steelman-study .sm-drop-target::after { content:attr(data-drop-label); position:absolute; inset:-4px 20px -4px 36px; z-index:6; display:grid; place-items:center; border:2px dashed #8a8a8a; border-radius:12px; background:#ffffffa6; color:var(--sm-ink); font:600 13px/1 var(--sm-sans); pointer-events:none; transition:background-color var(--sm-fast) var(--sm-ease); }
+  #steelman-study .sm-new-idea.sm-drop-target::after { inset:-4px 20px -4px 36px; }
+  #steelman-study .sm-drop-target.sm-drop-over::after { border-style:solid; border-color:var(--sm-ink); background:#ffffffe0; }
+  /* A suggested combination, under the card it would move. */
+  #steelman-study .sm-suggest { position:relative; z-index:2; display:flex; align-items:center; gap:8px; margin:6px 0 0; padding:5px 6px 5px 10px; border:1px dashed #9a9a9a; border-radius:8px; background:var(--sm-card); font-size:12px; line-height:1.4; }
+  #steelman-study .sm-suggest &gt; svg { width:14px; height:14px; flex:none; color:var(--sm-muted); }
+  #steelman-study .sm-suggest p { flex:1; min-width:0; margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  #steelman-study .sm-suggest-actions { display:flex; gap:12px; flex:none; padding-right:4px; }
+  #steelman-study .sm-suggest .sm-link-button { font-size:12px; font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-open .sm-suggest { margin-right:0; }
   /* Undo bar: where the deleted card was, in the card lane. */
   #steelman-study .sm-undo { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-10px 24px 24px 40px; padding:9px 12px 9px 14px; border-radius:6px; background:var(--sm-ink); color:#fff; font-size:13px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-undo .sm-link-button { color:#fff; font-size:13px; font-weight:600; text-decoration:underline; }
@@ -2226,9 +2303,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study h1 { font-size:23px; }
     #steelman-study .sm-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
     #steelman-study .sm-col-vaxis { display:none; }
-    #steelman-study .sm-column:first-of-type { padding-left:8px; }
-    #steelman-study .sm-column:first-of-type::before { left:0; }
-    #steelman-study .sm-column:first-of-type &gt; .sm-texture { left:0; width:100%; }
+    #steelman-study .sm-col-hidden .sm-column-head { flex-direction:row; min-height:44px; padding:0 14px; }
+    #steelman-study :is(.sm-col-hidden-name,.sm-col-hidden-count) { writing-mode:horizontal-tb; }
+    #steelman-study .sm-column.sm-first { padding-left:8px; }
+    #steelman-study .sm-column.sm-first::before { left:0; }
+    #steelman-study .sm-column.sm-first &gt; .sm-texture { left:0; width:100%; }
     #steelman-study .sm-col-gap { display:none; }
     #steelman-study .sm-add-option { width:100%; height:48px; }
     #steelman-study .sm-add-option .sm-add-long { display:inline; }
@@ -2241,6 +2320,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-vote-btn { width:36px; height:36px; }
     #steelman-study .sm-open &gt; .sm-vote { --sm-hvote:42px; }
     #steelman-study .sm-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
+    #steelman-study .sm-column { --sm-lane:48px; }
     #steelman-study .sm-card-wrap { padding-right:44px; }
     #steelman-study .sm-new-idea { grid-template-columns:42px minmax(0,1fr); gap:6px; }
     #steelman-study .sm-new-idea &gt; :last-child { margin-right:44px; }
@@ -2311,15 +2391,11 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
   #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer;  }
   #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-shadow); }
-  #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; }
-  #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
-  #steelman-study .sm-post-vote button:hover { background:var(--sm-soft); color:var(--sm-ink); }
-  /* Your vote: a filled arrow and a heavier score. */
-  #steelman-study .sm-post-vote button[aria-pressed=&quot;true&quot;] { color:var(--sm-ink); }
-  #steelman-study .sm-post-vote button[aria-pressed=&quot;true&quot;] svg { fill:currentColor; }
-  #steelman-study .sm-post-vote:has([aria-pressed=&quot;true&quot;]) .sm-post-score { font-weight:700; }
+  /* Activity: everything people have done on the board, added up (importance, articulation, evidence, comments). */
+  #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; padding-top:4px; }
+  #steelman-study .sm-post-activity { display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--sm-muted); }
+  #steelman-study .sm-post-activity svg { width:16px; height:16px; stroke-width:1.75; }
   #steelman-study .sm-post-score { color:var(--sm-ink); }
-  #steelman-study .sm-post-vote svg { width:17px; height:17px; stroke-width:1.75; }
   #steelman-study .sm-post-score { font:600 13px/1.5 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:300 12px var(--sm-sans); letter-spacing:.06em; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; color:var(--sm-muted); }
@@ -2397,46 +2473,31 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-share { right:8px; left:8px; width:auto; max-width:none; }
     #steelman-study .sm-share-button span { display:none; }
     #steelman-study .sm-site-faces { display:none; }
-    #steelman-study:is([data-zoom=&quot;read&quot;],[data-zoom=&quot;overview&quot;]) :is(.sm-wordmark-text,.sm-zoom) { display:none; }
+    #steelman-study:is([data-zoom=&quot;read&quot;],[data-zoom=&quot;case&quot;]) .sm-wordmark-text { display:none; }
   }
 
-  /* ── Zoom: Read (the board as is) and Overview (the whole board, condensed). ── */
+  /* ── Views: Board (everything) and Strongest case (each option&#x27;s top arguments, best wording). ── */
   #steelman-study .sm-zoom { display:flex; padding:2px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); }
-  #steelman-study .sm-zoom button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
+  #steelman-study .sm-zoom button { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px; border:0; border-radius:5px; background:transparent; color:var(--sm-muted); font:500 12px/1 var(--sm-sans); white-space:nowrap; }
   #steelman-study .sm-zoom button:hover { color:var(--sm-ink); }
   #steelman-study .sm-zoom button[aria-pressed=&quot;true&quot;] { background:#fff; color:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-zoom svg { width:15px; height:15px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-head { padding:16px 20px 18px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-head h1 { font-size:24px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] :is(.sm-head-tools,.sm-column-tools,.sm-card-tools,.sm-card-menu-button,.sm-idea &gt; .sm-vote,.sm-col-vaxis,.sm-col-axis,.sm-new-idea,.sm-add-option-col,.sm-col-gap + .sm-add-option-col,.sm-toolbar,.sm-move-here) { display:none; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-board { padding-top:40px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-column-head { min-height:44px; padding:9px 14px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-column-head h2, #steelman-study[data-zoom=&quot;overview&quot;] .sm-column-head :is(h2,h3) { font-size:16px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-idea { grid-template-columns:minmax(0,1fr); gap:0; margin-bottom:10px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-card { cursor:zoom-in; border-radius:6px; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-card .sm-claim-button { padding:10px 34px 8px 12px; cursor:zoom-in; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-claim { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-size:13px; line-height:1.4; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-card-meta { min-height:0; padding:3px 8px 5px; border-top:0; }
-  #steelman-study[data-zoom=&quot;overview&quot;] .sm-stack-button { pointer-events:none; }
-  #steelman-study[data-zoom=&quot;overview&quot;] :is(.sm-column-head,.sm-head) { cursor:zoom-in; }
+  #steelman-study[data-zoom=&quot;case&quot;] :is(.sm-head-tools,.sm-toolbar) { display:none; }
+  #steelman-study .sm-case-caption { position:relative; z-index:1; margin:-14px 0 16px var(--sm-lane,40px); color:var(--sm-muted); font:400 12px/1.4 var(--sm-sans); }
+  #steelman-study .sm-case-column .sm-idea { margin-bottom:16px; }
+  #steelman-study .sm-case-rank { justify-self:center; margin-top:14px; display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--sm-ink); color:#fff; font:700 13px/1 var(--sm-serif); }
+  #steelman-study .sm-case-card { margin-right:24px; }
+  #steelman-study .sm-case-card .sm-claim-button { padding-right:18px; }
+  #steelman-study .sm-case-card .sm-claim { font:400 17px/1.5 var(--sm-serif); }
+  #steelman-study .sm-case-facts { display:flex; align-items:center; gap:12px; flex:none; padding-right:6px; font-size:11px; color:var(--sm-muted); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-case-facts span { display:inline-flex; align-items:center; gap:4px; }
+  #steelman-study .sm-case-facts svg { width:13px; height:13px; }
+  #steelman-study .sm-case-note { position:relative; z-index:1; margin:0 24px 6px 40px; color:var(--sm-muted); font:400 12px/1.5 var(--sm-sans); }
+  #steelman-study .sm-case-thin { padding:10px 12px; border:1px dashed #9a9a9a; border-radius:8px; color:var(--sm-ink); }
+  @media(max-width:640px) { #steelman-study .sm-zoom button span { display:none; } #steelman-study .sm-zoom button { padding:0 8px; } #steelman-study .sm-case-card { margin-right:0; } #steelman-study .sm-case-note { margin-right:0; } }
   /* Where a zoom lands: a brief ring on the card. */
   #steelman-study .sm-card.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; transition:outline-color .8s; }
 
-  /* ── Presence: who is looking at which card, and a named cursor while someone writes. ── */
-  #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
-  #steelman-study .sm-site-faces button:hover { position:relative; z-index:1; box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--sm-ink); }
-  #steelman-study .sm-presence { position:absolute; top:-12px; left:14px; z-index:3; display:flex; align-items:center; pointer-events:none; }
-  #steelman-study .sm-pbadge { display:grid; place-items:center; width:24px; height:24px; margin-right:-5px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; font:700 10px/1 var(--sm-sans); }
-  #steelman-study :is(.sm-pbadge,.sm-typing).sm-arrive { animation:sm-pop var(--sm-medium) var(--sm-ease); }
-  /* Someone writing: a still bubble with three softly pulsing dots beside their badge, as in a messages app. */
-  #steelman-study .sm-typing { display:inline-flex; align-items:center; gap:3px; height:22px; margin-left:9px; padding:0 8px; border-radius:10px; background:#fff; box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; }
-  #steelman-study .sm-typing i { width:4px; height:4px; border-radius:50%; background:var(--sm-ink); animation:sm-dot 1.2s ease-in-out infinite; }
-  #steelman-study .sm-typing i:nth-child(2) { animation-delay:.2s; }
-  #steelman-study .sm-typing i:nth-child(3) { animation-delay:.4s; }
-  #steelman-study .sm-card.sm-followed { outline:2px dashed var(--sm-ink); outline-offset:5px; }
-  @keyframes sm-pop { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
-  @keyframes sm-dot { 0%,60%,100% { opacity:.25; } 30% { opacity:1; } }
-  @media(prefers-reduced-motion:reduce) { #steelman-study :is(.sm-typing,.sm-typing i,.sm-pbadge) { animation:none; opacity:1; } }
 
   /* ── New steelman: the sheet is the board&#x27;s skeleton, written in place: a question box, then its options. ── */
   #steelman-study .sm-create-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
@@ -2520,7 +2581,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-pager { display:none; }
   @media(max-width:640px) {
     /* Below each option header: a small arrow and &quot;Most important first&quot;, in the same quiet voice as the version caption. */
-    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px 14px; padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
+    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px var(--sm-lane,40px); padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
     #steelman-study .sm-col-axis svg { width:13px; height:13px; }
     #steelman-study .sm-open &gt; .sm-track-axis { height:40px; padding:0 4px 0 12px; border:0; background:transparent; }
     #steelman-study .sm-track-axis .sm-axis { display:none; }
@@ -2581,14 +2642,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
-    access: {brief:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Sunday hours would give some weekday workers their only practical time to visit.&#x27;, yes:24, no:8, pref:26, sources:[&#x27;survey&#x27;,&#x27;hours&#x27;], explanation:&#x27;The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.&#x27;},
-    accessBold: {brief:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Opening on Sundays would make the library accessible to everyone who works during the week.&#x27;, yes:0, no:8, pref:8, sources:[&#x27;survey&#x27;], explanation:&#x27;This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.&#x27;},
-    accessNarrow: {brief:&#x27;This describes the survey respondents. It doesn’t tell us how common the need is across the community.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;For 18 surveyed residents, Sunday was the only day they reported being able to visit.&#x27;, yes:3, no:1, pref:4, sources:[&#x27;survey&#x27;], explanation:&#x27;This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.&#x27;},
-    study: {brief:&#x27;Students asked for quiet weekend space. The effect on learning hasn’t been measured.&#x27;, idea:&#x27;study&#x27;, claim:&#x27;Sunday study space could improve outcomes for students without a quiet place at home.&#x27;, yes:2, no:4, pref:12, sources:[&#x27;study&#x27;], explanation:&#x27;If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.&#x27;},
-    purpose: {brief:&#x27;This puts family access at the heart of the library’s public purpose.&#x27;, idea:&#x27;purpose&#x27;, claim:&#x27;A public library should be available on the day families can spend time together.&#x27;, yes:0, no:0, pref:7, sources:[], explanation:&#x27;This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.&#x27;},
-    staffing: {brief:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;, idea:&#x27;staffing&#x27;, claim:&#x27;Sunday opening would require additional staffing unless hours are reduced elsewhere.&#x27;, yes:10, no:10, pref:21, sources:[&#x27;roster&#x27;,&#x27;budget&#x27;], explanation:&#x27;The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.&#x27;},
-    evenings: {brief:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;, idea:&#x27;evenings&#x27;, claim:&#x27;Improving evening hours may reach more residents for the same budget.&#x27;, yes:0, no:0, pref:5, sources:[&#x27;unavailable&#x27;], explanation:&#x27;This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.&#x27;},
-    services: {brief:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;, idea:&#x27;services&#x27;, claim:&#x27;Sunday opening would add one more day of building services each week.&#x27;, yes:18, no:0, pref:9, sources:[&#x27;contract&#x27;], explanation:&#x27;The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.&#x27;}
+    access: {at:&#x27;2026-11-05T15:00:00Z&#x27;, brief:&#x27;Sunday opening could serve people whose work overlaps the current schedule. The survey points to an unmet need.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Sunday hours would give some weekday workers their only practical time to visit.&#x27;, yes:24, no:8, pref:26, sources:[&#x27;survey&#x27;,&#x27;hours&#x27;], explanation:&#x27;The case is about access for people whose work overlaps the existing schedule. “Some” matters: the survey supports an unmet need among respondents, not every resident.&#x27;},
+    accessBold: {at:&#x27;2026-11-06T11:00:00Z&#x27;, brief:&#x27;The survey shows a need among some residents. It doesn’t establish access for everyone.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;Opening on Sundays would make the library accessible to everyone who works during the week.&#x27;, yes:0, no:8, pref:8, sources:[&#x27;survey&#x27;], explanation:&#x27;This version is easy to read, but “everyone” goes beyond what a small, voluntary survey can establish. Sunday work, travel, and other barriers remain.&#x27;},
+    accessNarrow: {at:&#x27;2026-11-08T19:30:00Z&#x27;, brief:&#x27;This describes the survey respondents. It doesn’t tell us how common the need is across the community.&#x27;, idea:&#x27;access&#x27;, claim:&#x27;For 18 surveyed residents, Sunday was the only day they reported being able to visit.&#x27;, yes:3, no:1, pref:4, sources:[&#x27;survey&#x27;], explanation:&#x27;This version stays close to the survey result. It is precise about the sample, but leaves the reader to decide what that finding means for the wider community.&#x27;},
+    study: {at:&#x27;2026-11-05T15:20:00Z&#x27;, brief:&#x27;Students asked for quiet weekend space. The effect on learning hasn’t been measured.&#x27;, idea:&#x27;study&#x27;, claim:&#x27;Sunday study space could improve outcomes for students without a quiet place at home.&#x27;, yes:2, no:4, pref:12, sources:[&#x27;study&#x27;], explanation:&#x27;If this effect exists, it could matter a great deal. The cited material establishes a desire for study space, but does not measure learning outcomes.&#x27;},
+    purpose: {at:&#x27;2026-11-07T10:00:00Z&#x27;, brief:&#x27;This puts family access at the heart of the library’s public purpose.&#x27;, idea:&#x27;purpose&#x27;, claim:&#x27;A public library should be available on the day families can spend time together.&#x27;, yes:0, no:0, pref:7, sources:[], explanation:&#x27;This is a judgment about what a public library ought to prioritize. It can matter to the decision without receiving a factual credibility score.&#x27;},
+    staffing: {at:&#x27;2026-11-05T16:00:00Z&#x27;, brief:&#x27;The current rota has no Sunday coverage. Reallocating duties might free up some capacity.&#x27;, idea:&#x27;staffing&#x27;, claim:&#x27;Sunday opening would require additional staffing unless hours are reduced elsewhere.&#x27;, yes:10, no:10, pref:21, sources:[&#x27;roster&#x27;,&#x27;budget&#x27;], explanation:&#x27;The current rota has no scheduled Sunday coverage. The disagreement is whether reallocating existing duties, without reducing opening hours, could cover the proposed shift.&#x27;},
+    evenings: {at:&#x27;2026-11-08T09:00:00Z&#x27;, brief:&#x27;Evenings could be another way to extend access. The cost comparison isn’t available to inspect.&#x27;, idea:&#x27;evenings&#x27;, claim:&#x27;Improving evening hours may reach more residents for the same budget.&#x27;, yes:0, no:0, pref:5, sources:[&#x27;unavailable&#x27;], explanation:&#x27;This is a possible alternative use of the budget. The comparison has not been reviewed, and the linked cost estimate is unavailable in this example.&#x27;},
+    services: {at:&#x27;2026-11-06T14:00:00Z&#x27;, brief:&#x27;The agreement provides cleaning and closing services for each day the building opens.&#x27;, idea:&#x27;services&#x27;, claim:&#x27;Sunday opening would add one more day of building services each week.&#x27;, yes:18, no:0, pref:9, sources:[&#x27;contract&#x27;], explanation:&#x27;The service agreement charges per open day. This is well supported in the example, though its effect on the overall decision may be small.&#x27;},
+    weekend: {at:&#x27;2026-11-09T08:30:00Z&#x27;, idea:&#x27;weekend&#x27;, claim:&#x27;Weekend opening would help people who work Monday to Friday.&#x27;, yes:0, no:0, pref:2, sources:[], explanation:&#x27;Another way to put the access argument, written before its author saw the first row.&#x27;}
   };
   const seedSources = {
     survey: {name:&#x27;Resident access survey&#x27;,locator:&#x27;Example packet · p. 2, question 4&#x27;,finding:&#x27;18 of 80 respondents selected Sunday as their only available day to visit.&#x27;,premise:&#x27;Some respondents cannot visit during the current opening hours.&#x27;,limit:&#x27;Voluntary sample; not representative of all residents. Availability was self-reported.&#x27;},
@@ -2603,6 +2665,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     {id:&#x27;access&#x27;,option:&#x27;open&#x27;,score:42,versions:[&#x27;access&#x27;,&#x27;accessBold&#x27;,&#x27;accessNarrow&#x27;]},
     {id:&#x27;study&#x27;,option:&#x27;open&#x27;,score:31,versions:[&#x27;study&#x27;]},
     {id:&#x27;purpose&#x27;,option:&#x27;open&#x27;,score:12,versions:[&#x27;purpose&#x27;]},
+    {id:&#x27;weekend&#x27;,option:&#x27;open&#x27;,score:3,versions:[&#x27;weekend&#x27;]},
     {id:&#x27;staffing&#x27;,option:&#x27;keep&#x27;,score:39,versions:[&#x27;staffing&#x27;]},
     {id:&#x27;evenings&#x27;,option:&#x27;keep&#x27;,score:25,versions:[&#x27;evenings&#x27;]},
     {id:&#x27;services&#x27;,option:&#x27;keep&#x27;,score:8,versions:[&#x27;services&#x27;]}
@@ -2621,7 +2684,9 @@ html&gt;body{padding:0}&lt;/style&gt;
     question:{text:&#x27;Should our library open on Sundays?&#x27;,author:&#x27;kieran_lamee&#x27;,posted:&#x27;2026-11-05&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,accessRole:&#x27;contribute&#x27;,contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;,
       people:[{user:&#x27;maya.chen&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;jordan_w&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;priya_s&#x27;,role:&#x27;vote&#x27;},{user:&#x27;samr_92&#x27;,role:&#x27;view&#x27;}]},
     options:[{id:&#x27;open&#x27;,name:&#x27;Open on Sundays&#x27;},{id:&#x27;keep&#x27;,name:&#x27;Keep current hours&#x27;}],
-    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1
+    ideas:seedIdeas,cards:seedCards,sources:seedSources,comments:seedComments(),nextId:1,
+    // A contributor&#x27;s suggestion that two arguments make the same point. The owner or the version&#x27;s author decides.
+    suggestions:[{id:&#x27;sg1&#x27;,card:&#x27;weekend&#x27;,into:&#x27;access&#x27;,by:&#x27;jordan_w&#x27;,at:&#x27;2026-11-09T09:10:00Z&#x27;}]
   });
 
   // ── Spaces and the list of steelmen ──
@@ -2648,10 +2713,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   const spaceTag = s =&gt; `&lt;span class=&quot;sm-tag&quot;&gt;${escape(s.name)}&lt;/span&gt;`;
   // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
   function sketchDoc(key,{q,author,posted,org,visibility,options}) {
-    const d={question:{text:q,author,posted,org,visibility,accessRole:visibility===&#x27;link&#x27;?&#x27;vote&#x27;:&#x27;contribute&#x27;,people:[],contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;},options:[],ideas:[],cards:{},sources:{},comments:[],nextId:1};
+    const d={question:{text:q,author,posted,org,visibility,accessRole:visibility===&#x27;link&#x27;?&#x27;vote&#x27;:&#x27;contribute&#x27;,people:[],contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;},options:[],ideas:[],cards:{},sources:{},comments:[],suggestions:[],nextId:1};
     options.forEach(([name,args],oi)=&gt;{
       const option=`${key}-o${oi}`; d.options.push({id:option,name});
-      args.forEach(([claim,score,yes=0,no=0],ai)=&gt;{const idea=`${key}-${oi}-${ai}`,card=idea+&#x27;v&#x27;;d.cards[card]={idea,claim,yes,no,pref:0,sources:[],explanation:&#x27;&#x27;};d.ideas.push({id:idea,option,score,versions:[card]});});
+      args.forEach(([claim,score,yes=0,no=0],ai)=&gt;{const idea=`${key}-${oi}-${ai}`,card=idea+&#x27;v&#x27;;const at=new Date(Date.parse(posted+&#x27;T09:00:00Z&#x27;)+(ai*7+oi*3)*36e5).toISOString();d.cards[card]={at,idea,claim,yes,no,pref:0,sources:[],explanation:&#x27;&#x27;};d.ideas.push({id:idea,option,score,versions:[card]});});
     });
     return d;
   }
@@ -2677,16 +2742,16 @@ html&gt;body{padding:0}&lt;/style&gt;
       [&#x27;Take the offer&#x27;,[[&#x27;The role is a step up I would otherwise wait two years for.&#x27;,3]]],
       [&#x27;Stay in New York&#x27;,[]]]})
   });
-  // List-only details that a single board doesn&#x27;t hold: its whole-steelman vote, recent activity, and who has it open.
-  // Comments here are added to the board&#x27;s own count. A private draft in Personal has no audience, so it takes no votes.
+  // List-only details that a single board doesn&#x27;t hold: recent activity, who has it open, and earlier comments.
+  // Comments here are added to the board&#x27;s own count. A board&#x27;s score is computed from its own votes (see boardInfo).
   const FEED = {
-    library:{score:128,at:&#x27;2026-11-09T09:40:00Z&#x27;,did:&#x27;Jordan replied to a comment&#x27;,here:[&#x27;maya.chen&#x27;,&#x27;jordan_w&#x27;],people:7,comments:0},
-    capstone:{score:64,at:&#x27;2026-11-09T08:05:00Z&#x27;,did:&#x27;Sam added an argument&#x27;,here:[&#x27;samr_92&#x27;],people:5,comments:4},
-    standups:{score:21,at:&#x27;2026-11-06T15:20:00Z&#x27;,did:&#x27;Priya added an option&#x27;,here:[],people:6,comments:9},
-    bikelane:{score:412,at:&#x27;2026-11-09T07:12:00Z&#x27;,did:&#x27;23 people voted on importance&#x27;,here:[&#x27;dev_oka17&#x27;,&#x27;ana.lu&#x27;,&#x27;rtorres&#x27;],more:11,people:58,comments:141},
-    curve:{score:896,at:&#x27;2026-11-08T22:30:00Z&#x27;,did:&#x27;A source was reported unavailable&#x27;,here:[&#x27;samr_92&#x27;,&#x27;bwells&#x27;,&#x27;kt_nguyen&#x27;],more:28,people:203,comments:388},
-    fourday:{score:233,at:&#x27;2026-11-07T18:00:00Z&#x27;,did:&#x27;Alex added a version&#x27;,here:[&#x27;alexkim.dev&#x27;],more:3,people:77,comments:96},
-    denver:{score:null,at:&#x27;2026-11-09T11:30:00Z&#x27;,did:&#x27;You started this draft&#x27;,here:[],people:1,comments:0}
+    library:{at:&#x27;2026-11-09T09:40:00Z&#x27;,did:&#x27;Jordan suggested combining two arguments&#x27;,here:[&#x27;maya.chen&#x27;,&#x27;jordan_w&#x27;],people:7,comments:0},
+    capstone:{at:&#x27;2026-11-09T08:05:00Z&#x27;,did:&#x27;Sam added an argument&#x27;,here:[&#x27;samr_92&#x27;],people:5,comments:4},
+    standups:{at:&#x27;2026-11-06T15:20:00Z&#x27;,did:&#x27;Priya added an option&#x27;,here:[],people:6,comments:9},
+    bikelane:{at:&#x27;2026-11-09T07:12:00Z&#x27;,did:&#x27;23 people voted on importance&#x27;,here:[&#x27;dev_oka17&#x27;,&#x27;ana.lu&#x27;,&#x27;rtorres&#x27;],more:11,people:58,comments:141},
+    curve:{at:&#x27;2026-11-08T22:30:00Z&#x27;,did:&#x27;A source was reported unavailable&#x27;,here:[&#x27;samr_92&#x27;,&#x27;bwells&#x27;,&#x27;kt_nguyen&#x27;],more:28,people:203,comments:388},
+    fourday:{at:&#x27;2026-11-07T18:00:00Z&#x27;,did:&#x27;Alex added a version&#x27;,here:[&#x27;alexkim.dev&#x27;],more:3,people:77,comments:96},
+    denver:{at:&#x27;2026-11-09T11:30:00Z&#x27;,did:&#x27;You started this draft&#x27;,here:[],people:1,comments:0}
   };
   const NOW = Date.parse(&#x27;2026-11-09T12:00:00Z&#x27;); // the prototype&#x27;s fixed &quot;now&quot;, so relative times stay stable
   const fullDate = iso =&gt; new Date(iso).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;long&#x27;,day:&#x27;numeric&#x27;,year:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
@@ -2694,7 +2759,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); doc=state.doc=next; ({cards,sources,ideas}=next); }
+  function useDoc(next) { next.question.people||=[]; next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
       &amp;&amp; d.ideas.every(i=&gt;Array.isArray(i.versions) &amp;&amp; i.versions.length &amp;&amp; i.versions.every(id=&gt;d.cards[id]) &amp;&amp; d.options.some(o=&gt;o.id===i.option));
@@ -2703,18 +2768,18 @@ html&gt;body{padding:0}&lt;/style&gt;
   // A new argument is a new row at the bottom of its option, with one version and no importance votes yet.
   function addIdea(option,claim,reason) {
     const ideaId=&#x27;i&#x27;+(doc.nextId++),cardId=&#x27;v&#x27;+(doc.nextId++);
-    cards[cardId]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
-    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:&#x27;you&#x27;});
+    cards[cardId]={at:new Date().toISOString(),idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
+    ideas.push({id:ideaId,option,score:0,versions:[cardId],by:&#x27;you&#x27;,at:new Date().toISOString()});
     return cardId;
   }
   function addVersion(ideaId,claim,reason) {
     const idea=ideaOf(ideaId); if(!idea) return null;
     const id=&#x27;v&#x27;+(doc.nextId++);
-    cards[id]={idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
+    cards[id]={at:new Date().toISOString(),idea:ideaId,claim:String(claim).slice(0,500),yes:0,no:0,pref:0,sources:[],explanation:String(reason).slice(0,700),by:&#x27;you&#x27;};
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;library&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,feedVotes:{},joined:{brooklyn:true,campus:true,worklab:true}});
+  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;library&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true}});
   let state = freshState();
   useDoc(docs.library);
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -2744,7 +2809,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     state.view = saved.view===&#x27;board&#x27; ? &#x27;board&#x27; : &#x27;home&#x27;;
     if (saved.space===&#x27;all&#x27;||SPACES.some(s=&gt;s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
-    for (const key of [&#x27;feedVotes&#x27;,&#x27;joined&#x27;]) if (saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27;) state[key]=saved[key];
+    for (const key of [&#x27;lens&#x27;,&#x27;hiddenCols&#x27;,&#x27;joined&#x27;]) if (saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27;) state[key]=saved[key];
     useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version&gt;=3) {
@@ -2764,9 +2829,56 @@ html&gt;body{padding:0}&lt;/style&gt;
   function announce(message) { status.textContent=message; }
   const optionName = option =&gt; doc.options.find(o=&gt;o.id===option)?.name || &#x27;&#x27;;
   const short = id =&gt; { const c=cards[id].claim; return c.length&gt;60 ? c.slice(0,57)+&#x27;…&#x27; : c; };
-  // Shared articulation order: the shared preference score, best first. Your own vote does not move cards.
-  const ordered = idea =&gt; [...idea.versions].sort((a,b)=&gt;cards[b].pref-cards[a].pref);
+  // Order is fixed and shared: rows by importance, wordings by articulation. Your own votes never move cards.
+  // (A stable sort, so ties keep their saved order.)
+  const byVotes = (list,votes) =&gt; [...list].sort((a,b)=&gt;votes(b)-votes(a));
+  // The shared importance score (the example&#x27;s &quot;Simulate a reorder&quot; adds 20 to two rows).
+  const sharedImportance = idea =&gt; idea.score+(state.updated&amp;&amp;[&#x27;study&#x27;,&#x27;evenings&#x27;].includes(idea.id)?20:0);
+  const ordered = idea =&gt; byVotes(idea.versions,id=&gt;cards[id].pref);
+  const rowsOf = option =&gt; byVotes(ideas.filter(i=&gt;i.option===option),sharedImportance);
+  // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
+  // New: added in the last two days. Hot: the three wordings with the most votes for their age (articulation and evidence
+  // assessments), so the set stays small however big the board gets.
+  const ageHours = iso =&gt; iso ? Math.max(0,(NOW-Date.parse(iso))/36e5) : 24*14;
+  const hotness = (votes,iso) =&gt; (Math.max(0,votes)+1)/Math.pow(ageHours(iso)+2,1.2);
+  const LENSES = {
+    new:{glyph:&#x27;sparkles&#x27;,label:&#x27;New&#x27;,hint:&#x27;Wordings added in the last two days.&#x27;,noun:n=&gt;`new ${n===1?&#x27;wording&#x27;:&#x27;wordings&#x27;}`,none:&#x27;Nothing new in the last two days.&#x27;},
+    hot:{glyph:&#x27;flame&#x27;,label:&#x27;Hot&#x27;,hint:&#x27;The three wordings gaining votes fastest.&#x27;,noun:n=&gt;`hot ${n===1?&#x27;wording&#x27;:&#x27;wordings&#x27;}`,none:&#x27;No votes here yet.&#x27;}
+  };
+  const colKey = option =&gt; state.boardId+&#x27;:&#x27;+option;
+  // Hidden columns fold to a strip so the others get the room. At least one stays visible.
+  const isHidden = option =&gt; !!state.hiddenCols?.[colKey(option)] &amp;&amp; doc.options.some(o=&gt;o.id!==option&amp;&amp;!state.hiddenCols[colKey(o.id)]);
+  const firstVisible = () =&gt; doc.options.find(o=&gt;!isHidden(o.id))?.id;
+  const lensOf = option =&gt; LENSES[state.lens?.[colKey(option)]] ? state.lens[colKey(option)] : null;
+  function matchesIn(option) {
+    const mode=lensOf(option);if(!mode) return new Set();
+    const ids=ideas.filter(i=&gt;i.option===option).flatMap(i=&gt;i.versions);
+    if(mode===&#x27;new&#x27;) return new Set(ids.filter(id=&gt;cards[id].at&amp;&amp;ageHours(cards[id].at)&lt;=48));
+    const votes=id=&gt;(cards[id].pref||0)+(cards[id].yes||0)+(cards[id].no||0);
+    return new Set(ids.filter(id=&gt;votes(id)&gt;0).sort((a,b)=&gt;hotness(votes(b),cards[b].at)-hotness(votes(a),cards[a].at)).slice(0,3));
+  }
+  // Matches in the order you meet them on the board: down the column, then left to right along each row.
+  const matchList = option =&gt; { const lit=matchesIn(option); return rowsOf(option).flatMap(i=&gt;ordered(i).filter(id=&gt;lit.has(id))); };
+  // Folding at scale. A column shows its most important arguments and folds the rest; a row shows its best wordings
+  // and folds the rest. Whatever is open, being edited, or being stepped to is always shown.
+  const ROW_LIMIT=10, ROW_PAGE=20, VERSION_LIMIT=5, VERSION_PAGE=10;
+  function shownRows(option,rows) {
+    if(state.moving&amp;&amp;movingFrom()?.option===option) return rows.length; // pick mode needs every target
+    let n=state.shownRows[colKey(option)]||ROW_LIMIT;
+    for(const id of [state.open,cards[state.expanded]?.idea,cards[state.editing]?.idea,state.undo?.afterIdea]){const i=rows.findIndex(r=&gt;r.id===id);if(i&gt;=n)n=i+1;}
+    return rows.length-n&lt;=2?rows.length:n; // never fold away just one or two
+  }
+  function shownVersions(idea,versions) {
+    let n=state.shownVersions[idea.id]||VERSION_LIMIT;
+    for(const id of [state.expanded,state.editing,state.moving]){const i=versions.indexOf(id);if(i&gt;=n)n=i+1;}
+    return versions.length-n&lt;=1?versions.length:n;
+  }
   const ideaOf = id =&gt; ideas.find(i=&gt;i.id===id);
+  // Who may reorganize arguments. The board owner and a version&#x27;s author combine or separate it directly;
+  // anyone else who can contribute suggests it, and the owner or author decides. Viewers and voters can&#x27;t.
+  function myRole() { const q=doc.question; if(q.author===ME) return &#x27;owner&#x27;; return q.people.find(p=&gt;p.user===ME)?.role||(q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole); }
+  const canMove = id =&gt; myRole()===&#x27;owner&#x27;||cards[id]?.by===&#x27;you&#x27;;
+  const canSuggest = () =&gt; myRole()===&#x27;contribute&#x27;;
   const button = (action,label,extra=&#x27;&#x27;) =&gt; `&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;${action}&quot; ${extra}&gt;${label}&lt;/button&gt;`;
   function stats(id) { const card=cards[id],vote=state.assessments[id]; const yes=(card.yes||0)+(vote===&#x27;yes&#x27;?1:0), no=(card.no||0)+(vote===&#x27;no&#x27;?1:0); return {yes,no,n:yes+no,pct:yes+no ? Math.round(100*yes/(yes+no)):null}; }
 
@@ -2780,7 +2892,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const btn=(v,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-vote-btn cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-vote=&quot;${v}&quot; data-key=&quot;${action}-${v&gt;0?&#x27;up&#x27;:&#x27;down&#x27;}-${id}&quot; aria-pressed=&quot;${value===v}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;/button&gt;`;
     return `&lt;div class=&quot;sm-vote&quot; data-axis=&quot;${dir}&quot; role=&quot;group&quot; aria-label=&quot;${escape(group)}&quot;&gt;${btn(1,&#x27;chevron-up&#x27;,forward)}&lt;span class=&quot;sm-vote-score&quot; aria-label=&quot;Net ${score}&quot;&gt;${score}&lt;/span&gt;${btn(-1,&#x27;chevron-down&#x27;,back)}&lt;/div&gt;`;
   }
-  function importanceScore(idea) { return idea.score+(state.importance[idea.id]||0)+(state.updated&amp;&amp;[&#x27;study&#x27;,&#x27;evenings&#x27;].includes(idea.id)?20:0); }
+  function importanceScore(idea) { return sharedImportance(idea)+(state.importance[idea.id]||0); }
   function importanceVote(idea) {
     return vote({axis:&#x27;v&#x27;,action:&#x27;importance&#x27;,id:idea.id,value:state.importance[idea.id]||0,score:importanceScore(idea),group:`Importance: ${short(idea.versions[0])}`,forward:&#x27;More important if true&#x27;,back:&#x27;Less important if true&#x27;});
   }
@@ -2807,26 +2919,43 @@ html&gt;body{padding:0}&lt;/style&gt;
   function sourceCount(id) { const n=cards[id].sources.length; if(!n) return &#x27;&#x27;; const label=`${n} ${n===1?&#x27;source&#x27;:&#x27;sources&#x27;}`; return `&lt;span class=&quot;sm-source-button&quot; role=&quot;img&quot; aria-label=&quot;${label}&quot; title=&quot;${label}&quot;&gt;${icon(&#x27;paperclip&#x27;)} ${n}&lt;/span&gt;`; }
   function cardMeta(id) {
     const expanded=state.expanded===id;
-    return `${credibility(id)}&lt;div class=&quot;sm-card-tools&quot;&gt;${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+    const idea=ideaOf(cards[id].idea),others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
+    // The merge handle: drag it onto another argument in the same option (or click it to pick one).
+    const direct=canMove(id),handle=others&amp;&amp;(direct||canSuggest())?`&lt;button type=&quot;button&quot; class=&quot;sm-source-button sm-merge-handle cursor-interaction&quot; draggable=&quot;true&quot; data-drag=&quot;${id}&quot; data-action=&quot;move-card&quot; data-id=&quot;${id}&quot; data-key=&quot;merge-${id}&quot; aria-label=&quot;${direct?&#x27;Combine with another argument&#x27;:&#x27;Suggest combining with another argument&#x27;}&quot; data-tooltip=&quot;${direct?&#x27;Drag onto the argument it repeats&#x27;:&#x27;Drag to suggest combining&#x27;}&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;/button&gt;`:&#x27;&#x27;;
+    return `${credibility(id)}&lt;div class=&quot;sm-card-tools&quot;&gt;${handle}${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
-  function cardFace(id, inTrack=false) {
+  // mark: a highlight tag on the card&#x27;s top edge (see lensTag); lit: the card itself matches the highlight.
+  function cardFace(id, inTrack=false, mark=&#x27;&#x27;, lit=false) {
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
     const menuOpen=state.menu===id;
-    return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;} ${commenting(&#x27;card:&#x27;+id)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-card-menu-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;${id}&quot; data-key=&quot;menu-${id}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${menuOpen}&quot; aria-label=&quot;Options for this version&quot; data-tooltip=&quot;Options&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
+    return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${lit?&#x27;sm-lit&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;} ${commenting(&#x27;card:&#x27;+id)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;${mark}&lt;button type=&quot;button&quot; class=&quot;sm-card-menu-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;${id}&quot; data-key=&quot;menu-${id}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${menuOpen}&quot; aria-label=&quot;Options for this version&quot; data-tooltip=&quot;Options&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
   function menuMarkup(id) {
     const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
+    if(id.startsWith(&#x27;lens:&#x27;)) {
+      const option=id.slice(5),mode=lensOf(option)||&#x27;off&#x27;;
+      const opts={off:{glyph:&#x27;circle-off&#x27;,label:&#x27;Off&#x27;,hint:&#x27;No highlight.&#x27;},...LENSES};
+      return `&lt;p class=&quot;sm-menu-note&quot;&gt;Highlight wordings in this option. The order doesn’t change; ↑ ↓ under the header step through them.&lt;/p&gt;`+Object.entries(opts).map(([k,v])=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitemradio&quot; aria-checked=&quot;${k===mode}&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;lens-set&quot; data-id=&quot;${option}&quot; data-lens=&quot;${k}&quot; data-key=&quot;lens-set-${k}&quot;&gt;${icon(v.glyph)}&lt;span&gt;${v.label}&lt;small&gt;${v.hint}&lt;/small&gt;&lt;/span&gt;${k===mode?icon(&#x27;check&#x27;):&#x27;&#x27;}&lt;/button&gt;`).join(&#x27;&#x27;);
+    }
     if(id.startsWith(&#x27;option:&#x27;)) {
       const option=id.slice(7),rows=ideas.filter(i=&gt;i.option===option).length,few=doc.options.length&lt;=2;
-      return item(&#x27;rename-option&#x27;,&#x27;pencil&#x27;,&#x27;Rename option&#x27;)
+      const visible=doc.options.filter(o=&gt;!isHidden(o.id)).length;
+      return item(&#x27;hide-col&#x27;,&#x27;eye-off&#x27;,&#x27;Hide this column&#x27;,visible&lt;=1?&#x27;At least one column stays visible.&#x27;:&#x27;It folds to a strip; click the strip to bring it back.&#x27;,visible&lt;=1)
+        +(visible&gt;1?item(&#x27;solo-col&#x27;,&#x27;maximize-2&#x27;,&#x27;Show only this column&#x27;,&#x27;Hides the others.&#x27;):&#x27;&#x27;)
+        +item(&#x27;rename-option&#x27;,&#x27;pencil&#x27;,&#x27;Rename option&#x27;)
         +item(&#x27;delete-option&#x27;,&#x27;trash-2&#x27;,&#x27;Delete option&#x27;,few?&#x27;A question needs at least two options.&#x27;:rows?&#x27;Move or delete its arguments first.&#x27;:&#x27;It has no arguments.&#x27;,few||rows&gt;0);
     }
     const card=cards[id],mine=card.by===&#x27;you&#x27;,idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
-    if(!mine) return `&lt;p class=&quot;sm-menu-note&quot;&gt;Written by another contributor. Only they can edit, move, or delete it.&lt;/p&gt;`+item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;);
+    if(!mine&amp;&amp;myRole()===&#x27;owner&#x27;) return `&lt;p class=&quot;sm-menu-note&quot;&gt;Written by another contributor. Only they can edit or delete it. As the board’s owner, you can combine or separate it.&lt;/p&gt;`
+      +item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;)
+      +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine with another argument&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
+      +(last?&#x27;&#x27;:item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Make it a separate argument&#x27;));
+    if(!mine) return `&lt;p class=&quot;sm-menu-note&quot;&gt;Written by another contributor. Only they can edit, move, or delete it.&lt;/p&gt;`+item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;)
+      +(canSuggest()&amp;&amp;others?item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Suggest combining with another argument&#x27;,&#x27;The owner or the author decides.&#x27;):&#x27;&#x27;);
     return `&lt;p class=&quot;sm-menu-note&quot;&gt;You wrote this version.&lt;/p&gt;`
       +item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit wording and context&#x27;)
       +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine with another argument&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
@@ -2834,11 +2963,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       +item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,last?&#x27;Delete argument&#x27;:&#x27;Delete version&#x27;,last?&#x27;Removes the row.&#x27;:&#x27;&#x27;);
   }
   const undoMarkup = () =&gt; `&lt;div class=&quot;sm-undo&quot; role=&quot;status&quot;&gt;&lt;span&gt;${state.undo.label}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;undo&quot; data-key=&quot;undo&quot;&gt;Undo&lt;/button&gt;&lt;/div&gt;`;
-  function stack(idea) {
+  // The stack beside every card: its count of wordings in color, or ≫ when there&#x27;s no other wording yet (an invitation).
+  function stack(idea,inside=0) {
     const hidden=idea.versions.length-1, edges=Math.min(hidden,3), empty=hidden===0;
     const spans=(empty?[1]:Array.from({length:edges},(_,k)=&gt;edges-k)).map(i=&gt;`&lt;span aria-hidden=&quot;true&quot; style=&quot;right:${24-7*i}px;top:${3*i}px;bottom:${3*i}px&quot;&gt;&lt;/span&gt;`).join(&#x27;&#x27;);
-    const label=empty?&#x27;Suggest another version of this argument&#x27;:`Unfold ${idea.versions.length} versions of this argument`;
-    return `&lt;button type=&quot;button&quot; class=&quot;sm-stack-button ${empty?&#x27;sm-empty&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;unfold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${empty?&#x27;Add a version&#x27;:idea.versions.length+&#x27; versions&#x27;}&quot;&gt;${spans}${empty?&#x27;&#x27;:`&lt;b class=&quot;sm-stack-count&quot; aria-hidden=&quot;true&quot;&gt;${idea.versions.length}&lt;/b&gt;`}&lt;/button&gt;`;
+    const label=empty?&#x27;Write another wording of this argument&#x27;:`Compare ${idea.versions.length} wordings of this argument`;
+    return `&lt;button type=&quot;button&quot; class=&quot;sm-stack-button ${empty?&#x27;sm-empty&#x27;:&#x27;&#x27;} ${inside?&#x27;sm-stack-lit&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;unfold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;stack-${idea.id}&quot; aria-label=&quot;${label}${inside?`, ${inside} highlighted`:&#x27;&#x27;}&quot; data-tooltip=&quot;${empty?&#x27;Write another wording&#x27;:idea.versions.length+&#x27; wordings&#x27;}&quot;&gt;${spans}&lt;b class=&quot;sm-stack-count&quot; aria-hidden=&quot;true&quot;&gt;${empty?icon(&#x27;chevrons-right&#x27;):idea.versions.length}&lt;/b&gt;&lt;/button&gt;`;
   }
   function addSlot(idea) {
     if(state.composing) return `&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;form class=&quot;sm-card sm-compose-card&quot; id=&quot;sm-form&quot; aria-label=&quot;Suggest a version&quot;&gt;&lt;textarea id=&quot;sm-draft&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;draft&quot; maxlength=&quot;500&quot; placeholder=&quot;A better version of this argument&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.draftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;reason&quot; maxlength=&quot;700&quot; placeholder=&quot;What it improves&quot; aria-label=&quot;What your version improves&quot;&gt;${escape(state.draftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-compose&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;cancel-compose&quot; aria-label=&quot;Discard draft&quot; data-tooltip=&quot;Discard&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;add&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;add&quot; aria-label=&quot;Add your version&quot; data-tooltip=&quot;Add&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
@@ -2846,26 +2976,54 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   function trackAxis(idea) {
     const n=idea.versions.length;
+    const fold=`&lt;button type=&quot;button&quot; class=&quot;sm-fold cursor-interaction&quot; data-action=&quot;fold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;fold-${idea.id}&quot; aria-label=&quot;Fold versions back into the stack&quot; data-tooltip=&quot;Fold back&quot;&gt;${icon(&#x27;fold-horizontal&#x27;)}&lt;/button&gt;`;
+    // One wording has nothing to compare against, so there is no articulation axis (or vote) until a second arrives.
+    if(n&lt;2) return `&lt;div class=&quot;sm-track-axis sm-track-note&quot;&gt;&lt;span&gt;${icon(&#x27;chevrons-right&#x27;)}Only one wording so far. Write a second to compare them.&lt;/span&gt;${fold}&lt;/div&gt;`;
     // Phones swap the axis for a carousel caption: which version you&#x27;re on, and dots.
-    const pager=`&lt;div class=&quot;sm-pager&quot; aria-live=&quot;polite&quot;&gt;&lt;span class=&quot;sm-pager-text&quot;&gt;1 of ${n} · best articulated&lt;/span&gt;&lt;span class=&quot;sm-pager-dots&quot; aria-hidden=&quot;true&quot;&gt;&lt;i data-on&gt;&lt;/i&gt;${&#x27;&lt;i&gt;&lt;/i&gt;&#x27;.repeat(n-1)}&lt;/span&gt;&lt;/div&gt;`;
-    return `&lt;div class=&quot;sm-track-axis&quot;&gt;${axis(&#x27;h&#x27;,&#x27;best articulation&#x27;,&#x27;weaker&#x27;)}${pager}&lt;button type=&quot;button&quot; class=&quot;sm-fold cursor-interaction&quot; data-action=&quot;fold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;fold-${idea.id}&quot; aria-label=&quot;Fold versions back into the stack&quot; data-tooltip=&quot;Fold back&quot;&gt;${icon(&#x27;fold-horizontal&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
+    // Dots only while they fit; a long row keeps just the caption.
+    const pager=`&lt;div class=&quot;sm-pager&quot; aria-live=&quot;polite&quot;&gt;&lt;span class=&quot;sm-pager-text&quot;&gt;1 of ${n} · best articulated&lt;/span&gt;${n&lt;=8?`&lt;span class=&quot;sm-pager-dots&quot; aria-hidden=&quot;true&quot;&gt;&lt;i data-on&gt;&lt;/i&gt;${&#x27;&lt;i&gt;&lt;/i&gt;&#x27;.repeat(n-1)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
+    return `&lt;div class=&quot;sm-track-axis&quot;&gt;${axis(&#x27;h&#x27;,&#x27;best articulation&#x27;,&#x27;weaker&#x27;)}${pager}${fold}&lt;/div&gt;`;
   }
-  function track(idea) {
-    const versions=ordered(idea);
-    return `&lt;div class=&quot;sm-track&quot; role=&quot;region&quot; tabindex=&quot;0&quot; aria-label=&quot;Versions, best articulated first&quot;&gt;${versions.map(id=&gt;`&lt;div class=&quot;sm-version-vote&quot; data-vote-for=&quot;${id}&quot;&gt;${preferenceVote(id)}&lt;/div&gt;`+cardFace(id,true)).join(&#x27;&#x27;)}${addSlot(idea)}&lt;/div&gt;`;
+  function track(idea,lit=new Set()) {
+    const all=ordered(idea),single=all.length&lt;2,n=shownVersions(idea,all),versions=all.slice(0,n),rest=all.slice(n);
+    const mode=lensOf(idea.option),restLit=rest.filter(id=&gt;lit.has(id)).length;
+    // The folded tail of a long row: one card saying how many more, and how many of them are highlighted.
+    const more=rest.length?`&lt;span aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-card sm-more-card cursor-interaction&quot; data-action=&quot;more-versions&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;more-versions-${idea.id}&quot;&gt;&lt;strong&gt;+${rest.length}&lt;/strong&gt;&lt;span&gt;more ${rest.length===1?&#x27;wording&#x27;:&#x27;wordings&#x27;}&lt;/span&gt;${restLit?`&lt;span class=&quot;sm-lens-tag&quot;&gt;${icon(LENSES[mode].glyph)}${restLit} ${LENSES[mode].label.toLowerCase()}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;div class=&quot;sm-track ${mode?&#x27;sm-lensing&#x27;:&#x27;&#x27;}&quot; role=&quot;region&quot; tabindex=&quot;0&quot; aria-label=&quot;Versions, best articulated first&quot;&gt;${versions.map(id=&gt;`&lt;div class=&quot;sm-version-vote&quot; data-vote-for=&quot;${id}&quot;&gt;${single?&#x27;&#x27;:preferenceVote(id)}&lt;/div&gt;`+cardFace(id,true,lit.has(id)?lensTag(mode):&#x27;&#x27;,lit.has(id))).join(&#x27;&#x27;)}${more}${addSlot(idea)}&lt;/div&gt;`;
+  }
+  // The small tag on a highlighted card: &quot;New&quot; or &quot;Hot&quot;. With a count, it marks a folded row whose match is in its stack.
+  function lensTag(mode,inside=0) {
+    const L=LENSES[mode];if(!L) return &#x27;&#x27;;
+    return `&lt;span class=&quot;sm-lens-tag ${inside?&#x27;sm-lens-inside&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${icon(L.glyph)}${inside?`${inside} ${L.noun(inside)} inside`:L.label}&lt;/span&gt;`;
+  }
+  // Suggested combinations on this row&#x27;s versions. The owner or the version&#x27;s author can combine or dismiss;
+  // whoever suggested it can withdraw it; everyone else just sees it.
+  const liveSuggestions = () =&gt; doc.suggestions.filter(g=&gt;cards[g.card]&amp;&amp;ideaOf(g.into)&amp;&amp;cards[g.card].idea!==g.into);
+  function suggestionsFor(idea) {
+    return liveSuggestions().filter(g=&gt;cards[g.card].idea===idea.id).map(g=&gt;{
+      const lead=cards[ordered(ideaOf(g.into))[0]].claim,clip=lead.length&gt;34?lead.slice(0,32).trimEnd()+&#x27;…&#x27;:lead,mine=g.by===&#x27;you&#x27;;
+      const text=`&lt;span title=&quot;${mine?&#x27;You&#x27;:escape(g.by)} suggested combining this with “${escape(lead)}”&quot;&gt;${mine?&#x27;You&#x27;:`&lt;strong&gt;${escape(g.by)}&lt;/strong&gt;`}: same as “${escape(clip)}”&lt;/span&gt;`;
+      const actions=canMove(g.card)?linkButton(&#x27;suggest-accept&#x27;,g.id,&#x27;Combine&#x27;)+linkButton(&#x27;suggest-dismiss&#x27;,g.id,&#x27;Dismiss&#x27;):mine?linkButton(&#x27;suggest-dismiss&#x27;,g.id,&#x27;Withdraw&#x27;):&#x27;&#x27;;
+      return `&lt;div class=&quot;sm-suggest&quot; role=&quot;note&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;p&gt;${text}&lt;/p&gt;${actions?`&lt;div class=&quot;sm-suggest-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
+    }).join(&#x27;&#x27;);
   }
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () =&gt; state.moving&amp;&amp;cards[state.moving]?ideaOf(cards[state.moving].idea):null;
-  function row(idea) {
-    const open=state.open===idea.id,from=movingFrom();
+  function row(idea,lit=new Set()) {
+    const open=state.open===idea.id,from=movingFrom(),mode=lensOf(idea.option);
+    const lead=ordered(idea)[0],hits=idea.versions.filter(id=&gt;lit.has(id)).length,leadLit=lit.has(lead),inside=hits-(leadLit?1:0);
+    // With a highlight on, rows without a match recede; a folded row with a match in its stack says so on its card.
+    const dim=mode&amp;&amp;!hits;
+    const face=open?track(idea,lit):stack(idea,inside)+cardFace(lead,false,leadLit?lensTag(mode):inside?lensTag(mode,inside):&#x27;&#x27;,leadLit);
     const source=from?.id===idea.id,target=from&amp;&amp;!source&amp;&amp;from.option===idea.option;
-    const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;Move here: join “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}Move here&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(ordered(idea)[0]))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${open?track(idea):stack(idea)+cardFace(ordered(idea)[0])}${here}&lt;/div&gt;&lt;/section&gt;`;
+    const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
+    const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}&lt;/div&gt;&lt;/section&gt;`;
   }
   function moveBanner(option) {
     const from=movingFrom();
     if(!from||from.option!==option) return &#x27;&#x27;;
-    return `&lt;div class=&quot;sm-move-banner&quot; role=&quot;status&quot;&gt;&lt;span&gt;Pick the argument it belongs with.&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;cancel-move&quot; data-key=&quot;cancel-move&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`;
+    return `&lt;div class=&quot;sm-move-banner&quot; role=&quot;status&quot;&gt;&lt;span&gt;${canMove(state.moving)?&#x27;Pick the argument that makes the same point.&#x27;:&#x27;Pick the argument that makes the same point. The owner or the author decides.&#x27;}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;cancel-move&quot; data-key=&quot;cancel-move&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`;
   }
   // The last row of each column: a dashed card that opens a draft argument in place.
   function addArgument(option) {
@@ -2878,30 +3036,72 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.renamingOption!==option) return `&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;`;
     return `&lt;input id=&quot;sm-option-name&quot; class=&quot;sm-option-input&quot; type=&quot;text&quot; data-key=&quot;option-name&quot; data-select maxlength=&quot;80&quot; placeholder=&quot;Name this option&quot; aria-label=&quot;Option name&quot; value=&quot;${escape(state.optionDraft)}&quot;&gt;`;
   }
+  // The column&#x27;s highlight control: an icon (and the lens&#x27;s name when on) in the header, opening a small menu.
+  function lensControl(option) {
+    const mode=lensOf(option),L=LENSES[mode],key=&#x27;lens:&#x27;+option;
+    return `&lt;button type=&quot;button&quot; class=&quot;sm-head-button sm-lens-button ${mode?&#x27;sm-on&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;${key}&quot; data-key=&quot;menu-${key}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===key}&quot; aria-label=&quot;Highlight in ${escape(optionName(option))}: ${mode?L.label:&#x27;off&#x27;}&quot; data-tooltip=&quot;Highlight&quot;&gt;${icon(mode?L.glyph:&#x27;highlighter&#x27;)}${mode?`&lt;span&gt;${L.label}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;`;
+  }
+  // Under the header: &quot;Most important first&quot;, or, with a highlight on, how many matches and up/down to move between them.
+  function lensBar(option) {
+    const mode=lensOf(option);
+    if(!mode) return `&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;${icon(&#x27;arrow-down&#x27;)}Most important first&lt;/div&gt;`;
+    const L=LENSES[mode],n=matchList(option).length,k=state.step[colKey(option)];
+    const at=Number.isInteger(k)&amp;&amp;k&gt;=0&amp;&amp;k&lt;n?`${k+1} of ${n}`:`${n}`;
+    const btn=(dir,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;lens-step&quot; data-id=&quot;${option}&quot; data-dir=&quot;${dir}&quot; data-key=&quot;lens-${dir&gt;0?&#x27;next&#x27;:&#x27;prev&#x27;}-${option}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;/button&gt;`;
+    return `&lt;div class=&quot;sm-lens-bar&quot; role=&quot;group&quot; aria-label=&quot;${L.label} in ${escape(optionName(option))}&quot;&gt;&lt;span class=&quot;sm-lens-count&quot;&gt;${icon(L.glyph)}${n?`${n} ${L.noun(n)}`:L.none}&lt;/span&gt;${n?`&lt;span class=&quot;sm-lens-step&quot;&gt;${btn(-1,&#x27;chevron-up&#x27;,&#x27;Previous&#x27;)}&lt;span aria-live=&quot;polite&quot;&gt;${at}&lt;/span&gt;${btn(1,&#x27;chevron-down&#x27;,&#x27;Next&#x27;)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
+  }
+  // The folded tail of a long column: a paper stack of the less important arguments, with how many are highlighted.
+  function rowFold(option,rest,shown,lit) {
+    const mode=lensOf(option),restLit=rest.filter(i=&gt;i.versions.some(id=&gt;lit.has(id))).length;
+    const less=shown&gt;ROW_LIMIT?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;less-rows&quot; data-id=&quot;${option}&quot; data-key=&quot;less-rows-${option}&quot;&gt;Fold back to ${ROW_LIMIT}&lt;/button&gt;`:&#x27;&#x27;;
+    if(!rest.length) return less?`&lt;div class=&quot;sm-row-fold sm-row-fold-open&quot;&gt;${less}&lt;/div&gt;`:&#x27;&#x27;;
+    return `&lt;div class=&quot;sm-row-fold&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-more-rows cursor-interaction&quot; data-action=&quot;more-rows&quot; data-id=&quot;${option}&quot; data-key=&quot;more-rows-${option}&quot;&gt;&lt;span class=&quot;sm-more-edges&quot; aria-hidden=&quot;true&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;${rest.length} more ${rest.length===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/strong&gt;&lt;span&gt;less important · show ${Math.min(ROW_PAGE,rest.length)}&lt;/span&gt;${restLit?`&lt;span class=&quot;sm-lens-tag&quot;&gt;${icon(LENSES[mode].glyph)}${restLit} with ${LENSES[mode].label.toLowerCase()}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;${less}&lt;/div&gt;`;
+  }
+  function hiddenColumn(option) {
+    const n=ideas.filter(i=&gt;i.option===option).length,name=escape(optionName(option));
+    return `&lt;section class=&quot;sm-col-hidden&quot; data-option=&quot;${option}&quot; aria-label=&quot;${name} (hidden)&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-column-head cursor-interaction&quot; data-action=&quot;show-col&quot; data-id=&quot;${option}&quot; data-key=&quot;show-col-${option}&quot; aria-label=&quot;Show ${name}&quot; data-tooltip=&quot;Show column&quot;&gt;${icon(&#x27;eye&#x27;)}&lt;span class=&quot;sm-col-hidden-name&quot;&gt;${name}&lt;/span&gt;&lt;span class=&quot;sm-col-hidden-count&quot;&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/button&gt;&lt;/section&gt;`;
+  }
   function column(option) {
-    const rows=ideas.filter(i=&gt;i.option===option);
-    if(state.updated&amp;&amp;rows.length&gt;1)[rows[0],rows[1]]=[rows[1],rows[0]];
+    if(isHidden(option)) return hiddenColumn(option);
+    const all=rowsOf(option),lit=matchesIn(option),n=shownRows(option,all),rows=all.slice(0,n),rest=all.slice(n);
     // After a delete, an Undo bar sits where the change happened: under the row, or where a removed row was.
     let rowsHtml=&#x27;&#x27;,undoShown=false;
     const undo=state.undo?.option===option?undoMarkup():&#x27;&#x27;;
     rowsHtml+=moveBanner(option);
     if(undo&amp;&amp;!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
-    rows.forEach(r=&gt;{rowsHtml+=row(r);if(undo&amp;&amp;state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
+    rows.forEach(r=&gt;{rowsHtml+=row(r,lit);if(undo&amp;&amp;state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&amp;&amp;!undoShown) rowsHtml+=undo;
-    return `&lt;section class=&quot;sm-column&quot; data-option=&quot;${option}&quot; aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${option===doc.options[0].id?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;sm-col-axis&quot; aria-hidden=&quot;true&quot;&gt;${icon(&#x27;arrow-down&#x27;)}Most important first&lt;/div&gt;${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
+    rowsHtml+=rowFold(option,rest,n,lit);
+    const first=option===firstVisible();
+    return `&lt;section class=&quot;sm-column ${first?&#x27;sm-first&#x27;:&#x27;&#x27;}&quot; data-option=&quot;${option}&quot; ${lensOf(option)?`data-lens=&quot;${lensOf(option)}&quot;`:&#x27;&#x27;} aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${first?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${lensControl(option)}${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;${lensBar(option)}${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
   }
   const MAX_OPTIONS=4;
+  // ── Strongest case: each option&#x27;s three most important arguments, each in its best-articulated wording. ──
+  const CASE_SIZE=3;
+  function caseColumn(option) {
+    const rows=rowsOf(option),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const items=top.map((idea,k)=&gt;{
+      const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
+      const facts=`&lt;span class=&quot;sm-case-facts&quot;&gt;&lt;span title=&quot;Importance: ${imp} net votes&quot;&gt;${icon(&#x27;arrow-up-narrow-wide&#x27;)}${imp}&lt;/span&gt;${n&gt;1?`&lt;span title=&quot;The best-articulated of ${n} wordings&quot;&gt;${icon(&#x27;layers&#x27;)}best of ${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`;
+      return `&lt;section class=&quot;sm-idea sm-case-item&quot; data-node=&quot;${idea.id}&quot;&gt;&lt;span class=&quot;sm-case-rank&quot; aria-hidden=&quot;true&quot;&gt;${k+1}&lt;/span&gt;&lt;article class=&quot;sm-card sm-case-card&quot; data-card=&quot;${id}&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;case-open&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-label=&quot;Argument ${k+1}: ${escape(cards[id].claim)}. Open it on the board.&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;${credibility(id)}${facts}&lt;/div&gt;&lt;/article&gt;&lt;/section&gt;`;
+    }).join(&#x27;&#x27;);
+    const note=!rows.length?`&lt;p class=&quot;sm-case-note sm-case-thin&quot;&gt;No arguments yet: this side has no case.&lt;/p&gt;`:rows.length&lt;2?`&lt;p class=&quot;sm-case-note sm-case-thin&quot;&gt;Only one argument so far. This side needs a stronger case.&lt;/p&gt;`:&#x27;&#x27;;
+    const more=rest&gt;0?`&lt;p class=&quot;sm-case-note&quot;&gt;${rest} more ${rest===1?&#x27;argument&#x27;:&#x27;arguments&#x27;} on the board.&lt;/p&gt;`:&#x27;&#x27;;
+    return `&lt;section class=&quot;sm-column sm-case-column ${option===doc.options[0].id?&#x27;sm-first&#x27;:&#x27;&#x27;}&quot; data-option=&quot;${option}&quot; aria-label=&quot;The case for ${escape(optionName(option))}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;&lt;div class=&quot;sm-column-head&quot;&gt;&lt;h2&gt;${escape(optionName(option))}&lt;/h2&gt;&lt;/div&gt;&lt;p class=&quot;sm-case-caption&quot;&gt;${top.length?`Its ${top.length===1?&#x27;argument&#x27;:`${top.length} most important arguments`}, in the best wording`:&#x27;The case for this option&#x27;}&lt;/p&gt;${items}${note}${more}&lt;/section&gt;`;
+  }
   function boardMarkup() {
+    if(state.zoom===&#x27;case&#x27;) return doc.options.map(o=&gt;caseColumn(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;);
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&amp;&amp;!doc.options.some(o=&gt;o.id===state.undo.option)?`&lt;div class=&quot;sm-board-undo&quot;&gt;${undoMarkup()}&lt;/div&gt;`:&#x27;&#x27;;
     const add=doc.options.length&lt;MAX_OPTIONS?`&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-add-option-col&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-option cursor-interaction&quot; data-action=&quot;add-option&quot; data-key=&quot;add-option&quot; aria-label=&quot;Add an option&quot; data-tooltip=&quot;Add an option&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span class=&quot;sm-add-short&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;sm-add-long&quot;&gt;Add an option&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
     return orphanUndo+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
   }
   function boardColumns() {
-    const wide=state.open?ideaOf(state.open)?.option:null;
+    if(state.zoom===&#x27;case&#x27;) return doc.options.map(()=&gt;&#x27;minmax(0,1fr)&#x27;).join(&#x27; 32px &#x27;);
+    const wide=state.open?ideaOf(state.open)?.option:null,hiddenN=doc.options.filter(o=&gt;isHidden(o.id)).length;
     // While a row is unfolded, the other columns keep a readable width (when there is room for it).
-    const rest=!wide||doc.options.length&gt;3?&#x27;minmax(0,1fr)&#x27;:`minmax(${doc.options.length===2?260:200}px,1fr)`;
-    return doc.options.map(o=&gt;o.id===wide?&#x27;minmax(0,2.6fr)&#x27;:rest).join(&#x27; 32px &#x27;)+(doc.options.length&lt;MAX_OPTIONS?&#x27; 20px max-content&#x27;:&#x27;&#x27;);
+    const visibleN=doc.options.length-hiddenN,rest=!wide||visibleN&gt;3?&#x27;minmax(0,1fr)&#x27;:`minmax(${visibleN===2?260:200}px,1fr)`;
+    return doc.options.map(o=&gt;isHidden(o.id)?&#x27;44px&#x27;:o.id===wide?&#x27;minmax(0,2.6fr)&#x27;:rest).join(&#x27; 32px &#x27;)+(doc.options.length&lt;MAX_OPTIONS?&#x27; 20px max-content&#x27;:&#x27;&#x27;);
   }
   function evidenceContent(cardId) {
     const card=cards[cardId],assessment=state.assessments[cardId];
@@ -3017,8 +3217,8 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   const menuEl=root.querySelector(&#x27;.sm-menu&#x27;);
   function renderMenu() {
-    const open=!!state.menu&amp;&amp;(!!cards[state.menu]||doc.options.some(o=&gt;&#x27;option:&#x27;+o.id===state.menu));
-    menuEl.setAttribute(&#x27;aria-label&#x27;,state.menu?.startsWith(&#x27;option:&#x27;)?&#x27;Option settings&#x27;:&#x27;Version options&#x27;);
+    const open=!!state.menu&amp;&amp;(!!cards[state.menu]||doc.options.some(o=&gt;&#x27;option:&#x27;+o.id===state.menu||&#x27;lens:&#x27;+o.id===state.menu));
+    menuEl.setAttribute(&#x27;aria-label&#x27;,state.menu?.startsWith(&#x27;option:&#x27;)?&#x27;Option settings&#x27;:state.menu?.startsWith(&#x27;lens:&#x27;)?&#x27;Highlight&#x27;:&#x27;Version options&#x27;);
     if(!open) state.menu=null;
     menuEl.hidden=!open;menuEl.innerHTML=open?menuMarkup(state.menu):&#x27;&#x27;;
   }
@@ -3096,12 +3296,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     detachVersion(card);
     cards[card].idea=targetId;target.versions.push(card);
     state.open=targetId;state.composing=false;state.expanded=card;
-    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:&#x27;Version moved.&#x27;,card,idea:from});
+    startUndo(snapshot,{option:target.option,afterIdea:targetId,label:&#x27;Combined.&#x27;,card,idea:from});
   }
   function splitVersion(card) {
     const snapshot=takeSnapshot(),old=ideaOf(cards[card].idea),ideaId=&#x27;i&#x27;+(doc.nextId++);
     detachVersion(card);
-    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:&#x27;you&#x27;});
+    ideas.push({id:ideaId,option:old.option,score:0,versions:[card],by:&#x27;you&#x27;,at:new Date().toISOString()});
     cards[card].idea=ideaId;
     if(state.expanded===card&amp;&amp;state.open===old.id) state.expanded=null;
     startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:&#x27;Split into its own argument.&#x27;,card,idea:old.id});
@@ -3200,7 +3400,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     board.querySelectorAll(&#x27;.sm-column&#x27;).forEach(col=&gt;{
       const canvas=col.querySelector(&#x27;.sm-texture&#x27;),box=canvas.getBoundingClientRect();
       if(!box.width||!box.height) return;
-      const dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
+      // A long column can be very tall; keep the canvas under browsers&#x27; size limits by lowering its resolution.
+      const dpr=Math.min(2,window.devicePixelRatio||1,16000/box.height),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
       if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}
       const ctx=canvas.getContext(&#x27;2d&#x27;);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,box.width,box.height);
       const rows=[...col.querySelectorAll(&#x27;[data-node]&#x27;)].map(node=&gt;{
@@ -3213,14 +3414,20 @@ html&gt;body{padding:0}&lt;/style&gt;
       // Filled cells of one size. Importance sets density: the most important row is a full honeycomb,
       // the least important keeps only a scattering (sparse). Articulation fades tone across an unfolded row.
       ctx.fillStyle=ink;
-      for(let j=0;j*dy&lt;box.height+R;j++) for(let i=-1;i*dx&lt;box.width+R;i++) {
-        const cx=i*dx+(j%2?dx/2:0),cy=j*dy;
-        const row=rows.reduce((a,b)=&gt;Math.abs(b.mid-cy)&lt;Math.abs(a.mid-cy)?b:a);
+      // Rows run top to bottom, so the nearest row is found once per line of cells by walking forward.
+      let near=0;
+      for(let j=0;j*dy&lt;box.height+R;j++) {
+        const cy=j*dy;
+        while(near&lt;rows.length-1&amp;&amp;Math.abs(rows[near+1].mid-cy)&lt;=Math.abs(rows[near].mid-cy)) near++;
+        const row=rows[near];
+        for(let i=-1;i*dx&lt;box.width+R;i++) {
+        const cx=i*dx+(j%2?dx/2:0);
         if(cellChance(i,j)&gt;sparse+(1-sparse)*row.imp) continue;
         let art=1;
         if(row.versions.length&gt;1){const gapTo=v=&gt;cx&lt;v.l?v.l-cx:cx&gt;v.r?cx-v.r:0;art=row.versions.reduce((a,b)=&gt;gapTo(b)&lt;gapTo(a)?b:a).art/row.maxArt;}
         ctx.globalAlpha=fill*(floor+(1-floor)*Math.max(0,art));
         ctx.beginPath();hexPath(ctx,cx,cy,R*size);ctx.fill();
+        }
       }
       ctx.globalAlpha=1;
     });
@@ -3250,7 +3457,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const line=(x1,y1,x2,y2)=&gt;`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=&gt;`&lt;path d=&quot;${d}&quot;/&gt;`;
     const port=(x,y)=&gt;`&lt;circle cx=&quot;${x}&quot; cy=&quot;${y}&quot; r=&quot;3&quot;/&gt;`;
-    const columns=[...board.querySelectorAll(&#x27;.sm-column&#x27;)];
+    const columns=[...board.querySelectorAll(&#x27;.sm-column,.sm-col-hidden&#x27;)];
     const narrow=window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=&gt;{
@@ -3280,13 +3487,23 @@ html&gt;body{padding:0}&lt;/style&gt;
   const LOGO=siteEl.querySelector(&#x27;.sm-logo&#x27;).outerHTML;
   const SORTS = {hot:[&#x27;flame&#x27;,&#x27;Hot&#x27;],new:[&#x27;sparkles&#x27;,&#x27;New&#x27;],top:[&#x27;trophy&#x27;,&#x27;Top&#x27;],help:[&#x27;hand-helping&#x27;,&#x27;Needs help&#x27;]};
   // What the list shows about each board, computed from the board itself so edits there show up here.
+  // A board&#x27;s score is not a separate up/down vote: it adds up the work on the board itself. Importance votes,
+  // articulation votes, evidence assessments, and comments each count once (yours included).
+  function activity(d,comments) {
+    const cs=Object.entries(d.cards);
+    const importance=d.ideas.reduce((n,i)=&gt;n+Math.max(0,i.score)+(state.importance[i.id]?1:0),0);
+    const wording=cs.reduce((n,[id,c])=&gt;n+Math.max(0,c.pref||0)+(state.preference[id]?1:0),0);
+    const evidence=cs.reduce((n,[id,c])=&gt;n+(c.yes||0)+(c.no||0)+(state.assessments[id]?1:0),0);
+    return {importance,wording,evidence,comments,total:importance+wording+evidence+comments};
+  }
   function boardInfo(id) {
-    // Boards created in the prototype have no list details yet: new, unvoted, nobody else here.
-    const d=docs[id],f=FEED[id]||{score:d.question.org===&#x27;none&#x27;?null:0,at:new Date(NOW).toISOString(),here:[],people:1,comments:0},vote=state.feedVotes[id]||0;
+    // Boards created in the prototype have no list details yet: new, nobody else here.
+    const d=docs[id],f=FEED[id]||{at:new Date(NOW).toISOString(),here:[],people:1,comments:0};
     const options=d.options.map(o=&gt;({name:o.name,n:d.ideas.filter(i=&gt;i.option===o.id).length}));
     const thin=options.filter(o=&gt;o.n&lt;2);
-    return {id,d,f,options,thin,space:spaceOf(d.question.org),score:f.score===null?null:f.score+vote,vote,
-      comments:d.comments.filter(c=&gt;!c.deleted).length+f.comments,hours:(NOW-Date.parse(f.at))/3.6e6};
+    const comments=d.comments.filter(c=&gt;!c.deleted).length+f.comments,act=activity(d,comments);
+    // A private draft in Personal has no audience yet, so it shows as a draft instead of a score.
+    return {id,d,f,options,thin,space:spaceOf(d.question.org),score:d.question.org===&#x27;none&#x27;?null:act.total,act,comments,hours:(NOW-Date.parse(f.at))/3.6e6};
   }
   // Home shows your private spaces and the communities you&#x27;ve joined; a space shows only its own steelmen.
   function visibleBoards() {
@@ -3307,9 +3524,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   // A list item keeps to the essentials: votes, where and who, the question, its options, and a miniature.
   function post(b) {
-    const q=b.d.question,vb=(v,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;feed-vote&quot; data-id=&quot;${b.id}&quot; data-vote=&quot;${v}&quot; data-key=&quot;feed-${v&gt;0?&#x27;up&#x27;:&#x27;down&#x27;}-${b.id}&quot; aria-pressed=&quot;${b.vote===v}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;/button&gt;`;
+    const q=b.d.question,a=b.act;
+    const why=`${b.score} contributions: ${a.importance} importance votes, ${a.wording} articulation votes, ${a.evidence} evidence checks, ${a.comments} comments`;
     const vote=b.score===null?`&lt;span class=&quot;sm-post-draft&quot;&gt;Draft&lt;/span&gt;`
-      :`${vb(1,&#x27;arrow-big-up&#x27;,&#x27;Upvote&#x27;)}&lt;span class=&quot;sm-post-score&quot; aria-label=&quot;${b.score} points&quot;&gt;${b.score}&lt;/span&gt;${vb(-1,&#x27;arrow-big-down&#x27;,&#x27;Downvote&#x27;)}`;
+      :`&lt;span class=&quot;sm-post-activity&quot; role=&quot;img&quot; aria-label=&quot;${why}&quot; title=&quot;${why}&quot;&gt;${icon(&#x27;activity&#x27;)}&lt;span class=&quot;sm-post-score&quot;&gt;${b.score&gt;=1000?(b.score/1000).toFixed(1).replace(/\.0$/,&#x27;&#x27;)+&#x27;k&#x27;:b.score}&lt;/span&gt;&lt;/span&gt;`;
     const options=b.options.map(o=&gt;`&lt;li class=&quot;${o.n&lt;2?&#x27;sm-thin&#x27;:&#x27;&#x27;}&quot;&gt;${escape(o.name)}&lt;b title=&quot;${o.n} ${o.n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&quot;&gt;${o.n}&lt;/b&gt;&lt;/li&gt;`).join(&#x27;&#x27;);
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`&lt;span&gt;&lt;span class=&quot;sm-faces&quot;&gt;${b.f.here.slice(0,3).map(u=&gt;`&lt;span title=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;${here} here now&lt;/span&gt;`:&#x27;&#x27;;
@@ -3362,9 +3580,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view===&#x27;board&#x27;) {
       const s=spaceOf(doc.question.org);
       const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility===&#x27;link&#x27;;
-      const zoomBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;/button&gt;`;
-      tools=`&lt;div class=&quot;sm-zoom&quot; role=&quot;group&quot; aria-label=&quot;Zoom&quot;&gt;${zoomBtn(&#x27;overview&#x27;,&#x27;zoom-out&#x27;,&#x27;Overview (−)&#x27;)}${zoomBtn(&#x27;read&#x27;,&#x27;zoom-in&#x27;,&#x27;Read (+)&#x27;)}&lt;/div&gt;`
-        +(f.here.length?`&lt;span class=&quot;sm-site-faces&quot; aria-label=&quot;Also here&quot;&gt;${f.here.map(u=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;follow&quot; data-id=&quot;${escape(u)}&quot; data-key=&quot;follow-${escape(u)}&quot; data-follow=&quot;${escape(u)}&quot; aria-label=&quot;Go to where ${escape(u)} is&quot;&gt;${escape(userInitials(u))}&lt;/button&gt;`).join(&#x27;&#x27;)}${f.more?`&lt;span title=&quot;${f.more} more&quot;&gt;+${f.more}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;)
+      const viewBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;span&gt;${label}&lt;/span&gt;&lt;/button&gt;`;
+      tools=`&lt;div class=&quot;sm-zoom&quot; role=&quot;group&quot; aria-label=&quot;View&quot;&gt;${viewBtn(&#x27;read&#x27;,&#x27;layout-grid&#x27;,&#x27;Board&#x27;)}${viewBtn(&#x27;case&#x27;,&#x27;award&#x27;,&#x27;Strongest case&#x27;)}&lt;/div&gt;`
+        // Who else has this board open: faces only. They don&#x27;t appear on cards.
+        +(f.here.length?`&lt;span class=&quot;sm-site-faces&quot; role=&quot;img&quot; aria-label=&quot;Also here: ${escape(f.here.join(&#x27;, &#x27;))}${f.more?` and ${f.more} more`:&#x27;&#x27;}&quot;&gt;${f.here.map(u=&gt;`&lt;span title=&quot;${escape(u)} is here&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}${f.more?`&lt;span title=&quot;${f.more} more&quot;&gt;+${f.more}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;)
         +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
       middle=`&lt;nav class=&quot;sm-crumbs&quot; aria-label=&quot;Breadcrumb&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;/&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${s.id}&quot; data-key=&quot;crumb-space&quot;&gt;${escape(s.name)}&lt;/button&gt;&lt;/nav&gt;`;
     } else {
@@ -3416,7 +3635,6 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     const id=&#x27;new&#x27;+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:&#x27;2026-11-09&#x27;,org:d.space,visibility:d.space===&#x27;none&#x27;?&#x27;private&#x27;:&#x27;org&#x27;,options:names.map(n=&gt;[n.slice(0,80),[]])});
-    if(d.space!==&#x27;none&#x27;) state.feedVotes[id]=1; // your own steelman starts with your upvote
     const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError=&#x27;&#x27;;state.createDraft={q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null};
     leaveBoard();state.view=&#x27;board&#x27;;state.boardId=id;useDoc(docs[id]);
@@ -3477,56 +3695,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     return null;
   }
 
-  // ── Presence (simulated): classmates move between cards; now and then one starts writing (a typing bubble). Nothing they do changes the board. ──
-  let presence={},presenceTimer=0;
-  const reducedMotion2=()=&gt;matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
-  function visibleCards() { return [...board.querySelectorAll(&#x27;.sm-card[data-card]&#x27;)].map(el=&gt;el.dataset.card); }
-  function startPresence() {
-    stopPresence();
-    const people=FEED[state.boardId]?.here||[],ids=visibleCards();
-    presence=Object.fromEntries(people.map((u,i)=&gt;[u,{card:ids[(i*2+1)%Math.max(ids.length,1)],writing:false}]));
-    const tick=()=&gt;{
-      const users=Object.keys(presence),ids=visibleCards();
-      if(users.length&amp;&amp;ids.length){
-        const u=users[Math.floor(Math.random()*users.length)],p=presence[u];
-        if(!p.writing&amp;&amp;Math.random()&lt;.3&amp;&amp;ids.includes(p.card)) p.writing=true;
-        else {p.writing=false;p.card=ids[Math.floor(Math.random()*ids.length)];}
-        paintPresence();
-      }
-      presenceTimer=setTimeout(tick,2600+Math.random()*2600);
-    };
-    presenceTimer=setTimeout(tick,1800);
-    paintPresence();
-  }
-  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};painted={};root.querySelectorAll(&#x27;.sm-presence&#x27;).forEach(el=&gt;el.remove()); }
-  // Badges are painted onto the cards directly, so focus and drafts are never disturbed.
-  // Only cards whose viewers changed are repainted, and only someone who just arrived (or just started writing) pops in.
-  let painted={};
-  function paintPresence() {
-    if(state.view!==&#x27;board&#x27;){root.querySelectorAll(&#x27;.sm-presence&#x27;).forEach(el=&gt;el.remove());painted={};return;}
-    const byCard={};
-    for(const [u,p] of Object.entries(presence)) (byCard[p.card] ||= []).push(u);
-    const sig=id=&gt;(byCard[id]||[]).map(u=&gt;u+(presence[u].writing?&#x27;*&#x27;:&#x27;&#x27;)).join(&#x27;,&#x27;);
-    board.querySelectorAll(&#x27;.sm-presence&#x27;).forEach(el=&gt;{const id=el.parentElement.dataset.card;if(sig(id)!==el.dataset.sig)el.remove();});
-    for(const [id,users] of Object.entries(byCard)){
-      const el=board.querySelector(`.sm-card[data-card=&quot;${id}&quot;]`);if(!el||el.querySelector(&#x27;:scope &gt; .sm-presence&#x27;))continue;
-      const before=painted[id]||&#x27;&#x27;,writer=users.find(u=&gt;presence[u].writing);
-      const arrive=u=&gt;before.split(&#x27;,&#x27;).includes(u)||before.split(&#x27;,&#x27;).includes(u+&#x27;*&#x27;)?&#x27;&#x27;:&#x27; sm-arrive&#x27;;
-      el.insertAdjacentHTML(&#x27;beforeend&#x27;,`&lt;span class=&quot;sm-presence&quot; data-sig=&quot;${sig(id)}&quot; aria-hidden=&quot;true&quot;&gt;${users.map(u=&gt;`&lt;span class=&quot;sm-pbadge${arrive(u)}&quot; title=&quot;${escape(u)}${presence[u].writing?&#x27; is writing a version&#x27;:&#x27;&#x27;}&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}${writer?`&lt;span class=&quot;sm-typing${before.includes(writer+&#x27;*&#x27;)?&#x27;&#x27;:&#x27; sm-arrive&#x27;}&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`);
-    }
-    painted=Object.fromEntries(Object.keys(byCard).map(id=&gt;[id,sig(id)]));
-    siteEl.querySelectorAll(&#x27;[data-follow]&#x27;).forEach(b=&gt;{const p=presence[b.dataset.follow],c=p&amp;&amp;cards[p.card];b.title=c?`${b.dataset.follow} · ${p.writing?&#x27;writing on&#x27;:&#x27;viewing&#x27;} “${short(p.card)}”`:b.dataset.follow;});
-  }
-  function follow(user) {
-    const p=presence[user],el=p&amp;&amp;board.querySelector(`.sm-card[data-card=&quot;${p.card}&quot;]`);
-    if(!el){announce(`${user} is somewhere you can’t see right now.`);return;}
-    el.scrollIntoView({block:&#x27;center&#x27;,behavior:reducedMotion2()?&#x27;auto&#x27;:&#x27;smooth&#x27;});
-    el.classList.add(&#x27;sm-followed&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-followed&#x27;),1600);
-    announce(`${user} is ${p.writing?&#x27;writing a version of&#x27;:&#x27;looking at&#x27;} “${short(p.card)}”.`);
-  }
-
-  // ── Zoom ──
-  // Two levels: Read is the board as it is; Overview condenses every card so the whole debate fits.
+  // ── Views ──
+  // Board is the full board; Strongest case shows each option&#x27;s top arguments in their best wording.
   // Moving between them scales the scene around one card, so you keep your place.
   const sceneEl=root.querySelector(&#x27;.sm-scene&#x27;);
   function centerCard() {
@@ -3538,32 +3708,32 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.zoom===level) return;
     const sel=cardId?`.sm-card[data-card=&quot;${cardId}&quot;]`:&#x27;.sm-head&#x27;;
     const before=root.querySelector(sel)?.getBoundingClientRect();
-    if(level===&#x27;overview&#x27;) Object.assign(state,{open:null,expanded:null,drawer:null,menu:null,share:false,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null});
+    if(level===&#x27;case&#x27;) Object.assign(state,{open:null,expanded:null,drawer:null,menu:null,share:false,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null});
     state.zoom=level;render(level===&#x27;read&#x27;&amp;&amp;cardId?&#x27;claim-&#x27;+cardId:&#x27;zoom-&#x27;+level);save();
     const target=root.querySelector(sel);if(!target)return;
     target.scrollIntoView({block:&#x27;center&#x27;});
     if(cardId&amp;&amp;level===&#x27;read&#x27;){target.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;target.classList.remove(&#x27;sm-arrived&#x27;),900);}
-    if(!before||reducedMotion2())return;
+    if(!before||reducedMotion())return;
     const after=target.getBoundingClientRect(),scene=sceneEl.getBoundingClientRect(),k=before.width/after.width;
     const tx=before.left-scene.left-(after.left-scene.left)*k,ty=before.top-scene.top-(after.top-scene.top)*k;
     sceneEl.style.transformOrigin=&#x27;0 0&#x27;;
     play(sceneEl,[{transform:`translate(${tx}px,${ty}px) scale(${k})`},{transform:&#x27;none&#x27;}],{duration:motion(&#x27;slow&#x27;)});
     animateWires(460);
-    announce(level===&#x27;overview&#x27;?&#x27;Overview: the whole board, condensed. Choose a card to read it.&#x27;:&#x27;Reading.&#x27;);
+    announce(level===&#x27;case&#x27;?&#x27;Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.&#x27;:&#x27;Board.&#x27;);
   }
   // Opening a board grows it out of its miniature in the list; leaving shrinks it back. Positions are relative to the prototype.
   const relBox=el=&gt;{const r=el.getBoundingClientRect(),o=root.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top,w:r.width,h:r.height};};
   // A rect seen on screen before a jump, expressed in the prototype&#x27;s coordinates after it.
   const fromViewport=tv=&gt;{if(!tv)return null;const o=root.getBoundingClientRect();return {x:tv.left-o.left,y:tv.top-o.top,w:tv.width,h:tv.height};};
   function growFrom(T) {
-    if(!T||reducedMotion2())return;
+    if(!T||reducedMotion())return;
     const F=relBox(surfaceEl),k=T.w/F.w;
     play(surfaceEl,[{transformOrigin:&#x27;0 0&#x27;,transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`},{transformOrigin:&#x27;0 0&#x27;,transform:&#x27;none&#x27;,clipPath:&#x27;inset(0 0 0 0 round 0px)&#x27;}],{duration:motion(&#x27;slow&#x27;)});
     animateWires(520);
   }
   function shrinkInto(F,boardId) {
     const thumb=root.querySelector(`.sm-post[data-board=&quot;${boardId}&quot;] .sm-thumb`);
-    if(!thumb||reducedMotion2())return;
+    if(!thumb||reducedMotion())return;
     thumb.closest(&#x27;.sm-post&#x27;).scrollIntoView({block:&#x27;center&#x27;});
     const T=relBox(thumb),k=T.w/F.w;
     const done=()=&gt;{surfaceEl.getAnimations().forEach(x=&gt;x.cancel());if(state.view===&#x27;home&#x27;)surfaceEl.hidden=true;surfaceEl.removeAttribute(&#x27;style&#x27;);};
@@ -3576,18 +3746,17 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   // Leaving a board closes whatever was open on it; votes stay, keyed by card.
   function leaveBoard() {
-    stopPresence();
-    Object.assign(state,{zoom:&#x27;read&#x27;,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
+    Object.assign(state,{zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
   }
   function renderView(focusKey) {
     const home=state.view===&#x27;home&#x27;;
     homeEl.hidden=!home; surfaceEl.hidden=home; root.toggleAttribute(&#x27;data-drawer&#x27;,false);
     if(home) root.dataset.zoom=&#x27;&#x27;;
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
-    else {render();startPresence();}
+    else render();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set([&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;feed-vote&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-submit&#x27;]);
+  const HOME_ACTIONS=new Set([&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-submit&#x27;]);
   function homeAction(action,id,trigger) {
     if(action===&#x27;browse&#x27;) {announce(&#x27;Browsing public communities is coming soon.&#x27;);return;}
     if(action===&#x27;create-open&#x27;) {
@@ -3614,12 +3783,11 @@ html&gt;body{padding:0}&lt;/style&gt;
       announce(id===&#x27;all&#x27;?&#x27;Home: steelmen from your spaces and communities.&#x27;:`${spaceOf(id).name}.`);return;
     }
     if(action===&#x27;sort&#x27;) {state.sort=id;renderHome();announce(`Sorted by ${SORTS[id][1].toLowerCase()}.`);}
-    if(action===&#x27;feed-vote&#x27;) {const v=Number(trigger.dataset.vote);state.feedVotes[id]=state.feedVotes[id]===v?0:v;renderHome();announce(state.feedVotes[id]?(v&gt;0?&#x27;Upvoted.&#x27;:&#x27;Downvoted.&#x27;):&#x27;Vote withdrawn.&#x27;);}
     if(action===&#x27;join&#x27;) {state.joined[id]=!state.joined[id];renderHome();announce(state.joined[id]?`Joined ${spaceOf(id).name}.`:`Left ${spaceOf(id).name}.`);}
     root.querySelector(`[data-key=&quot;${trigger.dataset.key}&quot;]`)?.focus({preventScroll:true});
   }
 
-  function render(focusKey, motion=&#x27;&#x27;) {
+  function render(focusKey, kind=&#x27;&#x27;) {
     root.dataset.zoom=state.view===&#x27;board&#x27;?state.zoom:&#x27;&#x27;;
     surfaceEl.dataset.canvas=spaceOf(doc.question.org).canvas;
     renderSite();renderShare();
@@ -3635,43 +3803,69 @@ html&gt;body{padding:0}&lt;/style&gt;
     renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
-    if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;motion!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
+    if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;kind!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
     if(focusKey){const el=root.querySelector(`[data-key=&quot;${focusKey}&quot;]`);el?.focus({preventScroll:true});if(el?.matches(&#x27;input[data-select]&#x27;))el.select();}
-    if(!reduced&amp;&amp;motion) {
+    if(!reduced&amp;&amp;kind) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
       if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:motion(&#x27;slow&#x27;)});
-      if(motion===&#x27;unfold&#x27;||motion===&#x27;fold&#x27;) {
+      if(kind===&#x27;unfold&#x27;||kind===&#x27;fold&#x27;) {
         // The leading card is the same card before and after: ease its width instead of swapping it.
         const lead=ordered(ideaOf(state.open||lastToggled))[0], face=board.querySelector(`.sm-card[data-card=&quot;${lead}&quot;]`), from=beforeFaces.get(lead);
         if(face&amp;&amp;from) play(face,[{width:from.width+&#x27;px&#x27;},{width:face.getBoundingClientRect().width+&#x27;px&#x27;}],{duration:motion(&#x27;slow&#x27;)});
       }
-      if(motion===&#x27;unfold&#x27;&amp;&amp;newTrack) {
+      if(kind===&#x27;unfold&#x27;&amp;&amp;newTrack) {
         const first=newTrack.querySelector(&#x27;.sm-version-face&#x27;), x=first.getBoundingClientRect().left;
         const bar=board.querySelector(&#x27;.sm-track-axis&#x27;);
         if(bar) play(bar,[{height:&#x27;0px&#x27;,marginBottom:&#x27;0px&#x27;,opacity:0},{height:bar.offsetHeight+&#x27;px&#x27;,marginBottom:getComputedStyle(bar).marginBottom,opacity:1}],{duration:motion(&#x27;slow&#x27;)});
         const arriving=[...newTrack.children].slice(2);
         arriving.forEach((el,index)=&gt;play(el,[{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0},{transform:&#x27;none&#x27;,opacity:1}],{duration:motion(&#x27;slow&#x27;),delay:Math.floor(index/2)*45,fill:&#x27;backwards&#x27;}));
       }
-      if(motion===&#x27;detail&#x27;&amp;&amp;state.expanded) {
+      if(kind===&#x27;detail&#x27;&amp;&amp;state.expanded) {
         const reveal=board.querySelector(`#sm-reveal-${state.expanded}`);
         if(reveal) play(reveal,[{height:&#x27;0px&#x27;,opacity:0},{height:reveal.offsetHeight+&#x27;px&#x27;,opacity:1}]);
       }
-      if(motion===&#x27;added&#x27;) {
+      if(kind===&#x27;added&#x27;) {
         const face=board.querySelector(`.sm-card[data-card=&quot;${state.expanded}&quot;]`);
         if(face) play(face,[{transform:&#x27;translateY(8px)&#x27;,opacity:0},{transform:&#x27;none&#x27;,opacity:1}],{duration:motion(&#x27;medium&#x27;)});
       }
-      if(motion===&#x27;reorder&#x27;) board.querySelectorAll(&#x27;[data-node]&#x27;).forEach(el=&gt;{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:&#x27;translateY(0)&#x27;}],{duration:motion(&#x27;slow&#x27;),easing:EASE});}});
+      if(kind===&#x27;reorder&#x27;) board.querySelectorAll(&#x27;[data-node]&#x27;).forEach(el=&gt;{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:&#x27;translateY(0)&#x27;}],{duration:motion(&#x27;slow&#x27;),easing:EASE});}});
     }
-    if(motion===&#x27;unfold&#x27;&amp;&amp;newTrack) {
+    if(kind===&#x27;unfold&#x27;&amp;&amp;newTrack) {
       // Keep the unfolded row in view without jumping the page.
       const box=newTrack.closest(&#x27;[data-node]&#x27;).getBoundingClientRect();
       if(box.bottom&gt;window.innerHeight) newTrack.closest(&#x27;[data-node]&#x27;).scrollIntoView({block:&#x27;nearest&#x27;,behavior:reduced?&#x27;auto&#x27;:&#x27;smooth&#x27;});
     }
-    animateWires(motion&amp;&amp;!reduced?720:0);
-    paintPresence();
+    animateWires(kind&amp;&amp;!reduced?720:0);
   }
   let lastToggled=null;
+  // Moving your view to the k-th highlighted wording in a column: unfold whatever hides it (the column&#x27;s fold, its row&#x27;s
+  // stack, the row&#x27;s own fold), then reveal() scrolls down and along to it and rings it. The order never changes.
+  function goTo(option,k) {
+    const id=matchList(option)[k];if(!id) return null;
+    state.step[colKey(option)]=k;
+    const idea=ideaOf(cards[id].idea),rows=rowsOf(option),r=rows.indexOf(idea);
+    if(r&gt;=(state.shownRows[colKey(option)]||ROW_LIMIT)) state.shownRows[colKey(option)]=r+1;
+    const all=ordered(idea),v=all.indexOf(id);
+    if(v&gt;0){ if(state.open!==idea.id){state.open=idea.id;state.composing=false;lastToggled=idea.id;} if(v&gt;=(state.shownVersions[idea.id]||VERSION_LIMIT)) state.shownVersions[idea.id]=v+1; }
+    return id;
+  }
+  function reveal(cardId) {
+    const el=board.querySelector(`.sm-card[data-card=&quot;${cardId}&quot;]`);if(!el) return;
+    el.scrollIntoView({block:&#x27;center&#x27;,inline:&#x27;center&#x27;,behavior:reducedMotion()?&#x27;auto&#x27;:&#x27;smooth&#x27;});
+    el.classList.remove(&#x27;sm-arrived&#x27;);void el.offsetWidth;el.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-arrived&#x27;),1400);
+  }
+  // Combining: a direct move for the owner or the version&#x27;s author; a suggestion for other contributors.
+  function combine(card,targetId) {
+    if(canMove(card)) {
+      moveVersion(card,targetId);lastToggled=targetId;
+      announce(&#x27;Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.&#x27;);
+      return {focus:&#x27;undo&#x27;,motion:&#x27;unfold&#x27;};
+    }
+    const id=&#x27;sg&#x27;+(doc.nextId++);doc.suggestions.push({id,card,into:targetId,by:&#x27;you&#x27;,at:new Date().toISOString()});
+    announce(&#x27;Suggestion added. The board’s owner or the version’s author decides.&#x27;);
+    return {focus:&#x27;suggest-dismiss-&#x27;+id,motion:&#x27;&#x27;};
+  }
   async function fold(id, focus) {
     busy=true; await foldOut(id); busy=false;
     lastToggled=id;
@@ -3748,7 +3942,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
-    const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;;
+    const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;,revealAfter=null;
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)!==&#x27;true&#x27;||action===&#x27;browse&#x27;)homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.querySelector(&#x27;small&#x27;)?.textContent||&#x27;Not available.&#x27;);return;}
     if(action===&#x27;card-menu&#x27;) {
@@ -3771,8 +3965,57 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;move-card&#x27;) {state.moving=id;state.expanded=null;const first=ideas.find(i=&gt;i.option===ideaOf(cards[id].idea).option&amp;&amp;i.id!==cards[id].idea);focus=&#x27;move-here-&#x27;+first.id;announce(&#x27;Choose the argument this version belongs with. Each one now has a Move here button. Escape cancels.&#x27;);}
     if(action===&#x27;cancel-move&#x27;) {const card=state.moving;state.moving=null;focus=&#x27;menu-&#x27;+card;announce(&#x27;Move cancelled.&#x27;);}
     if(action===&#x27;move-here&#x27;) {
-      const card=state.moving;state.moving=null;moveVersion(card,id);focus=&#x27;undo&#x27;;motion=&#x27;unfold&#x27;;lastToggled=id;
-      announce(&#x27;Moved. It now sits with the other versions of that argument, keeping its votes and comments. Undo is available for ten seconds.&#x27;);
+      const card=state.moving;state.moving=null;const r=combine(card,id);focus=r.focus;motion=r.motion;
+    }
+    if(action===&#x27;suggest-accept&#x27;) {
+      const g=doc.suggestions.find(x=&gt;x.id===id);if(!g||!canMove(g.card))return;
+      moveVersion(g.card,g.into);doc.suggestions=doc.suggestions.filter(x=&gt;x.id!==id);focus=&#x27;undo&#x27;;motion=&#x27;unfold&#x27;;lastToggled=g.into;
+      announce(&#x27;Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.&#x27;);
+    }
+    if(action===&#x27;suggest-dismiss&#x27;) {
+      const g=doc.suggestions.find(x=&gt;x.id===id);doc.suggestions=doc.suggestions.filter(x=&gt;x.id!==id);
+      focus=g?&#x27;stack-&#x27;+cards[g.card]?.idea:null;announce(g?.by===&#x27;you&#x27;?&#x27;Suggestion withdrawn.&#x27;:&#x27;Suggestion dismissed.&#x27;);
+    }
+    if([&#x27;hide-col&#x27;,&#x27;solo-col&#x27;,&#x27;show-col&#x27;].includes(action)) {
+      const option=action===&#x27;show-col&#x27;?id:id.slice(7);
+      if(action===&#x27;show-col&#x27;) delete state.hiddenCols[colKey(option)];
+      if(action===&#x27;hide-col&#x27;) state.hiddenCols[colKey(option)]=true;
+      if(action===&#x27;solo-col&#x27;) doc.options.forEach(o=&gt;{if(o.id===option)delete state.hiddenCols[colKey(o.id)];else state.hiddenCols[colKey(o.id)]=true;});
+      if(state.open&amp;&amp;isHidden(ideaOf(state.open)?.option)){state.open=null;state.composing=false;}
+      if(state.composingIdea&amp;&amp;isHidden(state.composingIdea)) state.composingIdea=null;
+      state.menu=null;motion=&#x27;reorder&#x27;;
+      focus=action===&#x27;show-col&#x27;?&#x27;menu-option:&#x27;+option:action===&#x27;hide-col&#x27;?&#x27;show-col-&#x27;+option:&#x27;menu-option:&#x27;+option;
+      announce(action===&#x27;show-col&#x27;?`${optionName(option)} is showing again.`:action===&#x27;hide-col&#x27;?`${optionName(option)} is hidden. Its strip brings it back.`:`Showing only ${optionName(option)}. The other options are strips at the side.`);
+    }
+    if(action===&#x27;lens-set&#x27;) {
+      const mode=trigger.dataset.lens,k=colKey(id);state.menu=null;
+      if(mode===&#x27;off&#x27;){delete state.lens[k];delete state.step[k];focus=&#x27;menu-lens:&#x27;+id;announce(&#x27;Highlight off.&#x27;);}
+      else {
+        state.lens[k]=mode;delete state.step[k];
+        // Turning a highlight on moves your view to the first match.
+        const first=matchList(id)[0];
+        if(first){revealAfter=goTo(id,0);focus=&#x27;lens-next-&#x27;+id;}else focus=&#x27;menu-lens:&#x27;+id;
+        announce(first?`${LENSES[mode].label}: ${matchList(id).length} in ${optionName(id)}. Showing the first; use the arrows under the header for the next.`:`${LENSES[mode].none}`);
+      }
+    }
+    if(action===&#x27;lens-step&#x27;) {
+      const n=matchList(id).length;if(!n)return;
+      const k=state.step[colKey(id)],next=Number.isInteger(k)?(k+Number(trigger.dataset.dir)+n)%n:(Number(trigger.dataset.dir)&gt;0?0:n-1);
+      revealAfter=goTo(id,next);announce(`${next+1} of ${n}: “${short(revealAfter)}”.`);
+    }
+    if(action===&#x27;more-rows&#x27;) {
+      const all=rowsOf(id),n=shownRows(id,all);state.shownRows[colKey(id)]=n+ROW_PAGE;
+      focus=all[n]?&#x27;stack-&#x27;+all[n].id:key;announce(`Showing ${Math.min(all.length,n+ROW_PAGE)} of ${all.length} arguments.`);
+    }
+    if(action===&#x27;less-rows&#x27;) {state.shownRows[colKey(id)]=ROW_LIMIT;if(state.open&amp;&amp;rowsOf(id).findIndex(r=&gt;r.id===state.open)&gt;=ROW_LIMIT){state.open=null;state.composing=false;}focus=&#x27;more-rows-&#x27;+id;announce(`Folded back to the ${ROW_LIMIT} most important arguments.`);}
+    if(action===&#x27;more-versions&#x27;) {
+      const idea=ideaOf(id),all=ordered(idea),n=shownVersions(idea,all);state.shownVersions[id]=n+VERSION_PAGE;
+      focus=all[n]?&#x27;claim-&#x27;+all[n]:key;revealAfter=all[n]||null;announce(`Showing ${Math.min(all.length,n+VERSION_PAGE)} of ${all.length} wordings.`);
+    }
+    if(action===&#x27;case-open&#x27;) {
+      // Open the card on the board; if it isn&#x27;t its row&#x27;s leading wording, unfold the row.
+      const idea=cards[id].idea;if(ordered(ideaOf(idea))[0]!==id){state.open=idea;lastToggled=idea;}
+      zoomTo(&#x27;read&#x27;,id);return;
     }
     if(action===&#x27;split-card&#x27;) {splitVersion(id);focus=&#x27;undo&#x27;;announce(&#x27;Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.&#x27;);}
     if(action===&#x27;edit-card&#x27;) {
@@ -3825,11 +4068,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(state.open&amp;&amp;state.open!==id){const other=state.open;state.open=null;state.composing=false;lastToggled=other;}
       lastToggled=id;state.open=id;state.composing=ideaOf(id).versions.length===1;if(state.composing)state.composingIdea=null;
       focus=state.composing?&#x27;draft&#x27;:&#x27;claim-&#x27;+ordered(ideaOf(id))[0];motion=&#x27;unfold&#x27;;
+      // With a highlight on, the row opens on its first highlighted wording (and shows it, if it was folded away).
+      const lit=matchesIn(ideaOf(id).option),hit=ordered(ideaOf(id)).find(v=&gt;lit.has(v));
+      if(hit&amp;&amp;!state.composing){const all=ordered(ideaOf(id)),i=all.indexOf(hit);if(i&gt;=(state.shownVersions[id]||VERSION_LIMIT))state.shownVersions[id]=i+1;revealAfter=hit;}
       announce(&#x27;Versions unfolded in place, best articulated first. Browsing does not cast a vote.&#x27;);
     }
     if(action===&#x27;fold&#x27;) {fold(id);return;}
     if(action===&#x27;zoom&#x27;) {zoomTo(id);return;}
-    if(action===&#x27;follow&#x27;) {follow(id);return;}
     if(action===&#x27;share&#x27;) {
       state.share=!state.share;state.copied=&#x27;&#x27;;state.shareQuery=&#x27;&#x27;;
       if(state.share){state.drawer=null;focus=&#x27;share-q&#x27;;announce(&#x27;Sharing opened. Invite people, or change who can get in with the link.&#x27;);}
@@ -3918,6 +4163,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     render(focus,motion);save();
     if(toast) voteToast(toast);
+    if(revealAfter) reveal(revealAfter);
   });
   root.addEventListener(&#x27;keydown&#x27;,event=&gt;{
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-option-name&#x27;){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
@@ -3941,11 +4187,6 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(event.key===&#x27;Tab&#x27;){closeMenu();return;}
     }
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(&#x27;[data-key=&quot;nav-toggle&quot;]&#x27;)?.focus();return;}
-    const typing=event.target.closest?.(&#x27;input,textarea,select,[contenteditable]&#x27;);
-    if(state.view===&#x27;board&#x27;&amp;&amp;!typing&amp;&amp;!event.metaKey&amp;&amp;!event.ctrlKey&amp;&amp;!busy){
-      if(event.key===&#x27;-&#x27;||(event.shiftKey&amp;&amp;event.key===&#x27;!&#x27;)){event.preventDefault();zoomTo(&#x27;overview&#x27;);return;}
-      if(event.key===&#x27;=&#x27;||event.key===&#x27;+&#x27;||(event.shiftKey&amp;&amp;event.key===&#x27;)&#x27;)){event.preventDefault();zoomTo(&#x27;read&#x27;);return;}
-    }
     if(event.key!==&#x27;Escape&#x27;||busy||state.view!==&#x27;board&#x27;)return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery=&#x27;&#x27;;render(&#x27;share&#x27;);announce(&#x27;Sharing closed.&#x27;);return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key=&quot;menu-${id}&quot;]`)?.focus();return;}
@@ -3958,9 +4199,9 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.composing){event.preventDefault();state.composing=false;const id=state.open;if(ideaOf(id).versions.length===1){fold(id);return;}render(&#x27;compose-&#x27;+id);save();return;}
     if(state.expanded){event.preventDefault();collapse(state.expanded);return;}
     if(state.open){event.preventDefault();fold(state.open);return;}
-    // With nothing open, Escape zooms out: Read → Overview → back to the list.
+    // With nothing open, Escape steps back: Strongest case → Board → the list.
     event.preventDefault();
-    if(state.zoom===&#x27;read&#x27;) zoomTo(&#x27;overview&#x27;);
+    if(state.zoom===&#x27;case&#x27;) zoomTo(&#x27;read&#x27;);
     else root.querySelector(&#x27;[data-key=&quot;crumb-space&quot;]&#x27;)?.click();
   });
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
@@ -3976,16 +4217,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     const faces=[...t.querySelectorAll(&#x27;:scope &gt; .sm-card, :scope &gt; .sm-add-card, :scope &gt; form&#x27;)],x=t.getBoundingClientRect().left;
     let i=0,best=Infinity;faces.forEach((f,k)=&gt;{const d=Math.abs(f.getBoundingClientRect().left-x-14);if(d&lt;best){best=d;i=k;}});
     const n=pager.querySelectorAll(&#x27;.sm-pager-dots i&#x27;).length;
-    pager.querySelector(&#x27;.sm-pager-text&#x27;).textContent=i&gt;=n?&#x27;Add a better version&#x27;:`${i+1} of ${n}${i===0?&#x27; · best articulated&#x27;:i===n-1&amp;&amp;n&gt;1?&#x27; · weakest&#x27;:&#x27;&#x27;}`;
+    pager.querySelector(&#x27;.sm-pager-text&#x27;).textContent=i&gt;=n?&#x27;Add a better version&#x27;:`${i+1} of ${n}${i===0?&#x27; · &#x27;+pager.dataset.first:i===n-1&amp;&amp;n&gt;1?&#x27; · &#x27;+pager.dataset.last:&#x27;&#x27;}`;
     pager.querySelectorAll(&#x27;.sm-pager-dots i&#x27;).forEach((d,k)=&gt;d.toggleAttribute(&#x27;data-on&#x27;,k===i));
-  },true);
-  // In Overview, choosing a card (or a header) zooms in to read it.
-  root.addEventListener(&#x27;click&#x27;,event=&gt;{
-    if(state.view!==&#x27;board&#x27;||state.zoom!==&#x27;overview&#x27;||!event.target.closest(&#x27;.sm-scene&#x27;))return;
-    const card=event.target.closest(&#x27;.sm-card[data-card]&#x27;),header=event.target.closest(&#x27;.sm-head,.sm-column-head&#x27;);
-    if(!card&amp;&amp;!header)return;
-    event.preventDefault();event.stopPropagation();
-    zoomTo(&#x27;read&#x27;,card?.dataset.card||null);
   },true);
   // A click outside the comments or settings panel closes it (buttons that open or switch it keep working).
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
@@ -4008,6 +4241,41 @@ html&gt;body{padding:0}&lt;/style&gt;
     const item=event.target.closest(&#x27;.sm-post&#x27;);if(!item||event.target.closest(&#x27;button,a,input&#x27;))return;
     homeAction(&#x27;open-board&#x27;,item.dataset.board,item);save();
   });
+  // Drag to combine: the merge handle in a card&#x27;s footer. Other rows in the same option light up as targets; for a version
+  // in a row with several wordings, the column&#x27;s &quot;Add an argument&quot; slot becomes &quot;Make it a separate argument&quot;.
+  // The board is not re-rendered while dragging, so the drag isn&#x27;t interrupted. Touch screens use the handle&#x27;s click instead.
+  let dragCard=null;
+  function endDrag() {
+    dragCard=null;root.removeAttribute(&#x27;data-dragging&#x27;);
+    board.querySelectorAll(&#x27;.sm-drop-target,.sm-drag-source&#x27;).forEach(n=&gt;{n.classList.remove(&#x27;sm-drop-target&#x27;,&#x27;sm-drop-over&#x27;,&#x27;sm-drop-split&#x27;,&#x27;sm-drag-source&#x27;);delete n.dataset.dropLabel;});
+  }
+  root.addEventListener(&#x27;dragstart&#x27;,event=&gt;{
+    const handle=event.target.closest?.(&#x27;[data-drag]&#x27;);if(!handle||!cards[handle.dataset.drag])return;
+    dragCard=handle.dataset.drag;closeMenu();
+    event.dataTransfer.effectAllowed=&#x27;move&#x27;;event.dataTransfer.setData(&#x27;text/plain&#x27;,dragCard);
+    const face=handle.closest(&#x27;.sm-card&#x27;);if(face)event.dataTransfer.setDragImage(face,30,20);
+    const from=ideaOf(cards[dragCard].idea),direct=canMove(dragCard);
+    root.setAttribute(&#x27;data-dragging&#x27;,&#x27;&#x27;);
+    board.querySelector(`[data-node=&quot;${from.id}&quot;]`)?.classList.add(&#x27;sm-drag-source&#x27;);
+    board.querySelectorAll(&#x27;.sm-idea[data-node]&#x27;).forEach(n=&gt;{const i=ideaOf(n.dataset.node);if(i&amp;&amp;i.option===from.option&amp;&amp;i.id!==from.id){n.classList.add(&#x27;sm-drop-target&#x27;);n.dataset.dropLabel=direct?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;}});
+    if(direct&amp;&amp;from.versions.length&gt;1){const slot=board.querySelector(`.sm-column[data-option=&quot;${from.option}&quot;] .sm-new-idea`);if(slot){slot.classList.add(&#x27;sm-drop-target&#x27;,&#x27;sm-drop-split&#x27;);slot.dataset.dropLabel=&#x27;Make it a separate argument&#x27;;}}
+    announce(direct?&#x27;Dragging. Drop it on the argument it makes the same point as.&#x27;:&#x27;Dragging. Drop it on an argument to suggest combining them.&#x27;);
+  });
+  root.addEventListener(&#x27;dragover&#x27;,event=&gt;{
+    if(!dragCard)return;
+    const t=event.target.closest?.(&#x27;.sm-drop-target&#x27;);
+    board.querySelectorAll(&#x27;.sm-drop-over&#x27;).forEach(n=&gt;{if(n!==t)n.classList.remove(&#x27;sm-drop-over&#x27;);});
+    if(!t)return;
+    event.preventDefault();event.dataTransfer.dropEffect=&#x27;move&#x27;;t.classList.add(&#x27;sm-drop-over&#x27;);
+  });
+  root.addEventListener(&#x27;drop&#x27;,event=&gt;{
+    if(!dragCard)return;
+    const t=event.target.closest?.(&#x27;.sm-drop-target&#x27;);if(!t)return;
+    event.preventDefault();const card=dragCard,split=t.classList.contains(&#x27;sm-drop-split&#x27;);endDrag();
+    if(split){splitVersion(card);render(&#x27;undo&#x27;,&#x27;reorder&#x27;);save();announce(&#x27;Separated into a new argument at the bottom of this option. Undo is available for ten seconds.&#x27;);return;}
+    const r=combine(card,t.dataset.node);render(r.focus,r.motion);save();
+  });
+  root.addEventListener(&#x27;dragend&#x27;,endDrag);
   restore(window.openai?.widgetState);
   renderView();
   window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});
