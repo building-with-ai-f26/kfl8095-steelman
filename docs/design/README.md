@@ -75,6 +75,23 @@ A short record of how Steelman should look and feel, and why. Change it when a d
 | The list | Plain gray (`--sm-list-bg` #ebebeb), with no texture, so the miniatures carry the color. |
 | Right rail | At 1280 px and wider: on Home, "Needs your help" (up to four boards in your spaces and joined communities where an option has fewer than two arguments, thinnest first) and "Your drafts" (Personal). On a space, its card (canvas banner, name, about, privacy, members, Join) and its own "Needs your help". The dark space header is gone. Below 1280 px the space card sits above the list. |
 
+## Decisions from the second audit (batch D, in the prototype)
+
+| Topic | Decision |
+| --- | --- |
+| Motion | Three speeds and one curve, as tokens: `--sm-fast` 120 ms (hovers), `--sm-medium` 200 ms (panels, small reveals), `--sm-slow` 420 ms (zoom, unfold, reorder), `--sm-ease`. The prototype's JavaScript reads them. The only other timing is how long a vote message stays (1.4 s). |
+| Hover | Every pressable element eases background, color, border, shadow, and lift over `--sm-fast`. In the list, the item lifts and its miniature rises with it; the space tag gets a quiet gray fill; the title no longer underlines. |
+| Panels | Share, comments, settings, menus, and the create sheet arrive with a 200 ms fade and 4 px rise; the create backdrop fades. They close instantly. Non-modal panels close on Escape or a click outside (the click still reaches what it was aimed at). Only the create sheet dims the page. |
+| Presence | Badges update in place. Only someone who just arrived, or just started writing, pops in, instead of every badge replaying its animation on each move. |
+| Opening a board | Jump to the top first, then grow the board from where its miniature was on screen. |
+| Avatars | One avatar: a light circle with two initials, everywhere (board header, comments, Share, faces, presence). Only you are dark. |
+| Buttons | One primary (dark) and one secondary (outlined) style, 32 px, 13 px, 6 px corners. Join, Invite, Create, and Comment follow it. |
+| Titles and labels | Panel titles are 16 px serif (Comments, Settings, Share, New steelman). Group headings are 11 px tracked capitals (sidebar, rail, Share, Context, Evidence, Example board). Form field labels stay sentence case. |
+| Visibility words | One set everywhere: "Invited only", "Everyone in POD 6", "Anyone with the link". Share's hint follows the role: "Everyone in POD 6 can read, comment, vote, and write." |
+| Concision | The board header no longer repeats the space; the breadcrumb names it and the pill says who can see it. Miniatures show the board's shape and canvas, not a block per argument (the chips carry the counts). Shorter create hints, rail reasons ("Keep five days · 1 argument"), and Settings ("Sharing and access →"). Discover is removed until it exists. |
+| Empty comment buttons | Visible at 40% on cards with no comments, full on hover or focus, so touch screens can find them. |
+| Phone importance caption | Below each option header: a small down arrow centered over the importance votes and "Most important first", in the same quiet voice as the version caption. It no longer sits inside the dark header. |
+
 ## Open questions
 
 - **Texture strength.** Cell size, contrast, and articulation range are tunable on the specimen; settle values before moving the texture into the prototype.

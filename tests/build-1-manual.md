@@ -379,6 +379,25 @@ Checked by the coding agent on the decoded prototype at 1440 px and 1000 px.
 
 At 375 px on the library board, with "Sunday hours…" unfolded: the option header reads "Open on Sundays / Most important first". No axis pills or arrows show. The row caption starts at "1 of 3 · best articulated" with the first dot filled. Scrolling the carousel to the second and third versions gives "2 of 3" and "3 of 3 · weakest", with one dot filled each time. No horizontal page overflow and no browser errors. At 1440 px the caption and subline are hidden, and both axes show as before.
 
+## November 9 — Second audit (batch D)
+
+Checked by the coding agent on the decoded prototype at 1440 px and 375 px.
+
+| Check | Observed result |
+| --- | --- |
+| Hover | Sort buttons, sidebar links, list items, and miniatures transition over 0.12 s (before: 17 of 20 sampled controls changed instantly) |
+| Panels | Share and the create sheet animate in with `sm-enter`; the create sheet stays centered |
+| Presence | Over 12 s: 3 badges re-inserted, 2 pop animations (before: every badge re-popped on every move, 6 in 9 s with two people) |
+| Outside click | With comments open, clicking an importance vote on another card closes the panel and the vote still counts |
+| Avatars | Board header: dark "KL" (your board). Comments: light "MC" and "JW". Share: your row dark "KL" |
+| Words | Board pill "Everyone in POD 6"; Share's options "Invited only", "Everyone in POD 6", "Anyone with the link"; hint "Everyone in POD 6 can read, comment, vote, and write."; Settings link "Sharing and access →"; rail "Keep five days · 1 argument" |
+| Concision | Board meta: author, date, pill (no space name). Miniatures show three blocks per option for every board. Discover is gone |
+| Titles | Comments title 16 px; Example board heading in tracked capitals |
+| Phone caption | At 375 px "↓ Most important first" sits below the option header, arrow centered over the votes (52 px vs 51 px) |
+| Browser errors | None |
+
+Known gap: panels close instantly; only their entrance animates.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

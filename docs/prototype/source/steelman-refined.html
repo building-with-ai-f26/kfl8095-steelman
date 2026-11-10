@@ -6,6 +6,13 @@
   }
   #steelman-study * { box-sizing:border-box; }
   #steelman-study svg.lucide { stroke-width:1.75; }
+  /* One hover transition for everything you can press. */
+  #steelman-study :is(button,select,input,textarea,.sm-post,.sm-thumb) { transition:background-color var(--sm-fast) var(--sm-ease),color var(--sm-fast) var(--sm-ease),border-color var(--sm-fast) var(--sm-ease),box-shadow var(--sm-fast) var(--sm-ease),opacity var(--sm-fast) var(--sm-ease),transform var(--sm-fast) var(--sm-ease); }
+  /* Panels arrive the same way: a short fade and a 4 px rise. (They close instantly.) */
+  #steelman-study :is(.sm-share,.sm-drawer,.sm-menu,.sm-create):not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-create-scrim:not([hidden]) { animation:sm-fade var(--sm-medium) var(--sm-ease); }
+  @keyframes sm-enter { from { opacity:0; translate:0 4px; } to { opacity:1; translate:0 0; } }
+  @keyframes sm-fade { from { opacity:0; } to { opacity:1; } }
   /* The host page sets its own font on p, li, and headings; inside the prototype they inherit ours. */
   #steelman-study :is(p,li,h1,h2,h3,h4,h5,h6,dl,dt,dd,blockquote,figcaption,label,legend) { font-family:inherit; }
   #steelman-study button, #steelman-study textarea { font:inherit; color:inherit; }
@@ -79,7 +86,7 @@
   @media(min-width:1200px) { #steelman-study[data-drawer] .sm-surface { padding-right:380px; } }
   @media(max-width:1199px) { #steelman-study .sm-drawer[data-side="left"] { right:auto; left:12px; } }
   #steelman-study .sm-drawer-head { border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:56px; padding:10px 12px 10px 20px; background:var(--sm-card); border-bottom:1px solid var(--sm-line); }
-  #steelman-study .sm-drawer-head h2 { font:600 20px/1.3 var(--sm-serif); }
+  #steelman-study .sm-drawer-head h2 { font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-drawer-body { display:grid; gap:24px; padding:20px 20px 28px; }
   #steelman-study .sm-field { display:grid; gap:8px; min-width:0; margin:0; padding:0; border:0; }
   #steelman-study .sm-field > label, #steelman-study .sm-field > legend { padding:0; font-size:12px; font-weight:600; }
@@ -98,8 +105,10 @@
   #steelman-study .sm-choice:has(input:disabled) { opacity:.5; cursor:default; }
   #steelman-study .sm-choice:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
   #steelman-study .sm-drawer-section { display:grid; gap:10px; padding-top:20px; border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-drawer-section h3 { margin:0; font-size:12px; font-weight:600; }
-  #steelman-study .sm-button.sm-solid { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
+  #steelman-study .sm-drawer-section h3 { margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  /* Buttons: primary (dark) and secondary (outlined), 32 px tall, 13 px, 6 px corners. Share, New steelman, Join, Invite, Create, and Comment all use them. */
+  #steelman-study .sm-button.sm-solid { min-height:32px; padding:0 14px; background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); font-size:13px; font-weight:600; }
+  #steelman-study .sm-button.sm-solid:hover, #steelman-study .sm-share-button:hover, #steelman-study .sm-join:not([aria-pressed="true"]):hover { background:#000; }
   #steelman-study .sm-comments-body { flex:1; align-content:start; gap:14px; }
   #steelman-study .sm-comment-target { margin:0 0 4px; padding:10px 12px; border-left:3px solid var(--sm-ink); background:var(--sm-soft); border-radius:0 6px 6px 0; }
   #steelman-study .sm-comment-target span { font-size:11px; font-weight:600; color:var(--sm-muted); }
@@ -108,7 +117,10 @@
   #steelman-study .sm-thread.sm-resolved { opacity:.7; border-style:dashed; }
   #steelman-study .sm-comment header { display:flex; align-items:center; gap:7px; font-size:12px; }
   #steelman-study .sm-comment time { color:var(--sm-muted); font-size:11px; }
-  #steelman-study .sm-avatar { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--sm-ink); color:#fff; font-size:11px; font-weight:600; flex:none; }
+  /* One avatar everywhere: a light circle with two initials. Only you are dark. */
+  #steelman-study .sm-avatar { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; flex:none; }
+  #steelman-study :is(.sm-avatar,.sm-meta-avatar).sm-you { background:var(--sm-ink); color:#fff; }
+  #steelman-study .sm-head .sm-meta-avatar.sm-you { background:#fff; color:var(--sm-ink); box-shadow:inset 0 0 0 2px var(--sm-ink); }
   #steelman-study .sm-comment p { margin:6px 0 0 29px; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
   #steelman-study .sm-comment .sm-comment-deleted { color:var(--sm-quiet); font-weight:300; }
   #steelman-study .sm-reply { margin-left:14px; padding-left:12px; border-left:1px solid var(--sm-line); }
@@ -173,7 +185,7 @@
   #steelman-study .sm-card-wrap { min-width:0; position:relative; padding-right:24px; }
   #steelman-study .sm-open .sm-card-wrap { padding-right:0; }
   /* The same face, type, and footer are used on the board and in an unfolded row. */
-  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:10px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; transition:box-shadow 180ms ease,border-color 180ms ease; min-width:0; }
+  #steelman-study .sm-card { position:relative; z-index:2; border:1px solid #c8c8c8; border-radius:10px; background-color:var(--sm-card); background-image:var(--sm-grain); box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; transition:box-shadow var(--sm-fast) var(--sm-ease),border-color var(--sm-fast) var(--sm-ease); min-width:0; }
   #steelman-study .sm-card:hover { border-color:#aaa; box-shadow:var(--sm-shadow-hover),inset 0 1px 0 #fff; }
   #steelman-study .sm-claim-button { display:block; width:100%; text-align:left; border:0; padding:18px; background:transparent; border-radius:10px 10px 0 0; }
   #steelman-study .sm-claim { display:block; font:400 16px/1.5 var(--sm-sans); letter-spacing:-.15px; margin:0; overflow-wrap:anywhere; }
@@ -186,7 +198,8 @@
   #steelman-study .sm-cred { overflow:hidden; display:flex; align-items:center; gap:7px; background:transparent; border:0; padding:3px; border-radius:6px; font-size:11px; text-align:left; min-width:0; min-height:28px; }
   #steelman-study button.sm-source-button:hover, #steelman-study .sm-expand:hover { background:var(--sm-soft); }
   /* A card with no comments shows its comment button only on hover or focus (always on touch screens). */
-  @media(hover:hover) { #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-comment-button[data-empty] { opacity:0; } }
+  /* Empty comment buttons stay visible, quieter until the card is hovered, so touch screens can find them. */
+  #steelman-study .sm-card:not(:hover):not(:focus-within) .sm-comment-button[data-empty] { opacity:.4; }
   #steelman-study .sm-cred-copy { display:flex; align-items:baseline; column-gap:5px; row-gap:2px; flex-wrap:wrap; }
   #steelman-study .sm-percentage { font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-count { color:var(--sm-muted); font-size:11px; white-space:nowrap; }
@@ -204,7 +217,7 @@
 
   /* Paper stack: one edge per hidden version (up to three). A dashed edge means no other version yet. */
   #steelman-study .sm-stack-button { position:absolute; top:0; bottom:0; right:0; width:40px; padding:0; border:0; background:transparent; z-index:1; border-radius:6px; }
-  #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:10px; pointer-events:none; transition:transform 180ms ease; box-shadow:2px 2px 5px #00000006; }
+  #steelman-study .sm-stack-button span { position:absolute; width:30px; border:1px solid var(--sm-line); background:var(--sm-grain) #f8f8f8; border-radius:10px; pointer-events:none; transition:transform var(--sm-fast) var(--sm-ease); box-shadow:2px 2px 5px #00000006; }
   #steelman-study .sm-stack-button.sm-empty span { border-style:dashed; border-color:#bdbdbd; background:transparent; box-shadow:none; }
   #steelman-study .sm-stack-button:hover span { transform:translateX(3px); }
   #steelman-study .sm-stack-count { position:absolute; right:-4px; bottom:6px; z-index:1; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); color:var(--sm-muted); font:600 11px/1 var(--sm-sans); font-variant-numeric:tabular-nums; box-shadow:var(--sm-shadow-sm); pointer-events:none; }
@@ -252,7 +265,7 @@
   #steelman-study .sm-button[aria-pressed="true"] { background:var(--sm-selected); color:var(--sm-on-selected); border-color:var(--sm-selected); }
   #steelman-study .sm-card-reveal { overflow:hidden; border-radius:0 0 10px 10px; }
   #steelman-study .sm-card-context { padding:17px 18px 19px; border-top:1px solid var(--sm-line); }
-  #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font-size:11px; line-height:1.5; font-weight:600; }
+  #steelman-study .sm-card-reveal h3 { margin:0 0 9px; font:600 11px/1.5 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
   #steelman-study .sm-brief { font-size:13px; line-height:1.65; color:var(--sm-muted); margin:0; }
   #steelman-study .sm-evidence-group { padding:16px 18px 18px; background:var(--sm-grain) #f2f2f2; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-source-list { margin:0; border-top:1px solid var(--sm-line); }
@@ -261,7 +274,7 @@
   #steelman-study .sm-source-row summary::-webkit-details-marker { display:none; }
   #steelman-study .sm-source-row summary>svg { flex:none; color:var(--sm-muted); }
   #steelman-study .sm-source-row summary span:first-of-type { flex:1; }
-  #steelman-study .sm-source-row summary .sm-chevron { width:14px; height:14px; transition:transform 160ms ease; }
+  #steelman-study .sm-source-row summary .sm-chevron { width:14px; height:14px; transition:transform var(--sm-fast) var(--sm-ease); }
   #steelman-study .sm-source-row[open] summary .sm-chevron { transform:rotate(90deg); }
   #steelman-study .sm-source-row summary:hover { background:#e9e9e9; }
   #steelman-study .sm-source-note { font-size:11px; color:var(--sm-muted); }
@@ -341,10 +354,6 @@
     #steelman-study .sm-add-option .sm-add-long { display:inline; }
     #steelman-study .sm-add-option .sm-add-short { display:none; }
     #steelman-study .sm-column { padding:0 8px 15px; }
-    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:6px; margin:-18px 0 12px 4px; color:var(--sm-axis); font:500 11px/1 var(--sm-sans); letter-spacing:.1em; text-transform:uppercase; width:max-content; padding:6px 12px 6px 8px; border:1px solid var(--sm-line); border-radius:999px; background:var(--sm-card); }
-    #steelman-study .sm-col-arrow { position:relative; width:9px; height:18px; }
-    #steelman-study .sm-col-arrow::after { content:""; position:absolute; left:4px; top:1px; bottom:0; width:1px; background:var(--sm-axis-line); }
-    #steelman-study .sm-col-arrow .sm-axis-head { top:2px; left:-1.5px; transform:rotate(90deg); }
     #steelman-study .sm-track { grid-auto-columns:84%; }
     #steelman-study .sm-drawer, #steelman-study .sm-drawer[data-side="left"] { left:8px; right:8px; width:auto; }
   }
@@ -366,7 +375,7 @@
     #steelman-study .sm-fold { width:36px; height:36px; }
     #steelman-study .sm-open > .sm-track-axis { height:40px; }
   }
-  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; } }
+  @media(prefers-reduced-motion:reduce) { #steelman-study * { transition:none !important; animation:none !important; } }
 
   /* ── Site header: wordmark (home), breadcrumb on a board, search on the list. ── */
   #steelman-study .sm-site { gap:14px; }
@@ -408,7 +417,7 @@
   #steelman-study .sm-side-link.sm-side-soon { color:#ffffff8c; }
 
   #steelman-study .sm-feed { display:grid; gap:14px; align-content:start; width:100%; max-width:860px; min-width:0; padding:24px 32px 56px; }
-  #steelman-study .sm-join { height:34px; padding:0 16px; border:1px solid #fff; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:13px; font-weight:600; }
+  #steelman-study .sm-join { height:32px; padding:0 14px; border:1px solid var(--sm-selected); border-radius:6px; background:var(--sm-selected); color:var(--sm-on-selected); font-size:13px; font-weight:600; }
   #steelman-study .sm-join[aria-pressed="true"] { background:transparent; color:#fff; border-color:#ffffff66; }
   #steelman-study .sm-sort { display:flex; gap:3px; width:max-content; max-width:100%; overflow-x:auto; padding:3px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:6px;  }
   #steelman-study .sm-sort { padding:2px; border-radius:6px; }
@@ -420,7 +429,7 @@
   #steelman-study .sm-feed-empty { padding:40px 20px; border:1px dashed #9a9a9a; border-radius:6px; text-align:center; color:var(--sm-quiet); font:300 14px var(--sm-sans); }
 
   /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
-  #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer; transition:box-shadow .15s,border-color .15s; }
+  #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer;  }
   #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; }
   #steelman-study .sm-post-vote button { display:grid; place-items:center; width:30px; height:26px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-muted); }
@@ -434,13 +443,13 @@
   #steelman-study .sm-post-score { font:600 13px/1.5 var(--sm-sans); font-variant-numeric:tabular-nums; }
   #steelman-study .sm-post-draft { margin-top:4px; writing-mode:vertical-rl; transform:rotate(180deg); font:300 12px var(--sm-sans); letter-spacing:.06em; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; color:var(--sm-muted); }
-  #steelman-study button.sm-tag:hover { background:var(--sm-ink); color:#fff; }
+  #steelman-study button.sm-tag:hover { background:var(--sm-soft); }
   #steelman-study .sm-post-meta time { font:300 12px/1 var(--sm-sans); font-variant-numeric:tabular-nums; color:var(--sm-quiet); }
   #steelman-study .sm-post-meta svg { width:12px; height:12px; }
   #steelman-study .sm-post-meta .sm-dot::before { content:"·"; }
   #steelman-study .sm-post h2 { margin:7px 0 11px; font:700 20px/1.22 var(--sm-serif); letter-spacing:-.4px; text-wrap:balance; }
   #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
-  #steelman-study .sm-post h2 button:hover { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; }
+  #steelman-study .sm-post:hover .sm-thumb { transform:translateY(-2px); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
   #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-line); border-radius:6px; background:#fff; font-size:12px; }
   #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:var(--sm-soft); font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
@@ -482,7 +491,7 @@
   #steelman-study .sm-share-field:focus-within { border-color:var(--sm-ink); }
   #steelman-study .sm-share-field input { flex:1; min-width:0; height:36px; padding:0 10px; border:0; outline:0; background:transparent; font:400 13px var(--sm-sans); }
   #steelman-study .sm-share-field select { margin-right:4px; }
-  #steelman-study .sm-share-invite .sm-button { height:38px; }
+  #steelman-study .sm-share-invite .sm-button { height:38px; min-height:38px; }
   #steelman-study .sm-share-suggest { position:absolute; top:calc(100% + 4px); left:-1px; right:-1px; z-index:2; display:grid; margin:0; padding:4px; list-style:none; background:#fff; border:1px solid var(--sm-line); border-radius:6px; box-shadow:var(--sm-shadow); }
   #steelman-study .sm-share-suggest:empty { display:none; }
   #steelman-study .sm-share-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border:0; border-radius:6px; background:transparent; font-size:13px; text-align:left; }
@@ -493,7 +502,7 @@
   #steelman-study .sm-person > span:nth-child(2) { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #steelman-study .sm-person small { color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-person-role { color:var(--sm-muted); font-size:12px; padding-right:6px; }
-  #steelman-study .sm-person .sm-avatar { width:28px; height:28px; background:#f3f1ec; color:var(--sm-ink); font-size:10px; font-weight:700; }
+  #steelman-study .sm-person .sm-avatar { width:28px; height:28px; }
   #steelman-study .sm-person .sm-avatar.sm-pending { background:transparent; border:1px dashed #8a8a8a; }
   #steelman-study .sm-person .sm-avatar.sm-access { border-radius:6px; background:var(--sm-soft); }
   #steelman-study .sm-person .sm-avatar svg { width:15px; height:15px; }
@@ -537,9 +546,10 @@
   #steelman-study .sm-site-faces button { display:grid; place-items:center; min-width:28px; height:28px; margin-left:-6px; padding:0 4px; border:0; border-radius:999px; background:#f3f1ec; box-shadow:0 0 0 2px #fff; color:var(--sm-ink); font:700 10px/1 var(--sm-sans); letter-spacing:.02em; }
   #steelman-study .sm-site-faces button:hover { position:relative; z-index:1; box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--sm-ink); }
   #steelman-study .sm-presence { position:absolute; top:-12px; left:14px; z-index:3; display:flex; align-items:center; pointer-events:none; }
-  #steelman-study .sm-pbadge { display:grid; place-items:center; width:24px; height:24px; margin-right:-5px; border-radius:50%; background:#fff; color:var(--sm-ink); box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; font:700 10px/1 var(--sm-sans); animation:sm-pop .25s ease-out; }
+  #steelman-study .sm-pbadge { display:grid; place-items:center; width:24px; height:24px; margin-right:-5px; border-radius:50%; background:#f3f1ec; color:var(--sm-ink); box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; font:700 10px/1 var(--sm-sans); }
+  #steelman-study :is(.sm-pbadge,.sm-typing).sm-arrive { animation:sm-pop var(--sm-medium) var(--sm-ease); }
   /* Someone writing: a still bubble with three softly pulsing dots beside their badge, as in a messages app. */
-  #steelman-study .sm-typing { display:inline-flex; align-items:center; gap:3px; height:22px; margin-left:9px; padding:0 8px; border-radius:10px; background:#fff; box-shadow:0 0 0 1.5px var(--sm-ink),0 1px 3px #00000033; animation:sm-pop .25s ease-out; }
+  #steelman-study .sm-typing { display:inline-flex; align-items:center; gap:3px; height:22px; margin-left:9px; padding:0 8px; border-radius:10px; background:#fff; box-shadow:0 0 0 2px #fff,0 1px 3px #00000033; }
   #steelman-study .sm-typing i { width:4px; height:4px; border-radius:50%; background:var(--sm-ink); animation:sm-dot 1.2s ease-in-out infinite; }
   #steelman-study .sm-typing i:nth-child(2) { animation-delay:.2s; }
   #steelman-study .sm-typing i:nth-child(3) { animation-delay:.4s; }
@@ -554,7 +564,7 @@
   #steelman-study .sm-create { position:absolute; z-index:71; left:50%; top:84px; transform:translateX(-50%); display:grid; width:600px; max-width:calc(100% - 32px); background:var(--sm-card); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 24px 60px #00000040; }
   #steelman-study .sm-create-canvas { display:grid; gap:14px; padding:20px 20px 22px; border-radius:10px 10px 0 0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-create-top { display:flex; align-items:center; justify-content:space-between; }
-  #steelman-study .sm-create-top h2 { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-create-top h2 { font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-create-q { padding:16px 20px 18px; border-radius:6px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
   #steelman-study .sm-create-q textarea { display:block; width:100%; padding:0; border:0; outline:0; resize:none; background:transparent; color:#fff; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.6px; }
   #steelman-study .sm-create-q textarea::placeholder { color:#ffffff73; }
@@ -616,8 +626,9 @@
   #steelman-study .sm-space-facts { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0; padding:0; list-style:none; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-space-facts li { display:inline-flex; align-items:center; gap:5px; }
   #steelman-study .sm-space-facts svg { width:13px; height:13px; }
-  #steelman-study .sm-space-body .sm-join { justify-self:start; border-color:var(--sm-ink); background:var(--sm-ink); color:#fff; }
-  #steelman-study .sm-space-body .sm-join[aria-pressed="true"] { background:transparent; color:var(--sm-ink); border-color:var(--sm-line); }
+  #steelman-study .sm-space-body .sm-join { justify-self:start; }
+  #steelman-study .sm-join[aria-pressed="true"] { background:var(--sm-card); color:var(--sm-ink); border-color:var(--sm-line); }
+  #steelman-study .sm-join[aria-pressed="true"]:hover { background:var(--sm-soft); }
   #steelman-study .sm-feed > .sm-space-card { display:grid; }
   @media(min-width:1280px) {
     #steelman-study .sm-home { grid-template-columns:232px minmax(0,1fr) 320px; }
@@ -626,10 +637,11 @@
   }
 
   /* ── Phones: no axis arrows. Each option says how it is ordered, and an unfolded row is a swipeable carousel. ── */
-  #steelman-study .sm-col-sub, #steelman-study .sm-pager { display:none; }
+  #steelman-study .sm-pager { display:none; }
   @media(max-width:640px) {
-    #steelman-study .sm-col-axis { display:none; }
-    #steelman-study .sm-col-sub { display:block; margin-top:3px; font:300 12px/1.3 var(--sm-sans); letter-spacing:0; color:#ffffffa6; }
+    /* Below each option header: a small arrow and "Most important first", in the same quiet voice as the version caption. */
+    #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px 14px; padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
+    #steelman-study .sm-col-axis svg { width:13px; height:13px; }
     #steelman-study .sm-open > .sm-track-axis { height:40px; padding:0 4px 0 12px; border:0; background:transparent; }
     #steelman-study .sm-track-axis .sm-axis { display:none; }
     #steelman-study .sm-pager { display:flex; align-items:center; gap:10px; flex:1; min-width:0; font:400 12px/1 var(--sm-sans); color:var(--sm-muted); }
@@ -683,7 +695,9 @@
   const status = document.getElementById('sm-status');
   const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
   const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  const EASE = 'cubic-bezier(.2,.7,.2,1)'; // matches --sm-ease
+  // Motion speeds come from the tokens (--sm-fast / --sm-medium / --sm-slow).
+  const motion = name => parseFloat(getComputedStyle(document.getElementById('steelman-study')).getPropertyValue('--sm-'+name))||{fast:120,medium:200,slow:420}[name];
   // The example document. Everything a contributor can edit lives in one saved document (state.doc),
   // seeded from these values; cards carry only what a contributor writes or voters produce.
   const seedCards = {
@@ -981,7 +995,7 @@
   }
   // An option's name, or the field for renaming it.
   function optionTitle(option) {
-    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}<small class="sm-col-sub">Most important first</small></h2>`;
+    if(state.renamingOption!==option) return `<h2>${escape(optionName(option))}</h2>`;
     return `<input id="sm-option-name" class="sm-option-input" type="text" data-key="option-name" data-select maxlength="80" placeholder="Name this option" aria-label="Option name" value="${escape(state.optionDraft)}">`;
   }
   function column(option) {
@@ -994,7 +1008,7 @@
     if(undo&&!state.undo.afterIdea){rowsHtml+=undo;undoShown=true;}
     rows.forEach(r=>{rowsHtml+=row(r);if(undo&&state.undo.afterIdea===r.id){rowsHtml+=undo;undoShown=true;}});
     if(undo&&!undoShown) rowsHtml+=undo;
-    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div><div class="sm-col-axis" aria-hidden="true"><span class="sm-col-arrow">${head}</span>more important</div>${rowsHtml}${addArgument(option)}</section>`;
+    return `<section class="sm-column" data-option="${option}" aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${option===doc.options[0].id?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div><div class="sm-col-axis" aria-hidden="true">${icon('arrow-down')}Most important first</div>${rowsHtml}${addArgument(option)}</section>`;
   }
   const MAX_OPTIONS=4;
   function boardMarkup() {
@@ -1033,24 +1047,18 @@
 
   // Question header and document settings.
   const ORGS = Object.fromEntries(SPACES.map(s=>[s.id,s.name]));
-  const VISIBILITY = {
-    private:{icon:'lock',label:'Private',short:'Private',hint:'Only you and people you invite.'},
-    org:{icon:'building-2',label:'Organization',short:'Organization',hint:'Everyone in the organization can find and read it.'},
-    link:{icon:'link',label:'Anyone with the link',short:'Anyone with link',hint:'Anyone who has the link can read it, without signing in.'}
-  };
+  // One way to say who can see a board, everywhere: the board pill, Share, and the create sheet.
+  const visLabel = (visibility,org) => visibility==='private'||(visibility==='org'&&org==='none')?'Invited only':visibility==='org'?`Everyone in ${ORGS[org]}`:'Anyone with the link';
+  const visIcon = visibility => ({private:'lock',org:'users',link:'globe'})[visibility]||'lock';
   const posted = iso => new Date(iso+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
   function headMarkup() {
-    const q=doc.question, vis=VISIBILITY[q.visibility]||VISIBILITY.private, settingsOpen=state.drawer==='settings';
-    // Visible to the organization: the pill names it ("POD 6 only"). Otherwise the organization gets its own item.
-    const orgName=q.org!=='none'?ORGS[q.org]||'':'';
-    const orgOnly=q.visibility==='org'&&orgName;
-    const org=orgName&&!orgOnly?`<li class="sm-meta-org">${icon('users')}<span class="sm-meta-org-name">${escape(orgName)}</span></li>`:'';
-    const pill=orgOnly?`${escape(orgName)} only`:vis.short;
+    const q=doc.question, settingsOpen=state.drawer==='settings';
+    // The breadcrumb already names the space; the pill says who can see the board.
     const initials=q.author.split(/[\s_.]+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return `<h1>${escape(q.text)}</h1><ul class="sm-question-meta" aria-label="About this question">`
-      +`<li class="sm-meta-author"><span class="sm-meta-avatar" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
-      +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></li>${org}`
-      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="${escape(vis.hint)}">${icon(vis.icon)}${pill}</span></li></ul>`
+      +`<li class="sm-meta-author"><span class="sm-meta-avatar${q.author===ME?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong title="Posted by ${escape(q.author)}">${escape(q.author)}</strong></li>`
+      +`<li class="sm-meta-date">${icon('calendar')}<time datetime="${q.posted}" title="${fullDate(q.posted+'T12:00:00Z')}">${ago(q.posted+'T09:00:00Z')}</time></li>`
+      +`<li class="sm-meta-vis"><span class="sm-meta-pill" title="Who can see it">${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}</span></li></ul>`
       +`<div class="sm-head-tools">${commentButton('question','sm-head-button','question')}<button type="button" class="sm-head-button cursor-interaction" data-action="settings" data-key="settings" aria-label="Document settings" aria-expanded="${settingsOpen}" aria-controls="sm-drawer-body" data-tooltip="Settings">${icon('settings')}</button></div>`;
   }
   function choice(name,value,current,label,hint,glyph,disabled=false) {
@@ -1069,7 +1077,7 @@
     const q=doc.question;
     return `<div class="sm-field"><label for="sm-question">Question</label><textarea id="sm-question" data-key="q-text" maxlength="200" rows="2" aria-describedby="sm-question-hint">${escape(q.text)}</textarea><p class="sm-field-hint" id="sm-question-hint">Ask it neutrally, so each option can make its strongest case.</p></div>`
       +select('org',ORGS,q.org,'Space')
-      +`<div class="sm-field"><span class="sm-coming-title">Who can see, vote, and contribute</span><p class="sm-field-hint">Invite people and set access under Share.</p><div>${button('open-share',icon('user-plus')+' Open sharing','data-key="open-share"')}</div></div>`
+      +`<div class="sm-field"><button type="button" class="sm-text-button cursor-interaction" data-action="open-share" data-key="open-share">${icon('user-plus')}Sharing and access →</button></div>`
       +`<section class="sm-drawer-section" aria-labelledby="sm-reset-title"><h3 id="sm-reset-title">Example board</h3><p class="sm-field-hint">Saved in this browser only.</p><div>${button('reset',icon('rotate-ccw')+(state.confirmReset?' Click again to reset everything':' Reset to the original example'),`data-key="reset" ${state.confirmReset?'data-armed':''}`)}</div></section>`;
   }
   // Comments: threads on the question, an option, or a version, shown in the right-hand drawer.
@@ -1091,13 +1099,13 @@
   const commentDate = iso => { const d=new Date(iso),now=new Date(); return d.toDateString()===now.toDateString()?'Today':d.toLocaleDateString('en-US',{month:'short',day:'numeric',...(d.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})}); };
   const linkButton = (action,id,label,extra='') => `<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-id="${id}" data-key="${action}-${id}" ${extra}>${label}</button>`;
   function commentItem(c,isReply) {
-    const who=c.by==='you'?'You':c.by;
+    const who=c.by==='you'?'You':c.by,initials=userInitials(c.by==='you'?ME:c.by);
     const actions=c.deleted?'':[
       !isReply&&!c.resolved?linkButton('reply',c.id,'Reply'):'',
       !isReply?linkButton('resolve',c.id,c.resolved?'Reopen':'Resolve'):'',
       c.by==='you'?linkButton('delete-comment',c.id,'Delete'):''
     ].join('');
-    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar" aria-hidden="true">${escape(who[0].toUpperCase())}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
+    return `<article class="sm-comment ${isReply?'sm-reply':''}" aria-label="${c.deleted?'Deleted comment':'Comment by '+escape(who)}"><header><span class="sm-avatar${c.by==='you'?' sm-you':''}" aria-hidden="true">${escape(initials)}</span><strong>${escape(who)}</strong><time datetime="${c.at}" title="${fullDate(c.at)}">${ago(c.at)}</time></header>${c.deleted?'<p class="sm-comment-deleted">Comment deleted.</p>':`<p>${escape(c.text)}</p>`}${actions?`<div class="sm-comment-actions">${actions}</div>`:''}</article>`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -1285,7 +1293,7 @@
   const links=root.querySelector('.sm-links');
   const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   let busy=false;
-  function play(el,frames,options={}) { return el.animate(frames,{duration:260,easing:EASE,...options}).finished.catch(()=>{}); }
+  function play(el,frames,options={}) { return el.animate(frames,{duration:motion('medium'),easing:EASE,...options}).finished.catch(()=>{}); }
   // Exit motion runs before the board re-renders, so folding and collapsing read as physical.
   function foldOut(ideaId) {
     const node=board.querySelector(`[data-node="${ideaId}"]`), first=node?.querySelector('.sm-version-face');
@@ -1293,13 +1301,13 @@
     const x=first.getBoundingClientRect().left;
     const leaving=[...node.querySelectorAll('.sm-track > *')].slice(2);
     const bar=node.querySelector('.sm-track-axis');
-    if(bar) play(bar,[{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1},{height:'0px',marginBottom:'0px',opacity:0}],{duration:220,fill:'forwards'});
-    return Promise.all(leaving.map(el=>play(el,[{transform:'none',opacity:1},{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0}],{duration:220,fill:'forwards'})));
+    if(bar) play(bar,[{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1},{height:'0px',marginBottom:'0px',opacity:0}],{duration:motion('medium'),fill:'forwards'});
+    return Promise.all(leaving.map(el=>play(el,[{transform:'none',opacity:1},{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0}],{duration:motion('medium'),fill:'forwards'})));
   }
   function collapseOut(id) {
     const reveal=board.querySelector(`#sm-reveal-${id}`);
     if(!reveal||reveal.hidden||reducedMotion()) return Promise.resolve();
-    return play(reveal,[{height:reveal.offsetHeight+'px',opacity:1},{height:'0px',opacity:0}],{duration:220,fill:'forwards'});
+    return play(reveal,[{height:reveal.offsetHeight+'px',opacity:1},{height:'0px',opacity:0}],{duration:motion('medium'),fill:'forwards'});
   }
   // Hex texture per column, from the shared votes. Size follows importance (normalized across the board,
   // then curved); darkness follows articulation across an unfolded row. Static: redrawn when layout or votes change.
@@ -1413,7 +1421,8 @@
   }
   // A miniature of the board: the question box, then one column per option with a card per argument.
   function thumb(b) {
-    const cols=b.options.map(o=>`<span class="sm-thumb-col"><i></i>${o.n?'<b></b>'.repeat(Math.min(o.n,4)):'<b class="sm-thumb-empty"></b>'}</span>`).join('');
+    // The chips beside it carry the counts; the miniature only shows the board's shape and its space's canvas.
+    const cols=b.options.map(()=>`<span class="sm-thumb-col"><i></i><b></b><b></b><b></b></span>`).join('');
     return `<button type="button" class="sm-thumb cursor-interaction" data-canvas="${b.space.canvas}" data-action="open-board" data-id="${b.id}" tabindex="-1" aria-hidden="true"><span class="sm-thumb-q"></span><span class="sm-thumb-cols">${cols}</span></button>`;
   }
   // A list item keeps to the essentials: votes, where and who, the question, its options, and a miniature.
@@ -1438,7 +1447,7 @@
     return `<nav class="sm-side" id="sm-side" aria-label="Spaces">${link('all',icon('house')+'<span>Home</span>')}`
       +group('Your spaces',SPACES.filter(s=>s.kind==='private'))
       +group('Communities',SPACES.filter(s=>s.kind==='public'&&state.joined[s.id]))
-      +`<button type="button" class="sm-side-link sm-side-soon cursor-interaction" aria-disabled="true" data-action="browse" data-key="browse">${icon('compass')}<span>Discover</span><span class="sm-soon">Soon</span></button></nav>`;
+      +`</nav>`;
   }
   // A space as a card: a strip of its canvas, its name, what it is, and Join for public communities.
   // It sits in the right rail on wide screens and atop the list otherwise (keyed so focus survives either way).
@@ -1450,7 +1459,7 @@
   function feedHead() { return state.space==='all'?'':spaceCard(spaceOf(state.space),'feed'); }
   // Boards in scope (Home: your spaces and joined communities; a space: its own) where an option has fewer than two arguments.
   function railList(items,empty) {
-    return items.length?`<ul class="sm-rail-list">${items.map(b=>`<li><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="rail-${b.id}"><strong>${escape(b.d.question.text)}</strong><small>${swatch(b.space)}${escape(b.space.name)} · ${escape(b.thin.length===1?`${b.thin[0].name} has ${b.thin[0].n?'one argument':'no arguments'}`:b.thin.length?`${b.thin.length} options need arguments`:ago(b.d.question.posted+'T09:00:00Z'))}</small></button></li>`).join('')}</ul>`:`<p class="sm-rail-empty">${empty}</p>`;
+    return items.length?`<ul class="sm-rail-list">${items.map(b=>`<li><button type="button" class="cursor-interaction" data-action="open-board" data-id="${b.id}" data-key="rail-${b.id}"><strong>${escape(b.d.question.text)}</strong><small>${swatch(b.space)}${escape(b.space.name)} · ${escape(b.thin.length===1?`${b.thin[0].name} · ${b.thin[0].n?'1 argument':'no arguments'}`:b.thin.length?`${b.thin.length} thin options`:ago(b.d.question.posted+'T09:00:00Z'))}</small></button></li>`).join('')}</ul>`:`<p class="sm-rail-empty">${empty}</p>`;
   }
   function rail() {
     const all=Object.keys(docs).map(boardInfo).filter(b=>state.space==='all'?(b.space.kind==='private'||state.joined[b.space.id]):b.space.id===state.space);
@@ -1491,16 +1500,12 @@
   function createHints() {
     const d=state.createDraft,q=d.q.trim(),hints=[];
     const loaded=LOADED.filter(w=>new RegExp(`\\b${w}\\b`,'i').test(q));
-    if(loaded.length) hints.push(`“${loaded[0]}” may tilt the question toward one side. Ask it so each option can make its strongest case.`);
-    if(/^why\b/i.test(q)) hints.push('“Why…” assumes an answer. Try “Should…” or “Which…” so the options can disagree.');
-    if(d.options.some(o=>/^(yes|no)$/i.test(o.trim()))) hints.push('Name each option as a position (“Open on Sundays”), so each side reads as a case, not a vote.');
+    if(loaded.length) hints.push(`“${loaded[0]}” may tilt the question.`);
+    if(/^why\b/i.test(q)) hints.push('“Why…” assumes an answer; try “Should…”.');
+    if(d.options.some(o=>/^(yes|no)$/i.test(o.trim()))) hints.push('Name options as positions, not Yes or No.');
     return hints.map(h=>`<li>${escape(h)}</li>`).join('');
   }
-  function accessLine(spaceId) {
-    const sp=spaceOf(spaceId);
-    if(sp.id==='none') return 'Only you can see it until you share it.';
-    return sp.kind==='public'?`Public: anyone in ${sp.name} can find it, read it, and contribute.`:`Everyone in ${sp.name} can find it and contribute.`;
-  }
+  function accessLine(spaceId) { return `Who can see it: ${visLabel(spaceId==='none'?'private':'org',spaceId)}.`; }
   function createMarkup() {
     const d=state.createDraft,yours=SPACES.filter(s=>s.kind==='private'||state.joined[s.id]);
     const options=d.options.map((o,i)=>`<div class="sm-create-option" ${state.createError&&!o.trim()&&i<2?'data-invalid':''}><input type="text" class="sm-create-opt" data-index="${i}" data-key="create-opt-${i}" maxlength="80" placeholder="${['First option','Second option','Third option','Fourth option'][i]}" aria-label="Option ${i+1}" value="${escape(o)}">${d.options.length>2?`<button type="button" class="cursor-interaction" data-action="create-remove-option" data-id="${i}" data-key="create-remove-${i}" aria-label="Remove option ${i+1}" data-tooltip="Remove">${icon('x')}</button>`:''}</div>`).join('');
@@ -1509,7 +1514,7 @@
       +`<div class="sm-create-q" ${state.createError&&!d.q.trim()?'data-invalid':''}><textarea id="sm-create-q" data-key="create-q" rows="2" maxlength="200" placeholder="Ask a question with more than one good answer" aria-label="Question">${escape(d.q)}</textarea></div>`
       +`<ul class="sm-create-hints" id="sm-create-hints" aria-live="polite">${createHints()}</ul>`
       +`<div class="sm-create-options" role="group" aria-label="Options">${options}${add}</div></div>`
-      +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))} You can change this under Share.</p></div>`
+      +`<div class="sm-create-foot"><div class="sm-create-where"><label for="sm-create-space">Space</label><select id="sm-create-space" data-key="create-space">${yours.map(s=>`<option value="${s.id}" ${s.id===d.space?'selected':''}>${escape(s.name)}</option>`).join('')}</select><p class="sm-create-access" id="sm-create-access">${escape(accessLine(d.space))}</p></div>`
       +`<div class="sm-create-actions">${state.createError?`<span class="sm-create-error" role="alert">${escape(state.createError)}</span>`:''}<button type="button" class="sm-link-button cursor-interaction" data-action="create-close" data-key="create-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="create-submit" data-key="create-submit">Create steelman</button></div></div>`;
   }
   const createEl=root.querySelector('.sm-create'),scrimEl=root.querySelector('.sm-create-scrim');
@@ -1532,18 +1537,18 @@
     const id='new'+(Object.keys(docs).length+1)+Math.random().toString(36).slice(2,6);
     docs[id]=sketchDoc(id,{q:q.slice(0,200),author:ME,posted:'2026-11-09',org:d.space,visibility:d.space==='none'?'private':'org',options:names.map(n=>[n.slice(0,80),[]])});
     if(d.space!=='none') state.feedVotes[id]=1; // your own steelman starts with your upvote
-    const T=relBox(createEl);
+    const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError='';state.createDraft={q:'',options:['',''],space:null};
     leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);
     renderCreate();renderView('compose-idea-'+doc.options[0].id);
-    growFrom(T);root.scrollIntoView({block:'start'});
+    root.scrollIntoView({block:'start'});growFrom(fromViewport(tv));
     announce(`Created. The board is empty: add the first argument for ${doc.options[0].name}.`);
   }
 
   // ── Share: who has access to this board, and how anyone else can get in ──
   // Roles build on each other: viewers read and comment, voters also vote and assess evidence, contributors also write.
   const ROLES = {view:'can view',vote:'can vote',contribute:'can contribute'};
-  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, vote, and assess evidence',contribute:'do everything: write arguments, versions, and sources, and vote'};
+  const ROLE_HINTS = {view:'read and comment',vote:'read, comment, and vote',contribute:'read, comment, vote, and write'};
   // Initials from a username's words, ignoring numbers: maya.chen → MC, samr_92 → SA.
   const userInitials = u => { const words=u.split(/[\s_.@]+/).filter(w=>/^[a-z]/i.test(w)); return (words.length>1?words[0][0]+words[1][0]:(words[0]||u).slice(0,2)).toUpperCase(); };
   const roleSelect = (id,current,attrs='',disabled=false) => `<select ${attrs} aria-label="Access level" ${disabled?'disabled':''}>${Object.entries(ROLES).map(([v,l])=>`<option value="${v}" ${v===current?'selected':''}>${l}</option>`).join('')}</select>`;
@@ -1558,16 +1563,16 @@
   }
   function shareMarkup() {
     const q=doc.question,owner=q.author===ME,space=spaceOf(q.org),personal=q.org==='none';
-    const person=(user,right,{pending=false,you=false}={})=>`<li class="sm-person"><span class="sm-avatar ${pending?'sm-pending':''}" aria-hidden="true">${pending?icon('mail'):escape(userInitials(user))}</span><span>${escape(user)}${you?' <small>(you)</small>':''}${pending?' <small>· invited</small>':''}</span>${right}</li>`;
+    const person=(user,right,{pending=false,you=false}={})=>`<li class="sm-person"><span class="sm-avatar ${pending?'sm-pending':''} ${you?'sm-you':''}" aria-hidden="true">${pending?icon('mail'):escape(userInitials(user))}</span><span>${escape(user)}${you?' <small>(you)</small>':''}${pending?' <small>· invited</small>':''}</span>${right}</li>`;
     const others=q.people.map(p=>person(p.user,owner
       ?roleSelect(p.user,p.role,`data-share-person="${escape(p.user)}" data-key="role-${escape(p.user)}"`)+`<button type="button" class="sm-person-remove cursor-interaction" data-action="share-remove" data-id="${escape(p.user)}" data-key="remove-${escape(p.user)}" aria-label="Remove ${escape(p.user)}" data-tooltip="Remove">${icon('x')}</button>`
       :`<span class="sm-person-role">${ROLES[p.role]}</span>`,{pending:p.user.includes('@'),you:p.user===ME})).join('');
     // You always appear: as the owner, or with the access you have through the space or the link.
     const youRole=q.people.find(p=>p.user===ME)?.role||(q.visibility==='private'?'view':q.accessRole);
     const people=person(q.author,`<span class="sm-person-role">Owner</span>`,{you:owner})+(owner||q.people.some(p=>p.user===ME)?'':person(ME,`<span class="sm-person-role">${ROLES[youRole]}</span>`,{you:true}))+others;
-    const general={private:['lock','Only people invited'],org:['building-2',`Everyone in ${space.name}`],link:['globe','Anyone with the link']};
+    const general=Object.fromEntries(['private','org','link'].map(v=>[v,[visIcon(v),visLabel(v,v==='org'?space.id:'')]]));
     const accessIcon=general[q.visibility]?.[0]||'lock';
-    const accessHint=q.visibility==='private'?'Only the people above can open it.':q.visibility==='org'?`Members of ${space.name} can find it in the space and ${ROLE_HINTS[q.accessRole]}.`:`Anyone with the link can ${ROLE_HINTS[q.accessRole]}. Signing in is needed to do more than read.`;
+    const accessHint=q.visibility==='private'?'Only the people above can open it.':`${visLabel(q.visibility,q.org)} can ${ROLE_HINTS[q.accessRole]}.`;
     const generalSelect=`<select id="sm-share-general" data-key="share-general" aria-label="General access" ${owner?'':'disabled'}>${Object.entries(general).map(([v,[,l]])=>`<option value="${v}" ${v===q.visibility?'selected':''} ${v==='org'&&personal?'disabled':''}>${escape(l)}${v==='org'&&personal?' (choose a space first)':''}</option>`).join('')}</select>`;
     const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
     const link=`steelman.example/s/${state.boardId}`;
@@ -1613,18 +1618,23 @@
     presenceTimer=setTimeout(tick,1800);
     paintPresence();
   }
-  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};root.querySelectorAll('.sm-presence').forEach(el=>el.remove()); }
+  function stopPresence() { clearTimeout(presenceTimer);presenceTimer=0;presence={};painted={};root.querySelectorAll('.sm-presence').forEach(el=>el.remove()); }
   // Badges are painted onto the cards directly, so focus and drafts are never disturbed.
+  // Only cards whose viewers changed are repainted, and only someone who just arrived (or just started writing) pops in.
+  let painted={};
   function paintPresence() {
-    root.querySelectorAll('.sm-presence').forEach(el=>el.remove());
-    if(state.view!=='board') return;
+    if(state.view!=='board'){root.querySelectorAll('.sm-presence').forEach(el=>el.remove());painted={};return;}
     const byCard={};
     for(const [u,p] of Object.entries(presence)) (byCard[p.card] ||= []).push(u);
+    const sig=id=>(byCard[id]||[]).map(u=>u+(presence[u].writing?'*':'')).join(',');
+    board.querySelectorAll('.sm-presence').forEach(el=>{const id=el.parentElement.dataset.card;if(sig(id)!==el.dataset.sig)el.remove();});
     for(const [id,users] of Object.entries(byCard)){
-      const el=board.querySelector(`.sm-card[data-card="${id}"]`);if(!el)continue;
-      const writer=users.find(u=>presence[u].writing);
-      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge" title="${escape(u)}${presence[u].writing?' is writing a version':''}">${escape(userInitials(u))}</span>`).join('')}${writer?'<span class="sm-typing"><i></i><i></i><i></i></span>':''}</span>`);
+      const el=board.querySelector(`.sm-card[data-card="${id}"]`);if(!el||el.querySelector(':scope > .sm-presence'))continue;
+      const before=painted[id]||'',writer=users.find(u=>presence[u].writing);
+      const arrive=u=>before.split(',').includes(u)||before.split(',').includes(u+'*')?'':' sm-arrive';
+      el.insertAdjacentHTML('beforeend',`<span class="sm-presence" data-sig="${sig(id)}" aria-hidden="true">${users.map(u=>`<span class="sm-pbadge${arrive(u)}" title="${escape(u)}${presence[u].writing?' is writing a version':''}">${escape(userInitials(u))}</span>`).join('')}${writer?`<span class="sm-typing${before.includes(writer+'*')?'':' sm-arrive'}"><i></i><i></i><i></i></span>`:''}</span>`);
     }
+    painted=Object.fromEntries(Object.keys(byCard).map(id=>[id,sig(id)]));
     siteEl.querySelectorAll('[data-follow]').forEach(b=>{const p=presence[b.dataset.follow],c=p&&cards[p.card];b.title=c?`${b.dataset.follow} · ${p.writing?'writing on':'viewing'} “${short(p.card)}”`:b.dataset.follow;});
   }
   function follow(user) {
@@ -1657,16 +1667,18 @@
     const after=target.getBoundingClientRect(),scene=sceneEl.getBoundingClientRect(),k=before.width/after.width;
     const tx=before.left-scene.left-(after.left-scene.left)*k,ty=before.top-scene.top-(after.top-scene.top)*k;
     sceneEl.style.transformOrigin='0 0';
-    play(sceneEl,[{transform:`translate(${tx}px,${ty}px) scale(${k})`},{transform:'none'}],{duration:420});
+    play(sceneEl,[{transform:`translate(${tx}px,${ty}px) scale(${k})`},{transform:'none'}],{duration:motion('slow')});
     animateWires(460);
     announce(level==='overview'?'Overview: the whole board, condensed. Choose a card to read it.':'Reading.');
   }
   // Opening a board grows it out of its miniature in the list; leaving shrinks it back. Positions are relative to the prototype.
   const relBox=el=>{const r=el.getBoundingClientRect(),o=root.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top,w:r.width,h:r.height};};
+  // A rect seen on screen before a jump, expressed in the prototype's coordinates after it.
+  const fromViewport=tv=>{if(!tv)return null;const o=root.getBoundingClientRect();return {x:tv.left-o.left,y:tv.top-o.top,w:tv.width,h:tv.height};};
   function growFrom(T) {
     if(!T||reducedMotion2())return;
     const F=relBox(surfaceEl),k=T.w/F.w;
-    play(surfaceEl,[{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`},{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)'}],{duration:480});
+    play(surfaceEl,[{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`},{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)'}],{duration:motion('slow')});
     animateWires(520);
   }
   function shrinkInto(F,boardId) {
@@ -1676,7 +1688,7 @@
     const T=relBox(thumb),k=T.w/F.w;
     const done=()=>{surfaceEl.getAnimations().forEach(x=>x.cancel());if(state.view==='home')surfaceEl.hidden=true;surfaceEl.removeAttribute('style');};
     surfaceEl.hidden=false;Object.assign(surfaceEl.style,{position:'absolute',left:F.x+'px',top:F.y+'px',width:F.w+'px',zIndex:60,pointerEvents:'none'});
-    play(surfaceEl,[{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)',opacity:1},{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`,opacity:.6}],{duration:420,easing:'cubic-bezier(.4,0,.2,1)'})
+    play(surfaceEl,[{transformOrigin:'0 0',transform:'none',clipPath:'inset(0 0 0 0 round 0px)',opacity:1},{transformOrigin:'0 0',transform:`translate(${T.x-F.x}px,${T.y-F.y}px) scale(${k})`,clipPath:`inset(0 0 ${Math.max(0,F.h-T.h/k)}px 0 round ${6/k}px)`,opacity:.6}],{duration:motion('slow'),easing:EASE})
       .then(done);
     // Animations pause in background tabs; never leave the board stranded over the list.
     setTimeout(done,700);
@@ -1700,7 +1712,7 @@
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
       const d=state.createDraft;if(!d.space) d.space=state.space!=='all'&&(spaceOf(state.space).kind==='private'||state.joined[state.space])?state.space:'pod6';
-      state.creating=true;state.navOpen=false;renderSite();renderCreate('create-q');announce('New steelman: write the question, then name the options.');return;
+      state.creating=true;state.navOpen=false;renderSite();renderCreate('create-q');root.scrollIntoView({block:'start'});announce('New steelman: write the question, then name the options.');return;
     }
     if(action==='create-close') {state.creating=false;state.createError='';renderCreate();root.querySelector('[data-key="create-open"]')?.focus();announce('Closed. Your draft is kept.');return;}
     if(action==='create-add-option') {const d=state.createDraft;if(d.options.length<MAX_OPTIONS)d.options.push('');renderCreate('create-opt-'+(d.options.length-1));return;}
@@ -1709,10 +1721,10 @@
     if(action==='nav-toggle') {state.navOpen=!state.navOpen;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(state.navOpen?'.sm-side-link[aria-current="true"]':'[data-key="nav-toggle"]')?.focus();return;}
     state.navOpen=false;
     if(action==='open-board') {
-      const thumb=root.querySelector(`.sm-post[data-board="${id}"] .sm-thumb`),T=thumb&&relBox(thumb);
+      const thumb=root.querySelector(`.sm-post[data-board="${id}"] .sm-thumb`),tv=thumb&&thumb.getBoundingClientRect();
       surfaceEl.getAnimations().forEach(x=>x.cancel());surfaceEl.removeAttribute('style');
       leaveBoard();state.view='board';state.boardId=id;useDoc(docs[id]);renderView('claim-'+(ideas[0]?ordered(ideas[0])[0]:''));
-      growFrom(T);root.scrollIntoView({block:'start',behavior:reducedMotion2()?'auto':'smooth'});
+      root.scrollIntoView({block:'start'});growFrom(fromViewport(tv));
       announce(`Opened “${doc.question.text}”.`);return;
     }
     if(action==='space') {
@@ -1748,18 +1760,18 @@
     if(focusKey){const el=root.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});if(el?.matches('input[data-select]'))el.select();}
     if(!reduced&&motion) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
-      if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:340});
+      if(newTemplate!==oldTemplate) play(board,[{gridTemplateColumns:oldTemplate},{gridTemplateColumns:newTemplate}],{duration:motion('slow')});
       if(motion==='unfold'||motion==='fold') {
         // The leading card is the same card before and after: ease its width instead of swapping it.
         const lead=ordered(ideaOf(state.open||lastToggled))[0], face=board.querySelector(`.sm-card[data-card="${lead}"]`), from=beforeFaces.get(lead);
-        if(face&&from) play(face,[{width:from.width+'px'},{width:face.getBoundingClientRect().width+'px'}],{duration:340});
+        if(face&&from) play(face,[{width:from.width+'px'},{width:face.getBoundingClientRect().width+'px'}],{duration:motion('slow')});
       }
       if(motion==='unfold'&&newTrack) {
         const first=newTrack.querySelector('.sm-version-face'), x=first.getBoundingClientRect().left;
         const bar=board.querySelector('.sm-track-axis');
-        if(bar) play(bar,[{height:'0px',marginBottom:'0px',opacity:0},{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1}],{duration:340});
+        if(bar) play(bar,[{height:'0px',marginBottom:'0px',opacity:0},{height:bar.offsetHeight+'px',marginBottom:getComputedStyle(bar).marginBottom,opacity:1}],{duration:motion('slow')});
         const arriving=[...newTrack.children].slice(2);
-        arriving.forEach((el,index)=>play(el,[{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0},{transform:'none',opacity:1}],{duration:380,delay:Math.floor(index/2)*45,fill:'backwards'}));
+        arriving.forEach((el,index)=>play(el,[{transform:`translateX(${x-el.getBoundingClientRect().left}px)`,opacity:0},{transform:'none',opacity:1}],{duration:motion('slow'),delay:Math.floor(index/2)*45,fill:'backwards'}));
       }
       if(motion==='detail'&&state.expanded) {
         const reveal=board.querySelector(`#sm-reveal-${state.expanded}`);
@@ -1767,9 +1779,9 @@
       }
       if(motion==='added') {
         const face=board.querySelector(`.sm-card[data-card="${state.expanded}"]`);
-        if(face) play(face,[{transform:'translateY(8px)',opacity:0},{transform:'none',opacity:1}],{duration:300});
+        if(face) play(face,[{transform:'translateY(8px)',opacity:0},{transform:'none',opacity:1}],{duration:motion('medium')});
       }
-      if(motion==='reorder') board.querySelectorAll('[data-node]').forEach(el=>{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.75,.2,1)'});}});
+      if(motion==='reorder') board.querySelectorAll('[data-node]').forEach(el=>{const from=beforeNodes.get(el.dataset.node);if(from!==undefined){const delta=from-el.getBoundingClientRect().top;if(delta)play(el,[{transform:`translateY(${delta}px)`},{transform:'translateY(0)'}],{duration:motion('slow'),easing:EASE});}});
     }
     if(motion==='unfold'&&newTrack) {
       // Keep the unfolded row in view without jumping the page.
@@ -1824,7 +1836,7 @@
   root.addEventListener('change',event=>{
     const el=event.target,q=doc.question;
     if(el.id==='sm-share-role') {state.shareRole=el.value;return;}
-    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('.sm-create-canvas').dataset.canvas=spaceOf(el.value).canvas;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value)+' You can change this under Share.';return;}
+    if(el.id==='sm-create-space') {state.createDraft.space=el.value;createEl.querySelector('.sm-create-canvas').dataset.canvas=spaceOf(el.value).canvas;createEl.querySelector('#sm-create-access').textContent=accessLine(el.value);return;}
     if(el.dataset.sharePerson) {const p=q.people.find(x=>x.user===el.dataset.sharePerson);if(p){p.role=el.value;announce(`${p.user} ${ROLES[p.role]}.`);}}
     else if(el.id==='sm-share-general') {q.visibility=el.value;announce(el.selectedOptions[0].textContent+'.');}
     else if(el.id==='sm-share-access-role') {q.accessRole=el.value;announce(`General access: ${ROLES[el.value]}.`);}
@@ -2094,6 +2106,12 @@
     if(!card&&!header)return;
     event.preventDefault();event.stopPropagation();
     zoomTo('read',card?.dataset.card||null);
+  },true);
+  // A click outside the comments or settings panel closes it (buttons that open or switch it keep working).
+  root.addEventListener('click',event=>{
+    if(state.view!=='board'||!state.drawer||event.target.closest('.sm-drawer,[data-action="comments"],[data-action="settings"],[data-action="open-share"],.sm-menu'))return;
+    // Close now, but let the click still reach what it was aimed at; redraw right after.
+    closeDrawer();setTimeout(()=>{render();save();});
   },true);
   // A click outside the share panel closes it (the Share button toggles it itself).
   root.addEventListener('click',event=>{
