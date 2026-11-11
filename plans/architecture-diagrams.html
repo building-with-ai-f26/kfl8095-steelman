@@ -1,0 +1,458 @@
+<title>Steelman Architecture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300..700&family=Source+Serif+4:opsz,wght@8..60,400..700&display=swap">
+<style>
+/* Layout: one reading column. Each section is a serif heading, one short paragraph,
+   then a full-width plate holding one drawing, like the plates in a field guide.
+   Tokens follow docs/design/tokens.css: grayscale first, color only where it means something. */
+:root{
+  --canvas:#dcd8cf; --panel:#f7f7f7; --card:#fdfdfd;
+  --ink:#242424; --muted:#565656; --line:#d1d1d1; --wire:#767676;
+  --inv-bg:#292929; --inv-fg:#ffffff;
+  --ai:#C9952B; --ai-ink:#6b4a0e;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"Libre Franklin","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#1d1c1a; --panel:#272624; --card:#32312e;
+    --ink:#edece8; --muted:#b9b6af; --line:#4d4b47; --wire:#9a978f;
+    --inv-bg:#edece8; --inv-fg:#1d1c1a;
+    --ai:#d9a941; --ai-ink:#e9c779; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#1d1c1a; --panel:#272624; --card:#32312e;
+  --ink:#edece8; --muted:#b9b6af; --line:#4d4b47; --wire:#9a978f;
+  --inv-bg:#edece8; --inv-fg:#1d1c1a;
+  --ai:#d9a941; --ai-ink:#e9c779; color-scheme:dark;
+}
+body{
+  background:var(--canvas); color:var(--ink);
+  font:400 16px/1.55 var(--sans);
+  padding-block:40px 72px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+.page{max-width:1000px; margin:0 auto; display:flex; flex-direction:column; gap:56px}
+header{display:flex; flex-direction:column; gap:10px}
+.mark{font:600 20px/1 var(--serif); letter-spacing:-.01em}
+h1{font:600 clamp(32px,6vw,44px)/1.08 var(--serif); margin:0; letter-spacing:-.015em; text-wrap:balance}
+.lede{max-width:62ch; margin:0; font-size:17px}
+.meta{margin:0; font-size:13px; color:var(--muted)}
+section{display:flex; flex-direction:column; gap:14px}
+h2{font:600 24px/1.2 var(--serif); margin:0; text-wrap:balance}
+section > p{max-width:65ch; margin:0}
+figure{margin:0; display:flex; flex-direction:column; gap:10px}
+.plate{background:var(--panel); border-radius:10px; padding:16px; overflow-x:auto}
+.plate svg{display:block; width:100%; min-width:760px; height:auto}
+figcaption{font-size:13.5px; color:var(--muted); max-width:78ch}
+.facts{display:flex; flex-wrap:wrap; gap:8px 28px; margin:0; padding:0; list-style:none; font-size:14px}
+.facts b{font-weight:650}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px 32px}
+.cols > div{min-width:0}
+h3{font:650 13px/1.3 var(--sans); letter-spacing:.06em; text-transform:uppercase; margin:0 0 6px; color:var(--muted)}
+.cols ul{margin:0; padding-left:18px; font-size:14.5px}
+.cols li{margin:3px 0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:14.5px}
+th,td{text-align:left; vertical-align:top; padding:9px 14px 9px 0; border-bottom:1px solid var(--wire)}
+th{font:650 12px/1.3 var(--sans); letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+td:first-child{font-weight:650; white-space:nowrap}
+code{font:500 .92em ui-monospace,SFMono-Regular,Menlo,monospace}
+footer{font-size:13px; color:var(--muted)}
+
+/* Drawing vocabulary, shared by every plate */
+svg text{font-family:var(--sans)}
+.bx{fill:var(--card); stroke:var(--line); stroke-width:1}
+.inv{fill:var(--inv-bg)}
+.grp{fill:var(--canvas); opacity:.55}
+.aibx{fill:var(--card); stroke:var(--ai); stroke-width:1.5; stroke-dasharray:2 3}
+.t{font-size:13px; font-weight:650; fill:var(--ink)}
+.s{font-size:11.5px; font-weight:400; fill:var(--muted)}
+.ti{font-size:13px; font-weight:650; fill:var(--inv-fg)}
+.tl{font-size:15px}
+.si{font-size:11.5px; fill:var(--inv-fg); opacity:.82}
+.cap{font-size:10.5px; font-weight:650; letter-spacing:.09em; text-transform:uppercase; fill:var(--muted)}
+.lb{font-size:11.5px; font-weight:500; fill:var(--ink); paint-order:stroke; stroke:var(--panel); stroke-width:6px; stroke-linejoin:round}
+.m{text-anchor:middle} .e{text-anchor:end}
+.w{fill:none; stroke:var(--wire); stroke-width:1.5}
+.d{stroke-dasharray:5 4}
+.life{stroke:var(--line); stroke-width:1.5; stroke-dasharray:3 4}
+.ah{fill:var(--wire)}
+</style>
+
+<div class="page">
+
+<header>
+  <div class="mark">steelman.</div>
+  <h1>Architecture</h1>
+  <p class="lede">How the real product is put together: one service, one database, and a board that stays still for its reader while everyone else keeps voting.</p>
+  <p class="meta">Drawn from <code>plans/architecture.md</code> as of November 11, 2026. No code exists yet; this is the design.</p>
+</header>
+
+<section>
+  <h2>The whole system</h2>
+  <p>One container runs everything we write. It talks to one Postgres database. Everything else is a service we call, not one we run.</p>
+  <figure>
+    <div class="plate">
+    <svg viewBox="0 0 960 528" role="img" aria-label="The browser talks to one Steelman service on Cloud Run, which talks to one Postgres database. Google sign-in, Resend and PostHog sit outside. Stripe and an AI model are added later.">
+      <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,1 L10,5 L0,9 z"/></marker></defs>
+
+      <text class="cap" x="24" y="52">Reader's browser</text>
+      <rect class="grp" x="24" y="64" width="190" height="238" rx="10"/>
+      <rect class="bx" x="40" y="80" width="158" height="58" rx="6"/>
+      <text class="t m" x="119" y="104">Web app</text>
+      <text class="s m" x="119" y="122">React + TypeScript</text>
+      <rect class="bx" x="40" y="150" width="158" height="58" rx="6"/>
+      <text class="t m" x="119" y="174">Sync rules</text>
+      <text class="s m" x="119" y="192">merge rows, pill, Update</text>
+      <rect class="bx" x="40" y="220" width="158" height="58" rx="6"/>
+      <text class="t m" x="119" y="244">Offline queue</text>
+      <text class="s m" x="119" y="262">in memory, tab open</text>
+
+      <text class="cap" x="384" y="52">Google Cloud project</text>
+      <rect class="grp" x="384" y="64" width="300" height="440" rx="10"/>
+      <rect class="bx" x="404" y="84" width="120" height="40" rx="6"/>
+      <text class="t m" x="464" y="109">Secret Manager</text>
+      <rect class="bx" x="540" y="84" width="124" height="40" rx="6"/>
+      <text class="t m" x="602" y="109">Cloud Scheduler</text>
+      <line class="w" x1="464" y1="124" x2="464" y2="175" marker-end="url(#a1)"/>
+      <text class="lb m" x="464" y="154">keys at startup</text>
+      <line class="w" x1="602" y1="124" x2="602" y2="175" marker-end="url(#a1)"/>
+      <text class="lb m" x="602" y="154">daily call</text>
+
+      <rect class="inv" x="404" y="176" width="260" height="144" rx="6"/>
+      <text class="ti tl m" x="534" y="204">Steelman service</text>
+      <text class="si m" x="534" y="223">one container on Cloud Run</text>
+      <text class="si m" x="534" y="254">serves the app · JSON API · sign-in</text>
+      <text class="si m" x="534" y="273">one write path · role checks</text>
+      <text class="si m" x="534" y="292">recalculates the order lazily</text>
+
+      <line class="w" x1="534" y1="320" x2="534" y2="371" marker-end="url(#a1)"/>
+      <text class="lb m" x="534" y="350">SQL · one transaction per write</text>
+      <rect class="bx" x="404" y="372" width="260" height="100" rx="6"/>
+      <text class="t tl m" x="534" y="398">Postgres 17 on Cloud SQL</text>
+      <text class="s m" x="534" y="420">board tables, rows stamped</text>
+      <text class="s m" x="534" y="438">vote tables</text>
+      <text class="s m" x="534" y="456">change log, structure only</text>
+      <text class="s m" x="534" y="494">one project each for staging and production</text>
+
+      <line class="w" x1="214" y1="200" x2="403" y2="200" marker-end="url(#a1)"/>
+      <text class="lb m" x="309" y="193">snapshot at change S</text>
+      <line class="w" x1="214" y1="236" x2="403" y2="236" marker-end="url(#a1)"/>
+      <text class="lb m" x="309" y="229">changes after S? every 3 s</text>
+      <line class="w" x1="214" y1="272" x2="403" y2="272" marker-end="url(#a1)"/>
+      <text class="lb m" x="309" y="265">writes, safe to repeat</text>
+
+      <text class="cap" x="800" y="52">Outside services</text>
+      <rect class="bx" x="800" y="180" width="136" height="32" rx="6"/>
+      <text class="t m" x="868" y="201">Google sign-in</text>
+      <rect class="bx" x="800" y="224" width="136" height="32" rx="6"/>
+      <text class="t m" x="868" y="245">Resend email</text>
+      <rect class="bx" x="800" y="268" width="136" height="32" rx="6"/>
+      <text class="t m" x="868" y="289">PostHog (US)</text>
+      <line class="w" x1="800" y1="196" x2="665" y2="196" marker-end="url(#a1)"/>
+      <text class="lb m" x="732" y="189">verified email</text>
+      <line class="w" x1="664" y1="240" x2="799" y2="240" marker-end="url(#a1)"/>
+      <text class="lb m" x="732" y="233">sign-in links</text>
+      <line class="w" x1="664" y1="284" x2="799" y2="284" marker-end="url(#a1)"/>
+      <text class="lb m" x="732" y="277">consented events</text>
+
+      <path class="w d" d="M800,372 H716 V304 H665" marker-end="url(#a1)"/>
+      <rect class="bx" x="800" y="352" width="136" height="40" rx="6" stroke-dasharray="5 4"/>
+      <text class="t m" x="868" y="369">Stripe Checkout</text>
+      <text class="s m" x="868" y="384">credit purchases</text>
+      <path class="w d" d="M664,312 H700 V424 H799" marker-end="url(#a1)"/>
+      <rect class="aibx" x="800" y="404" width="136" height="40" rx="6"/>
+      <text class="t m" x="868" y="421">AI model</text>
+      <text class="s m" x="868" y="436">evidence checks</text>
+      <line class="w d" x1="800" y1="476" x2="832" y2="476"/>
+      <text class="s" x="840" y="480">built later (T3)</text>
+    </svg>
+    </div>
+    <figcaption>The browser only ever asks three things: give me the board, tell me what changed, and save this. Sign-in, email, and analytics are bought, not built. Ochre marks the one AI component, as it does in the product.</figcaption>
+  </figure>
+  <ul class="facts">
+    <li><b>About $15–20 a month</b> for the class trial</li>
+    <li><b>30 readers</b> polling is about 10 requests a second</li>
+    <li><b>One region</b>, <code>us-central1</code></li>
+    <li><b>No background workers</b> in the MVP</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What is stored</h2>
+  <p>Each of the three judgments attaches to a different thing. Importance belongs to an argument, articulation to a wording, and credibility to one exact revision of that wording.</p>
+  <figure>
+    <div class="plate">
+    <svg viewBox="0 0 960 504" role="img" aria-label="A board has options, which have arguments, which have versions, which have revisions. Importance votes attach to arguments, articulation votes to versions, and assessments to a single revision. An edit creates a new revision whose assessments start at zero.">
+      <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,1 L10,5 L0,9 z"/></marker></defs>
+
+      <rect class="bx" x="746" y="24" width="140" height="48" rx="6"/>
+      <text class="t m" x="816" y="45">source</text>
+      <text class="s m" x="816" y="61">shared on the board</text>
+      <line class="w" x1="816" y1="110" x2="816" y2="73" marker-end="url(#a2)"/>
+      <text class="lb m" x="816" y="96">cites</text>
+
+      <rect class="inv" x="74" y="110" width="140" height="64" rx="6"/>
+      <text class="ti m" x="144" y="138">board</text>
+      <text class="si m" x="144" y="156">one question</text>
+      <rect class="bx" x="242" y="110" width="140" height="64" rx="6"/>
+      <text class="t m" x="312" y="138">option</text>
+      <text class="s m" x="312" y="156">a side</text>
+      <rect class="bx" x="410" y="110" width="140" height="64" rx="6"/>
+      <text class="t m" x="480" y="138">argument</text>
+      <text class="s m" x="480" y="156">a reason</text>
+      <rect class="bx" x="578" y="110" width="140" height="64" rx="6"/>
+      <text class="t m" x="648" y="138">version</text>
+      <text class="s m" x="648" y="156">a wording, stable ID</text>
+      <rect class="bx" x="746" y="110" width="140" height="64" rx="6"/>
+      <text class="t m" x="816" y="138">revision</text>
+      <text class="s m" x="816" y="156">one per edit</text>
+      <line class="w" x1="214" y1="142" x2="241" y2="142" marker-end="url(#a2)"/>
+      <line class="w" x1="382" y1="142" x2="409" y2="142" marker-end="url(#a2)"/>
+      <line class="w" x1="550" y1="142" x2="577" y2="142" marker-end="url(#a2)"/>
+      <line class="w" x1="718" y1="142" x2="745" y2="142" marker-end="url(#a2)"/>
+
+      <rect class="bx" x="74" y="232" width="140" height="64" rx="6"/>
+      <text class="t m" x="144" y="260">change log</text>
+      <text class="s m" x="144" y="278">who, what, why</text>
+      <line class="w" x1="144" y1="232" x2="144" y2="175" marker-end="url(#a2)"/>
+      <text class="s m" x="144" y="318">structure and moderation only</text>
+
+      <rect class="bx" x="410" y="232" width="140" height="64" rx="6"/>
+      <text class="t m" x="480" y="260">importance vote</text>
+      <text class="s m" x="480" y="278">±1 on an argument</text>
+      <line class="w" x1="480" y1="232" x2="480" y2="175" marker-end="url(#a2)"/>
+      <rect class="bx" x="578" y="232" width="140" height="64" rx="6"/>
+      <text class="t m" x="648" y="260">articulation vote</text>
+      <text class="s m" x="648" y="278">±1 on a version</text>
+      <line class="w" x1="648" y1="232" x2="648" y2="175" marker-end="url(#a2)"/>
+      <rect class="bx" x="746" y="232" width="140" height="64" rx="6"/>
+      <text class="t m" x="816" y="260">assessment</text>
+      <text class="s m" x="816" y="278">yes / no on a revision</text>
+      <line class="w" x1="816" y1="232" x2="816" y2="175" marker-end="url(#a2)"/>
+      <text class="s m" x="648" y="318">one row per person per target, so a second vote can only replace the first</text>
+
+      <text class="cap" x="74" y="366">What an edit does</text>
+      <rect class="bx" x="242" y="380" width="250" height="60" rx="6"/>
+      <text class="t m" x="367" y="405">revision 1</text>
+      <text class="s m" x="367" y="424">17 assessments, kept as history</text>
+      <line class="w" x1="492" y1="410" x2="577" y2="410" marker-end="url(#a2)"/>
+      <text class="lb m" x="535" y="403">edit</text>
+      <rect class="inv" x="578" y="380" width="250" height="60" rx="6"/>
+      <text class="ti m" x="703" y="405">revision 2, current</text>
+      <text class="si m" x="703" y="424">assessments start again at 0</text>
+      <rect class="bx" x="242" y="452" width="586" height="34" rx="6"/>
+      <text class="s m" x="535" y="473">importance and articulation votes carry on unchanged</text>
+    </svg>
+    </div>
+    <figcaption>Credibility resets on an edit because an assessment is keyed to the revision it judged, not because a cleanup job runs. A version keeps its ID for life, so its votes and its link survive being combined into another argument.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Live, but held still</h2>
+  <p>Every write takes the board's next change number and stamps it on the rows it touched. A reader holds a number and asks for everything stamped after it. Counts update where they are; the order only moves when the reader says so.</p>
+  <figure>
+    <div class="plate">
+    <svg viewBox="0 0 960 596" role="img" aria-label="Reader A opens a board at change 40. Reader B votes, making change 41. A asks for changes after 40 and gets the updated row; its count changes in place. After the 60 second tick the service saves a new order, A's pill shows one change, and A presses Update to apply it.">
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,1 L10,5 L0,9 z"/></marker></defs>
+
+      <line class="life" x1="200" y1="56" x2="200" y2="524"/>
+      <line class="life" x1="520" y1="56" x2="520" y2="580"/>
+      <line class="life" x1="820" y1="56" x2="820" y2="580"/>
+      <rect class="bx" x="130" y="20" width="140" height="36" rx="6"/>
+      <text class="t m" x="200" y="43">Reader A</text>
+      <rect class="inv" x="440" y="20" width="160" height="36" rx="6"/>
+      <text class="ti m" x="520" y="43">Steelman service</text>
+      <rect class="bx" x="750" y="20" width="140" height="36" rx="6"/>
+      <text class="t m" x="820" y="43">Reader B</text>
+
+      <line class="w" x1="200" y1="96" x2="519" y2="96" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="89">opens the board</text>
+      <line class="w" x1="520" y1="130" x2="201" y2="130" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="123">snapshot at change 40, order 7</text>
+      <text class="s e" x="186" y="134">holds change 40</text>
+
+      <line class="w" x1="820" y1="178" x2="521" y2="178" marker-end="url(#a3)"/>
+      <text class="lb m" x="670" y="171">set my vote on X to +1</text>
+      <rect class="bx" x="390" y="194" width="260" height="46" rx="6"/>
+      <text class="t m" x="520" y="214">change 41</text>
+      <text class="s m" x="520" y="231">X's count goes up · row X stamped 41</text>
+
+      <line class="w" x1="200" y1="282" x2="519" y2="282" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="275">changes after 40?</text>
+      <line class="w" x1="520" y1="316" x2="201" y2="316" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="309">row X as it is now, change 41</text>
+      <text class="s e" x="186" y="312">count changes in place,</text>
+      <text class="s e" x="186" y="327">nothing moves</text>
+
+      <line class="w d" x1="40" y1="364" x2="920" y2="364"/>
+      <text class="lb m" x="670" y="368">the 60-second tick passes</text>
+
+      <line class="w" x1="200" y1="408" x2="519" y2="408" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="401">changes after 41?</text>
+      <rect class="bx" x="390" y="424" width="260" height="46" rx="6"/>
+      <text class="t m" x="520" y="444">saves order 8</text>
+      <text class="s m" x="520" y="461">the tick is due and votes have changed</text>
+      <line class="w" x1="520" y1="498" x2="201" y2="498" marker-end="url(#a3)"/>
+      <text class="lb m" x="360" y="491">order 8</text>
+      <text class="s e" x="186" y="494">pill shows</text>
+      <text class="s e" x="186" y="509">1 change · Update</text>
+
+      <rect class="bx" x="100" y="524" width="200" height="40" rx="6"/>
+      <text class="t m" x="200" y="549">presses Update: rows move</text>
+    </svg>
+    </div>
+    <figcaption>The answer to "changes after 40?" is the rows as they are now, not a list of events to replay. So it costs the same after 3 votes or 3,000, and an answer that arrives twice or late does no harm. The service never tracks what any reader is looking at.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>From a change to production</h2>
+  <p>A pull request is tested only against a database it starts and throws away. Staging changes when <code>main</code> does. Production changes when you say so.</p>
+  <figure>
+    <div class="plate">
+    <svg viewBox="0 0 960 372" role="img" aria-label="A pull request runs npm run check, which has six layers of tests. A merge deploys to staging and runs a smoke test. The builder approves a release to production. Nightly runs open issues that become backlog items.">
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,1 L10,5 L0,9 z"/></marker></defs>
+
+      <rect class="bx" x="24" y="44" width="140" height="64" rx="6"/>
+      <text class="t m" x="94" y="72">Pull request</text>
+      <text class="s m" x="94" y="90">one backlog item</text>
+      <line class="w" x1="164" y1="76" x2="213" y2="76" marker-end="url(#a4)"/>
+      <text class="lb m" x="189" y="66">push</text>
+
+      <rect class="inv" x="214" y="44" width="270" height="64" rx="6"/>
+      <text class="ti tl m" x="349" y="72">npm run check</text>
+      <text class="si m" x="349" y="90">its own Postgres · no network · no waiting</text>
+      <line class="w" x1="484" y1="76" x2="555" y2="76" marker-end="url(#a4)"/>
+      <text class="lb m" x="520" y="66">merge</text>
+
+      <rect class="bx" x="556" y="44" width="170" height="64" rx="6"/>
+      <text class="t m" x="641" y="72">Staging</text>
+      <text class="s m" x="641" y="90">migrate, deploy, smoke test</text>
+      <line class="w" x1="726" y1="76" x2="805" y2="76" marker-end="url(#a4)"/>
+      <text class="lb m" x="766" y="66">you approve</text>
+
+      <rect class="bx" x="806" y="44" width="130" height="64" rx="6"/>
+      <text class="t m" x="871" y="72">Production</text>
+      <text class="s m" x="871" y="90">the same image</text>
+
+      <rect class="bx" x="214" y="124" width="270" height="26" rx="4"/>
+      <text class="s" x="228" y="141">1</text><text class="s" x="246" y="141">types and lint</text>
+      <rect class="bx" x="214" y="152" width="270" height="26" rx="4"/>
+      <text class="s" x="228" y="169">2</text><text class="s" x="246" y="169">the rules, as pure functions</text>
+      <rect class="bx" x="214" y="180" width="270" height="26" rx="4"/>
+      <text class="s" x="228" y="197">3</text><text class="s" x="246" y="197">database: one test per invariant</text>
+      <rect class="bx" x="214" y="208" width="270" height="26" rx="4"/>
+      <text class="s" x="228" y="225">4</text><text class="s" x="246" y="225">API: roles, stale writes, sent twice</text>
+      <rect class="bx" x="214" y="236" width="270" height="26" rx="4"/>
+      <text class="t" x="228" y="253" style="font-size:11.5px">5</text><text class="t" x="246" y="253" style="font-size:11.5px">simulation of many readers</text>
+      <rect class="bx" x="214" y="264" width="270" height="26" rx="4"/>
+      <text class="s" x="228" y="281">6</text><text class="s" x="246" y="281">browser, accessibility, screenshots</text>
+
+      <text class="s m" x="641" y="130">real Cloud SQL, email, Google</text>
+      <text class="s m" x="871" y="130">old version stays up if</text>
+      <text class="s m" x="871" y="145">the health check fails</text>
+
+      <rect class="bx" x="556" y="196" width="380" height="72" rx="6"/>
+      <text class="t m" x="746" y="219">Every night</text>
+      <text class="s m" x="746" y="238">soak run · mutation testing · dependency audit</text>
+      <text class="s m" x="746" y="255">monthly: restore a backup and smoke-test it</text>
+      <path class="w" d="M746,268 V332 H94 V109" marker-end="url(#a4)"/>
+      <text class="lb m" x="420" y="336">a failure opens an issue, which becomes the next item</text>
+    </svg>
+    </div>
+    <figcaption>Layer 5 is the one built for the riskiest problem: thousands of random sequences of readers voting, editing, going offline and coming back, checked after every step. A failure prints the shortest sequence that reproduces it.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>How agents work the backlog</h2>
+  <p>An item in the build plan's backlog is already approved. An agent takes the next one, proves it with tests it wrote first, and moves on without waiting for you.</p>
+  <figure>
+    <div class="plate">
+    <svg viewBox="0 0 960 256" role="img" aria-label="An agent takes the next backlog item, writes its tests and sees them fail, builds until the check passes, opens a pull request, merges, marks the item done, and takes the next. If blocked or on the stop list, it stops and asks the builder.">
+      <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,1 L10,5 L0,9 z"/></marker></defs>
+
+      <path class="w" d="M870,56 V30 H90 V55" marker-end="url(#a5)"/>
+      <text class="lb m" x="480" y="34">next item</text>
+
+      <rect class="bx" x="23" y="56" width="134" height="56" rx="6"/>
+      <text class="t m" x="90" y="80">Take the next item</text>
+      <text class="s m" x="90" y="98">from the backlog</text>
+      <rect class="bx" x="179" y="56" width="134" height="56" rx="6"/>
+      <text class="t m" x="246" y="80">Write its tests</text>
+      <text class="s m" x="246" y="98">and watch them fail</text>
+      <rect class="inv" x="335" y="56" width="134" height="56" rx="6"/>
+      <text class="ti m" x="402" y="80">Build</text>
+      <text class="si m" x="402" y="98">until check passes</text>
+      <rect class="bx" x="491" y="56" width="134" height="56" rx="6"/>
+      <text class="t m" x="558" y="80">Pull request</text>
+      <text class="s m" x="558" y="98">gates + second agent</text>
+      <rect class="bx" x="647" y="56" width="134" height="56" rx="6"/>
+      <text class="t m" x="714" y="80">Merge</text>
+      <text class="s m" x="714" y="98">deploys to staging</text>
+      <rect class="bx" x="803" y="56" width="134" height="56" rx="6"/>
+      <text class="t m" x="870" y="80">Mark it done</text>
+      <text class="s m" x="870" y="98">plan + features.csv</text>
+      <line class="w" x1="157" y1="84" x2="178" y2="84" marker-end="url(#a5)"/>
+      <line class="w" x1="313" y1="84" x2="334" y2="84" marker-end="url(#a5)"/>
+      <line class="w" x1="469" y1="84" x2="490" y2="84" marker-end="url(#a5)"/>
+      <line class="w" x1="625" y1="84" x2="646" y2="84" marker-end="url(#a5)"/>
+      <line class="w" x1="781" y1="84" x2="802" y2="84" marker-end="url(#a5)"/>
+
+      <line class="w" x1="402" y1="112" x2="402" y2="175" marker-end="url(#a5)"/>
+      <text class="lb" x="414" y="148">blocked, or on the stop list</text>
+      <rect class="bx" x="257" y="176" width="290" height="60" rx="6" stroke-dasharray="5 4"/>
+      <text class="t m" x="402" y="201">Stop and ask the builder</text>
+      <text class="s m" x="402" y="220">leave a note, then take another item</text>
+    </svg>
+    </div>
+    <figcaption>Who presses Merge is still your decision. Until you turn self-merging on, an agent opens the pull request and starts the next item on a branch that builds on it.</figcaption>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>An agent stops and asks when</h3>
+      <ul>
+        <li>a fix has failed twice</li>
+        <li>the item can't be built as designed</li>
+        <li>an existing test, screenshot, or migration would change</li>
+        <li>a new package is needed at run time</li>
+        <li>data would be dropped, or a role would gain a power</li>
+        <li>it costs money, needs an account, or releases to production</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What stays with you</h3>
+      <ul>
+        <li>Once: the domain, GCP billing, Google's consent screen, Resend's DNS records, GitHub branch rules</li>
+        <li>Each release: approving production</li>
+        <li>Each milestone: a real phone, a real screen reader, a classmate's school account</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The decisions behind it</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Choice</th><th>Picked</th><th>Because</th></tr></thead>
+    <tbody>
+      <tr><td>Cloud</td><td>Google Cloud: Cloud Run and Cloud SQL</td><td>Scales to zero, no load balancer at class size, and it's the cloud you want to learn</td></tr>
+      <tr><td>Database</td><td>One Postgres: stamped rows, plus a change log for structure</td><td>Its constraints enforce the voting rules; stamps make catching up cheap</td></tr>
+      <tr><td>Live updates</td><td>Polling every 3 seconds</td><td>The order is held still, so a few seconds' delay is invisible; nothing extra to run</td></tr>
+      <tr><td>Sign-in</td><td>Better Auth, accounts in our own Postgres</td><td>Export and deletion touch one place; no hand-written session code</td></tr>
+      <tr><td>Frontend</td><td>React and Vite, served by the same service</td><td>Shares the ordering and sync rules with the server; one origin</td></tr>
+      <tr><td>Quality</td><td>Automated tests as the gate</td><td>You aren't there to review each change, so the checks have to be</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>The records are in <code>plans/decisions/</code>; the phases are in <code>plans/build-plan.md</code>.</footer>
+
+</div>

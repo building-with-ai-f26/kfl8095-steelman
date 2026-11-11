@@ -314,7 +314,7 @@ Online writes follow the same rules. Being offline just makes staleness more lik
 
 ### The whole system on one page
 
-**One service, one database.** A single container runs the Steelman service: it serves the web app, the JSON API, and sign-in. It talks to one Postgres database. Everything else is a hosted service we call, not run. Dotted lines are T3, not in the MVP.
+**One service, one database.** A single container runs the Steelman service: it serves the web app, the JSON API, and sign-in. It talks to one Postgres database. Everything else is a hosted service we call, not run. Dotted lines are T3, not in the MVP. A fuller set of drawings (the system, what is stored, a live update step by step, delivery and tests, the agent work loop) is in [`architecture-diagrams.html`](architecture-diagrams.html); open it in a browser.
 
 ```mermaid
 flowchart LR
