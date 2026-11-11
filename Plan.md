@@ -11,7 +11,7 @@ Use this as a scratchpad if helpful. Publish PRD v2 and the Build 2 log on `docs
 *What is the single most likely reason this product fails to work for a real user (e.g., model hallucination on messy PDFs, latency, auth, bad data, third-party API limits)? How does your smallest local version test that risk first?*
 
 - **#1 Technical / Product Risk:** Keeping every reader's held-still view consistent with a shared order that keeps changing underneath it. Each reader keeps the order they loaded while others vote, add, edit (which resets credibility), and delete. The server must tell each reader how far behind they are ("3 changes"), apply exactly those changes on Update, and handle actions queued offline against a view that's gone stale (a vote on a deleted wording, an assessment of wording that's since been edited). If this goes wrong, it fails silently: counts that disagree between people, or a vote landing on the wrong wording.
-- **How Build 2 tests it right now:** Milestone M0 (`plans/build-plan.md`) builds only this slice, locally: one board, every write numbered in a per-board change log, every write naming the wording revision it was made against, and polling for "changes after N". It passes when the November 11 *Live changes* scenarios in `tests/build-1-manual.md` work with two browsers, and 30 scripted voters running for 5 minutes leave the stored counts equal to a fresh recount.
+- **How Build 2 tests it right now:** Milestone M0 (`plans/build-plan.md`) builds only this slice, locally: one board, every write taking the board's next change number and stamping the rows it touched, every write naming the wording revision it was made against, and polling for "changes after N". It passes when a seeded random simulation of many readers (voting, editing, deleting, going offline and coming back) always ends with correct counts and every reader seeing the same board; the November 11 *Live changes* scenarios in `tests/build-1-manual.md` pass as browser tests with two sessions; and 30 scripted voters running for 5 minutes leave the stored counts equal to a fresh recount.
 
 ## 2. The Smallest Working Version (Architecture)
 *Use AI to understand the main components, data flow, and risks, then explain them in your own words.*
@@ -28,8 +28,8 @@ Use this as a scratchpad if helpful. Publish PRD v2 and the Build 2 log on `docs
 | :--- | :--- | :--- |
 | **Build budget (coding agent / OpenRouter)** | `$` (fill in: the Claude plan) | Claude writes the code; no OpenRouter spend |
 | **Unit cost per user action (inference/API)** | `$0 / run` | No inference in the MVP. From M3c, each AI check is paid by the user's credits |
-| **Hosting cost (monthly)** | `$0 / mo` in Build 2 (local); about `$15–20 / mo` from M1 | Cloud SQL ~$10 (unverified), Cloud Run ~$0–5, domain ~$1; about $100–200 a month before public communities |
-| **Your engineering time budget** | Sized by scope, not hours | Claude builds it; the limit is reviewing and understanding each PR (~6 PRs for M0) |
+| **Hosting cost (monthly)** | `$0 / mo` in Build 2 (local); about `$15–20 / mo` from M1 | Cloud SQL ~$9–10 (not yet confirmed from Google's pricing page), Cloud Run ~$0–5, staging's stopped database ~$2, domain ~$1; about $100–200 a month before public communities |
+| **Your engineering time budget** | Sized by scope, not hours | Claude builds it; agents work the backlog unattended, gated by automated tests (7 PRs for M0); the builder's time goes to approvals and the checks only a person can make |
 
 ## 4. Security & Recovery Checklist
 - [x] `.env` and API keys are excluded via `.gitignore` (`.env` and `.env.*` ignored; `.env.example` kept with names only)

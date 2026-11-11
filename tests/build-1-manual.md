@@ -847,6 +847,25 @@ A design session, not a prototype change. `plans/architecture.md` (requirements,
 | `git diff --check` | Clean |
 | Not checked | No code exists yet: nothing here is tested in a browser. An independent audit of the documents is pending |
 
+## November 11 — Architecture review (B-05, M-01, M-02)
+
+The independent audit of the architecture documents, by a second agent session (Claude Fable 5.2). Documents only; no code and no feature row changed. Its revisions await the builder's approval (architecture.md, Q19). What it changed: live updates read rows stamped with the board's change number, and votes are no longer logged (M-01, M-02); every write is safe to send twice by its shape, replacing `client_op_id`; a pull request never touches staging, and per-pull-request previews are dropped; a new section on automated testing and unattended agent work (architecture.md §8, decision record 006); M0 has an ordered backlog with machine-checkable acceptance tests.
+
+| Check | Observed result |
+| --- | --- |
+| Contradiction found | The first draft ran each pull request's migrations against staging, while AGENTS.md rule 7 forbids editing a migration that has run in staging: a migration would have been frozen at its first push. Fixed in §6 |
+| Contradiction found | Staging's database was "stopped when not in use", but previews and merge deploys needed it running, with nothing to start it. Now started by the deploy workflow and stopped nightly |
+| Hidden timers | "No background jobs" sat beside three things that needed one: erasing text ten seconds after a delete (now held in the browser), the weekly export and staging's stop (now scheduled calls to Cloud SQL's own API) |
+| Better Auth and Vercel | Confirmed from Vercel's blog: acquisition announced July 7, 2026; the library stays MIT-licensed |
+| Cloud Run domain mapping | Confirmed on Google's page: preview, "not production-ready"; `us-central1` is among the ten regions |
+| Firebase Hosting as a cheaper custom domain | Ruled out: Firebase's page says only the `__session` cookie reaches Cloud Run |
+| Point-in-time recovery | Confirmed in Google's docs: 1–7 days on the Enterprise edition, default 7 |
+| Cloud Run to Cloud SQL | Confirmed on Google's page: built-in connection over a socket, no VPC connector; 100 connections per Cloud Run instance |
+| `embedded-postgres` | PostgreSQL 17.x builds are published on npm (seen in search results, not installed) |
+| MVP coverage | All 49 T1, T2, and T3 IDs in `features.csv` still appear in `plans/build-plan.md` (checked by script) |
+| `git diff --check` | Clean |
+| Not checked | Cloud SQL's price: Google's pricing page didn't render; $9.37 a month for the smallest instance with 10 GB is Google's worked example as quoted by a search result. The 25-connection limit on the smallest instance comes from a third-party article. Stopped-instance billing comes from Google's support forum. No code exists yet, so none of the tests described in §8 has run |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

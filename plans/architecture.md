@@ -1,6 +1,6 @@
 # Steelman architecture
 
-**Status:** draft, written one step at a time. Steps 1–7 are approved. The phased build plan is in `plans/build-plan.md`.
+**Status:** draft, written one step at a time. Steps 1–7 were approved on Nov 11. An independent review the same day then revised them and added step 8; **the revisions await the builder's approval**. What the review changed: live updates read stamped rows instead of a log of every vote (§2, §3); writes are safe to repeat by their shape (§2); the delivery pipeline no longer touches staging from a pull request (§6); and testing and unattended agent work have their own section (§8). The phased build plan is in `plans/build-plan.md`.
 
 This document describes the real product that replaces the browser-local prototype. The prototype (`docs/prototype/source/steelman-refined.html`) is the design spec; `plans/features.csv` is the feature record. **MVP = T1 Core + T2 Launch: 31 features.**
 
@@ -59,6 +59,7 @@ Grouped by the jobs the MVP has to do. Feature IDs are from `plans/features.csv`
 ### Constraints
 
 - **Team:** one builder, with Claude writing the code. Development time is not the constraint; the builder's ability to understand, review, and operate the system is. Every component has to be something the builder can explain, run locally, and fix alone. Fewer moving parts beats elegance. Plans are sized by scope, not hours.
+- **Attention:** the builder is not on this full time or part time. Agents build it piece by piece, mostly unattended. So the builder can't be the check on every change: **the automated tests are.** Every rule in this document needs a test that fails when the rule is broken, the whole suite has to run from one command with no accounts and no network, and the few things only a person can do are listed once so they can be done in a batch (§8).
 - **Money:** the builder pays for hosting and the database. Anything with a per-use cost (AI) is passed on to users through credit purchases, so AI can't be switched on for real users until purchases exist.
 - **Course schedule:** Build 2 (due **Nov 16, 2026**) asks for the smallest *local* working version that tests the riskiest part, plus its architecture, budget, and security checklist (`Plan.md`).
 - **Starting point:** a buildless, single-file prototype and static GitHub Pages. No backend exists yet.
@@ -81,9 +82,9 @@ Everything else is well-trodden: sign-in (a hosted provider), CRUD on boards, ro
 
 **How the architecture tests it first.** The first milestone is a thin slice that does nothing else:
 
-- One board, the T1 data, and a **per-board, ordered change log**: every write gets the board's next sequence number. A reader's snapshot is "the board as of change N"; "N changes" is what has happened since. (Step 2 settles the details; step 3 the transport.)
+- One board, the T1 data, and a **per-board change number**: every write takes the board's next number and stamps it on the rows it touched. A reader's snapshot is "the board as of change N"; what's new is every row stamped after N. (Step 2 settles the details; step 3 the transport.)
 - Every write that targets a version names the **revision** it was made against. The server rejects or redirects stale ones by explicit rules (vote on a deleted version → dropped and reported; assessment of an old revision → dropped and reported) instead of guessing.
-- Acceptance tests are the scenarios already written in `tests/build-1-manual.md` (November 11, *Live changes* and *Live changes, structure*), run with two or three real browser sessions plus a script that plays ~30 simulated voters against a local server.
+- Acceptance tests come in two kinds (§8). A **simulation** plays thousands of random sequences of readers voting, editing, deleting, going offline, and coming back, and checks after every step that the counts are right and that every reader ends up with the same board. And the scenarios already written in `tests/build-1-manual.md` (November 11, *Live changes* and *Live changes, structure*) run as browser tests with two or three sessions.
 
 Sign-in, the list, moderation, and the rest are built only after this slice passes. Build 2's "smallest local version" is this slice.
 
@@ -99,7 +100,7 @@ Sign-in, the list, moderation, and the rest are built only after this slice pass
 
 ### The shape in one paragraph
 
-Everything lives in **one Postgres database**. A small set of tables hold the **current state** of each board (options, arguments, versions, votes, sources). Next to them, every board has an **append-only change log**: each write adds one numbered row saying who did what, when, and (for moderators) why, in the same transaction as the write. The current-state tables answer "what does the board look like now?"; the change log answers "what happened since change N?" (live updates), "who did this?" (audit trail), and "how do I undo it?" (structural undo). Scores, the shared order, and the strongest case are **derived** from the votes.
+Everything lives in **one Postgres database**. A small set of tables hold the **current state** of each board (options, arguments, versions, votes, sources). Every board has a **change number** that goes up by one with each write, and every row a write touches is **stamped** with that number, in the same transaction. Next to the tables is an **append-only change log** with one row per structural or moderation action: who did what, when, and why. The tables answer "what does the board look like now?" and, through the stamps, "what has changed since change N?" (live updates). The log answers "who did this?" (audit trail) and "how do I undo it?" (structural undo). **Votes are not logged**: the vote tables are their record. Scores, the shared order, and the strongest case are **derived** from the votes.
 
 ### Entities
 
@@ -114,14 +115,17 @@ Names follow the product, not the prototype: the prototype's `idea` is an **argu
 | **option** | A side | `id`, `board_id`, `name`, `position`, `deleted_at` | `doc.options` |
 | **argument** | A reason within an option, grouping its wordings. Carries **importance** | `id`, `board_id`, `option_id`, `created_by`, `merged_into` (null unless combined away), `status` (published / held / declined), `deleted_at`, `importance` (derived count) | `doc.ideas` |
 | **version** | One wording of an argument. Carries **articulation** and **credibility** | `id` (**never changes**), `board_id`, `argument_id` (changes on combine / separate), `author_id`, `current_rev`, `status`, `hidden` (by, reason, at), `deleted_at`, `articulation`, `yes`, `no` (derived counts) | `doc.cards` |
-| **version_revision** | Every wording a version has had | `version_id`, `rev` (1, 2, 3…), `wording`, `context`, `source_ids` (the sources cited at this revision), `why` (created / edited / sources changed / a cited source changed), `by`, `at` | `card.prev` |
+| **version_revision** | Every wording a version has had | `version_id`, `rev` (1, 2, 3…), `wording`, `context`, `why` (created / edited / sources changed / a cited source changed), `by`, `at` | `card.prev` |
+| **revision_source** | Which sources a revision cites | **key** (`version_id`, `rev`, `source_id`) | `card.sources` |
 | **source** | A piece of evidence, shared on the board; one source can be cited by several versions | `id`, `board_id`, `name`, `locator` (URL or citation), `finding`, `backs_up`, `limits`, `added_by`, `unavailable` (reported by, at) | `doc.sources` |
-| **importance_vote** | ±1 on an argument | **key** (`argument_id`, `account_id`), `value` | `idea.score`, `my` |
-| **articulation_vote** | ±1 on a version | **key** (`version_id`, `account_id`), `value` | `card.pref` |
-| **assessment** | Yes / no on whether the evidence backs the wording | **key** (`version_id`, `rev`, `account_id`), `supported` | `card.yes`, `card.no` |
+| **importance_vote** | ±1 on an argument | **key** (`argument_id`, `account_id`), `board_id`, `value`, `at` | `idea.score`, `my` |
+| **articulation_vote** | ±1 on a version | **key** (`version_id`, `account_id`), `board_id`, `value`, `at` | `card.pref` |
+| **assessment** | Yes / no on whether the evidence backs the wording | **key** (`version_id`, `rev`, `account_id`), `board_id`, `supported`, `at` | `card.yes`, `card.no` |
 | **comment** *(T3, modeled now)* | A note on the question, an option, or a version; threaded | `id`, `board_id`, `target`, `parent_id`, `author_id`, `body`, `resolved_at`, `hidden`, `deleted_at` | `doc.comments` |
-| **report** | A flag on a version or comment | `id`, `target`, `reporter_id`, `reason`, `note`, `withdrawn_at`, `resolved` (by, how, at) | `card.reports` |
-| **change** | One row per write, per board, in order: the change log | **key** (`board_id`, `seq`), `at`, `actor_id`, `kind`, `subject` (what it touched), `before` / `after` (only what's needed to show or undo it), `reason`, `client_op_id` | `doc.log` |
+| **report** | A flag on a version or comment | `id`, `board_id`, `target`, `reporter_id`, `reason`, `note`, `withdrawn_at`, `resolved` (by, how, at) | `card.reports` |
+| **change** | One row per structural or moderation action, per board, in order: the change log. Votes and assessments are not in it | **key** (`board_id`, `seq`), `at`, `actor_id`, `kind`, `subject` (what it touched), `before` / `after` (only what's needed to show or undo it), `reason` | `doc.log` |
+
+**On every row.** Each option, argument, version, source, and comment row also carries **`changed_seq`**: the board's change number when the row last changed, including a change to its counts. It's indexed with `board_id`, and it is what live updates read (step 3). Every table that belongs to a board carries `board_id`, and a row can only point at rows of the same board (the foreign keys include `board_id`). So "scoped to one board" is something the database checks, not only the code.
 
 **Later, not in the MVP:** `space` and `space_member` (G), `invite` (H-01), `combine_suggestion` (A-11), `notification` (L-06), `ai_check` (K-02, attached to a version *revision*, like an assessment), and a `credit_ledger` per space (K-04). None of them changes the tables above; each adds a table and, at most, a nullable `space_id` on `board`.
 
@@ -135,11 +139,12 @@ Sources are text and links only. Uploading files isn't in the MVP; if it comes, 
 4. **A version's ID never changes.** Combining and separating move a version to another argument by changing its `argument_id`; the version, its revisions, its articulation votes, its assessments, its comments, and its link all stay attached. An argument combined away keeps its row with `merged_into` set, so its old links redirect to where its wordings went.
 5. **Supported needs evidence.** "Yes" requires at least one cited source that isn't marked unavailable (PRD §4). Checked by the server.
 6. **Deleted and hidden items keep their place.** A deleted or hidden option, argument, version, or comment keeps its row, so its link shows "That version was deleted" or "Removed by a moderator · Spam" instead of breaking. The two differ in what happens to the text:
-   - **Deleted by its author:** the text is erased (every revision's wording and context, or the comment body) once the ten-second Undo has passed. Like Reddit: deleting your post removes what you wrote. Votes on it stop counting.
+   - **Deleted by its author:** the text is erased (every revision's wording and context, or the comment body) in the same transaction that marks it deleted. Like Reddit: deleting your post removes what you wrote. Votes on it stop counting. The ten-second **Undo** happens in the browser: it holds the delete for ten seconds and then sends it (at once if the tab is closing), so the server needs no timer and nothing erased ever has to be brought back.
    - **Hidden by a moderator:** the text is kept, so moderators can review it and **Restore** it.
-7. **The change log never copies what people wrote, and never says who voted.** A change row points to things by ID (a version, a revision, a source) and records counts, never wording, comments, or source text. So erasing text happens in one place, and the log can't leak it. Vote changes are logged with the new counts and **no voter**: the vote tables are the only place that links a person to a vote (see Q12).
-8. **The change log is append-only.** The application's database user may *insert* into `change` but not update or delete. Only maintenance jobs under a separate database role may change it: the account-deletion job (to scrub an actor) and pruning of old vote rows, which carry no one's name and aren't needed for audit or undo. This is what makes it a trustworthy audit trail.
-9. **Every write and its change row commit together**, in one transaction, along with the board's next `seq`. A reader can never see a write without its change number, or a change number without its write. The cost: writes to one board take turns on that board's counter, a few milliseconds each. That allows a few hundred writes a second per board, well above the busiest board in step 1. If a board ever gets close, votes are the writes to batch first (step 3).
+7. **The change log never copies what people wrote, and holds no votes.** A change row points to things by ID (a version, a revision, a source), never wording, comments, or source text. So erasing text happens in one place, and the log can't leak it. Votes and assessments aren't in the log at all: the vote tables are the only place that links a person to a vote (see Q12).
+8. **The change log is append-only.** The application's database user may *insert* into `change` but not update or delete. The one exception is account deletion, which runs under a separate database role to scrub an actor. This is what makes it a trustworthy audit trail.
+9. **Every write takes the board's next change number, stamps the rows it touched, and (for a structural or moderation action) adds its change row, all in one transaction.** Taking the number locks the board's counter until the transaction commits, so writes to one board commit in number order. That is what makes "everything stamped after N" safe to ask: a reader who has seen change N can never later be handed a change numbered N or lower. The cost: writes to one board take turns, a few milliseconds each. That allows a few hundred writes a second per board, well above the busiest board in step 1. If a board ever gets close, votes are the writes to batch first (step 3).
+10. **Every write is safe to send twice.** No write means "add one" or "flip"; each says what the result should be, so repeating it changes nothing (see Links and IDs). Retries and the offline queue depend on this.
 
 ### What's stored and what's derived
 
@@ -149,10 +154,21 @@ Sources are text and links only. Uploading files isn't in the MVP; if it comes, 
 | Importance, articulation, yes/no counts | **Derived, cached on the row** | Updated in the same transaction as the vote, so they can't drift; can always be recomputed from the vote tables (a check in tests) |
 | Credibility meter | Derived on read | yes ÷ (yes + no) for the current revision; "few" under 5 |
 | "Edited" | Derived | `current_rev > 1` and the latest revision's `why` is an edit |
-| **Shared order** | **Derived, but saved** | Sort by score; **ties keep the previous order**, and unassessed items stay at the end (PRD §7). Because ties depend on the *previous* order, the order isn't a pure function of the votes: each recalculation is saved with the change number it was computed at. Cadence is step 3 |
+| **Shared order** | **Derived, but saved** | Sort by score; **ties keep the previous order**, and unassessed items stay at the end (PRD §7). Because ties depend on the *previous* order, the order isn't a pure function of the votes: each recalculation is saved with the change number it was computed at. Only the newest is kept (one row per board, replaced each time): no reader ever needs an older one. Cadence is step 3 |
 | Strongest case | Derived on read | The shared order's top three per option, each in its best-articulated current wording |
 | List entries, "who's weighed in", activity score | Derived on read | Queries over the tables above |
-| Points (T5) | Derived later | A job reading the change log |
+| Points (T5) | Derived later | A job reading the change log and the vote tables |
+
+### Live updates read rows, not a log of every write
+
+The first draft logged every write, votes included, and answered "what happened since N?" by reading the log. The review changed that:
+
+| Option | What it means here | Verdict |
+|---|---|---|
+| **Log every write, replay the log** | Each vote adds a log row carrying the new count. A reader gets the rows after N and applies them in order | The log grows with every vote, so it needs a pruning job and a second database role to run it. A reader's catch-up costs as much as the number of votes since N. The browser has to apply events exactly right, forever, or its counts drift. And every vote row needs care to keep the voter's name out |
+| **Stamp rows, read the stamped rows** *(pick)* | Each write stamps the rows it changed with the board's change number. A reader gets the *current* state of every row stamped after N | Catch-up costs the same after 3 votes or 3,000: at most one row per item. The browser replaces what it has with what it's sent, so it can't drift, and getting the same answer twice is harmless. No vote ever enters the log, so there's nothing to prune and no name to keep out |
+
+This works because **nothing on a board is ever removed from its table**: deleted, hidden, and combined items keep their rows (invariant 6), so a stamped row can always say "this is gone now". The log stays for what only a log can do: who did it, why, and how to undo it.
 
 ### Reversibility: change log, not event sourcing or snapshots
 
@@ -160,7 +176,7 @@ Sources are text and links only. Uploading files isn't in the MVP; if it comes, 
 |---|---|---|
 | **Snapshots** | Save a copy of the whole board after every structural change; undo restores the copy | Undo would also wipe out everything written since (later votes and wordings). The PRD requires those to survive undo. Rejected |
 | **Full event sourcing** | The log *is* the database; current state is rebuilt by replaying it | Correct, but every query and every fix goes through replay and projections. Too much machinery for one builder to explain and operate. Rejected |
-| **State tables + change log** *(pick)* | Normal tables hold the present; each change row records just enough of the before and after to show it and to reverse it | Ordinary SQL for reads; the log gives live updates, the audit trail, and undo |
+| **State tables + change log** *(pick)* | Normal tables hold the present; each change row records just enough of the before and after to show it and to reverse it | Ordinary SQL for reads; the row stamps give live updates, and the log gives the audit trail and undo |
 
 How undo works for the hard cases (T3, but the log is shaped for it now):
 
@@ -175,7 +191,7 @@ One sentinel account, **`deleted_account`**, exists from the start. Deleting an 
 | Data | What happens |
 |---|---|
 | Email, sign-in methods, analytics choice | Erased |
-| Importance votes, articulation votes, assessments, reports filed | **Deleted** (counts change accordingly, and the change log records the new counts without naming anyone) |
+| Importance votes, articulation votes, assessments, reports filed | **Deleted** (counts change accordingly; each affected row is stamped with its board's next change number, so open boards pick up the new counts, and nothing names anyone) |
 | Comments | Deleted. A comment with replies leaves "Comment deleted" in place so the thread still reads (the prototype's behavior) |
 | Arguments, versions, revisions, sources | **Kept**, with the author changed to `deleted_account` |
 | Change log rows they made | Actor changed to `deleted_account`; any `before` / `after` fields that hold their account ID are scrubbed |
@@ -190,7 +206,12 @@ Data export reads the same tables for one account and writes the JSON the protot
 
 - Every board, argument, version, and comment has an ID that appears in its link.
 - **Board IDs are unguessable** (at least 72 random bits, written as ~12 URL-safe characters), because for "anyone with the link" boards, the link *is* the permission. Other IDs only need to be unique; access is always checked against their board.
-- Every queued or retried write carries a `client_op_id` the browser generates, stored on its change row, so sending the same action twice does nothing the second time.
+- **Argument, version, source, and comment IDs are made by the browser**: long random strings. The server checks the format and that the ID is unused. This is what lets something written offline keep one ID from the moment it's typed.
+- **Every write is safe to send twice, by its shape** (invariant 10), with no table of "requests already seen":
+  - **A vote or assessment** says "set my vote on this to +1" (or −1, or none). The vote table's key is (target, person), so sending it again changes nothing.
+  - **Something new** (an argument, wording, source, comment) arrives with its browser-made ID. Sending it again finds that ID already there, by the same author, and answers "already done".
+  - **An edit** names the revision it started from. Sending it again finds the next revision already saved, with the same text and by the same author, and answers "already done".
+  - **A flag change** (delete, hide, restore, close) sets the flag to a value; setting it twice is the same as once.
 - **Usernames** are unique ignoring case, and a few are reserved (`deleted_account`, `steelman`, `admin`, `moderator`, and the like) so nobody can pose as the system.
 - **Link access follows the link.** A person who joined through a link is a member with `joined_via = link`. If the owner turns link access off, those members lose access; people who were invited keep it (the way Google Docs works).
 
@@ -200,22 +221,24 @@ Data export reads the same tables for one account and writes the JSON the protot
 
 ### The idea: one question, asked over and over
 
-Every reader's screen is "the board as of change *S*". Keeping up to date is one question: **"What has happened on this board since change *S*?"** The server answers it from the change log (step 2). How that question gets asked (polling now, a push channel later) is a detail that can change without touching anything else.
+Every reader's screen is "the board as of change *S*". Keeping up to date is one question: **"What has changed on this board since change *S*?"** The server answers it from the row stamps (step 2): the current state of every row stamped after *S*. How that question gets asked (polling now, a push channel later) is a detail that can change without touching anything else.
 
 ### What the reader holds, and what the server sends
 
 **On opening a board**, the browser gets one snapshot: the board's content, the current counts, the latest **published order**, and the change number *S* it's as of. It draws the board in that order and keeps it.
 
-**After that**, the browser asks for changes after *S* and gets back:
+**After that**, the browser asks for changes after *S*. If the board's change number is still *S*, the answer is "nothing new", from one read of one row. Otherwise it gets back the rows stamped after *S* as they are now, and the change-log rows after *S* (who combined, hid, or removed something, and why, for the labels). The browser compares each row with the one it has:
 
-| In the answer | What the browser does with it (the prototype's behavior) |
+| What the browser finds | What it does (the prototype's behavior) |
 |---|---|
-| New counts for arguments and versions (only the latest count per item, however many votes there were) | Updates the numbers in place, with a brief ring. Nothing moves |
-| New arguments and wordings | Adds them at the end of their column or row |
-| Edits | Shows the new wording in place, marked "edited"; credibility starts over |
-| Deletions, hides, combines, separates | Keeps the item where it is, marked ("Removed by…", "combined with…"), and counts it toward the pill |
+| A row it has, with new counts (one row per item, however many votes there were) | Updates the numbers in place, with a brief ring. Nothing moves |
+| A row it doesn't have: a new argument or wording | Adds it at the end of its column or row |
+| A version with a higher revision | Shows the new wording in place, marked "edited"; credibility starts over |
+| A row now deleted, hidden, combined away, or moved to another argument | Keeps the item where it is, marked ("Removed by…", "combined with…"), and counts it toward the pill |
 | A newer published order, if there is one | Keeps it aside and counts how far the screen is from it toward the pill |
-| The new change number *S* | Remembers it for the next ask |
+| The board's change number | Remembers it as the new *S* for the next ask |
+
+Because the answer is the rows' current state, not a list of events, the browser never has to apply steps in the right order, and an answer that arrives twice or after a gap does no harm.
 
 **The pill and Update happen in the browser.** "3 changes" is the fewest moves from what's on screen to the newest published order, plus the marked structural changes. This is the prototype's `staleCount()`, and it stays in the browser. **Update** applies the order and structural changes the browser is already holding, keeping the row you're reading in place. Reloading fetches a fresh snapshot. The server never tracks what any one reader is looking at. That keeps it simple, and it's why a reader's view can't be broken by the server.
 
@@ -225,7 +248,7 @@ Every reader's screen is "the board as of change *S*". Keeping up to date is one
 
 | Option | How it works here | Cost and limits (from the providers' pages, Nov 11, 2026) | Verdict |
 |---|---|---|---|
-| **Polling** *(pick to start)* | Every ~3 s while the board is open and visible, the browser asks "changes after *S*?". Hidden tabs slow to ~30 s, then stop; coming back asks at once. The same request serves reconnecting after being offline | Ordinary short requests, no extra service. 30 readers ≈ 10 requests a second; a quiet board's answer is one indexed read ("nothing after *S*") | Meets step 1's ~5 s target with nothing new to run or explain |
+| **Polling** *(pick to start)* | Every ~3 s while the board is open and visible, the browser asks "changes after *S*?". Hidden tabs slow to ~30 s, then stop; coming back asks at once. The same request serves reconnecting after being offline | Ordinary short requests, no extra service. 30 readers ≈ 10 requests a second; a quiet board's answer is one read of the board's row ("still at *S*") | Meets step 1's ~5 s target with nothing new to run or explain |
 | **Server-sent events from our own service** *(the upgrade)* | The browser keeps one connection open and the server pushes change notices as they're written. Several server instances share notices through Postgres `LISTEN/NOTIFY`, so no new component | On Cloud Run, an open connection keeps its instance billed as active, and connections end at the request timeout (default 5 min, max 60), so clients reconnect. Google's page suggests a message queue (Redis) or Firestore for sharing across instances; Postgres `NOTIFY` does the same job at this scale. AWS API Gateway WebSockets: $1.00 per million messages and $0.25 per million connection minutes; free tier 1M messages and 750,000 connection minutes a month for 12 months | Same answers, sub-second, fewer requests. Worth it once traffic or a feature demands it |
 | **A managed realtime service** | A third party pushes changes to browsers: Supabase Realtime, Ably, or Firebase | Supabase Realtime: Free 200 concurrent connections and 100 messages/s; Pro 500 and 500/s (Pro's price not on that page). Ably: free up to 500 monthly active users; Pro from $29/month (billed annually) for 1,000. Firestore free: 50K reads and 20K writes a day; Realtime Database free: 100 simultaneous connections. Limits per month not listed for Supabase or Ably; not verified further | Each adds a second system that must agree with Postgres, a second set of permissions to keep in sync with our role checks, and a vendor. Firestore would mean a second database. Rejected |
 
@@ -243,7 +266,7 @@ The server saves it as numbered **published orders**. A new one is made only whe
 1. votes have changed since the last published order, and
 2. the last one is older than the board's **tick**.
 
-**The recalculation is lazy.** Whenever a browser asks for changes and both conditions hold, that request computes and saves the new order before answering. Sorting a few hundred items takes microseconds. If two requests try at once, the database lets only one save that number. **No scheduler, no background worker.**
+**The recalculation is lazy.** Whenever a browser asks for changes and both conditions hold, that request computes and saves the new order before answering. Sorting a few hundred items takes microseconds. If two requests try at once, the database lets only one save that number. The new order replaces the old one; only the newest is kept. **No scheduler, no background worker.**
 
 **Recommendation for the cadence:** a per-board `tick` setting, **60 seconds for the class trial.**
 
@@ -253,7 +276,7 @@ The server saves it as numbered **published orders**. A new one is made only whe
 
 ### Offline queue and conflicts
 
-While offline, the browser keeps your actions in a queue in the browser's own storage (IndexedDB), each with its `client_op_id`. On reconnecting, it sends them **in order**, then asks for changes as usual. Because every action carries its `client_op_id`, a send that was interrupted can be repeated safely.
+While offline, the browser keeps your actions in a queue in the browser's own storage (IndexedDB). On reconnecting, it sends them **in order**, then asks for changes as usual. Because every write is safe to send twice (step 2), a send that was interrupted is simply repeated. The same property keeps the queue small: for votes it only has to hold **your latest choice per item**, not every tap, and the things you wrote already carry their final IDs.
 
 Conflicts are rare by design: **nobody overwrites anybody.** A better wording is a new version, and votes are one per person. So no locking and no merge algorithm are needed, only clear rules for actions that went stale while you were away:
 
@@ -275,7 +298,7 @@ Online writes follow the same rules. Being offline just makes staleness more lik
 
 - **Class trial:** 30 readers polling every 3 s is about 10 requests a second, almost all "nothing new". One small server instance and one small database.
 - **Busy community board:** 300 readers is about 100 requests a second for that board. Still one or two instances. This is the point to switch to server-sent events (above).
-- **Payloads:** a reader catching up gets only the latest count per item and only rows after *S*. Opening a very large board (200 arguments × 4 options) is the heavy request. The prototype already folds after 10 arguments and 5 wordings, so the first snapshot can send folded rows' text on demand. Decided when it's built (A-09, T4).
+- **Payloads:** a reader catching up gets one row per changed item, however many votes it received. Opening a very large board (200 arguments × 4 options) is the heavy request. The prototype already folds after 10 arguments and 5 wordings, so the first snapshot can send folded rows' text on demand. Decided when it's built (A-09, T4).
 
 ---
 
@@ -329,7 +352,7 @@ flowchart LR
 | **Sign-in** | **Better Auth** (an open-source TypeScript library), with its tables in **our** Postgres: Google sign-in, email links, sessions in secure cookies | Accounts live in one database, so data export and account deletion touch one place. Standard OpenID Connect for Google, so it's portable. A library handles sessions, CSRF protection, and account linking, which are risky to hand-write. Our one change: the email link opens a **Continue** page, so mail scanners can't use it up (step 1) | **Managed identity** (Google Identity Platform, AWS Cognito): a second user store to keep in sync for export and deletion, and lock-in. Cognito's passwordless sign-in uses one-time *codes*; its page doesn't mention links. **Hand-written sessions** (following the Lucia guide): most explainable, but security-sensitive code we'd own. ADR 004 |
 | **Database** | **Managed Postgres** (the cloud's own service, step 5) | Holds everything (step 2). Its constraints enforce the invariants; its `LISTEN/NOTIFY` is the later push channel (step 3) | A second store for realtime or caching (step 3 rejected it). ADR 002 |
 | **Live updates** | **Polling the service**, server-sent events later (step 3) | No new component | ADR 003 |
-| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (pruning old vote log rows, expired sign-in links). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised in step 8: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
+| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (expired sign-in links and sessions, usernames due for release). The scheduler also makes two calls that never reach our code: the weekly database export and staging's nightly stop, both straight to Cloud SQL's own API (step 6). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised when the build plan was written: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
 | **Email** | **Resend** for sign-in and email-change links, sent from our own domain (SPF, DKIM, DMARC set up) | Sign-in by email link needs a sender with good delivery to school inboxes | Postmark (strong delivery reputation, but its free plan's 100 a month is too tight). Amazon SES (cheapest, but needs approval to leave its sandbox and more setup). All three take the same kind of API call, so switching is small |
 | **Sources** | **Text and links only.** The server accepts only `http`/`https` links, stores them, and never fetches them in the MVP. Links open with `rel="noopener noreferrer nofollow ugc"` | Nothing to host. "Can't open it?" is a person's report (C-02) | File uploads to object storage (not needed; add if users ask). At T3, the AI check *does* fetch sources, through a guarded fetcher: public addresses only, size and time limits |
 | **Analytics** | **PostHog (US)**, as today, in the browser. Plus **server events** for the actions that matter (vote, assess, write, Update), sent by the service | Already decided. Server events are reliable where the browser's aren't (ad blockers) | — |
@@ -342,6 +365,19 @@ flowchart LR
 - **Sessions:** a secure, HTTP-only cookie on the app's domain. The browser never handles a token, and the API checks the session and the person's role on every request (step 7).
 - **Analytics identity:** PostHog sees a random analytics ID per account, never the email or username. The consent choice is stored on the account, so turning analytics off follows you across browsers. Deleting the account asks PostHog to delete that person too.
 - **Secrets** (database password, Google client secret, email API key, later the model and Stripe keys) come from the cloud's secret manager at startup. Locally they come from `.env`, with names only in `.env.example`.
+- **The database connection:** Cloud Run's built-in Cloud SQL connection (a local socket to the instance, encrypted, allowed by the service account's role). It needs no private network and no VPC connector, which would be an always-on cost. The smallest Cloud SQL instance accepts about 25 connections (from a third-party write-up; check with `SHOW max_connections` on the real instance), so each service instance keeps a pool of **at most 5**, and with at most 3 instances that's 15, leaving room for migrations and the builder.
+
+### How the code is organized
+
+One repository folder, `app/`, with three parts. The split is by what a part is allowed to touch, which is what makes each one testable on its own (§8).
+
+| Part | Holds | May touch |
+|---|---|---|
+| `shared/` | The rules: the order, `staleCount()`, the meter, the policy table, input schemas, and the browser's sync rules (how changed rows are merged into what's on screen; what the offline queue keeps) | Nothing. Pure functions: same input, same output, no clock, no network, no database. Used by both other parts |
+| `server/` | Routes, sign-in, the write path, SQL, migrations | The database and outside services, each behind a small interface (email, analytics, the clock) so tests can swap in a stand-in |
+| `web/` | Screens, polling, and the offline queue's storage. The decisions those make are in `shared/`, so the simulation can run them without a browser | The API only |
+
+**One write path.** Every change to a board goes through one function that does the same six things in one transaction: lock the board's counter, load what the write refers to, ask `can()`, apply the stale-write rules (step 3), make the change, stamp the rows (and add a change row if it's structural). Each kind of write (set a vote, add a wording, hide) supplies only its own middle step. So the invariants of step 2 are enforced in one place, a new feature can't forget one, and a test of that one path covers them all.
 
 ### From the prototype to the real app
 
@@ -349,7 +385,7 @@ The prototype stays the design spec, and its look carries over directly:
 
 1. **Pure logic first, with tests.** The ordering rules, `staleCount()`, the credibility meter, and the input rules move into shared TypeScript modules with unit tests. Both the browser and the server use them.
 2. **Same look.** `docs/design/tokens.css` and the prototype's CSS classes are reused as they are, so React components render the same markup the prototype does, and the screenshots in `tests/build-1-manual.md` stay a valid reference.
-3. **Screen by screen**, in the order of the build plan (step 8): the board, then sign-in, then the list. Each screen is checked against the prototype and its test-log entries.
+3. **Screen by screen**, in the order of the build plan: the board, then sign-in, then the list. Each screen is checked against the prototype and its test-log entries.
 4. **Prototype tools stay in the prototype.** Preview as, Simulate others, and Reset (H-07, M-10) are not ported; real users and test accounts replace them.
 
 ---
@@ -382,7 +418,7 @@ From the providers' pages on Nov 11, 2026. **Where a number is marked *unverifie
 |---|---|---|
 | **Free allowances** | $300 credit for 90 days. Every month, Cloud Run's free tier: 2 million requests, 180,000 vCPU-seconds, 360,000 GB-seconds, 1 GB of traffic out of North America. Secret Manager: 6 secret versions, 10,000 accesses. Artifact Registry: 0.5 GB. Cloud SQL isn't in the free tier (a 30-day trial instance only) | $100 credit on signing up, up to $100 more for trying services. The free plan **closes the account after 6 months** unless you upgrade. RDS is included in the free plan; Fargate isn't mentioned. 20 GB of RDS backup storage for a year |
 | **Running the container** | Billed only while handling requests. At about $0.000024 per vCPU-second beyond the free tier (*unverified*), a class trial polling a few hours a day is roughly **$0–5 a month** | Always on: Fargate has no scale to zero. Fargate in US East: $0.000011244 per vCPU-second (x86), about $0.040 per vCPU-hour. The smallest useful task (¼ vCPU, ½ GB) is about **$9 a month**. **Plus the load balancer: $0.0225 an hour, about $16 a month**, plus usage (Express Mode can share one load balancer across services) |
-| **Postgres** | Smallest shared-core instance about **$10 a month** (*unverified*) plus storage | db.t4g.micro about **$12 a month** (*unverified*) plus storage |
+| **Postgres** | Smallest shared-core instance with 10 GB about **$9–10 a month** (Google's own worked example comes to $9.37, as quoted in a search result; the pricing page itself still wouldn't render, so confirm in the calculator). Shared-core instances are outside Cloud SQL's availability promise, which is fine for a class trial | db.t4g.micro about **$12 a month** (*unverified*) plus storage |
 | **Class trial total** | **About $10–15 a month** | **About $40 a month**, the first months partly covered by credits |
 | **Busy community** (2 app instances, a dedicated small database) | About $100–200 a month (*estimate*) | About $120–200 a month (*estimate*) |
 
@@ -390,7 +426,7 @@ At class scale, GCP is cheaper mainly because Cloud Run scales to zero and needs
 
 ### Effort for one person
 
-- **GCP is closer to "one container":** deploying is one command; HTTPS comes with the service. The concepts to learn are a project, a service account, Cloud Run, and Cloud SQL. One caveat: putting Cloud Run on your own domain is simplest through its domain mapping, which works only in some regions (*unverified*: check the region before choosing). Otherwise it takes a load balancer (more cost and setup).
+- **GCP is closer to "one container":** deploying is one command; HTTPS comes with the service. The concepts to learn are a project, a service account, Cloud Run, and Cloud SQL. One caveat: putting Cloud Run on your own domain is simplest through its domain mapping, which works only in ten regions (`us-central1` is one; checked on Google's page, Nov 11) and is a preview feature. Otherwise it takes a load balancer (more cost and setup). Google's third option, **Firebase Hosting** in front of Cloud Run, is cheap but won't work here: it passes only a cookie named `__session` to the service and strips every other one, and sign-in needs several (checked on Firebase's page, Nov 11).
 - **AWS asks for more concepts on day one:** a VPC with subnets and security groups, two IAM roles for Express Mode, a load balancer, and an ACM certificate for your domain. Express Mode sets these up, but you still have to understand them to fix them. That's a real cost for one builder, and also exactly what AWS roles expect you to know.
 
 ### Lock-in
@@ -417,21 +453,21 @@ For this design, **not by enough to matter.** The realistic alternatives:
 | | Local | Staging | Production |
 |---|---|---|---|
 | **Where** | The builder's laptop | GCP project `steelman-staging` | GCP project `steelman-prod` |
-| **App** | `npm run dev`: the service and the web app with live reload | Cloud Run service, plus a **preview address per pull request** | Cloud Run service |
-| **Database** | Postgres 17 in Docker (one `docker compose` file, nothing else in it) | Smallest Cloud SQL instance, **stopped when not in use** (a stopped instance bills only for storage; *unverified*, check before relying on it) | Smallest Cloud SQL instance, upgraded when needed |
+| **App** | `npm run dev`: the service and the web app with live reload | Cloud Run service, deployed on every merge to `main` | Cloud Run service |
+| **Database** | Postgres 17 in Docker (one `docker compose` file, nothing else in it). Tests start their own (§8) | Smallest Cloud SQL instance, **started by the deploy workflow and stopped every night** by a scheduled call to Cloud SQL's API. A stopped instance bills for storage only, about $2 a month for 10 GB (from Google's support forum, not its pricing page) | Smallest Cloud SQL instance, upgraded when needed |
 | **Sign-in** | Email links **printed to the terminal**, not sent. Google sign-in with a test OAuth client for `localhost` | Real email (Resend) and Google, test OAuth client | Real email and Google, production OAuth client |
 | **Data** | Seed script: the prototype's example boards and a few test accounts | Seed data plus whatever testers create; can be wiped | Real users' data |
 | **Secrets** | `.env` (git-ignored); names in `.env.example` | Secret Manager | Secret Manager |
-| **Address** | `http://localhost:…` | `staging.<domain>`; previews at Cloud Run's own tagged URLs | `app.<domain>` |
+| **Address** | `http://localhost:…` | `staging.<domain>` | `app.<domain>` |
 
-**Separate projects for staging and production** keep their permissions, secrets, budgets, and logs apart, so a mistake in staging can't touch real data. That costs a second small database: stopping it when idle keeps that close to zero.
+**Separate projects for staging and production** keep their permissions, secrets, budgets, and logs apart, so a mistake in staging can't touch real data. That costs a second small database: stopping it when idle keeps that close to zero. The first draft said "stopped when not in use" without saying who starts it; now the deploy workflow does, and a nightly scheduled call stops it, so nobody has to remember.
 
-**Per-pull-request previews** are Cloud Run *tagged revisions* of the staging service: each gets its own URL, receives no normal traffic, and shares the staging database. That's enough to try a change in a real browser before merging. Because previews share one database, every migration has to be safe to run while older code is still live, which is the rule anyway (below).
+**No per-pull-request previews, and a pull request never touches staging.** The first draft deployed a preview of every pull request to staging and ran its migrations against staging's database. Two problems. A migration that has run in staging can't be edited (rule 7 in AGENTS.md), so every migration would be frozen the moment it was first pushed, before any review. And a pull request that's abandoned or reworked would leave staging's schema ahead of `main`. So a pull request is tested only against databases it creates and throws away (§8), and staging changes only when `main` does. What a preview was for, trying the change in a real browser before merging, the browser tests now do on every push. If a second person ever needs a link to click before a merge, previews can come back for pull requests that have no migration.
 
-**Region and domain:** `us-central1`. Putting the app on our own domain has three options. Cloud Run's **domain mapping** is the simplest, and `us-central1` supports it, but Google labels it preview, "not production-ready", with known latency issues. So:
+**Region and domain:** `us-central1`. Putting the app on our own domain has three options. Cloud Run's **domain mapping** is the simplest, and `us-central1` supports it, but Google labels it preview, "not production-ready", with known latency issues. Firebase Hosting is ruled out (step 5: it strips the cookies sign-in needs). So:
 
 - **Class trial:** domain mapping. A preview feature is acceptable for 30 classmates.
-- **Before public communities:** a global external Application Load Balancer in front of Cloud Run (Google's recommended way, and where Cloud Armor rate limiting attaches, step 7). This adds a monthly cost (*unverified*; around $18) and is part of that phase's budget in step 8.
+- **Before public communities:** a global external Application Load Balancer in front of Cloud Run (Google's recommended way, and where Cloud Armor rate limiting attaches, step 7). This adds a monthly cost (*unverified*; around $18) and is part of that phase's budget in the build plan.
 
 ### From a pull request to production
 
@@ -439,10 +475,10 @@ All in **GitHub Actions**, which signs in to GCP with **Workload Identity Federa
 
 | When | What runs | Stops the line if |
 |---|---|---|
-| **Every push to a pull request** | Type check, lint, unit tests (ordering, `staleCount()`, the meter, input rules); integration tests against a throwaway Postgres; the **live-changes tests** (two or three browsers plus ~30 scripted voters, from step 1); `git diff --check`; container build | Anything fails |
-| **Same pull request, after the checks** | Deploy a preview to staging; run migrations against staging; post the preview URL on the pull request | The deploy or a migration fails |
-| **Merge to `main`** | Deploy to staging; run a short smoke test (sign in with a test account, open a board, vote, see it from a second session) | The smoke test fails |
+| **Every push to a pull request** | `npm run check`, the same command an agent runs before pushing (§8): types, lint, the rules, the database invariants, the API, the simulation, the browser tests. Then the guard checks (§8), `git diff --check`, a scan for secrets, and the container build. All against a Postgres the run starts and throws away | Anything fails. Nothing is retried |
+| **Merge to `main`** | Start staging's database; run migrations on staging; deploy; run a short smoke test (sign in with a test account, open a board, vote, see it from a second session) | A migration or the smoke test fails |
 | **Release to production** | Same container image as staging (never rebuilt), after the builder approves it in GitHub (a protected environment) | Migrations or the health check fail; traffic stays on the previous version |
+| **Every night** | The soak run, mutation testing, and a dependency audit (§8). Monthly: the restore test (below) | Opens an issue; the next agent session picks it up first |
 
 GitHub Pages keeps publishing `main:/docs` as today; the app's code lives in its own folder and doesn't affect it.
 
@@ -451,7 +487,7 @@ GitHub Pages keeps publishing `main:/docs` as today; the app's code lives in its
 - **Plain SQL, in numbered files**, run in order by the migration tool that comes with Kysely. Each file is small and readable, because the SQL is where the invariants live (step 2).
 - **Run as a Cloud Run job before the new version gets traffic.** If a migration fails, the release stops and the old version keeps serving.
 - **Forward-only, and compatible with the running code** ("expand, then contract"). To rename a column: add the new column and write to both; release; switch reads; release; drop the old one later. There are no "down" migrations in production. Undoing a migration is a new migration.
-- **Tested before they reach users:** every pull request runs them against a fresh database and against staging.
+- **Tested before they reach users:** every pull request runs them twice: on an empty database, and on a database built from `main`'s migrations and filled with seed data, so a migration is tested as an upgrade of something that already holds rows. Staging runs them on merge, production on release.
 
 ### Secrets
 
@@ -465,9 +501,9 @@ GitHub Pages keeps publishing `main:/docs` as today; the app's code lives in its
 | Problem | Recovery |
 |---|---|
 | **A bad release** | Send traffic back to the previous Cloud Run revision: one command, seconds. Possible because migrations never break the previous version |
-| **Data damaged** (a bug or a bad migration) | Cloud SQL **point-in-time recovery** into a new instance, to just before the damage, then copy back what's needed. Automated daily backups plus write-ahead logs make this possible; retention is set explicitly (backups kept 14 days; PITR log retention as long as the edition allows, *unverified*) |
-| **The instance or project lost** | Backups can outlive the instance as retained backups. Also a **weekly `pg_dump`** to a Cloud Storage bucket in a separate project, kept 8 weeks. It's portable: it restores anywhere, including AWS |
-| **Do the backups work?** | A **monthly restore test**: restore the latest backup into staging and run the smoke test. A backup nobody has restored isn't a backup yet |
+| **Data damaged** (a bug or a bad migration) | Cloud SQL **point-in-time recovery** into a new instance, to just before the damage, then copy back what's needed. Automated daily backups plus write-ahead logs make this possible; retention is set explicitly: backups kept 14 days, and point-in-time recovery reaching back **7 days**, the most this edition of Cloud SQL allows (Enterprise: 1–7 days; checked in Google's docs, Nov 11) |
+| **The instance or project lost** | Backups can outlive the instance as retained backups. Also a **weekly SQL export** to a Cloud Storage bucket in a separate project, kept 8 weeks. Cloud Scheduler starts it by calling Cloud SQL's export API, so there's no job of ours to run or break. It's a plain SQL dump: it restores anywhere, including AWS |
+| **Do the backups work?** | A **monthly restore test**, run by a scheduled workflow, not by memory: restore the latest backup into a scratch instance in staging, run the smoke test, delete the instance, and open an issue if any step fails. A backup nobody has restored isn't a backup yet |
 
 ### Logs, monitoring, and spend
 
@@ -519,7 +555,7 @@ The prototype already has the rule book: a map from every action to the least ro
 
 | Phase | What's in place |
 |---|---|
-| **Class trial (MVP)** | Limits in the service, per account and per IP address. Starting values, tuned from real use: sign-in emails 5 per address per hour; new arguments and wordings 30 per hour; votes and assessments 300 per minute; reports 20 per hour. Over the limit: a clear message and a short wait. Counters live in Postgres, so they hold across instances. Plus moderation itself: reports, hide with a reason, the audit trail (J-01, J-02) |
+| **Class trial (MVP)** | Limits in the service, per account and per IP address. Starting values, tuned from real use: sign-in emails 5 per address per hour; new arguments and wordings 30 per hour; votes and assessments 300 per minute; reports 20 per hour. Over the limit: a clear message and a short wait. Counters live in each service instance's memory, so a vote doesn't cost a second database write; with at most 3 instances, a limit can be at most three times too generous, which is fine for limits this loose. The one exception is sign-in emails, counted in Postgres, because each one costs money and reaches a real inbox. Plus moderation itself: reports, hide with a reason, the audit trail (J-01, J-02) |
 | **Public communities (T4)** | Everything above, plus: the load balancer (step 6) with **Cloud Armor** rate limiting per IP in front of the service (price *unverified*); **new-member holds**, so a brand-new account's contributions in a community are held for review (permissions.md open question, answered yes for public communities); a bot check on sign-up (reCAPTCHA, which is Google's own) only if sign-up spam actually appears |
 | **Watching for vote brigades** | Vote rows have timestamps, so a burst of new accounts voting one way on one board is a query. Turning that into an alert is T4 work; the data is collected from the start |
 
@@ -540,8 +576,7 @@ The prototype already has the rule book: a map from every action to the least ro
 | Unused or expired sign-in links | Deleted daily |
 | Sessions | 30 days, or until sign-out |
 | Server logs | 30 days (Cloud Logging's default retention, *unverified*) |
-| Vote rows in the change log (they name no one) | 90 days, then pruned; counts are kept |
-| Structural and moderation rows in the change log | For the life of the board (they're the audit trail and the undo history) |
+| The change log (structural and moderation actions only; it holds no votes) | For the life of the board (it's the audit trail and the undo history) |
 | Database backups / weekly copies | 14 days / 8 weeks |
 | A deleted account's username | Unavailable to others for 30 days, then released |
 | Analytics in PostHog | PostHog's plan retention; deleted with the account |
@@ -560,6 +595,126 @@ The current page (`docs/privacy.html`) already promises the core rules: email an
 8. **Changes** to the page are dated, and announced to signed-in people when they matter.
 
 Before public communities, the page gets a review by someone qualified (M-07 already notes this).
+
+---
+
+## 8. Testing and unattended work
+
+### The idea: the tests are the reviewer
+
+Agents build this product one piece at a time, mostly with nobody watching (step 1). A person reading every change was the safety check in the first draft; it can't be the main one now. So the checks have to be strong enough that **"every check passed" means "this is safe to merge"**, and honest enough that an agent can't make them pass by weakening them. Three things follow:
+
+1. Every rule in this document has a named automated test that fails when the rule is broken.
+2. All of it runs from **one command, with no accounts, no network, and no waiting on real time**, so an agent can run it after every change, on a laptop, in CI, or in a cloud sandbox.
+3. What only a person can do is a short list, written down once, so it can be done in a batch instead of blocking work item by item.
+
+### One command
+
+`npm run check` in `app/` runs everything a pull request must pass. It needs nothing but `npm install`:
+
+- **It starts its own database.** A real Postgres 17, not an imitation: the invariants live in Postgres constraints, locks, and roles, and only Postgres tests those. It uses Docker where there is one; where there isn't (some cloud sandboxes), it uses Postgres binaries installed from npm (the `embedded-postgres` package, which publishes 17.x builds; checked Nov 11). Each test file gets its own empty database, so tests can run side by side.
+- **Outside services have stand-ins.** The service reaches each one through a small interface (step 4), and tests plug in the stand-in:
+
+| Outside thing | In tests |
+|---|---|
+| Email (Resend) | Messages are kept in memory; the test reads the sign-in link out of them |
+| Google sign-in | A small fake sign-in provider running inside the test, speaking the same standard protocol |
+| PostHog | A recorder. Tests assert what was sent, and that nothing is sent without consent |
+| **The clock** | Passed in, never read from the system. The 60-second tick, 15-minute links, 30-day sessions, and the ten-second Undo are tested by moving the clock forward, never by waiting |
+| Random IDs | Seeded in the simulation, so a failure can be replayed exactly |
+| Stripe (T3) | Stored webhook messages with valid signatures; Stripe's own test mode on staging |
+| The AI model (T3) | Recorded answers for the ordinary tests. Judging the model's quality is a separate evaluation, designed at M3c |
+
+- **It is fast.** The target is under five minutes. A suite an agent runs after every change is worth more than a thorough one it runs once.
+
+### The layers
+
+Each layer catches what the one before it can't. Layers 1–6 are `npm run check`.
+
+| # | Layer | What it proves | How |
+|---|---|---|---|
+| 1 | **Types and lint** | The code fits together | TypeScript in strict mode; the API's input schemas are the types the browser uses, so the two can't disagree |
+| 2 | **The rules** (`shared/`) | The order (ties keep the previous order, unvoted items stay last), `staleCount()`, the meter, the policy table, the input limits | Plain unit tests on pure functions: milliseconds each. Cases come from the PRD and from the checks already recorded in `tests/build-1-manual.md` |
+| 3 | **The database** | Each invariant in step 2 holds even against buggy code | One test per invariant that tries to break it with raw SQL: a second vote by one person, an update to the change log as the app's database user, an argument pointing at another board's option. Migrations are tested as upgrades (step 6) |
+| 4 | **The API** | Every route enforces the rules | The **role matrix**: every action × every persona (step 7). The **stale-write table**: one test per row of the table in step 3. **Twice is once**: every write is sent twice and must leave the same result as sending it once. Plus rate limits, and export and deletion (delete an account, then check each row of the deletion table in step 2) |
+| 5 | **The simulation** | The riskiest problem (step 1): no sequence of actions breaks the counts or leaves two readers disagreeing | Below |
+| 6 | **The browser** | A person can actually do it | Playwright, with two or three signed-in sessions in one test and the clock under control. One test per row of the scenario tables in `tests/build-1-manual.md` (*Live changes*, *Live changes, structure*, *Card integrity*, *Links*, and the rest as their screens are built). An accessibility scan (axe) on every screen, at desktop width and 375 px. Screenshots of each screen compared with saved ones |
+| 7 | **Staging** | The deployed system works with the real database, real email, and real Google | The smoke test after every merge (step 6) |
+| 8 | **Nightly** | Slow problems, and whether the tests themselves are any good | The **soak run**: 30 scripted voters for 5 minutes against a running server in real time, then a recount. **Mutation testing** (below). A dependency audit. Monthly, the restore test |
+
+### The simulation
+
+This is the test for the problem most likely to sink the product, and it needs no browser and no network. It runs the real write path and the real browser-side sync code together in one process, against a real database, with a fake clock.
+
+Each run starts from a seed. From that seed it invents a board and a handful of readers, then plays a long random sequence of actions: vote, change a vote, withdraw it, add an argument, add a wording, edit, change sources, delete, hide, restore, let a minute pass, go offline, act while offline, come back, ask for changes, press **Update**. At T3 the list grows: combine, separate, undo. After **every** step it checks:
+
+| Always true | Which rule it guards |
+|---|---|
+| Every count on a row equals a recount from the vote tables | Counts can't drift (step 2) |
+| Nobody has two votes on one thing | Invariant 1 |
+| Only assessments of the current revision are counted | Invariant 2 |
+| No reader is ever handed a change number at or below the one they hold | Invariant 9 |
+| Sending any action a second time changes nothing | Invariant 10 |
+| The saved order is exactly what the ordering rule gives from the previous order and the counts at that moment | The shared order (step 3) |
+| A reader's rows never move unless they pressed Update | Held still (F5) |
+| **A reader who catches up and presses Update has exactly the board a newly arrived reader gets** | The whole of step 3 |
+| An action refused as stale is refused for the reason the table in step 3 gives | Offline conflicts |
+
+When a check fails, the test prints the seed and then shrinks the sequence to the shortest one that still fails (the `fast-check` library does this), so the agent gets a five-step recipe, not a five-hundred-step log. Every failure found this way is added to the suite as a fixed case. A few hundred sequences run on every pull request, in seconds; tens of thousands run nightly.
+
+**The simulation has to be shown to fail.** A test that can't fail proves nothing. When it's first built, and again when the write path changes shape, a deliberate bug is planted (skip one stamp; count an old revision's assessment) and the simulation must catch it. Mutation testing makes the same demand every night.
+
+### Tests an agent can't quietly weaken
+
+The particular risk of an agent writing both the code and its tests is a test changed to fit the bug. Five guards:
+
+1. **The acceptance tests come first.** Every backlog item names them (below). The agent writes them, runs them, and sees them fail before it builds anything. The pull request says so.
+2. **Protected files.** A check on every pull request lists any *existing* test it edits or deletes, any saved screenshot it replaces, and any change to the policy table, a merged migration, the CI workflows, or the documents in `plans/`. Such a pull request can't merge without the builder. Adding tests is always free; changing what an old test demands is a decision.
+3. **No retries, no skips.** A test that fails once has failed. A test that fails only sometimes is a bug in the test or the code, and is fixed like one. Marking a test as skipped is a protected change.
+4. **Mutation testing**, nightly, on `shared/` and the write path: a tool makes small deliberate breaks in the code (flip a comparison, drop a line) and runs the tests against each. A break no test notices is a hole in the tests, and it becomes an issue. This is the measure of whether the tests an agent wrote would catch a real mistake.
+5. **A second reader.** Each pull request is reviewed by a fresh agent session that didn't write it, against the item's acceptance tests and this document. It's cheap, and it catches the "tests pass, but this isn't what was asked" case.
+
+**Every feature points at its tests.** A test's name starts with the feature IDs it covers (`B-03: an assessment of an old revision is refused`). A script checks that every feature the build plan says is built has at least one such test, and the feature's `evidence` in `plans/features.csv` names the test file alongside the dated manual entry.
+
+### How an agent works
+
+The **backlog** is the ordered list of items in `plans/build-plan.md`. Each is small enough for one pull request and states: the feature IDs, what to build, the acceptance tests, what it depends on, and whether it needs the builder. An item in the backlog is already approved; nothing else is.
+
+1. Take the first item that isn't done and isn't waiting on something.
+2. Write its acceptance tests. Run them. See them fail.
+3. Build it. Run `npm run check` as often as needed.
+4. Open a pull request using the repository's template, including what wasn't checked.
+5. CI and the second reader run. Fix what they find.
+6. Merge, by whoever Q18 says. The merge deploys to staging and runs the smoke test.
+7. Mark the item done in the build plan and update `plans/features.csv`, in the same pull request. Then go to 1.
+
+The next session, which remembers nothing, reads the build plan and the last few pull requests and knows where things stand. No separate handoff file.
+
+**Stop and ask the builder** (leave a clear note on the pull request or an issue, then move to another item that isn't blocked):
+
+- a fix has failed twice (rule 8 in AGENTS.md);
+- the item can't be built without departing from this document or a decision record;
+- a protected file needs to change;
+- a **new package** is needed at run time. Agents sometimes invent package names, and people register those names with harmful code in them, so each new one gets a person's look;
+- a migration would drop or rewrite existing data;
+- a change would let a role do more than it could before;
+- anything that changes what is collected about people, or the privacy page;
+- anything that costs money or needs an account;
+- a release to production.
+
+### What stays with the builder
+
+| When | What | Why an agent can't |
+|---|---|---|
+| **Once, before M1** | Buy the domain. Open the GCP billing account and the two projects. Set up Google's sign-in consent screen and client IDs. Open the Resend account and add its DNS records. Turn on branch rules for `main` and the protected production environment in GitHub | Each one is a payment, an identity, or an agreement in the builder's name |
+| **Each release** | Approve the production release | It reaches real people |
+| **Each milestone** | The checks only a person can make: a real phone, a real screen reader, a classmate's school Google account, and whether people understand what they see | Agent testing isn't user research (AGENTS.md) |
+| **Before M3c** | The Stripe account, the model provider's key and its spend limit | Money |
+| **When asked** | Anything on the stop-and-ask list | By design |
+
+### What this costs
+
+The repository is public, so GitHub Actions minutes are free. The stand-ins mean the tests send no email and call no paid service. The nightly runs use the same free minutes. The cost is in the build: writing the simulation and the stand-ins is real work in M0 and M1, and it's the work that makes everything after it safe to do unattended.
 
 ---
 
@@ -582,7 +737,9 @@ Running list. **Bold** ones change the design and are asked now; the rest have a
 | Q11 | When someone deletes their account, what happens to a board nobody else can open? | Deleted with the account. Boards with other members pass to the longest-standing editor, else contributor | **Answered** Nov 11 |
 | Q12 | Are individual votes private? | Yes, like Reddit: everyone sees counts; "Who's weighed in" shows only *that* someone voted. The log records no voter. Showing supporters (B-08, T5) would be opt-in | **Answered** Nov 11 |
 | Q13 | A domain name for the app and its email (sign-in links must come from a domain we control, with SPF/DKIM set) | Buy one (about $10–20 a year); the app lives at `app.<domain>`. GitHub Pages can move to the same domain later | Assumed |
-| Q14 | Better Auth's stewardship: it took over Auth.js in Sept 2025, and a secondary source says Vercel acquired it in July 2026 (not verified from a primary source) | Still the pick: it's open source and its data sits in our database, so leaving it means rewriting the sign-in code, not migrating users | Noted |
+| Q14 | Better Auth's stewardship: it took over Auth.js in Sept 2025, and Vercel announced on July 7, 2026 that it is acquiring the company (Vercel's own blog, checked Nov 11). The library stays MIT-licensed | Still the pick: it's open source and its data sits in our database, so leaving it means rewriting the sign-in code, not migrating users | Noted |
 | Q15 | Which company is the builder targeting: Google or Amazon? | Google, so GCP (step 5) | **Answered** Nov 11 |
-| Q16 | Staging's database: a stopped Cloud SQL instance vs. a free Neon database | Stopped Cloud SQL: same engine and settings as production, one vendor | Assumed |
+| Q16 | Staging's database: a stopped Cloud SQL instance vs. a free Neon database | Cloud SQL, started by the deploy workflow and stopped nightly (step 6). Staging exists to rehearse production's deploy, and the part most likely to go wrong is Cloud Run's connection to Cloud SQL and its database roles, which a Neon database wouldn't exercise. Neon's free plan (1 GB, 100 compute-hours a month) would save about $2 a month | Assumed |
 | Q17 | Minimum age | 13 and over (COPPA) | **Answered** Nov 11 |
+| **Q18** | **Who merges a pull request an agent opened?** The builder isn't available to review each one | Until the builder says otherwise: the builder merges. Recommended: after M0, let a pull request merge itself when every gate in §8 is green and it touches nothing on the stop-and-ask list. `main` only ever deploys to staging; a production release still needs the builder's approval. Check first whether the course needs a pod reviewer's sign-off on each pull request | **Open** |
+| Q19 | The review's revisions (row stamps instead of logging votes; writes safe to repeat by shape; no previews; §8) | Applied to this document, pending approval | **Open** |

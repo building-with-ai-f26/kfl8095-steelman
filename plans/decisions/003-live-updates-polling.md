@@ -13,10 +13,10 @@ A reader's order is held still until they choose Update, so "live" only has to k
 | A managed realtime service (Supabase Realtime, Ably, Firebase) | Push without running it ourselves | A second system that must agree with Postgres and with our permission checks; another vendor; Firestore would be a second database |
 
 ## Decision
-Poll the service for changes after the reader's change number. The server keeps no per-reader state. The browser computes "N changes" and applies Update itself. The shared order is recalculated lazily on the first request after the board's tick (60 s for the class trial), with no scheduler.
+Poll the service for changes after the reader's change number. The answer is the current state of every row stamped after that number ([002](002-database-postgres.md)), or "nothing new" from one read of the board's row. The server keeps no per-reader state. The browser computes "N changes" and applies Update itself. The shared order is recalculated lazily on the first request after the board's tick (60 s for the class trial), with no scheduler.
 
 ## Why
-Meets the latency target with no new component, and keeps the contract ("changes after S") independent of how it's delivered.
+Meets the latency target with no new component, and keeps the contract ("changes after S") independent of how it's delivered. Because an answer is current rows and not a list of events, a missed, repeated, or late answer does no harm, which is what makes plain polling safe.
 
 ## Revisit if
 - Sustained polling passes ~100 requests a second.

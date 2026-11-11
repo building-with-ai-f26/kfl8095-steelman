@@ -18,6 +18,14 @@ GCP: Cloud Run and Cloud SQL for PostgreSQL in `us-central1`, with separate stag
 ## Why
 It's the builder's career target, and it's also the better technical fit: cheaper at class scale and simpler to operate alone. Lock-in stays low because the app is a standard container, the database is standard Postgres, and sign-in uses standard OpenID Connect.
 
+## Checked on Nov 11 (independent review)
+- Cloud Run domain mapping is still preview and "not production-ready", and `us-central1` is one of the ten regions that have it. Fine for the class trial; a load balancer before public communities.
+- Firebase Hosting in front of Cloud Run is not a cheaper way to a custom domain here: it forwards only a cookie named `__session` and strips the rest, and sign-in needs several.
+- Cloud Run reaches Cloud SQL through its built-in connection, with no VPC connector to pay for. The smallest instance takes about 25 connections, so each service instance pools at most 5.
+- Point-in-time recovery on this edition of Cloud SQL reaches back at most 7 days.
+- Staging's database is started by the deploy workflow and stopped nightly; a pull request never touches staging ([architecture.md §6](../architecture.md#6-environments-and-delivery)).
+- Still not confirmed from Google's own pricing page: the smallest instance's monthly price (about $9–10 with 10 GB).
+
 ## Revisit if
 - The builder's target changes to AWS.
 - Cloud Run's pricing or limits change so that scale-to-zero no longer saves money.

@@ -1,11 +1,13 @@
 # Steelman build plan
 
-**Status:** draft for review (Nov 11, 2026). Goes with [architecture.md](architecture.md); feature IDs are from [features.csv](features.csv).
+**Status:** draft for review (Nov 11, 2026), revised the same day by an independent review (M0's backlog, machine-checked "done when", no previews); the revisions await the builder's approval. Goes with [architecture.md](architecture.md); feature IDs are from [features.csv](features.csv).
 
 ## How to read this
 
-- **Each milestone ships something people can use**, and has a "done when" test you can check in a browser.
-- **Sized by scope, not hours** (Q2): Claude writes the code, so the limit is how much you can review and understand. Size is given as a rough count of pull requests, each small enough to explain (AGENTS.md rule 2).
+- **Each milestone ships something people can use.**
+- **Agents build it, one backlog item at a time, mostly unattended** (architecture.md §8). A milestone's **backlog** is its ordered list of items, each one pull request. An item in a backlog is approved to build; anything else needs the builder first. M0's backlog is below. Each later milestone's backlog is written when the one before it finishes, as its own pull request for the builder to approve, because by then the code will say more than a guess made today.
+- **"Done when" has two parts.** *Machine:* tests that run on every pull request, so an agent knows by itself whether it's finished. *Person:* the few checks only a human can make, batched at the end of the milestone.
+- **Sized by scope, not hours** (Q2). Size is a rough count of pull requests, each small enough to explain (AGENTS.md rule 2).
 - **Running cost** is per month, for hosting only. AI is paid by users through credits (Q1). Figures marked *unverified* in architecture.md are estimates.
 - **Order inside the MVP:** the riskiest part first (M0), then the core loop for one group (M1), then what launch needs (M2). T3 follows in three independent parts.
 
@@ -13,7 +15,7 @@
 
 | Milestone | Ships | Features | Size | Hosting cost |
 |---|---|---|---|---|
-| **M0. The risky slice** (Build 2) | Two browsers on one laptop voting on the same board; held-still order, the pill, Update, offline queue | B-01, B-02, B-03, B-05, M-02; first part of M-01 | ~6 PRs | $0 (local) |
+| **M0. The risky slice** (Build 2) | Two browsers on one laptop voting on the same board; held-still order, the pill, Update, offline queue; the test suite everything later depends on | B-01, B-02, B-03, B-05, M-02; first part of M-01 | 7 PRs | $0 (local) |
 | **M1. One group, for real** | Pod 6 builds a steelman together at `app.<domain>` | All of T1, plus the privacy parts of M-07 and M-08 | ~12 PRs | ~$15–20 |
 | **M2. Ready to launch** | Other pods and classes can join; moderation, phones, accessibility, the list | The rest of T2 | ~10 PRs | ~$15–20 |
 | **M3a. Structure and history** | Combine, separate, undo, history | A-07, A-10, C-02, C-03, J-03, J-04, J-05 | ~8 PRs | unchanged |
@@ -27,17 +29,23 @@
 
 **Why first:** it tests the riskiest technical problem (architecture.md §1): keeping every reader's held-still view consistent with a shared order that keeps changing underneath it.
 
-**Builds:**
-1. The app's folder and toolchain: TypeScript, Fastify, Vite + React, Kysely; Postgres in Docker; `.env.example`.
-2. Shared logic moved from the prototype into tested modules: the shared order (ties keep the previous order), `staleCount()`, the credibility meter.
-3. The schema for boards, options, arguments, versions, revisions, sources, the three vote tables, and the change log, with the invariants of architecture.md §2 as database constraints.
-4. The API: board snapshot; "changes after *S*"; votes and assessments carrying their revision; lazy order recalculation with the 60-second tick.
-5. A minimal board screen: the prototype's markup and CSS, enough to vote, see counts change in place, see the pill, and Update. Offline queue in IndexedDB.
-6. The test harness: two or three browser sessions plus ~30 scripted voters, running the November 11 *Live changes* scenarios.
+**Backlog.** In order; each item is one pull request. Every item's acceptance tests are written first and seen to fail (architecture.md §8).
 
-**Sign-in:** none yet. A local-only "pick a test user" switch stands in, and it can't be built into a deployed version.
+| # | Item | Builds | Acceptance tests (machine) |
+|---|---|---|---|
+| M0-1 | **Toolchain and the one command** | `app/` with its three parts (`shared/`, `server/`, `web/`); TypeScript, lint, the test runner; a test database that starts itself with or without Docker; the clock and ID interfaces; `.env.example`; the GitHub Actions workflow | On a clean clone, `npm install` then `npm run check` passes with no Docker running and no network. CI runs the same command and is green. A test that moves the fake clock an hour finishes in milliseconds |
+| M0-2 | **The rules** | In `shared/`: the shared order (ties keep the previous order; unvoted items stay last), `staleCount()`, the credibility meter, input limits | Unit tests for each rule, with cases from PRD §7 and from the *Live changes* entry (for example: the pill counts the fewest moves, 3, not every displaced row, 9) |
+| M0-3 | **Schema and invariants** | Migrations for boards, options, arguments, versions, revisions, cited sources, sources, the three vote tables, the change log; `changed_seq` and `board_id` everywhere; the two database roles | One test per invariant in architecture.md §2, each trying to break it with raw SQL and expecting the database to refuse. Migrations run on an empty database and as an upgrade |
+| M0-4 | **The write path and the API** | The one write path (lock, load, `can()`, stale rules, change, stamp); snapshot; "changes after *S*"; set a vote; assess a named revision; add an argument or wording; edit; delete; the lazy order tick. A local-only "pick a test user" switch stands in for sign-in | Every row of the stale-write table that M0 can reach (delete and edit; not hide or combine). Every write sent twice equals once. The order recalculates only after the clock passes the tick. The test-user switch is refused when the service runs in production mode |
+| M0-5 | **The simulation** | The browser's sync rules as pure functions in `shared/` (how changed rows are merged into what's on screen; what the offline queue keeps); then the seeded random simulation of architecture.md §8, running the write path and those rules together in one process | All nine "always true" checks hold over 300 sequences per run. Two planted bugs (a skipped stamp; an old revision's assessment counted) are each caught, with a shrunk sequence printed |
+| M0-6 | **The board screen** | The prototype's markup and CSS, enough to vote, see counts change in place, see the pill, and Update; polling; the offline queue in IndexedDB | One browser test per row of *Live changes* and of *Live changes, structure* (edit and delete only), with two sessions. An accessibility scan and saved screenshots at desktop width and 375 px |
+| M0-7 | **Soak run and the guards** | `npm run test:soak` (30 scripted voters, 5 minutes, real time, then a recount); the protected-files check; the feature-to-test check; the nightly workflow | The soak run ends with stored counts equal to a recount. A pull request that edits an existing test is flagged. Every feature M0 covers has a test named with its ID |
 
-**Done when:** the *Live changes* and *Live changes, structure* (delete only) scenarios pass with two browsers; 30 scripted voters for 5 minutes leave the stored counts equal to a recount from the vote tables; an assessment of an edited wording is refused with "Take another look".
+**Sign-in:** none yet. The "pick a test user" switch can't be turned on in a deployed version (tested in M0-4).
+
+**Done when (machine):** all seven items are merged and `npm run check` is green on `main`.
+
+**Done when (person):** the builder opens two browsers, votes in one, and sees the pill in the other; reads one simulation failure report from a planted bug and can say what it means. Then writes up Build 2.
 
 **Cost:** $0.
 
@@ -53,11 +61,16 @@
 - **Sign-in:** Better Auth with Google and email links (Continue page), usernames, sessions. Test it with a classmate's school account early (step 1 risk).
 - **Access:** link sharing with a role; the `can()` policy and its matrix test for the roles M1 uses (Owner, and the link roles Voter and Contributor).
 - **The rest of the board:** add arguments and wordings, sources (resetting credibility), Strongest case, New steelman, links for boards and versions.
-- **Infrastructure:** the domain; two GCP projects in Terraform; Cloud Run with domain mapping; Cloud SQL with backups and PITR; Secret Manager; GitHub Actions with Workload Identity Federation, previews, and approved releases; the daily maintenance call; budget alerts; the uptime check.
+- **Infrastructure:** two GCP projects in Terraform; Cloud Run with domain mapping; Cloud SQL with backups and point-in-time recovery; Secret Manager; GitHub Actions with Workload Identity Federation, deploy to staging on merge, and approved releases; the scheduled calls (daily maintenance, weekly export, staging's nightly stop); budget alerts; the uptime check; the monthly restore-test workflow.
+- **Stand-ins:** the fake sign-in provider and the in-memory email, so every sign-in path is tested without Google or Resend.
 
-**Done when:** three classmates on their own devices build one board together, from creating it to Strongest case. Two of them sign in with different methods. The monthly restore test has run once. Delete account leaves their wordings credited to `deleted_account`.
+**The builder's part, before agents start M1** (architecture.md §8): buy the domain; open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules and the protected production environment in GitHub; answer Q18 (who merges).
 
-**Cost:** about $15–20 a month: production Cloud SQL ~$10 (*unverified*), Cloud Run ~$0–5, staging stopped when idle, domain ~$1, Resend and PostHog free tiers.
+**Done when (machine):** browser tests sign in by email link (through the Continue page) and by the fake Google, and the two reach the same account when the email matches. A link opened twice works once. The role matrix passes for Owner, Voter, Contributor, signed out, and non-member. Deleting an account passes every row of the deletion table in architecture.md §2. The staging smoke test is green after a merge. The restore-test workflow has run once and passed.
+
+**Done when (person):** three classmates on their own devices build one board together, from creating it to Strongest case. Two of them sign in with different methods, one with a school Google account.
+
+**Cost:** about $15–20 a month: production Cloud SQL ~$9–10 (not yet confirmed from Google's pricing page), Cloud Run ~$0–5, staging's database stopped except around deploys (~$2), domain ~$1, Resend and PostHog free tiers.
 
 ---
 
@@ -67,7 +80,9 @@
 
 **Features:** A-06 (edit and delete your own wording, with "edited" and the earlier wording), E-03 (the list), H-03 (every role enforced, including Editor and Viewer, the full matrix), J-01 and J-02 (report; hide and restore with a reason, recorded in the change log), L-02 (tour), L-04 (account card: email change, Google connect, sign out), M-03 (phones), M-04 (accessibility: rerun axe on every screen), M-07 (finished: retention jobs, PostHog deletion), M-08 (server events).
 
-**Done when:** every action in the role matrix test passes for all seven personas; a report → hide → restore cycle shows in the change log with its reason; axe reports no violations on the screens checked on Nov 11; a phone user completes the core loop.
+**Done when (machine):** every action in the role matrix passes for all seven personas; a report → hide → restore cycle shows in the change log with its reason; the accessibility scan reports no violations on the screens checked on Nov 11; the core loop passes as a browser test at 375 px; the simulation includes hide, restore, and edit by an editor.
+
+**Done when (person):** someone completes the core loop on a real phone; someone tries it with a real screen reader.
 
 **Cost:** unchanged, about $15–20 a month.
 
@@ -81,7 +96,7 @@ Each part can ship on its own, in any order. M3c is last only because it involve
 
 **Features:** A-07 (options: add, rename, delete), A-10 (combine and separate: stable version IDs, articulation votes travel, Q8), C-02 (report a source unavailable), C-03 (evidence-changed handling), J-03 (History panel, reading the change log), J-04 (structural rollback), J-05 (Undo bars).
 
-**Done when:** combine, then undo, restores the earlier structure and votes, while a wording added in between stays where it was added; offline votes against a combined argument follow the rules in architecture.md §3.
+**Done when (machine):** the simulation gains combine, separate, and undo, and its checks still hold; combine, then undo, restores the earlier structure and votes, while a wording added in between stays where it was added; offline votes against a combined argument follow the rules in architecture.md §3.
 
 ### M3b. Conversation and sharing
 
@@ -95,7 +110,7 @@ Each part can ship on its own, in any order. M3c is last only because it involve
 
 **Builds:** the credit ledger; Stripe Checkout for credit packs and its webhook; the evidence check as a Cloud Tasks job, saved against the version revision; the guarded fetcher for sources; the model provider's spend limit set; privacy page updated (Stripe, the model provider).
 
-**Done when:** a space admin buys a credit pack in Stripe's test mode; an evidence check runs, costs the shown credits, and shows its verdict, basis, and limits; with no credits left, the button is disabled with the "Out of AI credits" note; AI is off on a new board by default.
+**Done when (machine, with stored Stripe messages and recorded model answers; then once by hand on staging):** a space admin buys a credit pack in Stripe's test mode; an evidence check runs, costs the shown credits, and shows its verdict, basis, and limits; with no credits left, the button is disabled with the "Out of AI credits" note; AI is off on a new board by default.
 
 **Cost:** hosting barely changes. Every model call and every Stripe fee is covered by the credits users buy; pricing the credit packs to cover both is a product decision for M3c.
 

@@ -8,7 +8,7 @@ Decided earlier: sign in with Google or a one-time email link; no passwords; bot
 ## Options
 | Option | For | Against |
 |---|---|---|
-| **Better Auth** (open-source TypeScript library), tables in our Postgres | Accounts in one database, so export and deletion touch one place. Handles sessions, CSRF, and account linking. Standard OpenID Connect for Google | We run it ourselves; its stewardship changed (it took over Auth.js in Sept 2025; a secondary source reports a Vercel acquisition in July 2026, not verified) |
+| **Better Auth** (open-source TypeScript library), tables in our Postgres | Accounts in one database, so export and deletion touch one place. Handles sessions, CSRF, and account linking. Standard OpenID Connect for Google | We run it ourselves; its stewardship changed (it took over Auth.js in Sept 2025; Vercel announced on July 7, 2026 that it is acquiring the company, and the library stays MIT-licensed) |
 | Managed identity (Google Identity Platform, AWS Cognito) | Hosted and maintained for us | A second user store to keep in sync for export and deletion; lock-in. Cognito's passwordless sign-in uses codes, and its page doesn't mention links |
 | Hand-written sessions (following the Lucia guide) | Fully explainable | Security-sensitive code we'd own and maintain |
 
