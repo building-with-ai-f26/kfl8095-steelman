@@ -2275,6 +2275,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-gone-link { margin:-8px 16px 12px 36px; font-size:12px; }
   #steelman-study .sm-merged &gt; .sm-card-wrap { grid-column:2; }
   #steelman-study .sm-edited { font-size:inherit; color:inherit; text-decoration:underline dotted; }
+  #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
+  #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
+  #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
   #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
@@ -3575,7 +3579,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
   const byline = id =&gt; { const c=cards[id],by=c.by;
     // An edited version says so; &quot;edited&quot; shows the wording it replaced.
-    const edited=c.prev?` · &lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-edited cursor-interaction&quot; data-action=&quot;prev-toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;prev-${id}&quot; aria-expanded=&quot;${!!state.showPrev?.[id]}&quot;&gt;edited&lt;/button&gt;`:&#x27;&#x27;;
+    const edited=c.prev?` · &lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-edited cursor-interaction&quot; data-action=&quot;prev-toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;prev-${id}&quot; aria-expanded=&quot;${!!state.showPrev?.[id]}&quot;&gt;edited&lt;/button&gt;`:c.edited?&#x27; · edited&#x27;:&#x27;&#x27;;
     const prev=c.prev&amp;&amp;state.showPrev?.[id]?`&lt;p class=&quot;sm-prev&quot;&gt;&lt;del&gt;${escape(c.prev)}&lt;/del&gt;&lt;/p&gt;`:&#x27;&#x27;;
     return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}${edited}&lt;/p&gt;${prev}`:&#x27;&#x27;; };
   // mark: a highlight tag on the card&#x27;s top edge (see lensTag); lit: the card itself matches the highlight.
@@ -3585,7 +3589,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(cards[id].gone) return `&lt;article class=&quot;sm-card sm-removed sm-gone ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;trash-2&#x27;)}${cards[id].gone.by===cards[id].by?`Deleted by ${escape(cards[id].by)}`:&#x27;Removed by an editor&#x27;}&lt;/p&gt;&lt;/article&gt;`;
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
-    if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
+    if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;${stats(id).n?`&lt;p class=&quot;sm-source-warn sm-edit-warn&quot; role=&quot;note&quot;&gt;${icon(&#x27;triangle-alert&#x27;)}${stats(id).n} ${stats(id).n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over when you save. Votes stay.&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
     const menuOpen=state.menu===id;
     const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:&#x27;&#x27;;
     const ai=cards[id].by===&#x27;ai&#x27;?`&lt;span class=&quot;sm-ai-tag&quot; role=&quot;img&quot; tabindex=&quot;0&quot; aria-label=&quot;${escape(tip)}&quot; data-tooltip=&quot;${escape(tip)}&quot;&gt;${icon(&#x27;bot&#x27;)}AI draft&lt;/span&gt;`:&#x27;&#x27;;
@@ -3826,7 +3830,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const mine=source.by===&#x27;you&#x27;,ref=`data-id=&quot;${cardId}&quot; data-source=&quot;${id}&quot;`;
       const actions=[
         mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;edit-source&quot; ${ref} data-key=&quot;edit-source-${key}&quot;&gt;Edit&lt;/button&gt;`:&#x27;&#x27;,
-        mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;Remove from this version&quot;&gt;Remove&lt;/button&gt;`:&#x27;&#x27;,
+        mine?`${(()=&gt;{const n=stats(cardId).n,armed=state.removeArmed===key;return `&lt;button type=&quot;button&quot; class=&quot;sm-link-button ${armed?&#x27;sm-armed&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;${armed?`Remove: ${n} assessments start over`:&#x27;Remove from this version&#x27;}&quot;&gt;${armed?`Remove · ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over`:&#x27;Remove&#x27;}&lt;/button&gt;`;})()}`:&#x27;&#x27;,
         !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report that it can’t be opened&quot;&gt;Can’t open it?&lt;/button&gt;`:&#x27;&#x27;,
         source.reportedBy===&#x27;you&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;`:&#x27;&#x27;
       ].join(&#x27;&#x27;);
@@ -3836,7 +3840,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     }).join(&#x27;&#x27;);
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-add-source cursor-interaction&quot; data-action=&quot;add-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;add-source-${cardId}&quot;&gt;${icon(&#x27;plus&#x27;)}Add a source&lt;/button&gt;`;
-    const changed=card.evidenceChanged?`&lt;p class=&quot;sm-evidence-changed&quot;&gt;${icon(&#x27;info&#x27;)}The evidence changed after some people assessed this wording.&lt;/p&gt;`:&#x27;&#x27;;
+    const changed=card.evidenceChanged?`&lt;p class=&quot;sm-evidence-changed&quot;&gt;${icon(&#x27;info&#x27;)}${card.resetBy===&#x27;edit&#x27;?&#x27;This version was edited&#x27;:&#x27;The evidence changed&#x27;}, so assessments started over.&lt;/p&gt;`:&#x27;&#x27;;
     return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${changed}${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}${addControl}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Does the evidence back this wording?${aiEvidenceControls(cardId)}&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence back this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
 
@@ -4063,16 +4067,25 @@ html&gt;body{padding:0}&lt;/style&gt;
     [&#x27;limit&#x27;,&#x27;Limits&#x27;,&#x27;What it does not show&#x27;,false,300]
   ];
   // Changing the evidence after people assessed the wording is flagged, so earlier assessments are read in context.
-  function markEvidenceChanged(cardId) { if(stats(cardId).n) cards[cardId].evidenceChanged=true; }
+  // Changing a version&#x27;s sources starts its credibility assessments over: old judgments were about other evidence.
+  // The person making the change is warned first (the source form, or a second click on Remove).
+  const citing = sourceId =&gt; Object.keys(cards).filter(k=&gt;cards[k].sources.includes(sourceId));
+  const assessedOn = ids =&gt; ids.reduce((n,k)=&gt;n+stats(k).n,0);
+  // Editing the wording or context does the same (importance and articulation votes stay).
+  function markEvidenceChanged(cardId,why=&#x27;evidence&#x27;) {
+    if(!stats(cardId).n) return;
+    const c=cards[cardId];c.yes=0;c.no=0;delete state.assessments[cardId];c.evidenceChanged=new Date().toISOString();c.resetBy=why;
+  }
   function saveSource() {
     const {card:cardId,source:sourceId}=state.sourceForm,draft=state.sourceDraft;
     const clean=Object.fromEntries(SOURCE_FIELDS.map(([f,,,,max])=&gt;[f,String(draft[f]||&#x27;&#x27;).replace(/\s+/g,&#x27; &#x27;).trim().slice(0,max)]));
     const missing=SOURCE_FIELDS.filter(([f,,,req])=&gt;req&amp;&amp;!clean[f]).map(([f])=&gt;f);
     if(missing.length) return {missing};
     let id=sourceId;
+    const affected=id?citing(id):[cardId];
     if(id) Object.assign(sources[id],clean);
     else {id=&#x27;s&#x27;+(doc.nextId++);sources[id]={...clean,by:&#x27;you&#x27;,at:new Date().toISOString()};cards[cardId].sources.push(id);}
-    markEvidenceChanged(cardId);
+    affected.forEach(markEvidenceChanged);
     state.openSources[cardId+&#x27;/&#x27;+id]=true;
     state.sourceForm=null;state.sourceDraft={};
     return {id,added:!sourceId};
@@ -4092,7 +4105,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const control=tag===&#x27;input&#x27;?`&lt;input id=&quot;${id}&quot; type=&quot;text&quot; data-field=&quot;${f}&quot; data-key=&quot;src-${f}&quot; maxlength=&quot;${max}&quot; placeholder=&quot;${hint}&quot; value=&quot;${escape(d[f]||&#x27;&#x27;)}&quot;&gt;`:`&lt;textarea id=&quot;${id}&quot; data-field=&quot;${f}&quot; data-key=&quot;src-${f}&quot; maxlength=&quot;${max}&quot; rows=&quot;2&quot; placeholder=&quot;${hint}&quot;&gt;${escape(d[f]||&#x27;&#x27;)}&lt;/textarea&gt;`;
       return `&lt;div class=&quot;sm-source-field&quot;&gt;&lt;label for=&quot;${id}&quot;&gt;${label}${req?&#x27;&#x27;:&#x27; &lt;span&gt;(optional)&lt;/span&gt;&#x27;}&lt;/label&gt;${control}&lt;/div&gt;`;
     }).join(&#x27;&#x27;);
-    return `&lt;form class=&quot;sm-source-form&quot; id=&quot;sm-source-form&quot; aria-label=&quot;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&quot;&gt;&lt;h4&gt;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&lt;/h4&gt;${fields}${more?&#x27;&#x27;:`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-source-more cursor-interaction&quot; data-action=&quot;source-more&quot; data-id=&quot;${cardId}&quot; data-key=&quot;source-more&quot;&gt;${icon(&#x27;plus&#x27;)}Backs up &amp;amp; limits&lt;/button&gt;`}&lt;div class=&quot;sm-source-form-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;cancel-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;cancel-source&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;save-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;save-source&quot;&gt;${editing?&#x27;Save source&#x27;:&#x27;Add source&#x27;}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
+    return `&lt;form class=&quot;sm-source-form&quot; id=&quot;sm-source-form&quot; aria-label=&quot;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&quot;&gt;&lt;h4&gt;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&lt;/h4&gt;${fields}${more?&#x27;&#x27;:`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-source-more cursor-interaction&quot; data-action=&quot;source-more&quot; data-id=&quot;${cardId}&quot; data-key=&quot;source-more&quot;&gt;${icon(&#x27;plus&#x27;)}Backs up &amp;amp; limits&lt;/button&gt;`}${(()=&gt;{const n=assessedOn(editing?citing(editing):[cardId]);return n?`&lt;p class=&quot;sm-source-warn&quot; role=&quot;note&quot;&gt;${icon(&#x27;triangle-alert&#x27;)}${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over when you save.&lt;/p&gt;`:&#x27;&#x27;;})()}&lt;div class=&quot;sm-source-form-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;cancel-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;cancel-source&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;save-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;save-source&quot;&gt;${editing?&#x27;Save source&#x27;:&#x27;Add source&#x27;}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
   }
   // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
   // Its articulation votes and comments travel with it. A row left empty is removed.
@@ -5485,9 +5498,9 @@ html&gt;body{padding:0}&lt;/style&gt;
       const id=openCard(),c=id&amp;&amp;cards[id];
       if(!c){announce(&#x27;Open a card first, then try this.&#x27;);return;}
       if(!c.by||c.by===&#x27;you&#x27;||c.by===&#x27;ai&#x27;){announce(&#x27;Only a version’s author can edit it, and this one is yours. Open someone else’s.&#x27;);return;}
-      c.prev=c.prev||c.claim;c.claim=c.claim.replace(/[.!?]?$/,&#x27;, at least for the next few years.&#x27;);c.edited=new Date().toISOString();
+      c.prev=c.claim;c.claim=c.claim.replace(/[.!?]?$/,&#x27;, at least for the next few years.&#x27;);c.edited=new Date().toISOString();markEvidenceChanged(id,&#x27;edit&#x27;);
       flashIds=[id];render();save();
-      announce(`${c.by} edited this version. “edited” shows the earlier wording.`);return;
+      announce(`${c.by} edited this version, so its assessments started over. “edited” shows the earlier wording.`);return;
     }
     if(action===&#x27;sim-combine&#x27;) {
       const id=openCard(),from=id&amp;&amp;ideaOf(cards[id].idea);
@@ -5618,8 +5631,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;save-edit&#x27;) {
       const claim=state.editDraftClaim.replace(/\s+/g,&#x27; &#x27;).trim(),field=root.querySelector(&#x27;#sm-edit-claim&#x27;);
       if(!claim){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;A version needs wording.&#x27;);return;}
-      const card=cards[id];card.claim=claim.slice(0,500);card.explanation=state.editDraftReason.trim().slice(0,700);delete card.brief;
-      state.editing=null;focus=&#x27;claim-&#x27;+id;announce(&#x27;Your version was updated.&#x27;);
+      const card=cards[id],next=claim.slice(0,500),reason=state.editDraftReason.trim().slice(0,700),was=card.brief||card.explanation||&#x27;&#x27;;
+      // Like Reddit: edits are allowed and keep their votes; the version says &quot;edited&quot;, which shows the earlier wording.
+      const changed=next!==card.claim||reason!==was,n=stats(id).n;
+      if(next!==card.claim){card.prev=card.claim;}
+      if(changed){card.edited=new Date().toISOString();markEvidenceChanged(id,&#x27;edit&#x27;);}
+      card.claim=next;card.explanation=reason;delete card.brief;
+      state.editing=null;focus=&#x27;claim-&#x27;+id;announce(changed?`Your version was updated and says “edited”.${n?` Its ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over; votes stay.`:&#x27;&#x27;}`:&#x27;No changes.&#x27;);
     }
     if(action===&#x27;revise-card&#x27;) {
       const ideaId=cards[id].idea,wasOpen=state.open===ideaId;
@@ -5648,7 +5666,11 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
       focus=`src-${id}/${result.id}`;announce(result.added?&#x27;Source added. It is open below so you can check it.&#x27;:&#x27;Source updated.&#x27;);
     }
-    if(action===&#x27;remove-source&#x27;) {removeSource(id,trigger.dataset.source);focus=&#x27;undo&#x27;;announce(&#x27;Source removed from this version. Undo is available for ten seconds.&#x27;);}
+    if(action===&#x27;remove-source&#x27;) {
+      const key=`${id}/${trigger.dataset.source}`,n=stats(id).n;
+      if(n&amp;&amp;state.removeArmed!==key){state.removeArmed=key;focus=&#x27;remove-source-&#x27;+key;announce(`Removing this source starts ${n} ${n===1?&#x27;assessment&#x27;:&#x27;assessments&#x27;} over. Click Remove again to confirm.`);}
+      else {state.removeArmed=null;removeSource(id,trigger.dataset.source);focus=&#x27;undo&#x27;;announce(`Source removed from this version${n?`; ${n===1?&#x27;its assessment starts&#x27;:`its ${n} assessments start`} over`:&#x27;&#x27;}. Undo is available for ten seconds.`);}
+    }
     if(action===&#x27;report-source&#x27;) {const src=sources[trigger.dataset.source];src.unavailable=true;src.reportedBy=&#x27;you&#x27;;focus=`src-${id}/${trigger.dataset.source}`;announce(&#x27;Reported as unavailable for every version that cites it. An unavailable source does not make the claim false.&#x27;);}
     if(action===&#x27;unreport-source&#x27;) {const src=sources[trigger.dataset.source];delete src.unavailable;delete src.reportedBy;focus=`src-${id}/${trigger.dataset.source}`;announce(&#x27;Report withdrawn.&#x27;);}
     if(action===&#x27;undo&#x27;) {if(!state.undo)return;focus=undoDelete();announce(&#x27;Restored.&#x27;);}

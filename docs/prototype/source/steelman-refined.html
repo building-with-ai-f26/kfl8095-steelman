@@ -393,6 +393,10 @@
   #steelman-study .sm-gone-link { margin:-8px 16px 12px 36px; font-size:12px; }
   #steelman-study .sm-merged > .sm-card-wrap { grid-column:2; }
   #steelman-study .sm-edited { font-size:inherit; color:inherit; text-decoration:underline dotted; }
+  #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
+  #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
+  #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
   #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
@@ -1693,7 +1697,7 @@
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
   const byline = id => { const c=cards[id],by=c.by;
     // An edited version says so; "edited" shows the wording it replaced.
-    const edited=c.prev?` · <button type="button" class="sm-link-button sm-edited cursor-interaction" data-action="prev-toggle" data-id="${id}" data-key="prev-${id}" aria-expanded="${!!state.showPrev?.[id]}">edited</button>`:'';
+    const edited=c.prev?` · <button type="button" class="sm-link-button sm-edited cursor-interaction" data-action="prev-toggle" data-id="${id}" data-key="prev-${id}" aria-expanded="${!!state.showPrev?.[id]}">edited</button>`:c.edited?' · edited':'';
     const prev=c.prev&&state.showPrev?.[id]?`<p class="sm-prev"><del>${escape(c.prev)}</del></p>`:'';
     return by&&by!=='ai'?`<p class="sm-byline">${userLink(by,by==='you'?'you':escape(by))}${edited}</p>${prev}`:''; };
   // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
@@ -1703,7 +1707,7 @@
     if(cards[id].gone) return `<article class="sm-card sm-removed sm-gone ${inTrack?'sm-version-face':''}" data-card="${id}"><p class="sm-removed-note">${icon('trash-2')}${cards[id].gone.by===cards[id].by?`Deleted by ${escape(cards[id].by)}`:'Removed by an editor'}</p></article>`;
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
-    if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
+    if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea>${stats(id).n?`<p class="sm-source-warn sm-edit-warn" role="note">${icon('triangle-alert')}${stats(id).n} ${stats(id).n===1?'assessment starts':'assessments start'} over when you save. Votes stay.</p>`:''}<div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
     const menuOpen=state.menu===id;
     const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:'';
     const ai=cards[id].by==='ai'?`<span class="sm-ai-tag" role="img" tabindex="0" aria-label="${escape(tip)}" data-tooltip="${escape(tip)}">${icon('bot')}AI draft</span>`:'';
@@ -1944,7 +1948,7 @@
       const mine=source.by==='you',ref=`data-id="${cardId}" data-source="${id}"`;
       const actions=[
         mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="edit-source" ${ref} data-key="edit-source-${key}">Edit</button>`:'',
-        mine?`<button type="button" class="sm-link-button cursor-interaction" data-action="remove-source" ${ref} data-key="remove-source-${key}" aria-label="Remove from this version">Remove</button>`:'',
+        mine?`${(()=>{const n=stats(cardId).n,armed=state.removeArmed===key;return `<button type="button" class="sm-link-button ${armed?'sm-armed':''} cursor-interaction" data-action="remove-source" ${ref} data-key="remove-source-${key}" aria-label="${armed?`Remove: ${n} assessments start over`:'Remove from this version'}">${armed?`Remove · ${n} ${n===1?'assessment starts':'assessments start'} over`:'Remove'}</button>`;})()}`:'',
         !source.unavailable?`<button type="button" class="sm-link-button cursor-interaction" data-action="report-source" ${ref} data-key="report-source-${key}" aria-label="Report that it can’t be opened">Can’t open it?</button>`:'',
         source.reportedBy==='you'?`<button type="button" class="sm-link-button cursor-interaction" data-action="unreport-source" ${ref} data-key="unreport-source-${key}" aria-label="Withdraw your report">Undo report</button>`:''
       ].join('');
@@ -1954,7 +1958,7 @@
     }).join('');
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`<button type="button" class="sm-text-button sm-add-source cursor-interaction" data-action="add-source" data-id="${cardId}" data-key="add-source-${cardId}">${icon('plus')}Add a source</button>`;
-    const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}The evidence changed after some people assessed this wording.</p>`:'';
+    const changed=card.evidenceChanged?`<p class="sm-evidence-changed">${icon('info')}${card.resetBy==='edit'?'This version was edited':'The evidence changed'}, so assessments started over.</p>`:'';
     return `<section class="sm-card-context" aria-label="Context"><h3>Context</h3>${brief?`<p class="sm-brief">${escape(brief)}</p>`:'<p class="sm-meta">No context yet.</p>'}</section>${`<section class="sm-evidence-group" aria-label="Evidence and its assessment"><h3>Evidence</h3>${changed}${sourceRows?`<div class="sm-source-list">${sourceRows}</div>`:'<p class="sm-meta">No sources yet.</p>'}${addControl}<div class="sm-evidence-vote"><h4>Does the evidence back this wording?${aiEvidenceControls(cardId)}</h4><div class="sm-assess-actions" role="group" aria-label="Does the evidence back this wording?">${button('assess',icon('check')+' Yes',`data-value="yes" data-id="${cardId}" data-key="assess-yes" aria-label="Supported as worded" aria-pressed="${assessment==='yes'}" ${!card.sources.some(id=>!sources[id].unavailable)?'disabled':''}`)}${button('assess',icon('x')+' No',`data-value="no" data-id="${cardId}" data-key="assess-no" aria-label="Not supported as worded" aria-pressed="${assessment==='no'}"`)}${assessment?`<button type="button" class="sm-text-button cursor-interaction" data-action="assess" data-value="skip" data-id="${cardId}" data-key="assess-skip" aria-label="Withdraw assessment">Undo</button>`:''}</div></div></section>`}`;
   }
 
@@ -2181,16 +2185,25 @@
     ['limit','Limits','What it does not show',false,300]
   ];
   // Changing the evidence after people assessed the wording is flagged, so earlier assessments are read in context.
-  function markEvidenceChanged(cardId) { if(stats(cardId).n) cards[cardId].evidenceChanged=true; }
+  // Changing a version's sources starts its credibility assessments over: old judgments were about other evidence.
+  // The person making the change is warned first (the source form, or a second click on Remove).
+  const citing = sourceId => Object.keys(cards).filter(k=>cards[k].sources.includes(sourceId));
+  const assessedOn = ids => ids.reduce((n,k)=>n+stats(k).n,0);
+  // Editing the wording or context does the same (importance and articulation votes stay).
+  function markEvidenceChanged(cardId,why='evidence') {
+    if(!stats(cardId).n) return;
+    const c=cards[cardId];c.yes=0;c.no=0;delete state.assessments[cardId];c.evidenceChanged=new Date().toISOString();c.resetBy=why;
+  }
   function saveSource() {
     const {card:cardId,source:sourceId}=state.sourceForm,draft=state.sourceDraft;
     const clean=Object.fromEntries(SOURCE_FIELDS.map(([f,,,,max])=>[f,String(draft[f]||'').replace(/\s+/g,' ').trim().slice(0,max)]));
     const missing=SOURCE_FIELDS.filter(([f,,,req])=>req&&!clean[f]).map(([f])=>f);
     if(missing.length) return {missing};
     let id=sourceId;
+    const affected=id?citing(id):[cardId];
     if(id) Object.assign(sources[id],clean);
     else {id='s'+(doc.nextId++);sources[id]={...clean,by:'you',at:new Date().toISOString()};cards[cardId].sources.push(id);}
-    markEvidenceChanged(cardId);
+    affected.forEach(markEvidenceChanged);
     state.openSources[cardId+'/'+id]=true;
     state.sourceForm=null;state.sourceDraft={};
     return {id,added:!sourceId};
@@ -2210,7 +2223,7 @@
       const control=tag==='input'?`<input id="${id}" type="text" data-field="${f}" data-key="src-${f}" maxlength="${max}" placeholder="${hint}" value="${escape(d[f]||'')}">`:`<textarea id="${id}" data-field="${f}" data-key="src-${f}" maxlength="${max}" rows="2" placeholder="${hint}">${escape(d[f]||'')}</textarea>`;
       return `<div class="sm-source-field"><label for="${id}">${label}${req?'':' <span>(optional)</span>'}</label>${control}</div>`;
     }).join('');
-    return `<form class="sm-source-form" id="sm-source-form" aria-label="${editing?'Edit source':'Add a source'}"><h4>${editing?'Edit source':'Add a source'}</h4>${fields}${more?'':`<button type="button" class="sm-text-button sm-source-more cursor-interaction" data-action="source-more" data-id="${cardId}" data-key="source-more">${icon('plus')}Backs up &amp; limits</button>`}<div class="sm-source-form-actions"><button type="button" class="sm-text-button cursor-interaction" data-action="cancel-source" data-id="${cardId}" data-key="cancel-source">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="save-source" data-id="${cardId}" data-key="save-source">${editing?'Save source':'Add source'}</button></div></form>`;
+    return `<form class="sm-source-form" id="sm-source-form" aria-label="${editing?'Edit source':'Add a source'}"><h4>${editing?'Edit source':'Add a source'}</h4>${fields}${more?'':`<button type="button" class="sm-text-button sm-source-more cursor-interaction" data-action="source-more" data-id="${cardId}" data-key="source-more">${icon('plus')}Backs up &amp; limits</button>`}${(()=>{const n=assessedOn(editing?citing(editing):[cardId]);return n?`<p class="sm-source-warn" role="note">${icon('triangle-alert')}${n} ${n===1?'assessment starts':'assessments start'} over when you save.</p>`:'';})()}<div class="sm-source-form-actions"><button type="button" class="sm-text-button cursor-interaction" data-action="cancel-source" data-id="${cardId}" data-key="cancel-source">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="save-source" data-id="${cardId}" data-key="save-source">${editing?'Save source':'Add source'}</button></div></form>`;
   }
   // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
   // Its articulation votes and comments travel with it. A row left empty is removed.
@@ -3603,9 +3616,9 @@
       const id=openCard(),c=id&&cards[id];
       if(!c){announce('Open a card first, then try this.');return;}
       if(!c.by||c.by==='you'||c.by==='ai'){announce('Only a version’s author can edit it, and this one is yours. Open someone else’s.');return;}
-      c.prev=c.prev||c.claim;c.claim=c.claim.replace(/[.!?]?$/,', at least for the next few years.');c.edited=new Date().toISOString();
+      c.prev=c.claim;c.claim=c.claim.replace(/[.!?]?$/,', at least for the next few years.');c.edited=new Date().toISOString();markEvidenceChanged(id,'edit');
       flashIds=[id];render();save();
-      announce(`${c.by} edited this version. “edited” shows the earlier wording.`);return;
+      announce(`${c.by} edited this version, so its assessments started over. “edited” shows the earlier wording.`);return;
     }
     if(action==='sim-combine') {
       const id=openCard(),from=id&&ideaOf(cards[id].idea);
@@ -3736,8 +3749,13 @@
     if(action==='save-edit') {
       const claim=state.editDraftClaim.replace(/\s+/g,' ').trim(),field=root.querySelector('#sm-edit-claim');
       if(!claim){field.setAttribute('aria-invalid','true');field.focus();announce('A version needs wording.');return;}
-      const card=cards[id];card.claim=claim.slice(0,500);card.explanation=state.editDraftReason.trim().slice(0,700);delete card.brief;
-      state.editing=null;focus='claim-'+id;announce('Your version was updated.');
+      const card=cards[id],next=claim.slice(0,500),reason=state.editDraftReason.trim().slice(0,700),was=card.brief||card.explanation||'';
+      // Like Reddit: edits are allowed and keep their votes; the version says "edited", which shows the earlier wording.
+      const changed=next!==card.claim||reason!==was,n=stats(id).n;
+      if(next!==card.claim){card.prev=card.claim;}
+      if(changed){card.edited=new Date().toISOString();markEvidenceChanged(id,'edit');}
+      card.claim=next;card.explanation=reason;delete card.brief;
+      state.editing=null;focus='claim-'+id;announce(changed?`Your version was updated and says “edited”.${n?` Its ${n} ${n===1?'assessment starts':'assessments start'} over; votes stay.`:''}`:'No changes.');
     }
     if(action==='revise-card') {
       const ideaId=cards[id].idea,wasOpen=state.open===ideaId;
@@ -3766,7 +3784,11 @@
       }
       focus=`src-${id}/${result.id}`;announce(result.added?'Source added. It is open below so you can check it.':'Source updated.');
     }
-    if(action==='remove-source') {removeSource(id,trigger.dataset.source);focus='undo';announce('Source removed from this version. Undo is available for ten seconds.');}
+    if(action==='remove-source') {
+      const key=`${id}/${trigger.dataset.source}`,n=stats(id).n;
+      if(n&&state.removeArmed!==key){state.removeArmed=key;focus='remove-source-'+key;announce(`Removing this source starts ${n} ${n===1?'assessment':'assessments'} over. Click Remove again to confirm.`);}
+      else {state.removeArmed=null;removeSource(id,trigger.dataset.source);focus='undo';announce(`Source removed from this version${n?`; ${n===1?'its assessment starts':`its ${n} assessments start`} over`:''}. Undo is available for ten seconds.`);}
+    }
     if(action==='report-source') {const src=sources[trigger.dataset.source];src.unavailable=true;src.reportedBy='you';focus=`src-${id}/${trigger.dataset.source}`;announce('Reported as unavailable for every version that cites it. An unavailable source does not make the claim false.');}
     if(action==='unreport-source') {const src=sources[trigger.dataset.source];delete src.unavailable;delete src.reportedBy;focus=`src-${id}/${trigger.dataset.source}`;announce('Report withdrawn.');}
     if(action==='undo') {if(!state.undo)return;focus=undoDelete();announce('Restored.');}

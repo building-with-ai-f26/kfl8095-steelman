@@ -770,6 +770,20 @@ Decisions: analytics follow common US practice (notice with opt-out; Global Priv
 | Console | No errors |
 | Not checked | A browser that sends Global Privacy Control (the test browser sends neither signal) |
 
+## November 11 — Card integrity (A-06, B-03, C-03)
+
+Decisions: edits work like Reddit (allowed any time, labelled "edited"); any edit, and any change to a version's sources, starts its credibility assessments over, with a warning first; importance and articulation votes stay. The value-judgment marker (C-04) is dropped: an unsupported argument can still matter, which is what the separate importance vote is for. `markEvidenceChanged()` now resets `yes`/`no` and your own assessment, and records why (`resetBy`).
+
+| Check | Observed result |
+| --- | --- |
+| Edit own version (control, 15 of 17 supported) | Form shows "17 assessments start over when you save. Votes stay."; save → "Your version was updated and says “edited”. Its 17 assessments start over; votes stay."; meter Unreviewed; importance unchanged; byline "you · edited"; edited shows the earlier wording; evidence section "This version was edited, so assessments started over." |
+| Add a source (1 assessment) | Form warns "1 assessment starts over when you save."; save → Unreviewed; "The evidence changed, so assessments started over." |
+| Remove a source (1 assessment) | First click → "Remove · 1 assessment starts over" and an announcement; second click removes, meter Unreviewed; Undo restores 100% of 1 |
+| Someone else edits (Simulate others → Edit) | Assessments start over; status says so |
+| Phone width (375 px) | Edit form with warning, source form: no horizontal overflow |
+| Console | No errors |
+| Testing note | With the browser pane hidden, animations never finish and the prototype ignores clicks while one runs; tests finished them by hand |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
