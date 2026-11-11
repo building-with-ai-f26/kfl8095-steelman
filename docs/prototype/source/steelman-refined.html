@@ -396,6 +396,17 @@
   #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
   #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
   #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  /* Side tabs: phones only. */
+  #steelman-study .sm-sides { display:none; }
+  @media(max-width:640px) {
+    #steelman-study[data-zoom="read"] .sm-sides { grid-column:1 / -1; position:relative; z-index:30; display:flex; gap:4px; margin:-14px 0 -10px -12px; padding:4px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+    #steelman-study .sm-sides.sm-pinned { box-shadow:0 6px 16px rgb(0 0 0 / .22); }
+    #steelman-study .sm-sides button { flex:1 1 0; min-width:0; display:grid; gap:1px; padding:7px 8px; border:0; border-radius:5px; background:transparent; color:#ffffffb3; text-align:center; }
+    #steelman-study .sm-sides button span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 13px/1.25 var(--sm-serif); }
+    #steelman-study .sm-sides button small { font-size:11px; color:inherit; opacity:.8; }
+    #steelman-study .sm-sides [aria-selected="true"] { background:#fff; color:var(--sm-ink); }
+    #steelman-study[data-zoom="read"] .sm-board > :is(.sm-column:not(.sm-side-on),.sm-col-hidden,.sm-col-gap) { display:none; }
+  }
   #steelman-study .sm-link-note { display:flex; align-items:center; gap:8px; max-width:640px; margin:12px auto 0; padding:8px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); font-size:13px; }
   #steelman-study .sm-link-note svg { width:15px; height:15px; flex:none; }
   #steelman-study .sm-link-note span { flex:1; }
@@ -1914,7 +1925,7 @@
     if(undo&&!undoShown) rowsHtml+=undo;
     rowsHtml+=rowFold(option,rest,n,lit);
     const first=option===firstVisible();
-    return `<section class="sm-column ${first?'sm-first':''}" data-option="${option}" ${lensOf(option)?`data-lens="${lensOf(option)}"`:''} aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${first?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${lensControl(option)}${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div>${lensBar(option)}${rowsHtml}${addArgument(option)}</section>`;
+    return `<section class="sm-column ${first?'sm-first':''} ${option===activeSide()?'sm-side-on':''}" id="sm-col-${option}" data-option="${option}" ${lensOf(option)?`data-lens="${lensOf(option)}"`:''} aria-label="${optionName(option)}"><canvas class="sm-texture" aria-hidden="true"></canvas>${first?`<div class="sm-col-vaxis">${axis('v','more important','less important')}</div>`:''}<div class="sm-column-head ${commenting('option:'+option)?'sm-commenting':''}">${optionTitle(option)}<div class="sm-column-tools">${lensControl(option)}${commentButton('option:'+option,'sm-head-button','option')}<button type="button" class="sm-head-button cursor-interaction" data-action="card-menu" data-id="option:${option}" data-key="menu-option:${option}" aria-haspopup="menu" aria-expanded="${state.menu==='option:'+option}" aria-label="Options for ${escape(optionName(option))}" data-tooltip="Option settings">${icon('ellipsis')}</button></div></div>${lensBar(option)}${rowsHtml}${addArgument(option)}</section>`;
   }
   const MAX_OPTIONS=4;
   // ── Strongest case: each option's three most important arguments, each in its best-articulated wording. ──
@@ -1935,7 +1946,45 @@
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&&!doc.options.some(o=>o.id===state.undo.option)?`<div class="sm-board-undo">${undoMarkup()}</div>`:'';
     const add=doc.options.length<MAX_OPTIONS?`<div class="sm-col-gap" aria-hidden="true"></div><div class="sm-add-option-col"><button type="button" class="sm-add-option cursor-interaction" data-action="add-option" data-key="add-option" aria-label="Add an option" data-tooltip="Add an option">${icon('plus')}<span class="sm-add-short">Option</span><span class="sm-add-long">Add an option</span></button></div>`:'';
-    return orphanUndo+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+    return orphanUndo+sideTabs()+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+  }
+  // Phones show one side at a time. The tabs under the question name each side and its argument count; they stay
+  // pinned to the top of the screen while you scroll the side (see placeSides). Switching keeps your place on each side.
+  // Swiping is left to unfolded rows, which scroll sideways, so a swipe never means two things.
+  const phone = () => window.matchMedia('(max-width:640px)').matches;
+  function activeSide() {
+    const pick=state.side?.[state.boardId];
+    if(pick&&doc.options.some(o=>o.id===pick)) return pick;
+    return (doc.options.find(o=>!isHidden(o.id))||doc.options[0])?.id;
+  }
+  function sideTabs() {
+    const on=activeSide();
+    return `<div class="sm-sides" role="tablist" aria-label="Sides">${doc.options.map(o=>{const n=ideas.filter(i=>i.option===o.id&&!i.merged).length;
+      return `<button type="button" role="tab" class="cursor-interaction" data-action="side" data-id="${o.id}" data-key="side-tab-${o.id}" aria-selected="${o.id===on}" aria-controls="sm-col-${o.id}"><span>${escape(o.name)}</span><small>${n}</small></button>`;}).join('')}</div>`;
+  }
+  // The other side: remember how far down you were on this one, show the other, and return to your place there.
+  function switchSide(option) {
+    if(!doc.options.some(o=>o.id===option)) return;
+    const was=activeSide(),bar=board.querySelector('.sm-sides'),band=visibleBand();
+    const colTop=id=>board.querySelector(`.sm-column[data-option="${id}"]`)?.getBoundingClientRect().top;
+    const pinned=bar&&bar.classList.contains('sm-pinned');
+    state.sidePos={...state.sidePos,[colKey(was)]:pinned?Math.max(0,band.top+bar.offsetHeight-colTop(was)):0};
+    delete state.hiddenCols[colKey(option)];
+    state.side={...state.side,[state.boardId]:option};
+    if(state.open&&ideaOf(state.open)?.option!==option){state.open=null;state.composing=false;}
+    if(state.expanded&&ideaOf(cards[state.expanded]?.idea)?.option!==option) state.expanded=null;
+    render('side-tab-'+option);
+    if(pinned){const b2=board.querySelector('.sm-sides');scrollHost(colTop(option)+(state.sidePos[colKey(option)]||0)-visibleBand().top-b2.offsetHeight);placeSides();}
+    announce(`${optionName(option)}: ${ideas.filter(i=>i.option===option).length} arguments.`);
+  }
+  // Emulates position:sticky: the frame grows to fit the page, so the bar moves itself to the top of what you can see.
+  function placeSides() {
+    const bar=board.querySelector('.sm-sides');if(!bar) return;
+    if(!bar.offsetParent){bar.style.transform='';return;}
+    bar.style.transform='';
+    const band=visibleBand(),r=bar.getBoundingClientRect(),b=board.getBoundingClientRect();
+    const shift=Math.max(0,Math.min(band.top-r.top,b.bottom-r.bottom-8));
+    bar.style.transform=shift?`translateY(${shift}px)`:'';bar.classList.toggle('sm-pinned',shift>0);
   }
   function boardColumns() {
     if(state.zoom==='case') return doc.options.map(()=>'minmax(0,1fr)').join(' 32px ');
@@ -2404,7 +2453,7 @@
     const line=(x1,y1,x2,y2)=>`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=>`<path d="${d}"/>`;
     const port=(x,y)=>`<circle cx="${x}" cy="${y}" r="3"/>`;
-    const columns=[...board.querySelectorAll('.sm-column,.sm-col-hidden')];
+    const columns=[...board.querySelectorAll('.sm-column,.sm-col-hidden')].filter(c=>c.offsetParent!==null);
     const narrow=window.matchMedia('(max-width:640px)').matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=>{
@@ -3414,6 +3463,7 @@
     const beforeFaces=new Map([...board.querySelectorAll('.sm-card[data-card]')].map(el=>[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector('.sm-track'), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest('[data-node]')?.dataset.node;
+    if(state.view==='board'&&state.zoom!=='case'&&phone()){const focusOn=(state.expanded&&ideaOf(cards[state.expanded]?.idea)?.option)||(state.open&&ideaOf(state.open)?.option)||state.composingIdea;if(focusOn&&focusOn!==activeSide())state.side={...state.side,[state.boardId]:focusOn};}
     board.style.setProperty('--sm-cols',boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup()+(state.linkNote?`<p class="sm-link-note" role="status">${icon('info')}<span>${escape(state.linkNote)}</span><button type="button" class="sm-link-button cursor-interaction" data-action="link-note-close" data-key="link-note-close">Dismiss</button></p>`:'');headEl.classList.toggle('sm-commenting',commenting('question'));
@@ -3455,7 +3505,7 @@
       if(box.bottom>window.innerHeight) newTrack.closest('[data-node]').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
     }
     animateWires(kind&&!reduced?720:0);
-    renderFresh();syncAddress();
+    renderFresh();syncAddress();placeSides();
     if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=>board.querySelector(`[data-node="${i}"] .sm-card, .sm-card[data-card="${i}"]`)?.animate([{boxShadow:'0 0 0 3px rgb(36 36 36 / .35)'},{boxShadow:'0 0 0 3px rgb(36 36 36 / 0)'}],{duration:1600,easing:'ease-out'}));}
   }
   let lastToggled=null;
@@ -3599,6 +3649,7 @@
   }
   function scrollHost(dy) { if(!dy) return; try { if(window.frameElement){window.frameElement.ownerDocument.defaultView.scrollBy(0,dy);return;} } catch {} window.scrollBy(0,dy); }
   function placeFresh() {
+    placeSides();
     if(freshEl.hidden) return;
     const band=visibleBand(),parent=freshEl.offsetParent||document.body,top=parent.getBoundingClientRect().top;
     freshEl.style.top=Math.max(0,band.bottom-top-freshEl.offsetHeight-16)+'px';
@@ -3726,6 +3777,7 @@
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action==='side'){switchSide(id);save();return;}
     if(action.startsWith('sim-')||['order-update','merged-show','prev-toggle'].includes(action)){liveAction(action,id);return;}
     if(state.offline&&['vote','contribute'].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}

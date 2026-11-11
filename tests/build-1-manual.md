@@ -802,6 +802,22 @@ The page's address carries `b` (board), `v` (version), and `c` (comment) after `
 | Console | No errors |
 | Not checked | A version link into a hidden column, or past a column's fold of 10 (no example board has one); the code clears both |
 
+## November 11 — Phones (M-03)
+
+Decision: on phones, tabs switch sides; swiping stays with unfolded rows. `sideTabs()` renders the tabs; CSS hides the other columns at 640 px and below; `placeSides()` pins the bar (the frame grows to its content, so position:sticky can't); `switchSide()` remembers each side's scroll position. Wires skip hidden columns.
+
+| Check | Observed result |
+| --- | --- |
+| Open-weights at 375 px | Tabs "Why it makes sense 6" (selected) and "Why it might not 5"; only the first side shown; page 2,875 px tall (was 4,549) |
+| Pinned | Scrolled into the board: bar at the top of the screen |
+| Switch | Tap "Why it might not" → only that side; its top sits just under the bar; status "Why it might not: 5 arguments." |
+| Keeps place | Scroll 400 px down "might not", switch away and back → same place (343 px into the column) |
+| Link to the other side | `#b=openweights&v=control` while on "might not" → switches to "makes sense", card shown |
+| Layout | Bar ends 20 px above the column at rest; no horizontal overflow |
+| Desktop (992 px) | No tabs; both columns; Strongest case shows two columns; wires drawn |
+| Console | No errors |
+| Not checked | Real phones and touch (emulated width only) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

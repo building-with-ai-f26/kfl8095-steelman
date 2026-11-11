@@ -2278,6 +2278,17 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
   #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
   #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  /* Side tabs: phones only. */
+  #steelman-study .sm-sides { display:none; }
+  @media(max-width:640px) {
+    #steelman-study[data-zoom=&quot;read&quot;] .sm-sides { grid-column:1 / -1; position:relative; z-index:30; display:flex; gap:4px; margin:-14px 0 -10px -12px; padding:4px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+    #steelman-study .sm-sides.sm-pinned { box-shadow:0 6px 16px rgb(0 0 0 / .22); }
+    #steelman-study .sm-sides button { flex:1 1 0; min-width:0; display:grid; gap:1px; padding:7px 8px; border:0; border-radius:5px; background:transparent; color:#ffffffb3; text-align:center; }
+    #steelman-study .sm-sides button span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 13px/1.25 var(--sm-serif); }
+    #steelman-study .sm-sides button small { font-size:11px; color:inherit; opacity:.8; }
+    #steelman-study .sm-sides [aria-selected=&quot;true&quot;] { background:#fff; color:var(--sm-ink); }
+    #steelman-study[data-zoom=&quot;read&quot;] .sm-board &gt; :is(.sm-column:not(.sm-side-on),.sm-col-hidden,.sm-col-gap) { display:none; }
+  }
   #steelman-study .sm-link-note { display:flex; align-items:center; gap:8px; max-width:640px; margin:12px auto 0; padding:8px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); font-size:13px; }
   #steelman-study .sm-link-note svg { width:15px; height:15px; flex:none; }
   #steelman-study .sm-link-note span { flex:1; }
@@ -3796,7 +3807,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(undo&amp;&amp;!undoShown) rowsHtml+=undo;
     rowsHtml+=rowFold(option,rest,n,lit);
     const first=option===firstVisible();
-    return `&lt;section class=&quot;sm-column ${first?&#x27;sm-first&#x27;:&#x27;&#x27;}&quot; data-option=&quot;${option}&quot; ${lensOf(option)?`data-lens=&quot;${lensOf(option)}&quot;`:&#x27;&#x27;} aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${first?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${lensControl(option)}${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;${lensBar(option)}${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-column ${first?&#x27;sm-first&#x27;:&#x27;&#x27;} ${option===activeSide()?&#x27;sm-side-on&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-col-${option}&quot; data-option=&quot;${option}&quot; ${lensOf(option)?`data-lens=&quot;${lensOf(option)}&quot;`:&#x27;&#x27;} aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${first?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${lensControl(option)}${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;${lensBar(option)}${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
   }
   const MAX_OPTIONS=4;
   // ── Strongest case: each option&#x27;s three most important arguments, each in its best-articulated wording. ──
@@ -3817,7 +3828,45 @@ html&gt;body{padding:0}&lt;/style&gt;
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&amp;&amp;!doc.options.some(o=&gt;o.id===state.undo.option)?`&lt;div class=&quot;sm-board-undo&quot;&gt;${undoMarkup()}&lt;/div&gt;`:&#x27;&#x27;;
     const add=doc.options.length&lt;MAX_OPTIONS?`&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-add-option-col&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-option cursor-interaction&quot; data-action=&quot;add-option&quot; data-key=&quot;add-option&quot; aria-label=&quot;Add an option&quot; data-tooltip=&quot;Add an option&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span class=&quot;sm-add-short&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;sm-add-long&quot;&gt;Add an option&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
-    return orphanUndo+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+    return orphanUndo+sideTabs()+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+  }
+  // Phones show one side at a time. The tabs under the question name each side and its argument count; they stay
+  // pinned to the top of the screen while you scroll the side (see placeSides). Switching keeps your place on each side.
+  // Swiping is left to unfolded rows, which scroll sideways, so a swipe never means two things.
+  const phone = () =&gt; window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
+  function activeSide() {
+    const pick=state.side?.[state.boardId];
+    if(pick&amp;&amp;doc.options.some(o=&gt;o.id===pick)) return pick;
+    return (doc.options.find(o=&gt;!isHidden(o.id))||doc.options[0])?.id;
+  }
+  function sideTabs() {
+    const on=activeSide();
+    return `&lt;div class=&quot;sm-sides&quot; role=&quot;tablist&quot; aria-label=&quot;Sides&quot;&gt;${doc.options.map(o=&gt;{const n=ideas.filter(i=&gt;i.option===o.id&amp;&amp;!i.merged).length;
+      return `&lt;button type=&quot;button&quot; role=&quot;tab&quot; class=&quot;cursor-interaction&quot; data-action=&quot;side&quot; data-id=&quot;${o.id}&quot; data-key=&quot;side-tab-${o.id}&quot; aria-selected=&quot;${o.id===on}&quot; aria-controls=&quot;sm-col-${o.id}&quot;&gt;&lt;span&gt;${escape(o.name)}&lt;/span&gt;&lt;small&gt;${n}&lt;/small&gt;&lt;/button&gt;`;}).join(&#x27;&#x27;)}&lt;/div&gt;`;
+  }
+  // The other side: remember how far down you were on this one, show the other, and return to your place there.
+  function switchSide(option) {
+    if(!doc.options.some(o=&gt;o.id===option)) return;
+    const was=activeSide(),bar=board.querySelector(&#x27;.sm-sides&#x27;),band=visibleBand();
+    const colTop=id=&gt;board.querySelector(`.sm-column[data-option=&quot;${id}&quot;]`)?.getBoundingClientRect().top;
+    const pinned=bar&amp;&amp;bar.classList.contains(&#x27;sm-pinned&#x27;);
+    state.sidePos={...state.sidePos,[colKey(was)]:pinned?Math.max(0,band.top+bar.offsetHeight-colTop(was)):0};
+    delete state.hiddenCols[colKey(option)];
+    state.side={...state.side,[state.boardId]:option};
+    if(state.open&amp;&amp;ideaOf(state.open)?.option!==option){state.open=null;state.composing=false;}
+    if(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea)?.option!==option) state.expanded=null;
+    render(&#x27;side-tab-&#x27;+option);
+    if(pinned){const b2=board.querySelector(&#x27;.sm-sides&#x27;);scrollHost(colTop(option)+(state.sidePos[colKey(option)]||0)-visibleBand().top-b2.offsetHeight);placeSides();}
+    announce(`${optionName(option)}: ${ideas.filter(i=&gt;i.option===option).length} arguments.`);
+  }
+  // Emulates position:sticky: the frame grows to fit the page, so the bar moves itself to the top of what you can see.
+  function placeSides() {
+    const bar=board.querySelector(&#x27;.sm-sides&#x27;);if(!bar) return;
+    if(!bar.offsetParent){bar.style.transform=&#x27;&#x27;;return;}
+    bar.style.transform=&#x27;&#x27;;
+    const band=visibleBand(),r=bar.getBoundingClientRect(),b=board.getBoundingClientRect();
+    const shift=Math.max(0,Math.min(band.top-r.top,b.bottom-r.bottom-8));
+    bar.style.transform=shift?`translateY(${shift}px)`:&#x27;&#x27;;bar.classList.toggle(&#x27;sm-pinned&#x27;,shift&gt;0);
   }
   function boardColumns() {
     if(state.zoom===&#x27;case&#x27;) return doc.options.map(()=&gt;&#x27;minmax(0,1fr)&#x27;).join(&#x27; 32px &#x27;);
@@ -4286,7 +4335,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const line=(x1,y1,x2,y2)=&gt;`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=&gt;`&lt;path d=&quot;${d}&quot;/&gt;`;
     const port=(x,y)=&gt;`&lt;circle cx=&quot;${x}&quot; cy=&quot;${y}&quot; r=&quot;3&quot;/&gt;`;
-    const columns=[...board.querySelectorAll(&#x27;.sm-column,.sm-col-hidden&#x27;)];
+    const columns=[...board.querySelectorAll(&#x27;.sm-column,.sm-col-hidden&#x27;)].filter(c=&gt;c.offsetParent!==null);
     const narrow=window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=&gt;{
@@ -5296,6 +5345,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const beforeFaces=new Map([...board.querySelectorAll(&#x27;.sm-card[data-card]&#x27;)].map(el=&gt;[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector(&#x27;.sm-track&#x27;), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest(&#x27;[data-node]&#x27;)?.dataset.node;
+    if(state.view===&#x27;board&#x27;&amp;&amp;state.zoom!==&#x27;case&#x27;&amp;&amp;phone()){const focusOn=(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea)?.option)||(state.open&amp;&amp;ideaOf(state.open)?.option)||state.composingIdea;if(focusOn&amp;&amp;focusOn!==activeSide())state.side={...state.side,[state.boardId]:focusOn};}
     board.style.setProperty(&#x27;--sm-cols&#x27;,boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup()+(state.linkNote?`&lt;p class=&quot;sm-link-note&quot; role=&quot;status&quot;&gt;${icon(&#x27;info&#x27;)}&lt;span&gt;${escape(state.linkNote)}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;link-note-close&quot; data-key=&quot;link-note-close&quot;&gt;Dismiss&lt;/button&gt;&lt;/p&gt;`:&#x27;&#x27;);headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
@@ -5337,7 +5387,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(box.bottom&gt;window.innerHeight) newTrack.closest(&#x27;[data-node]&#x27;).scrollIntoView({block:&#x27;nearest&#x27;,behavior:reduced?&#x27;auto&#x27;:&#x27;smooth&#x27;});
     }
     animateWires(kind&amp;&amp;!reduced?720:0);
-    renderFresh();syncAddress();
+    renderFresh();syncAddress();placeSides();
     if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=&gt;board.querySelector(`[data-node=&quot;${i}&quot;] .sm-card, .sm-card[data-card=&quot;${i}&quot;]`)?.animate([{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / .35)&#x27;},{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / 0)&#x27;}],{duration:1600,easing:&#x27;ease-out&#x27;}));}
   }
   let lastToggled=null;
@@ -5481,6 +5531,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   function scrollHost(dy) { if(!dy) return; try { if(window.frameElement){window.frameElement.ownerDocument.defaultView.scrollBy(0,dy);return;} } catch {} window.scrollBy(0,dy); }
   function placeFresh() {
+    placeSides();
     if(freshEl.hidden) return;
     const band=visibleBand(),parent=freshEl.offsetParent||document.body,top=parent.getBoundingClientRect().top;
     freshEl.style.top=Math.max(0,band.bottom-top-freshEl.offsetHeight-16)+&#x27;px&#x27;;
@@ -5608,6 +5659,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;,revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||&#x27;&#x27;,value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||&#x27;&#x27;});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action===&#x27;side&#x27;){switchSide(id);save();return;}
     if(action.startsWith(&#x27;sim-&#x27;)||[&#x27;order-update&#x27;,&#x27;merged-show&#x27;,&#x27;prev-toggle&#x27;].includes(action)){liveAction(action,id);return;}
     if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
