@@ -752,6 +752,24 @@ Decisions: sign in with Google or a one-time email link (no passwords); people w
 | Phone width (375 px) | Start, sent, and username steps: no horizontal overflow |
 | Console | No errors |
 
+## November 11 — Privacy, consent, deletion (M-07, M-08)
+
+Decisions: analytics follow common US practice (notice with opt-out; Global Privacy Control and Do Not Track honored). A deleted account's arguments, wordings, and sources stay, credited to deleted_account. `docs/analytics.js` now shows the notice and exposes `window.steelmanAnalytics`; `docs/privacy.html` is new; the prototype's Account card gains a Privacy group and Delete account.
+
+| Check | Observed result |
+| --- | --- |
+| First visit, Product Page | Notice "Steelman records anonymous usage and screen replays to improve it. Typed text is hidden. Privacy · Turn off · OK"; analytics on |
+| Turn off | Stored "off"; PostHog opted out; notice gone |
+| Reload with analytics off | Only PostHog library files load; no event, flags, or replay requests |
+| Privacy page | Shows "off" and Turn on; Turn on → "on", stored "on"; footer link on the Product Page |
+| Account → Usage analytics | Turn off → "Usage analytics off. Nothing more is sent from this browser."; the page's stored choice changes too |
+| Download | Saves steelman-data.json: account, sign-in methods, votes, and 4 boards with what you wrote (wording, context, option, date) and comments |
+| Privacy notice / sign-in panel Privacy link | Opens /privacy.html in a new tab |
+| Delete account | Form lists what's removed and what stays (deleted_account); "kieran" → "Type kieran_lamee exactly."; correct name → "Your account is deleted", Preview as Signed out; Back to Steelman → the list |
+| Phone width (375 px) | Notice 16 px from the edges and bottom; account card and delete form: no horizontal overflow |
+| Console | No errors |
+| Not checked | A browser that sends Global Privacy Control (the test browser sends neither signal) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

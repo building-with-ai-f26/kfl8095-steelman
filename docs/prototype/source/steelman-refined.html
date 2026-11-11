@@ -919,6 +919,12 @@
   #steelman-study .sm-pw-form input { height:36px; padding:0 10px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font-size:14px; }
   #steelman-study .sm-pw-form input:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
   #steelman-study .sm-pw-form > div { display:flex; justify-content:flex-end; gap:8px; }
+  #steelman-study .sm-delete-link { justify-self:center; font-size:12px; color:var(--sm-muted); text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-delete-form { padding:14px; border:1px solid #b4434f66; border-radius:8px; }
+  #steelman-study .sm-delete-form h3 { margin:0; font:600 15px/1.3 var(--sm-serif); }
+  #steelman-study .sm-delete-form p { margin:0; font-size:13px; line-height:1.5; }
+  #steelman-study .sm-danger { background:#b4434f; border-color:#b4434f; color:#fff; }
+  #steelman-study .sm-auth-hint .sm-link-button { font-size:inherit; text-decoration:underline; text-underline-offset:2px; }
   #steelman-study .sm-signout { justify-self:stretch; height:36px; font-size:13px; }
   #steelman-study .sm-user-link { padding:0; border:0; background:none; font:inherit; color:inherit; text-align:inherit; cursor:pointer; }
   #steelman-study .sm-user-link:hover { text-decoration:underline; text-underline-offset:3px; }
@@ -1330,7 +1336,7 @@
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
     'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','decision-option':'owner','decision-arg':'owner','decision-edit':'owner','decision-cancel':'owner','decision-save':'owner','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     inbox:'view','note-open':'view','note-read':'view','notes-read-all':'view','space-new':'view','space-create':'view','space-settings':'admin','space-canvas':'admin','space-kind':'admin','space-invite':'admin','space-invite-cancel':'admin','space-remove':'admin','space-approve':'admin','space-decline':'admin','space-rule-add':'admin','space-rule-remove':'admin','space-ai':'admin','space-mode':'admin',
-    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-open':'view','profile-google':'view','sign-out':'view',
+    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-open':'view','profile-google':'view','profile-analytics':'view','profile-privacy':'view','profile-download':'view','profile-delete':'view','profile-delete-cancel':'view','profile-delete-confirm':'view','sign-out':'view',
     settings:'owner'};
   const WHY = {admin:'Space admins only.',view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -2589,7 +2595,9 @@
         +row(`Google<small>${state.google?escape(state.myEmail):'Not connected'}</small>`,`<span class="sm-rrow-control">${button('profile-google',state.google?'Disconnect':'Connect','data-key="google"')}</span>`)
         +row('Email link<small>Always on</small>','')
         +`</div><div class="sm-rgroup">`+row('Tour<small>The three votes, on a board</small>',`<span class="sm-rrow-control">${button('tour-start','Take it','data-key="tour-start"')}</span>`)+`</div>`
-        +`<button type="button" class="sm-button sm-signout cursor-interaction" data-action="sign-out" data-key="sign-out">${icon('log-out')}Sign out</button></section>`;
+        +privacyGroup()
+        +`<button type="button" class="sm-button sm-signout cursor-interaction" data-action="sign-out" data-key="sign-out">${icon('log-out')}Sign out</button>`
+        +(state.acct?.deleting?deleteForm():`<button type="button" class="sm-link-button sm-delete-link cursor-interaction" data-action="profile-delete" data-key="delete-open">Delete account</button>`)+`</section>`;
       side=`<aside class="sm-profile-side" aria-label="Your credits and account">${credits}${account}</aside>`;
     }
     return `<main class="sm-profile" id="sm-profile" ${self?'data-self':''} aria-label="${self?'Your profile':'Profile: '+escape(user)}">${back}${head}<div class="sm-profile-main">${earn}${contrib}</div>${side}</main>`;
@@ -2614,6 +2622,44 @@
     try { const h=new URLSearchParams(hostWindow().location.hash.slice(1)); return h.get('s')?openInvite(h.get('s'),h.get('by'),h.get('as')):false; } catch { return false; }
   }
   function clearInviteLink() { try { const w=hostWindow(); if(w.location.hash) w.history.replaceState(null,'',w.location.href.split('#')[0]); } catch {} }
+  // ── Privacy. Usage analytics are real: the page around the prototype runs them (docs/analytics.js), and this switch
+  // changes the same setting as its first-visit notice. Downloading your data is real too (your contributions in this
+  // browser, as JSON). Deleting the account is simulated.
+  const analytics = () => { try { return hostWindow().steelmanAnalytics||null; } catch { return null; } };
+  function openPrivacy() { try { const w=hostWindow();w.open(new URL('../privacy.html',w.location.href).href,'_blank','noopener'); } catch {} }
+  function privacyGroup() {
+    const a=analytics(),on=a?.enabled();
+    const value=!a?'<span class="sm-rrow-value">Not running here</span>':a.signal?'<span class="sm-rrow-value">Off · browser signal</span>'
+      :`<span class="sm-rrow-control"><span class="sm-rrow-value">${on?'On':'Off'}</span>${button('profile-analytics',on?'Turn off':'Turn on','data-key="analytics"')}</span>`;
+    return `<div class="sm-rgroup"><h3>Privacy</h3>`
+      +`<div class="sm-rrow"><span class="sm-rrow-label">Usage analytics<small>Clicks and screen replays; typed text is hidden</small></span>${value}</div>`
+      +`<div class="sm-rrow"><span class="sm-rrow-label">Your data<small>What you wrote, voted, and assessed</small></span><span class="sm-rrow-control">${button('profile-download','Download','data-key="download"')}</span></div>`
+      +`<div class="sm-rrow"><span class="sm-rrow-label">Privacy notice</span><span class="sm-rrow-control">${button('profile-privacy','Read','data-key="privacy"')}</span></div></div>`;
+  }
+  const DELETED = 'deleted_account';
+  function deleteForm() {
+    const e=state.acct.deleteError;
+    return `<div class="sm-pw-form sm-delete-form" role="group" aria-labelledby="sm-delete-title"><h3 id="sm-delete-title">Delete your account?</h3>`
+      +`<p>Your email, votes, assessments, and comments are removed. Arguments, wordings, and sources you wrote stay on their boards, credited to <b>${DELETED}</b>.</p>`
+      +`<label>Type ${escape(ME)} to confirm<input id="sm-delete-name" type="text" autocomplete="off" spellcheck="false" data-key="delete-name" ${e?'aria-invalid="true" aria-describedby="sm-delete-error"':''}></label>${e?`<p class="sm-field-error" id="sm-delete-error">${escape(e)}</p>`:''}`
+      +`<div>${button('profile-delete-cancel','Cancel','data-key="delete-cancel"')}<button type="button" class="sm-button sm-danger cursor-interaction" data-action="profile-delete-confirm" data-key="delete-confirm">Delete account</button></div></div>`;
+  }
+  function downloadData() {
+    const mine=Object.values(docs).map(d=>({board:d.question.text,
+      wrote:Object.values(d.cards).filter(c=>c.by==='you').map(c=>({wording:c.claim,context:c.explanation||'',option:d.options.find(o=>o.id===d.ideas.find(i=>i.id===c.idea)?.option)?.name||'',at:c.at})),
+      comments:(d.comments||[]).filter(c=>c.by==='you'&&!c.deleted).map(c=>({text:c.text,at:c.at}))})).filter(b=>b.wrote.length||b.comments.length);
+    const data={exported:new Date().toISOString(),account:{username:ME,email:state.myEmail,signIn:[...(state.google?['Google']:[]),'Email link']},
+      votes:{importance:state.importance,articulation:state.preference,evidence:state.assessments},boards:mine};
+    try {
+      const w=hostWindow(),a=w.document.createElement('a');
+      a.href=w.URL.createObjectURL(new w.Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='steelman-data.json';
+      w.document.body.appendChild(a);a.click();a.remove();setTimeout(()=>w.URL.revokeObjectURL(a.href),2000);
+      return true;
+    } catch { return false; }
+  }
+  function deletedMarkup() {
+    return `<main class="sm-landing" data-canvas="${spaceOf('none').canvas}" aria-label="Account deleted"><div class="sm-landing-inner"><section class="sm-rail-card sm-landing-auth"><h2 class="sm-auth-title">Your account is deleted</h2><p class="sm-auth-text">Your email, votes, assessments, and comments are gone. What you wrote stays on its boards, credited to ${DELETED}.</p><button type="button" class="sm-button sm-solid cursor-interaction" data-action="deleted-done" data-key="deleted-done">Back to Steelman</button><p class="sm-field-hint sm-auth-hint">Simulated: nothing was deleted.</p></section></div></main>`;
+  }
   // Sign in: Continue with Google, or a one-time link by email. Either way the email is confirmed, so there is no
   // unconfirmed account. A first sign-in picks a username. The same panel serves an invite link and the top bar's Sign in.
   const knownEmail = e => [state.myEmail,ME].includes(String(e).trim().toLowerCase());
@@ -2629,7 +2675,7 @@
       +`<div class="sm-auth-links">${link('auth-resend',v.resent?'Sent again':'Resend','auth-resend')}${link('auth-restart','Use a different email','auth-restart')}</div>`;
     else if(v.step==='expired') body=`<h2 class="sm-auth-title">That link has expired</h2><p class="sm-auth-text">Links work once, for 15 minutes.</p><button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-again" data-key="auth-again">Email me a new link</button><div class="sm-auth-links">${link('auth-restart','Use a different email','auth-restart')}</div>`;
     else if(v.step==='name') body=`<h2 class="sm-auth-title">Choose a username</h2>${field('name','Username','text','username',v.name,'maxlength="20" spellcheck="false"')}${err}<p class="sm-field-hint sm-auth-hint">Shown on everything you write.</p><button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-name" data-key="auth-name-go" data-primary>Continue</button>`;
-    else body=`<button type="button" class="sm-button sm-google cursor-interaction" data-action="auth-google" data-key="auth-google"><span class="sm-g" aria-hidden="true">G</span>Continue with Google</button><p class="sm-or"><span>or</span></p>${field('email','Email','email','email',v.email)}${err}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-send" data-key="auth-send" data-primary>Email me a link</button><p class="sm-field-hint sm-auth-hint">Simulated: you continue as ${escape(ME)}.</p>`;
+    else body=`<button type="button" class="sm-button sm-google cursor-interaction" data-action="auth-google" data-key="auth-google"><span class="sm-g" aria-hidden="true">G</span>Continue with Google</button><p class="sm-or"><span>or</span></p>${field('email','Email','email','email',v.email)}${err}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-send" data-key="auth-send" data-primary>Email me a link</button><p class="sm-field-hint sm-auth-hint">Simulated: you continue as ${escape(ME)}. <button type="button" class="sm-link-button cursor-interaction" data-action="auth-privacy" data-key="auth-privacy">Privacy</button></p>`;
     return `<section class="sm-rail-card sm-landing-auth" aria-label="Sign in">${body}</section>`;
   }
   function landingMarkup() {
@@ -2659,6 +2705,7 @@
     const v=state.invite;if(!v) return;
     const show=(focus,msg)=>{renderHome();root.querySelector(`[data-key="${focus}"]`)?.focus();if(msg)announce(msg);};
     const done=()=>{announce(v.via==='google'?'Signed in with Google (simulated).':'Signed in (simulated).');enterInvited(v.plain?'you':v.role,!v.plain);};
+    if(action==='auth-privacy') {openPrivacy();return;}
     if(action==='invite-look') {enterInvited('out',false);announce('Signed out: you can read. Sign in from the top bar to take part.');return;}
     if(action==='auth-google') {v.via='google';v.error='';if(v.plain){done();return;}v.step='name';v.name='';show('auth-name');return;}
     if(action==='auth-send') {
@@ -2957,6 +3004,7 @@
     if(action==='space-mode') {SPACE_META.defaults[s.id]=id;redo('space-mode-'+id,`New steelmen in ${s.name} start as ${MODES[id].label}.`);}
   }
   function renderHome() {
+    if(state.deletedNotice) {homeEl.innerHTML=deletedMarkup();return;}
     if(state.invite) {homeEl.innerHTML=landingMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(state.spaceEdit&&(state.spaceEdit==='new'?state.persona==='out'||!state.spaceDraft:!SPACES.some(x=>x.id===state.spaceEdit)||!isSpaceAdmin(state.spaceEdit))) state.spaceEdit=null;
     if(!state.profile&&state.spaceEdit) {homeEl.innerHTML=sidebar()+spaceSettingsMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
@@ -3163,7 +3211,7 @@
     renderFresh();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-open','profile-google','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
+  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-open','profile-google','profile-analytics','profile-privacy','profile-download','profile-delete','profile-delete-cancel','profile-delete-confirm','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
@@ -3234,6 +3282,17 @@
     if(action==='profile-email-resend') {acct.resent=true;renderHome();focusOn('email-resend');announce(`Sent again to ${acct.pending}.`);return;}
     if(action==='profile-email-drop') {acct.pending='';renderHome();focusOn('email-open-edit');announce('Email change cancelled.');return;}
     if(action==='profile-email-open') {state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}.`);return;}
+    if(action==='profile-analytics') {const a=analytics();if(a){a.set(!a.enabled());renderHome();focusOn('analytics');announce(a.enabled()?'Usage analytics on.':'Usage analytics off. Nothing more is sent from this browser.');}return;}
+    if(action==='profile-privacy') {openPrivacy();return;}
+    if(action==='profile-download') {announce(downloadData()?'Downloaded steelman-data.json.':'Couldn’t start the download here.');return;}
+    if(action==='profile-delete') {Object.assign(acct,{deleting:true,deleteError:''});renderHome();focusOn('delete-name');return;}
+    if(action==='profile-delete-cancel') {acct.deleting=false;renderHome();focusOn('delete-open');return;}
+    if(action==='profile-delete-confirm') {
+      const typed=(root.querySelector('#sm-delete-name')?.value||'').trim();
+      if(typed!==ME){acct.deleteError=`Type ${ME} exactly.`;renderHome();focusOn('delete-name');announce(acct.deleteError);return;}
+      state.acct={};state.profile=null;state.profileFrom=null;setPersona('out');state.deletedNotice=true;renderView('deleted-done');root.scrollIntoView({block:'start'});
+      announce('Account deleted (simulated).');return;
+    }
     if(action==='profile-google') {state.google=!state.google;renderHome();focusOn('google');announce(state.google?'Google connected (simulated).':'Google disconnected. You can still sign in with an email link.');return;}
     if(action==='sign-out') {state.profile=null;state.profileFrom=null;setPersona('out');focusOn('sign-in');announce('Signed out (simulated). Preview as is now Signed out.');}
   }
@@ -3584,6 +3643,7 @@
     if(state.offline&&['vote','contribute'].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
     if(action==='sign-in'){openSignIn();save();return;}
+    if(action==='deleted-done'){state.deletedNotice=false;renderView('side-'+state.space);announce('Signed out.');return;}
     if(action==='inbox'||action.startsWith('note')){noteAction(action,id);save();return;}
     if(action==='invite-preview'){const q=doc.question;openInvite(state.boardId,ME,q.visibility==='private'?'view':q.accessRole,true);save();return;}
     if(action.startsWith('invite-')||action.startsWith('auth-')){inviteAction(action,id);save();return;}

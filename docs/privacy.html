@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="What Steelman collects, why, and how to turn it off.">
+  <meta name="theme-color" content="#ffffff">
+  <title>Privacy — Steelman</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2.00 -7.65 59.95 59.95' color='%23242424'%3E%3Cpolygon points='10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75' fill='currentColor'/%3E%3Cpolygon points='33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter'/%3E%3Cpolygon points='44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linejoin='miter' stroke-linecap='butt' pathLength='18' stroke-dasharray='.5 .5' stroke-dashoffset='.25'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,300;1,400&display=swap">
+  <link rel="stylesheet" href="design/tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="analytics.js"></script>
+  <style>
+    .privacy { max-width: 40em; padding: 56px 0 64px; }
+    .privacy h1 { font-size: clamp(34px, 4vw, 46px); }
+    .privacy .lede { font-size: 17px; }
+    .privacy h2 { margin-top: 40px; font-size: 22px; }
+    .privacy p, .privacy li { margin-top: 10px; font-size: 15px; line-height: 1.65; color: #3a3a3a; }
+    .privacy ul { padding-left: 20px; }
+    .privacy button { margin-top: 14px; padding: 8px 14px; border: 1px solid var(--sm-ink); border-radius: 6px; background: #fff; color: var(--sm-ink); font: 600 13px/1.2 var(--sm-sans); cursor: pointer; }
+    .privacy button:focus-visible { outline: 2px solid var(--sm-ink); outline-offset: 3px; }
+    #analytics-state { font-weight: 600; color: var(--sm-ink); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site">
+    <div class="site-inner">
+      <a class="wordmark" href="./" aria-label="Steelman home"><svg class="logo" viewBox="0 0 55.95 44.65" aria-hidden="true" focusable="false"><polygon points="10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75" fill="currentColor"/><polygon points="33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter" stroke-linecap="butt" pathLength="18" stroke-dasharray=".5 .5" stroke-dashoffset=".25"/></svg>steelman.</a>
+      <nav aria-label="Main navigation"><a href="./#prd">PRD</a><a href="./#build-log">Build log</a><a href="prototype/">Prototype</a></nav>
+    </div>
+  </header>
+  <div class="page">
+    <main id="main" class="privacy">
+      <p class="edition">Updated November 11, 2026</p>
+      <h1>Privacy</h1>
+      <p class="lede">Steelman is a class project. This page says what this site collects today, why, and how to turn it off.</p>
+
+      <h2>Usage analytics</h2>
+      <p>This site and its prototype send usage to PostHog, an analytics service, on its US servers: pages viewed, clicks, the names of prototype actions (such as “unfold”), and screen replays of visits. Replays hide what you type. Nothing identifies you by name or email; a random ID in your browser groups one visit's events.</p>
+      <p>We use this only to see where people get stuck, so the product can be fixed. It is not sold or shared for advertising.</p>
+      <p>Usage analytics are <span id="analytics-state">on</span> in this browser.</p>
+      <button type="button" id="analytics-toggle">Turn off</button>
+      <p>If your browser sends Global Privacy Control or Do Not Track, nothing is sent and the notice isn't shown.</p>
+
+      <h2>What stays in your browser</h2>
+      <p>Everything you write, vote, or change in the prototype is saved in your own browser and is not sent anywhere. Clearing this site's data removes it.</p>
+
+      <h2>Accounts</h2>
+      <p>The prototype has no real accounts: signing in, email links, and deleting an account are simulated. When Steelman has accounts, this page will say what they store. The plan: your email and username; what you write, which other people on the board see; and your votes and assessments, which count toward shared totals but aren't shown as yours. Deleting an account removes your email, votes, assessments, and comments. Arguments, wordings, and sources you wrote stay on their boards, credited to deleted_account, so other people's work keeps its context.</p>
+
+      <h2>Questions</h2>
+      <p>Ask Kieran LaMee through the course, or open an issue on <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/issues">GitHub</a>.</p>
+    </main>
+    <footer><span>Steelman</span><div><a href="./">Product Page</a><a href="prototype/">Prototype</a></div></footer>
+  </div>
+  <script>
+    (function () {
+      var a = window.steelmanAnalytics, state = document.getElementById('analytics-state'), button = document.getElementById('analytics-toggle');
+      function show() {
+        var on = a && a.enabled();
+        state.textContent = on ? 'on' : a && a.signal ? 'off (your browser asks not to be tracked)' : 'off';
+        button.hidden = !a || a.signal;
+        button.textContent = on ? 'Turn off' : 'Turn on';
+      }
+      button.addEventListener('click', function () { a.set(!a.enabled()); show(); });
+      show();
+    })();
+  </script>
+</body>
+</html>
