@@ -818,6 +818,23 @@ Decision: on phones, tabs switch sides; swiping stays with unfolded rows. `sideT
 | Console | No errors |
 | Not checked | Real phones and touch (emulated width only) |
 
+## November 11 — Accessibility pass (M-04)
+
+axe-core 4.10.2 was loaded into the prototype frame and run on each screen; contrast was also computed directly (axe can't see behind the canvas texture). Keyboard checks used real Tab and Enter presses.
+
+| Check | Observed result |
+| --- | --- |
+| axe, first run | Board: duplicate banner (the question header), content outside landmarks; comments panel: `aside` with role dialog; list: no level-one heading; phone top bar: Board, Strongest case, Share, New steelman without names; inbox and Share: headers counted as banners |
+| Fixes | Question header is a labelled section; panel is a div; list has a hidden "Home" (or space) h1; root's stray label removed; icon-only buttons labelled; inbox and Share headers are plain elements |
+| axe, final | No violations: list, inbox, New steelman, profile, board, unfolded row + expanded card + comments, Share, Settings, Strongest case (desktop); list, New steelman, inbox, board, other side, profile (375 px) |
+| Contrast | Muted text on canvases was 3.3–3.9:1 (removed-card notes on slate, "Add an argument", case caption). Tokens: `--sm-muted` #686868 → #565656, `--sm-quiet` #707070 → #5a5a5a; now at least 4.6:1 on every canvas and 6.9:1 on white. The breadcrumb "/" (decorative, hidden from screen readers) stays lighter |
+| Keyboard, board | Order: top bar → question tools → per row: importance ↑↓, stack, menu, wording, author, AI check, combine, comments, expand |
+| Keyboard, core loop | Enter on a stack unfolds the row (focus stays on the leading wording); Tab reaches each wording's articulation ↑↓; Enter on expand opens sources, Add a source, AI check, assess Yes/No, Suggest a better version |
+| Jump to | Tab from Settings → "Jump to Why it makes sense" (appears), "Jump to Why it might not"; Enter → focus in that side's header; status "Why it might not." |
+| Reduced motion | CSS stops transitions and animations; `play()` now skips scripted animations too |
+| Console | No errors |
+| Not checked | A real screen reader, a keyboard-only user, Windows high-contrast mode |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

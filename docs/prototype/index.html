@@ -1810,8 +1810,8 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   /* Ink */
   --sm-ink:#242424;          /* text and strong rules */
-  --sm-muted:#686868;        /* secondary text */
-  --sm-quiet:#707070;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif) */
+  --sm-muted:#565656;        /* secondary text; at least 4.5:1 on white and on every space canvas */
+  --sm-quiet:#5a5a5a;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif); 4.5:1 on every canvas */
   --sm-selected:#292929;     /* pressed controls */
   --sm-on-selected:#fff;     /* icon or text on a pressed control */
 
@@ -2278,6 +2278,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
   #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
   #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  /* Jump links: hidden until focused, then a dark pill at the top of the board. */
+  #steelman-study .sm-skip { grid-column:1 / -1; position:relative; z-index:31; display:flex; gap:8px; height:0; }
+  #steelman-study .sm-skip button { padding:8px 14px; border:0; border-radius:999px; background:var(--sm-ink); color:#fff; font:600 13px/1.2 var(--sm-sans); box-shadow:var(--sm-shadow-sm); translate:0 -44px; }
+  #steelman-study .sm-skip button:not(:focus) { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   /* Side tabs: phones only. */
   #steelman-study .sm-sides { display:none; }
   @media(max-width:640px) {
@@ -2295,6 +2299,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-link-note .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
   #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-sr { position:absolute; width:1px; height:1px; margin:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
@@ -2567,7 +2572,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* ── Share: a panel under the Share button, like a file&#x27;s share sheet. ── */
   #steelman-study .sm-share { position:absolute; top:64px; right:16px; z-index:45; display:grid; width:440px; max-width:calc(100% - 32px); background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-share[hidden] { display:none; }
-  #steelman-study .sm-share &gt; header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-share &gt; .sm-share-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-share h2 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-share-body { display:grid; gap:18px; padding:16px 18px 18px; }
   #steelman-study .sm-share h3 { margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
@@ -2899,11 +2904,11 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(100vh - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-inbox[hidden] { display:none; }
   #steelman-study .sm-inbox:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
-  #steelman-study .sm-inbox &gt; header { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-inbox h2 { flex:1; min-width:0; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-inbox h2 small { margin-left:6px; font:500 12px var(--sm-sans); color:var(--sm-muted); font-variant-numeric:tabular-nums; }
-  #steelman-study .sm-inbox &gt; header .sm-link-button { font-size:12px; color:var(--sm-ink); }
-  #steelman-study .sm-inbox &gt; header .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head .sm-link-button { font-size:12px; color:var(--sm-ink); }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-inbox-list { overflow:auto; margin:0; padding:0; list-style:none; overscroll-behavior:contain; }
   #steelman-study .sm-note { display:flex; align-items:stretch; }
   #steelman-study .sm-note + .sm-note { border-top:1px solid var(--sm-line); }
@@ -3046,20 +3051,20 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-crumb-here { display:none; }
   }
 &lt;/style&gt;
-&lt;div id=&quot;steelman-study&quot; aria-label=&quot;Steelman canvas prototype&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
+&lt;div id=&quot;steelman-study&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
   &lt;header class=&quot;sm-site&quot;&gt;&lt;div class=&quot;sm-wordmark&quot;&gt;&lt;svg class=&quot;sm-logo&quot; viewBox=&quot;0 0 55.95 44.65&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;&lt;polygon points=&quot;10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75&quot; fill=&quot;currentColor&quot;/&gt;&lt;polygon points=&quot;33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot;/&gt;&lt;polygon points=&quot;22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot;/&gt;&lt;polygon points=&quot;44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot; stroke-linecap=&quot;butt&quot; pathLength=&quot;18&quot; stroke-dasharray=&quot;.5 .5&quot; stroke-dashoffset=&quot;.25&quot;/&gt;&lt;/svg&gt;steelman.&lt;/div&gt;&lt;/header&gt;
   &lt;div class=&quot;sm-home&quot; hidden&gt;&lt;/div&gt;
   &lt;div class=&quot;sm-surface&quot;&gt;
     &lt;div class=&quot;sm-scene&quot;&gt;
       &lt;svg class=&quot;sm-links&quot; aria-hidden=&quot;true&quot;&gt;&lt;/svg&gt;
-      &lt;header class=&quot;sm-head&quot;&gt;&lt;/header&gt;
+      &lt;section class=&quot;sm-head&quot; aria-label=&quot;The question&quot;&gt;&lt;/section&gt;
       &lt;main id=&quot;sm-content&quot;&gt;&lt;div class=&quot;sm-board&quot;&gt;&lt;/div&gt;&lt;/main&gt;
     &lt;/div&gt;
-    &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;span class=&quot;sm-sim&quot; role=&quot;group&quot; aria-label=&quot;Simulate other people (prototype tool)&quot;&gt;&lt;span&gt;Simulate others&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-votes&quot; data-key=&quot;sim-votes&quot;&gt;Votes&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-argument&quot; data-key=&quot;sim-argument&quot;&gt;New argument&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-wording&quot; data-key=&quot;sim-wording&quot;&gt;New wording&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-offline&quot; data-key=&quot;sim-offline&quot; aria-pressed=&quot;false&quot;&gt;Offline&lt;/button&gt;&lt;span&gt;Open card&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-edit&quot; data-key=&quot;sim-edit&quot;&gt;Edit&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-delete&quot; data-key=&quot;sim-delete&quot;&gt;Delete&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-combine&quot; data-key=&quot;sim-combine&quot;&gt;Combine&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-separate&quot; data-key=&quot;sim-separate&quot;&gt;Separate&lt;/button&gt;&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;sm-toolbar&quot; role=&quot;region&quot; aria-label=&quot;Prototype tools&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;span class=&quot;sm-sim&quot; role=&quot;group&quot; aria-label=&quot;Simulate other people (prototype tool)&quot;&gt;&lt;span&gt;Simulate others&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-votes&quot; data-key=&quot;sim-votes&quot;&gt;Votes&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-argument&quot; data-key=&quot;sim-argument&quot;&gt;New argument&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-wording&quot; data-key=&quot;sim-wording&quot;&gt;New wording&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-offline&quot; data-key=&quot;sim-offline&quot; aria-pressed=&quot;false&quot;&gt;Offline&lt;/button&gt;&lt;span&gt;Open card&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-edit&quot; data-key=&quot;sim-edit&quot;&gt;Edit&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-delete&quot; data-key=&quot;sim-delete&quot;&gt;Delete&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-combine&quot; data-key=&quot;sim-combine&quot;&gt;Combine&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-separate&quot; data-key=&quot;sim-separate&quot;&gt;Separate&lt;/button&gt;&lt;/span&gt;&lt;/div&gt;
     &lt;div class=&quot;sm-fresh&quot; role=&quot;status&quot; hidden&gt;&lt;/div&gt;
     &lt;div id=&quot;sm-status&quot; class=&quot;sm-live&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
   &lt;/div&gt;
-  &lt;aside class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/aside&gt;
+  &lt;div class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/div&gt;
   &lt;div class=&quot;sm-menu&quot; role=&quot;menu&quot; aria-label=&quot;Version options&quot; hidden&gt;&lt;/div&gt;
   &lt;section class=&quot;sm-share&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-share-title&quot; hidden&gt;&lt;/section&gt;
   &lt;section class=&quot;sm-inbox&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-inbox-title&quot; hidden&gt;&lt;/section&gt;
@@ -3828,7 +3833,18 @@ html&gt;body{padding:0}&lt;/style&gt;
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&amp;&amp;!doc.options.some(o=&gt;o.id===state.undo.option)?`&lt;div class=&quot;sm-board-undo&quot;&gt;${undoMarkup()}&lt;/div&gt;`:&#x27;&#x27;;
     const add=doc.options.length&lt;MAX_OPTIONS?`&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-add-option-col&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-option cursor-interaction&quot; data-action=&quot;add-option&quot; data-key=&quot;add-option&quot; aria-label=&quot;Add an option&quot; data-tooltip=&quot;Add an option&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span class=&quot;sm-add-short&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;sm-add-long&quot;&gt;Add an option&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
-    return orphanUndo+sideTabs()+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+    return orphanUndo+skipLinks()+sideTabs()+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+  }
+  // Keyboard: each argument has about ten stops, so the board starts with links that jump to each side.
+  // They stay out of sight until focused.
+  function skipLinks() {
+    return `&lt;nav class=&quot;sm-skip&quot; aria-label=&quot;Jump to a side&quot;&gt;${doc.options.filter(o=&gt;!isHidden(o.id)||phone()).map(o=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;skip-side&quot; data-id=&quot;${o.id}&quot; data-key=&quot;skip-${o.id}&quot;&gt;Jump to ${escape(o.name)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/nav&gt;`;
+  }
+  function skipToSide(option) {
+    if(phone()&amp;&amp;option!==activeSide()) switchSide(option);
+    const col=board.querySelector(`.sm-column[data-option=&quot;${option}&quot;]`),first=col?.querySelector(&#x27;.sm-column-head [data-action], [data-action]&#x27;);
+    col?.scrollIntoView({block:&#x27;start&#x27;,behavior:reducedMotion()?&#x27;auto&#x27;:&#x27;smooth&#x27;});first?.focus({preventScroll:true});
+    announce(`${optionName(option)}.`);
   }
   // Phones show one side at a time. The tabs under the question name each side and its argument count; they stay
   // pinned to the top of the screen while you scroll the side (see placeSides). Switching keeps your place on each side.
@@ -4251,7 +4267,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   const links=root.querySelector(&#x27;.sm-links&#x27;);
   const reducedMotion=()=&gt;window.matchMedia(&#x27;(prefers-reduced-motion:reduce)&#x27;).matches;
   let busy=false;
-  function play(el,frames,options={}) { return el.animate(frames,{duration:motion(&#x27;medium&#x27;),easing:EASE,...options}).finished.catch(()=&gt;{}); }
+  // Reduced motion: no movement anywhere, even from callers that don&#x27;t check.
+  function play(el,frames,options={}) { if(reducedMotion()) return Promise.resolve(); return el.animate(frames,{duration:motion(&#x27;medium&#x27;),easing:EASE,...options}).finished.catch(()=&gt;{}); }
   // Exit motion runs before the board re-renders, so folding and collapsing read as physical.
   function foldOut(ideaId) {
     const node=board.querySelector(`[data-node=&quot;${ideaId}&quot;]`), first=node?.querySelector(&#x27;.sm-version-face&#x27;);
@@ -4881,7 +4898,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const open=state.inbox&amp;&amp;state.persona!==&#x27;out&#x27;;inboxEl.hidden=!open;
     if(!open){inboxEl.innerHTML=&#x27;&#x27;;return;}
     const list=notesList(),unread=list.filter(n=&gt;!isRead(n)).length;
-    inboxEl.innerHTML=`&lt;header&gt;&lt;h2 id=&quot;sm-inbox-title&quot;&gt;Notifications${unread?`&lt;small&gt;${unread} new&lt;/small&gt;`:&#x27;&#x27;}&lt;/h2&gt;${unread?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;notes-read-all&quot; data-key=&quot;notes-read-all&quot;&gt;Mark all read&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox-close&quot; aria-label=&quot;Close notifications&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
+    inboxEl.innerHTML=`&lt;div class=&quot;sm-inbox-head&quot;&gt;&lt;h2 id=&quot;sm-inbox-title&quot;&gt;Notifications${unread?`&lt;small&gt;${unread} new&lt;/small&gt;`:&#x27;&#x27;}&lt;/h2&gt;${unread?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;notes-read-all&quot; data-key=&quot;notes-read-all&quot;&gt;Mark all read&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox-close&quot; aria-label=&quot;Close notifications&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`
       +(list.length?`&lt;ul class=&quot;sm-inbox-list&quot;&gt;${list.map(noteMarkup).join(&#x27;&#x27;)}&lt;/ul&gt;`:`&lt;p class=&quot;sm-inbox-empty&quot;&gt;Nothing yet.&lt;/p&gt;`);
     inboxEl.style.top=(siteEl.offsetHeight+8)+&#x27;px&#x27;;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
@@ -5029,7 +5046,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.profile) {homeEl.innerHTML=sidebar()+profileMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     const list=visibleBoards();
     const empty=state.query.trim()?&#x27;No steelmen match that search.&#x27;:state.sort===&#x27;help&#x27;?&#x27;Every option here has at least two arguments.&#x27;:&#x27;Nothing here yet.&#x27;;
-    homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
+    homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;&lt;h1 class=&quot;sm-sr&quot;&gt;${state.space===&#x27;all&#x27;?&#x27;Home&#x27;:escape(spaceOf(state.space).name)}&lt;/h1&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
       +(list.length?`&lt;ol class=&quot;sm-feed-list&quot;&gt;${list.map(post).join(&#x27;&#x27;)}&lt;/ol&gt;`:`&lt;p class=&quot;sm-feed-empty&quot;&gt;${empty}&lt;/p&gt;`)+`&lt;/main&gt;${rail()}`;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
@@ -5040,16 +5057,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view===&#x27;board&#x27;) {
       const s=spaceOf(doc.question.org);
       const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility===&#x27;link&#x27;;
-      const viewBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;span&gt;${label}&lt;/span&gt;&lt;/button&gt;`;
+      const viewBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;span&gt;${label}&lt;/span&gt;&lt;/button&gt;`;
       tools=`&lt;div class=&quot;sm-zoom&quot; role=&quot;group&quot; aria-label=&quot;View&quot;&gt;${viewBtn(&#x27;read&#x27;,&#x27;layout-grid&#x27;,&#x27;Board&#x27;)}${viewBtn(&#x27;case&#x27;,&#x27;award&#x27;,&#x27;Strongest case&#x27;)}&lt;/div&gt;`
         // Who else has this board open: faces only. They don&#x27;t appear on cards.
         +(f.here.length?`&lt;span class=&quot;sm-site-faces&quot; role=&quot;img&quot; aria-label=&quot;Also here: ${escape(f.here.join(&#x27;, &#x27;))}${f.more?` and ${f.more} more`:&#x27;&#x27;}&quot;&gt;${f.here.map(u=&gt;`&lt;span title=&quot;${escape(u)} is here&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}${f.more?`&lt;span title=&quot;${f.more} more&quot;&gt;+${f.more}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;)
         +(can(&#x27;edit&#x27;)&amp;&amp;reviewCount()?`&lt;button type=&quot;button&quot; class=&quot;sm-review-button cursor-interaction&quot; data-action=&quot;review-next&quot; data-key=&quot;review-next&quot; data-tooltip=&quot;Next to review&quot;&gt;${icon(&#x27;inbox&#x27;)}&lt;b&gt;${reviewCount()}&lt;/b&gt;&lt;span&gt;to review&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;)
-        +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
+        +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-label=&quot;Share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
       middle=`&lt;nav class=&quot;sm-crumbs&quot; aria-label=&quot;Breadcrumb&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;/&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${s.id}&quot; data-key=&quot;crumb-space&quot;&gt;${escape(s.name)}&lt;/button&gt;&lt;/nav&gt;`;
     } else {
       menu=`&lt;button type=&quot;button&quot; class=&quot;sm-nav-toggle cursor-interaction&quot; data-action=&quot;nav-toggle&quot; data-key=&quot;nav-toggle&quot; aria-expanded=&quot;${state.navOpen}&quot; aria-controls=&quot;sm-side&quot; aria-label=&quot;Spaces menu&quot;&gt;${icon(state.navOpen?&#x27;x&#x27;:&#x27;menu&#x27;)}&lt;/button&gt;`;
-      tools=`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;create-open&quot; data-key=&quot;create-open&quot; aria-haspopup=&quot;dialog&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New steelman&lt;/span&gt;&lt;/button&gt;&lt;label class=&quot;sm-search&quot;&gt;${icon(&#x27;search&#x27;)}&lt;input id=&quot;sm-search&quot; type=&quot;search&quot; data-key=&quot;search&quot; placeholder=&quot;Search steelmen&quot; aria-label=&quot;Search steelmen&quot; value=&quot;${escape(state.query)}&quot;&gt;&lt;/label&gt;`;
+      tools=`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;create-open&quot; data-key=&quot;create-open&quot; aria-label=&quot;New steelman&quot; aria-haspopup=&quot;dialog&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New steelman&lt;/span&gt;&lt;/button&gt;&lt;label class=&quot;sm-search&quot;&gt;${icon(&#x27;search&#x27;)}&lt;input id=&quot;sm-search&quot; type=&quot;search&quot; data-key=&quot;search&quot; placeholder=&quot;Search steelmen&quot; aria-label=&quot;Search steelmen&quot; value=&quot;${escape(state.query)}&quot;&gt;&lt;/label&gt;`;
     }
     if(state.view===&#x27;home&#x27;&amp;&amp;state.invite){tools=&#x27;&#x27;;menu=&#x27;&#x27;;}
     root.toggleAttribute(&#x27;data-nav-open&#x27;,state.view===&#x27;home&#x27;&amp;&amp;state.navOpen);
@@ -5145,7 +5162,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const generalSelect=`&lt;select id=&quot;sm-share-general&quot; data-key=&quot;share-general&quot; aria-label=&quot;General access&quot; ${owner?&#x27;&#x27;:&#x27;disabled&#x27;}&gt;${Object.entries(general).map(([v,[,l]])=&gt;`&lt;option value=&quot;${v}&quot; ${v===q.visibility?&#x27;selected&#x27;:&#x27;&#x27;} ${v===&#x27;org&#x27;&amp;&amp;personal?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${escape(l)}${v===&#x27;org&#x27;&amp;&amp;personal?&#x27; (choose a space first)&#x27;:&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
     const ownerNote=owner?&#x27;&#x27;:`&lt;p class=&quot;sm-access-hint&quot;&gt;Only ${escape(q.author)} can change access. You can still invite people and copy the link.&lt;/p&gt;`;
     const link=inviteUrl();
-    return `&lt;header&gt;&lt;h2 id=&quot;sm-share-title&quot;&gt;Share&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share-close&quot; aria-label=&quot;Close sharing&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
+    return `&lt;div class=&quot;sm-share-head&quot;&gt;&lt;h2 id=&quot;sm-share-title&quot;&gt;Share&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share-close&quot; aria-label=&quot;Close sharing&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`
       +`&lt;div class=&quot;sm-share-body&quot;&gt;&lt;div class=&quot;sm-share-invite&quot;&gt;&lt;div class=&quot;sm-share-field&quot;&gt;&lt;input id=&quot;sm-share-q&quot; type=&quot;text&quot; data-key=&quot;share-q&quot; autocomplete=&quot;off&quot; placeholder=&quot;Username or email&quot; aria-label=&quot;Invite by username or email&quot; aria-controls=&quot;sm-share-suggest&quot; value=&quot;${escape(state.shareQuery)}&quot;&gt;${roleSelect(&#x27;new&#x27;,RANK[state.shareRole]&gt;RANK[myRole()]?myRole():state.shareRole,&#x27;id=&quot;sm-share-role&quot; data-key=&quot;share-role&quot;&#x27;,false,myRole())}&lt;ul class=&quot;sm-share-suggest&quot; id=&quot;sm-share-suggest&quot;&gt;${shareSuggestions()}&lt;/ul&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;share-invite&quot; data-key=&quot;share-invite&quot;&gt;Invite&lt;/button&gt;&lt;/div&gt;`
       +`&lt;section aria-labelledby=&quot;sm-people-title&quot;&gt;&lt;h3 id=&quot;sm-people-title&quot;&gt;People with access&lt;/h3&gt;&lt;ul class=&quot;sm-people&quot;&gt;${people}&lt;/ul&gt;&lt;/section&gt;`
       +`&lt;section aria-labelledby=&quot;sm-general-title&quot;&gt;&lt;h3 id=&quot;sm-general-title&quot;&gt;General access&lt;/h3&gt;&lt;div class=&quot;sm-person&quot;&gt;&lt;span class=&quot;sm-avatar sm-access&quot; aria-hidden=&quot;true&quot;&gt;${icon(accessIcon)}&lt;/span&gt;&lt;span&gt;${generalSelect}&lt;/span&gt;${q.visibility===&#x27;private&#x27;?&#x27;&#x27;:roleSelect(&#x27;general&#x27;,q.accessRole,&#x27;id=&quot;sm-share-access-role&quot; data-key=&quot;share-access-role&quot;&#x27;,!owner)}&lt;/div&gt;&lt;p class=&quot;sm-access-hint&quot;&gt;${escape(accessHint)}&lt;/p&gt;${ownerNote}&lt;/section&gt;&lt;/div&gt;`
@@ -5660,6 +5677,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     report(action,{board:state.boardId,view:state.view,id:id||&#x27;&#x27;,value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||&#x27;&#x27;});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
     if(action===&#x27;side&#x27;){switchSide(id);save();return;}
+    if(action===&#x27;skip-side&#x27;){skipToSide(id);return;}
     if(action.startsWith(&#x27;sim-&#x27;)||[&#x27;order-update&#x27;,&#x27;merged-show&#x27;,&#x27;prev-toggle&#x27;].includes(action)){liveAction(action,id);return;}
     if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}

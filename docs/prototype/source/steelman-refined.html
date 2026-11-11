@@ -396,6 +396,10 @@
   #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
   #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
   #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  /* Jump links: hidden until focused, then a dark pill at the top of the board. */
+  #steelman-study .sm-skip { grid-column:1 / -1; position:relative; z-index:31; display:flex; gap:8px; height:0; }
+  #steelman-study .sm-skip button { padding:8px 14px; border:0; border-radius:999px; background:var(--sm-ink); color:#fff; font:600 13px/1.2 var(--sm-sans); box-shadow:var(--sm-shadow-sm); translate:0 -44px; }
+  #steelman-study .sm-skip button:not(:focus) { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   /* Side tabs: phones only. */
   #steelman-study .sm-sides { display:none; }
   @media(max-width:640px) {
@@ -413,6 +417,7 @@
   #steelman-study .sm-link-note .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
   #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-sr { position:absolute; width:1px; height:1px; margin:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
@@ -685,7 +690,7 @@
   /* ── Share: a panel under the Share button, like a file's share sheet. ── */
   #steelman-study .sm-share { position:absolute; top:64px; right:16px; z-index:45; display:grid; width:440px; max-width:calc(100% - 32px); background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-share[hidden] { display:none; }
-  #steelman-study .sm-share > header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-share > .sm-share-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-share h2 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-share-body { display:grid; gap:18px; padding:16px 18px 18px; }
   #steelman-study .sm-share h3 { margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
@@ -1017,11 +1022,11 @@
   #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(100vh - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-inbox[hidden] { display:none; }
   #steelman-study .sm-inbox:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
-  #steelman-study .sm-inbox > header { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-inbox > .sm-inbox-head { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-inbox h2 { flex:1; min-width:0; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-inbox h2 small { margin-left:6px; font:500 12px var(--sm-sans); color:var(--sm-muted); font-variant-numeric:tabular-nums; }
-  #steelman-study .sm-inbox > header .sm-link-button { font-size:12px; color:var(--sm-ink); }
-  #steelman-study .sm-inbox > header .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-inbox > .sm-inbox-head .sm-link-button { font-size:12px; color:var(--sm-ink); }
+  #steelman-study .sm-inbox > .sm-inbox-head .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-inbox-list { overflow:auto; margin:0; padding:0; list-style:none; overscroll-behavior:contain; }
   #steelman-study .sm-note { display:flex; align-items:stretch; }
   #steelman-study .sm-note + .sm-note { border-top:1px solid var(--sm-line); }
@@ -1164,20 +1169,20 @@
     #steelman-study .sm-crumb-here { display:none; }
   }
 </style>
-<div id="steelman-study" aria-label="Steelman canvas prototype" data-indicator="dossier" data-density="comfortable">
+<div id="steelman-study" data-indicator="dossier" data-density="comfortable">
   <header class="sm-site"><div class="sm-wordmark"><svg class="sm-logo" viewBox="0 0 55.95 44.65" aria-hidden="true" focusable="false"><polygon points="10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75" fill="currentColor"/><polygon points="33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter"/><polygon points="44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="miter" stroke-linecap="butt" pathLength="18" stroke-dasharray=".5 .5" stroke-dashoffset=".25"/></svg>steelman.</div></header>
   <div class="sm-home" hidden></div>
   <div class="sm-surface">
     <div class="sm-scene">
       <svg class="sm-links" aria-hidden="true"></svg>
-      <header class="sm-head"></header>
+      <section class="sm-head" aria-label="The question"></section>
       <main id="sm-content"><div class="sm-board"></div></main>
     </div>
-    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><span class="sm-sim" role="group" aria-label="Simulate other people (prototype tool)"><span>Simulate others</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-votes" data-key="sim-votes">Votes</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-argument" data-key="sim-argument">New argument</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-wording" data-key="sim-wording">New wording</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-offline" data-key="sim-offline" aria-pressed="false">Offline</button><span>Open card</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-edit" data-key="sim-edit">Edit</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-delete" data-key="sim-delete">Delete</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-combine" data-key="sim-combine">Combine</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-separate" data-key="sim-separate">Separate</button></span></div>
+    <div class="sm-toolbar" role="region" aria-label="Prototype tools"><span class="sm-example">Example claims, evidence & votes</span><span class="sm-sim" role="group" aria-label="Simulate other people (prototype tool)"><span>Simulate others</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-votes" data-key="sim-votes">Votes</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-argument" data-key="sim-argument">New argument</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-wording" data-key="sim-wording">New wording</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-offline" data-key="sim-offline" aria-pressed="false">Offline</button><span>Open card</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-edit" data-key="sim-edit">Edit</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-delete" data-key="sim-delete">Delete</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-combine" data-key="sim-combine">Combine</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-separate" data-key="sim-separate">Separate</button></span></div>
     <div class="sm-fresh" role="status" hidden></div>
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
-  <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
+  <div class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></div>
   <div class="sm-menu" role="menu" aria-label="Version options" hidden></div>
   <section class="sm-share" role="dialog" aria-modal="false" aria-labelledby="sm-share-title" hidden></section>
   <section class="sm-inbox" role="dialog" aria-modal="false" aria-labelledby="sm-inbox-title" hidden></section>
@@ -1946,7 +1951,18 @@
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&&!doc.options.some(o=>o.id===state.undo.option)?`<div class="sm-board-undo">${undoMarkup()}</div>`:'';
     const add=doc.options.length<MAX_OPTIONS?`<div class="sm-col-gap" aria-hidden="true"></div><div class="sm-add-option-col"><button type="button" class="sm-add-option cursor-interaction" data-action="add-option" data-key="add-option" aria-label="Add an option" data-tooltip="Add an option">${icon('plus')}<span class="sm-add-short">Option</span><span class="sm-add-long">Add an option</span></button></div>`:'';
-    return orphanUndo+sideTabs()+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+    return orphanUndo+skipLinks()+sideTabs()+doc.options.map(o=>column(o.id)).join('<div class="sm-col-gap" aria-hidden="true"></div>')+add;
+  }
+  // Keyboard: each argument has about ten stops, so the board starts with links that jump to each side.
+  // They stay out of sight until focused.
+  function skipLinks() {
+    return `<nav class="sm-skip" aria-label="Jump to a side">${doc.options.filter(o=>!isHidden(o.id)||phone()).map(o=>`<button type="button" class="cursor-interaction" data-action="skip-side" data-id="${o.id}" data-key="skip-${o.id}">Jump to ${escape(o.name)}</button>`).join('')}</nav>`;
+  }
+  function skipToSide(option) {
+    if(phone()&&option!==activeSide()) switchSide(option);
+    const col=board.querySelector(`.sm-column[data-option="${option}"]`),first=col?.querySelector('.sm-column-head [data-action], [data-action]');
+    col?.scrollIntoView({block:'start',behavior:reducedMotion()?'auto':'smooth'});first?.focus({preventScroll:true});
+    announce(`${optionName(option)}.`);
   }
   // Phones show one side at a time. The tabs under the question name each side and its argument count; they stay
   // pinned to the top of the screen while you scroll the side (see placeSides). Switching keeps your place on each side.
@@ -2369,7 +2385,8 @@
   const links=root.querySelector('.sm-links');
   const reducedMotion=()=>window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   let busy=false;
-  function play(el,frames,options={}) { return el.animate(frames,{duration:motion('medium'),easing:EASE,...options}).finished.catch(()=>{}); }
+  // Reduced motion: no movement anywhere, even from callers that don't check.
+  function play(el,frames,options={}) { if(reducedMotion()) return Promise.resolve(); return el.animate(frames,{duration:motion('medium'),easing:EASE,...options}).finished.catch(()=>{}); }
   // Exit motion runs before the board re-renders, so folding and collapsing read as physical.
   function foldOut(ideaId) {
     const node=board.querySelector(`[data-node="${ideaId}"]`), first=node?.querySelector('.sm-version-face');
@@ -2999,7 +3016,7 @@
     const open=state.inbox&&state.persona!=='out';inboxEl.hidden=!open;
     if(!open){inboxEl.innerHTML='';return;}
     const list=notesList(),unread=list.filter(n=>!isRead(n)).length;
-    inboxEl.innerHTML=`<header><h2 id="sm-inbox-title">Notifications${unread?`<small>${unread} new</small>`:''}</h2>${unread?`<button type="button" class="sm-link-button cursor-interaction" data-action="notes-read-all" data-key="notes-read-all">Mark all read</button>`:''}<button type="button" class="sm-icon-button cursor-interaction" data-action="inbox" data-key="inbox-close" aria-label="Close notifications" data-tooltip="Close">${icon('x')}</button></header>`
+    inboxEl.innerHTML=`<div class="sm-inbox-head"><h2 id="sm-inbox-title">Notifications${unread?`<small>${unread} new</small>`:''}</h2>${unread?`<button type="button" class="sm-link-button cursor-interaction" data-action="notes-read-all" data-key="notes-read-all">Mark all read</button>`:''}<button type="button" class="sm-icon-button cursor-interaction" data-action="inbox" data-key="inbox-close" aria-label="Close notifications" data-tooltip="Close">${icon('x')}</button></div>`
       +(list.length?`<ul class="sm-inbox-list">${list.map(noteMarkup).join('')}</ul>`:`<p class="sm-inbox-empty">Nothing yet.</p>`);
     inboxEl.style.top=(siteEl.offsetHeight+8)+'px';
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
@@ -3147,7 +3164,7 @@
     if(state.profile) {homeEl.innerHTML=sidebar()+profileMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     const list=visibleBoards();
     const empty=state.query.trim()?'No steelmen match that search.':state.sort==='help'?'Every option here has at least two arguments.':'Nothing here yet.';
-    homeEl.innerHTML=sidebar()+`<main class="sm-feed" id="sm-feed">${feedHead()}<div class="sm-sort" role="group" aria-label="Sort steelmen">${Object.entries(SORTS).map(([k,[g,l]])=>`<button type="button" class="cursor-interaction" data-action="sort" data-id="${k}" data-key="sort-${k}" aria-pressed="${state.sort===k}">${l}</button>`).join('')}</div>`
+    homeEl.innerHTML=sidebar()+`<main class="sm-feed" id="sm-feed"><h1 class="sm-sr">${state.space==='all'?'Home':escape(spaceOf(state.space).name)}</h1>${feedHead()}<div class="sm-sort" role="group" aria-label="Sort steelmen">${Object.entries(SORTS).map(([k,[g,l]])=>`<button type="button" class="cursor-interaction" data-action="sort" data-id="${k}" data-key="sort-${k}" aria-pressed="${state.sort===k}">${l}</button>`).join('')}</div>`
       +(list.length?`<ol class="sm-feed-list">${list.map(post).join('')}</ol>`:`<p class="sm-feed-empty">${empty}</p>`)+`</main>${rail()}`;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
@@ -3158,16 +3175,16 @@
     if(state.view==='board') {
       const s=spaceOf(doc.question.org);
       const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility==='link';
-      const viewBtn=(level,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="zoom" data-id="${level}" data-key="zoom-${level}" aria-pressed="${state.zoom===level}" data-tooltip="${label}">${icon(glyph)}<span>${label}</span></button>`;
+      const viewBtn=(level,glyph,label)=>`<button type="button" class="cursor-interaction" data-action="zoom" data-id="${level}" data-key="zoom-${level}" aria-pressed="${state.zoom===level}" aria-label="${label}" data-tooltip="${label}">${icon(glyph)}<span>${label}</span></button>`;
       tools=`<div class="sm-zoom" role="group" aria-label="View">${viewBtn('read','layout-grid','Board')}${viewBtn('case','award','Strongest case')}</div>`
         // Who else has this board open: faces only. They don't appear on cards.
         +(f.here.length?`<span class="sm-site-faces" role="img" aria-label="Also here: ${escape(f.here.join(', '))}${f.more?` and ${f.more} more`:''}">${f.here.map(u=>`<span title="${escape(u)} is here">${escape(userInitials(u))}</span>`).join('')}${f.more?`<span title="${f.more} more">+${f.more}</span>`:''}</span>`:'')
         +(can('edit')&&reviewCount()?`<button type="button" class="sm-review-button cursor-interaction" data-action="review-next" data-key="review-next" data-tooltip="Next to review">${icon('inbox')}<b>${reviewCount()}</b><span>to review</span></button>`:'')
-        +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
+        +`<button type="button" class="sm-share-button cursor-interaction" data-action="share" data-key="share" aria-label="Share" aria-expanded="${state.share}" aria-controls="sm-share-title">${icon(pub?'globe':'lock')}<span>Share</span></button>`;
       middle=`<nav class="sm-crumbs" aria-label="Breadcrumb"><span aria-hidden="true">/</span><button type="button" class="sm-tag cursor-interaction" data-action="space" data-id="${s.id}" data-key="crumb-space">${escape(s.name)}</button></nav>`;
     } else {
       menu=`<button type="button" class="sm-nav-toggle cursor-interaction" data-action="nav-toggle" data-key="nav-toggle" aria-expanded="${state.navOpen}" aria-controls="sm-side" aria-label="Spaces menu">${icon(state.navOpen?'x':'menu')}</button>`;
-      tools=`<button type="button" class="sm-share-button cursor-interaction" data-action="create-open" data-key="create-open" aria-haspopup="dialog">${icon('plus')}<span>New steelman</span></button><label class="sm-search">${icon('search')}<input id="sm-search" type="search" data-key="search" placeholder="Search steelmen" aria-label="Search steelmen" value="${escape(state.query)}"></label>`;
+      tools=`<button type="button" class="sm-share-button cursor-interaction" data-action="create-open" data-key="create-open" aria-label="New steelman" aria-haspopup="dialog">${icon('plus')}<span>New steelman</span></button><label class="sm-search">${icon('search')}<input id="sm-search" type="search" data-key="search" placeholder="Search steelmen" aria-label="Search steelmen" value="${escape(state.query)}"></label>`;
     }
     if(state.view==='home'&&state.invite){tools='';menu='';}
     root.toggleAttribute('data-nav-open',state.view==='home'&&state.navOpen);
@@ -3263,7 +3280,7 @@
     const generalSelect=`<select id="sm-share-general" data-key="share-general" aria-label="General access" ${owner?'':'disabled'}>${Object.entries(general).map(([v,[,l]])=>`<option value="${v}" ${v===q.visibility?'selected':''} ${v==='org'&&personal?'disabled':''}>${escape(l)}${v==='org'&&personal?' (choose a space first)':''}</option>`).join('')}</select>`;
     const ownerNote=owner?'':`<p class="sm-access-hint">Only ${escape(q.author)} can change access. You can still invite people and copy the link.</p>`;
     const link=inviteUrl();
-    return `<header><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></header>`
+    return `<div class="sm-share-head"><h2 id="sm-share-title">Share</h2><button type="button" class="sm-icon-button cursor-interaction" data-action="share" data-key="share-close" aria-label="Close sharing" data-tooltip="Close">${icon('x')}</button></div>`
       +`<div class="sm-share-body"><div class="sm-share-invite"><div class="sm-share-field"><input id="sm-share-q" type="text" data-key="share-q" autocomplete="off" placeholder="Username or email" aria-label="Invite by username or email" aria-controls="sm-share-suggest" value="${escape(state.shareQuery)}">${roleSelect('new',RANK[state.shareRole]>RANK[myRole()]?myRole():state.shareRole,'id="sm-share-role" data-key="share-role"',false,myRole())}<ul class="sm-share-suggest" id="sm-share-suggest">${shareSuggestions()}</ul></div><button type="button" class="sm-button sm-solid cursor-interaction" data-action="share-invite" data-key="share-invite">Invite</button></div>`
       +`<section aria-labelledby="sm-people-title"><h3 id="sm-people-title">People with access</h3><ul class="sm-people">${people}</ul></section>`
       +`<section aria-labelledby="sm-general-title"><h3 id="sm-general-title">General access</h3><div class="sm-person"><span class="sm-avatar sm-access" aria-hidden="true">${icon(accessIcon)}</span><span>${generalSelect}</span>${q.visibility==='private'?'':roleSelect('general',q.accessRole,'id="sm-share-access-role" data-key="share-access-role"',!owner)}</div><p class="sm-access-hint">${escape(accessHint)}</p>${ownerNote}</section></div>`
@@ -3778,6 +3795,7 @@
     report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
     if(action==='side'){switchSide(id);save();return;}
+    if(action==='skip-side'){skipToSide(id);return;}
     if(action.startsWith('sim-')||['order-update','merged-show','prev-toggle'].includes(action)){liveAction(action,id);return;}
     if(state.offline&&['vote','contribute'].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
