@@ -701,13 +701,46 @@ The landing opens from a link hash (`#s=<board>&by=<user>&as=<role>`, read from 
 | Validation | A tier of "T9 Core" stops the build: "features.csv line 2 (A-01): tier must be one of …" |
 | Formulas | Not recalculated here (no LibreOffice); the workbook recalculates on open |
 
+## November 11 — Live changes (B-05, M-02)
+
+The order you see is fixed when a board opens (`shownOrder()`); `rowsOf()` and `ordered()` keep that order and put anything new at the end. `staleCount()` counts the fewest moves to reach the live order, plus versions others deleted. **Simulate others** in the bottom bar replaces **Simulate a reorder**.
+
+| Check | Observed result |
+| --- | --- |
+| Votes | Row order on screen unchanged; status "5 people voted. What you see stays in place until you update."; pill "3 changes · Update" (was 9 before counting fewest moves) |
+| New argument | Appended to the column with the fewest rows; earlier rows unchanged |
+| New wording | Unfolded single-wording row goes from 1 to 2 wordings, new one last |
+| Update | Rows reorder; the first row on screen (control) moved 7 px on screen; pill disappears; status "Board updated." |
+| Delete open card | Open version shows "Removed by an editor" in place; pill counts it; gone after Update and after reload |
+| Draft on a vanished argument | Writing "My sharper wording" on a single-wording row, then delete + Update → New argument form in the same column with the draft, focus in it, status explains |
+| Offline | "Offline" → importance vote → "Offline · 1 waiting to send"; Votes ignored while offline; back → "Back online · 1 sent", then "3 changes · Update" |
+| Strongest case | 6 items after a delete + Update; deleted versions skipped |
+| Phone width (375 px) | Pill centered 16 px above the bottom of the screen; toolbar wraps; no horizontal overflow |
+| Console | No errors after votes, argument, wording, delete, Update, Strongest case |
+| Not checked | Pill tracking real scrolling in a visible browser (the pane was hidden; checked by firing scroll events) |
+
+## November 11 — Live changes, structure (M-02)
+
+Others' structural changes are flags applied on Update or load (`applyPending()`): `idea.merged`, `card.split`, `card.gone`. An edit sets `card.prev`. **Simulate others** gains an **Open card** group: Edit, Delete, Combine, Separate.
+
+| Check | Observed result |
+| --- | --- |
+| Edit | On maya.chen's leading wording: status "maya.chen edited this version…"; byline shows "edited"; clicking it shows the earlier wording struck through |
+| Separate | Placeholder "omar_h made this a separate argument" in place; row keeps its wording count; pill "1 change" |
+| Combine while writing | With a draft in the open row: one-line placeholder "lin.zhao combined this with '…'. Your draft goes with it." and **Go to it** (rings the other argument); pill "2 changes" |
+| Update | Old row gone; the other argument opens with 4 wordings and the draft in its form, focus on it; status "Board updated. Your draft moved with the argument."; the separated wording is a new row (i1) at the end of the column |
+| Reload with a combine pending | Applied: no placeholder, no pill |
+| Placeholder layout | Combined placeholder spans the card column (first build sat in the vote column; fixed) |
+| Phone width (375 px) | Edit, Separate, Combine, Update: no horizontal overflow; placeholder 203 px wide in a 343 px frame |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
 - No claim of full screen-reader, cross-browser, or device coverage.
 - Standalone state persists in browser local storage when available; it does not sync with other users or devices. Fonts and icons need internet access.
 - Material revision history and shared collaboration are not implemented. Presence, other viewers, spaces, and invitations are simulated.
-- The order-update control simulates a change; it does not validate an aggregation algorithm.
+- Live changes from other people are simulated (Simulate others); they don't validate an aggregation algorithm or a realtime backend.
 
 ## Re-run manually
 

@@ -379,6 +379,21 @@
 
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; font-size:12px; }
+  #steelman-study .sm-sim > span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim [aria-pressed="true"] { text-decoration:underline; font-weight:600; }
+  /* Board changed / offline: a pill that stays at the bottom of what you can see. */
+  #steelman-study .sm-fresh { position:absolute; left:50%; z-index:70; display:flex; align-items:center; gap:12px; translate:-50% 0; max-width:calc(100% - 32px); padding:8px 8px 8px 14px; border-radius:999px; background:var(--sm-ink); color:#fff; font-size:13px; white-space:nowrap; box-shadow:0 6px 18px rgb(0 0 0 / .18); }
+  #steelman-study .sm-fresh:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-fresh > span { display:flex; align-items:center; gap:7px; }
+  #steelman-study .sm-fresh svg { width:15px; height:15px; flex:none; }
+  #steelman-study .sm-fresh button { padding:5px 12px; border:0; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:12px; font-weight:600; }
+  #steelman-study .sm-fresh.sm-quiet { padding-right:14px; }
+  #steelman-study .sm-gone .sm-removed-note { color:var(--sm-quiet); }
+  #steelman-study .sm-gone-link { margin:-8px 16px 12px 36px; font-size:12px; }
+  #steelman-study .sm-merged > .sm-card-wrap { grid-column:2; }
+  #steelman-study .sm-edited { font-size:inherit; color:inherit; text-decoration:underline dotted; }
+  #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
@@ -1120,7 +1135,8 @@
       <header class="sm-head"></header>
       <main id="sm-content"><div class="sm-board"></div></main>
     </div>
-    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><button type="button" class="sm-text-button cursor-interaction" data-action="reorder" data-key="reorder" aria-label="Simulate a change in the shared order"><i data-lucide="arrow-down-up" aria-hidden="true"></i>Simulate a reorder</button></div>
+    <div class="sm-toolbar"><span class="sm-example">Example claims, evidence & votes</span><span class="sm-sim" role="group" aria-label="Simulate other people (prototype tool)"><span>Simulate others</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-votes" data-key="sim-votes">Votes</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-argument" data-key="sim-argument">New argument</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-wording" data-key="sim-wording">New wording</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-offline" data-key="sim-offline" aria-pressed="false">Offline</button><span>Open card</span><button type="button" class="sm-text-button cursor-interaction" data-action="sim-edit" data-key="sim-edit">Edit</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-delete" data-key="sim-delete">Delete</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-combine" data-key="sim-combine">Combine</button><button type="button" class="sm-text-button cursor-interaction" data-action="sim-separate" data-key="sim-separate">Separate</button></span></div>
+    <div class="sm-fresh" role="status" hidden></div>
     <div id="sm-status" class="sm-live" role="status" aria-live="polite"></div>
   </div>
   <aside class="sm-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-drawer-title" hidden></aside>
@@ -1387,7 +1403,7 @@
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
+  function useDoc(next) { applyPending(next); next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
     for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||='contribute'; next.options=next.options.filter(o=>o.name||next.ideas.some(i=>i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d && typeof d.question?.text==='string' && Array.isArray(d.options) && Array.isArray(d.ideas) && d.cards && typeof d.cards==='object' && d.sources && typeof d.sources==='object'
@@ -1417,7 +1433,6 @@
     if (!data || ![2,3,4].includes(data.version)) return;
     const saved = data.state || {};
     for (const key of ['importance','preference','assessments','openSources']) state[key] = saved[key] && typeof saved[key]==='object' ? saved[key] : {};
-    state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim==='string' ? saved.draftClaim : '';
     state.draftReason = typeof saved.draftReason==='string' ? saved.draftReason : '';
     state.ideaDraftClaim = typeof saved.ideaDraftClaim==='string' ? saved.ideaDraftClaim : '';
@@ -1471,10 +1486,34 @@
   // Order is fixed and shared: rows by importance, wordings by articulation. Your own votes never move cards.
   // (A stable sort, so ties keep their saved order.)
   const byVotes = (list,votes) => [...list].sort((a,b)=>votes(b)-votes(a));
-  // The shared importance score (the example's "Simulate a reorder" adds 20 to two rows).
-  const sharedImportance = idea => idea.score+(state.updated&&['control','rivals'].includes(idea.id)?20:0);
-  const ordered = idea => byVotes(idea.versions,id=>cards[id].pref);
-  const rowsOf = option => byVotes(ideas.filter(i=>i.option===option),sharedImportance);
+  const sharedImportance = idea => idea.score;
+  // The shared order moves while you read, but what you see doesn't: the order is fixed when the board loads, and changes
+  // only when you choose Update (or reload). New arguments and wordings join the end of their column or row, so they never
+  // push anything. staleCount() says how many rows and wordings sit somewhere else in the live order.
+  const liveRows = option => byVotes(ideas.filter(i=>i.option===option),sharedImportance);
+  const liveVersions = idea => byVotes(idea.versions,id=>cards[id].pref);
+  const shownOrders = new WeakMap();
+  function fixShownOrder() { shownOrders.set(doc,{rows:Object.fromEntries(doc.options.map(o=>[o.id,liveRows(o.id).map(i=>i.id)])),versions:Object.fromEntries(ideas.map(i=>[i.id,liveVersions(i)]))}); }
+  const shownOrder = () => { if(!shownOrders.has(doc)) fixShownOrder(); return shownOrders.get(doc); };
+  const keepSeen = (seen=[],live) => [...seen.filter(id=>live.includes(id)),...live.filter(id=>!seen.includes(id))];
+  const rowsOf = option => { const live=liveRows(option),byId=new Map(live.map(i=>[i.id,i])); return keepSeen(shownOrder().rows[option],live.map(i=>i.id)).map(id=>byId.get(id)); };
+  const ordered = idea => keepSeen(shownOrder().versions[idea.id],liveVersions(idea));
+  function staleCount() {
+    if(state.view!=='board') return 0;
+    // How many items have to move: everything outside the longest run already in live order.
+    const moved=(shown,live)=>{const at=shown.map(id=>live.indexOf(id)),run=[];for(const x of at){let lo=0,hi=run.length;while(lo<hi){const m=(lo+hi)>>1;if(run[m]<x)lo=m+1;else hi=m;}run[lo]=x;}return at.length-run.length;};
+    return doc.options.reduce((n,o)=>n+moved(rowsOf(o.id).map(i=>i.id),liveRows(o.id).map(i=>i.id)),0)
+      +ideas.reduce((n,i)=>n+moved(ordered(i),liveVersions(i)),0)
+      +Object.values(cards).filter(c=>c.gone||c.split).length+ideas.filter(i=>i.merged).length;
+  }
+  // Changes other people made to the structure keep their place, marked, until you update (or reload):
+  // a combined argument (idea.merged), a wording made into its own argument (card.split), a deleted version (card.gone).
+  function applyPending(d) {
+    for(const i of d.ideas) if(i.merged) { const t=d.ideas.find(x=>x.id===i.merged.into&&!x.merged); if(t){i.versions.forEach(v=>{d.cards[v].idea=t.id;});t.versions.push(...i.versions);i.versions=[];} delete i.merged; }
+    for(const [id,c] of Object.entries(d.cards)) if(c.split) { delete c.split; const from=d.ideas.find(x=>x.versions.includes(id)); if(from&&from.versions.length>1){from.versions=from.versions.filter(v=>v!==id);const nid='i'+(d.nextId++);c.idea=nid;c.pref=0;d.ideas.push({id:nid,option:from.option,score:0,versions:[id]});} }
+    for(const [id,c] of Object.entries(d.cards)) if(c.gone) { const i=d.ideas.find(x=>x.versions.includes(id)); if(i) i.versions=i.versions.filter(v=>v!==id); delete d.cards[id]; }
+    for(let k=d.ideas.length-1;k>=0;k--) if(!d.ideas[k].versions.length) d.ideas.splice(k,1);
+  }
   // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
   // New: added in the last two days. Hot: the three wordings with the most votes for their age (articulation and evidence
   // assessments), so the set stays small however big the board gets.
@@ -1631,10 +1670,16 @@
     return `<span class="sm-cred-group">${credibility(id)}${aiCheckMark(id)}</span><div class="sm-card-tools">${handle}${commentButton('card:'+id,'sm-source-button sm-comment-button','version')}${sourceCount(id)}<button type="button" class="sm-expand cursor-interaction" data-action="toggle" data-id="${id}" data-key="expand-${id}" aria-label="${expanded?'Collapse':'Expand'} card" aria-expanded="${expanded}" aria-controls="sm-reveal-${id}">${icon(expanded?'chevron-up':'chevron-down')}</button></div>`;
   }
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
-  const byline = id => { const by=cards[id].by; return by&&by!=='ai'?`<p class="sm-byline">${userLink(by,by==='you'?'you':escape(by))}</p>`:''; };
+  const byline = id => { const c=cards[id],by=c.by;
+    // An edited version says so; "edited" shows the wording it replaced.
+    const edited=c.prev?` · <button type="button" class="sm-link-button sm-edited cursor-interaction" data-action="prev-toggle" data-id="${id}" data-key="prev-${id}" aria-expanded="${!!state.showPrev?.[id]}">edited</button>`:'';
+    const prev=c.prev&&state.showPrev?.[id]?`<p class="sm-prev"><del>${escape(c.prev)}</del></p>`:'';
+    return by&&by!=='ai'?`<p class="sm-byline">${userLink(by,by==='you'?'you':escape(by))}${edited}</p>${prev}`:''; };
   // mark: a highlight tag on the card's top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark='', lit=false) {
     if(cards[id].hidden) return removedCard(id,inTrack);
+    if(cards[id].split) return `<article class="sm-card sm-removed sm-gone ${inTrack?'sm-version-face':''}" data-card="${id}"><p class="sm-removed-note">${icon('split')}${escape(cards[id].split.by)} made this a separate argument</p></article>`;
+    if(cards[id].gone) return `<article class="sm-card sm-removed sm-gone ${inTrack?'sm-version-face':''}" data-card="${id}"><p class="sm-removed-note">${icon('trash-2')}${cards[id].gone.by===cards[id].by?`Deleted by ${escape(cards[id].by)}`:'Removed by an editor'}</p></article>`;
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `<form class="sm-card sm-compose-card ${inTrack?'sm-version-face':''}" id="sm-edit-form" data-card="${id}" aria-label="Edit your version"><textarea id="sm-edit-claim" class="sm-draft-claim" data-key="edit-claim" maxlength="500" aria-label="Your version">${escape(state.editDraftClaim)}</textarea><textarea id="sm-edit-reason" class="sm-draft-reason" data-key="edit-reason" maxlength="700" placeholder="Context (optional)" aria-label="Context (optional)">${escape(state.editDraftReason)}</textarea><div class="sm-card-meta"><button type="button" class="sm-icon-button cursor-interaction" data-action="cancel-edit" data-id="${id}" data-key="cancel-edit" aria-label="Cancel editing" data-tooltip="Cancel">${icon('x')}</button><button type="button" class="sm-icon-button sm-primary cursor-interaction" data-action="save-edit" data-id="${id}" data-key="save-edit" aria-label="Save changes" data-tooltip="Save">${icon('check')}</button></div></form>`;
@@ -1770,6 +1815,7 @@
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () => state.moving&&cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
+    if(idea.merged) return mergedRow(idea);
     const open=state.open===idea.id,from=movingFrom(),mode=lensOf(idea.option);
     const lead=ordered(idea)[0],hits=idea.versions.filter(id=>lit.has(id)).length,leadLit=lit.has(lead),inside=hits-(leadLit?1:0);
     // With a highlight on, rows without a match recede; a folded row with a match in its stack says so on its card.
@@ -1779,6 +1825,11 @@
     const verb=target&&canMove(state.moving)?'Combine here':'Suggest combining here';
     const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="${verb}: same point as “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}${verb}</span></button>`:'';
     return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}</div></section>`;
+  }
+  // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
+  function mergedRow(idea) {
+    const into=ideaOf(idea.merged.into),lead=into&&ordered(into)[0],draft=state.open===idea.id&&state.composing&&state.draftClaim.trim();
+    return `<section class="sm-idea sm-merged" data-node="${idea.id}"><div class="sm-card-wrap"><article class="sm-card sm-removed sm-gone"><p class="sm-removed-note">${icon('merge')}<span>${escape(idea.merged.by)} combined this with “${lead?escape(short(lead)):'another argument'}”${draft?'. Your draft goes with it.':''}</span></p>${lead?`<button type="button" class="sm-link-button sm-gone-link cursor-interaction" data-action="merged-show" data-id="${lead}" data-key="merged-show-${idea.id}">Go to it</button>`:''}</article></div></section>`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -1840,7 +1891,7 @@
   // ── Strongest case: each option's three most important arguments, each in its best-articulated wording. ──
   const CASE_SIZE=3;
   function caseColumn(option) {
-    const rows=rowsOf(option).filter(i=>!cards[ordered(i)[0]].hidden),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const rows=rowsOf(option).filter(i=>!i.merged&&!cards[ordered(i)[0]].hidden&&!cards[ordered(i)[0]].gone),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
     const items=top.map((idea,k)=>{
       const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
       const facts=`<span class="sm-case-facts"><span title="Importance: ${imp} net votes">${icon('arrow-up-narrow-wide')}${imp}</span>${n>1?`<span title="The best-articulated of ${n} wordings">${icon('layers')}best of ${n}</span>`:''}</span>`;
@@ -1919,7 +1970,7 @@
     }
     if(!owner) return `<section class="sm-decision" aria-label="Decision"><h2>${icon('gavel')}Decision</h2><p class="sm-decision-why">Not recorded yet.</p></section>`;
     const d=state.decisionDraft||{option:'',why:'',cards:[]};
-    const leads=doc.options.flatMap(o=>rowsOf(o.id).filter(i=>!cards[ordered(i)[0]].hidden).slice(0,3).map(i=>ordered(i)[0]));
+    const leads=doc.options.flatMap(o=>rowsOf(o.id).filter(i=>!i.merged&&!cards[ordered(i)[0]].hidden&&!cards[ordered(i)[0]].gone).slice(0,3).map(i=>ordered(i)[0]));
     return `<section class="sm-decision sm-decision-form" aria-label="Record the decision"><h2>${icon('gavel')}Decision</h2>`
       +`<div class="sm-decision-options" role="radiogroup" aria-label="Chosen option">${doc.options.map(o=>`<button type="button" role="radio" class="sm-decision-option cursor-interaction" data-action="decision-option" data-id="${o.id}" data-key="decision-option-${o.id}" aria-checked="${d.option===o.id}">${escape(o.name)}</button>`).join('')}</div>`
       +`<textarea id="sm-decision-why" data-key="decision-why" rows="2" maxlength="400" placeholder="Why" aria-label="Why this option">${escape(d.why)}</textarea>`
@@ -3053,6 +3104,7 @@
     if(home) root.dataset.zoom='';
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
     else render();
+    renderFresh();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
   const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-pw','profile-pw-cancel','profile-pw-save','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
@@ -3162,6 +3214,7 @@
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&kind!=='added') newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
+    if(kind==='reorder'&&updateAnchor){const a=board.querySelector(`[data-node="${updateAnchor}"]`),from=beforeNodes.get(updateAnchor);if(a&&from!==undefined)scrollHost(a.getBoundingClientRect().top-from);updateAnchor=null;}
     if(focusKey){const el=root.querySelector(`[data-key="${focusKey}"]`);el?.focus({preventScroll:true});if(el?.matches('input[data-select]'))el.select();}
     if(!reduced&&kind) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -3194,6 +3247,8 @@
       if(box.bottom>window.innerHeight) newTrack.closest('[data-node]').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
     }
     animateWires(kind&&!reduced?720:0);
+    renderFresh();
+    if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=>board.querySelector(`[data-node="${i}"] .sm-card, .sm-card[data-card="${i}"]`)?.animate([{boxShadow:'0 0 0 3px rgb(36 36 36 / .35)'},{boxShadow:'0 0 0 3px rgb(36 36 36 / 0)'}],{duration:1600,easing:'ease-out'}));}
   }
   let lastToggled=null;
   // Moving your view to the k-th highlighted wording in a column: unfold whatever hides it (the column's fold, its row's
@@ -3324,11 +3379,147 @@
     if(event.target.id!=='sm-option-name'||!state.renamingOption||!event.target.isConnected) return;
     setTimeout(()=>{if(!state.renamingOption)return;commitOptionName();render();save();});
   });
+  // ── Other people, live. The prototype simulates what a shared board would push to you: votes that change the shared
+  // order, new arguments and wordings, a deleted version, and losing the connection. Nothing you're reading moves until
+  // you choose Update in the pill (or reload).
+  const freshEl = root.querySelector('.sm-fresh');
+  let updateAnchor=null, flashIds=[], backOnline=0;
+  // The part of the prototype you can see: the frame is as tall as its content, so the page around it scrolls.
+  function visibleBand() {
+    try { const f=window.frameElement; if(f){const r=f.getBoundingClientRect(),h=f.ownerDocument.defaultView.innerHeight;return {top:Math.max(0,-r.top),bottom:Math.min(window.innerHeight,h-r.top)};} } catch {}
+    return {top:0,bottom:window.innerHeight};
+  }
+  function scrollHost(dy) { if(!dy) return; try { if(window.frameElement){window.frameElement.ownerDocument.defaultView.scrollBy(0,dy);return;} } catch {} window.scrollBy(0,dy); }
+  function placeFresh() {
+    if(freshEl.hidden) return;
+    const band=visibleBand(),parent=freshEl.offsetParent||document.body,top=parent.getBoundingClientRect().top;
+    freshEl.style.top=Math.max(0,band.bottom-top-freshEl.offsetHeight-16)+'px';
+  }
+  function renderFresh() {
+    const n=staleCount(),onBoard=state.view==='board';
+    let html='';
+    if(onBoard&&state.offline) html=`<span>${icon('wifi-off')}Offline${state.queued?` · ${state.queued} waiting to send`:''}</span>`;
+    else if(onBoard&&backOnline>Date.now()) html=`<span>${icon('wifi')}Back online${state.sent?` · ${state.sent} sent`:''}</span>`;
+    else if(onBoard&&n) html=`<span>${icon('refresh-cw')}${n} ${n===1?'change':'changes'}</span><button type="button" class="cursor-interaction" data-action="order-update" data-key="order-update">Update</button>`;
+    freshEl.classList.toggle('sm-quiet',!html.includes('<button'));
+    if(freshEl.innerHTML!==html){freshEl.innerHTML=html;if(html&&globalThis.lucide)lucide.createIcons({attrs:{width:15,height:15}});}
+    freshEl.hidden=!html;
+    root.querySelector('[data-key="sim-offline"]')?.setAttribute('aria-pressed',String(!!state.offline));
+    placeFresh();
+  }
+  try { const host=window.frameElement?window.frameElement.ownerDocument.defaultView:window; for(const ev of ['scroll','resize']) host.addEventListener(ev,placeFresh,{passive:true}); } catch {}
+  // The row to hold still on Update: the card you have open, else the first row you can see.
+  function readingAnchor() {
+    if(state.expanded&&cards[state.expanded]) return cards[state.expanded].idea;
+    if(state.open&&ideaOf(state.open)) return state.open;
+    const band=visibleBand();
+    return [...board.querySelectorAll('[data-node]')].find(el=>el.getBoundingClientRect().bottom>band.top+60)?.dataset.node||null;
+  }
+  const othersHere = () => { const p=(PEOPLE[doc.question.org]||[]).filter(u=>u!==ME); return p.length?p:['jordan_w','tess.b','lin.zhao']; };
+  const pick = list => list[Math.floor(Math.random()*list.length)];
+  const SIM_ARGS = {openweights:['Open weights let Chinese labs set the defaults that developers everywhere build on.','Releasing weights hands rivals years of work for free, with nothing asked in return.','Cheap open models make it harder for anyone to charge for AI, including Chinese firms.'],
+    capstone:['Graders can only compare teams fairly if they know which code was AI-written.','Shipping AI-written code is a skill students will need at their first job.']};
+  function liveAction(action,targetId) {
+    if(state.view!=='board') return;
+    if(action==='prev-toggle'){state.showPrev={...state.showPrev,[targetId]:!state.showPrev?.[targetId]};render('prev-'+targetId);return;}
+    if(action==='merged-show'){reveal(targetId);return;}
+    const visible=doc.options.filter(o=>!isHidden(o.id)), live=i=>!cards[ordered(i)[0]].hidden&&!cards[ordered(i)[0]].gone;
+    if(action==='order-update') {
+      updateAnchor=readingAnchor();
+      const open=state.open&&ideaOf(state.open), option=open?.option, into=open?.merged?.into;
+      applyPending(doc);
+      let followed='';
+      if(into&&ideaOf(into)){state.open=into;updateAnchor=into;lastToggled=into;if(state.composing&&state.draftClaim.trim())followed=' Your draft moved with the argument.';}
+      if(state.expanded&&cards[state.expanded]&&state.open&&cards[state.expanded].idea!==state.open&&!into) state.open=null;
+      if(state.expanded&&!cards[state.expanded]) state.expanded=null;
+      let moved='';
+      if(state.open&&!ideaOf(state.open)) {
+        if(state.composing&&state.draftClaim.trim()){Object.assign(state,{composingIdea:option,ideaDraftClaim:state.draftClaim,ideaDraftReason:state.draftReason,draftClaim:'',draftReason:''});moved=' The argument you were adding a wording to is gone, so your draft is now a new argument.';}
+        Object.assign(state,{open:null,composing:false});
+      }
+      fixShownOrder();render(moved?'idea-claim':followed?'draft':'order-update','reorder');save();
+      announce('Board updated.'+moved+followed);return;
+    }
+    if(action==='sim-offline') {
+      state.offline=!state.offline;
+      if(!state.offline){state.sent=state.queued||0;state.queued=0;backOnline=Date.now()+3500;setTimeout(renderFresh,3600);}
+      renderFresh();announce(state.offline?'Offline. Your changes will send when you’re back.':'Back online.');return;
+    }
+    if(state.offline){announce('You’re offline: nothing from others arrives until you’re back.');return;}
+    if(action==='sim-votes') {
+      const touched=[];
+      for(const o of visible) {
+        const rows=rowsOf(o.id).filter(live).slice(0,ROW_LIMIT);if(rows.length<2) continue;
+        const riser=rows[1+Math.floor(Math.random()*(rows.length-1))];
+        riser.score=sharedImportance(rows[0])+2+Math.floor(Math.random()*4);touched.push(riser.id);
+      }
+      const multi=(state.open&&ideaOf(state.open)?.versions.length>1&&ideaOf(state.open))||ideas.find(i=>i.versions.length>1&&live(i));
+      if(multi){const v=ordered(multi),last=cards[v[v.length-1]];last.pref=cards[v[0]].pref+2;touched.push(v[v.length-1]);}
+      touched.forEach(i=>{const c=cards[ideaOf(i)?ordered(ideaOf(i))[0]:i];if(c&&!c.gone){c.yes=(c.yes||0)+1;}});
+      flashIds=touched;render();save();
+      announce(`${touched.length+2} people voted. What you see stays in place until you update.`);return;
+    }
+    if(action==='sim-argument') {
+      if(!visible.length) return;
+      const o=visible.reduce((a,b)=>rowsOf(b.id).length<rowsOf(a.id).length?b:a),by=pick(othersHere());
+      const idea='sim'+(doc.nextId++),card='v'+(doc.nextId++);
+      cards[card]={at:new Date().toISOString(),idea,claim:pick(SIM_ARGS[state.boardId]||[`Another reason for “${o.name}”, added while you were reading.`]),yes:0,no:0,pref:0,sources:[],explanation:'',by};
+      ideas.push({id:idea,option:o.id,score:0,versions:[card]});
+      flashIds=[idea];render();save();
+      announce(`${by} added an argument to “${o.name}”. It’s at the end of the column.`);return;
+    }
+    if(action==='sim-wording') {
+      const target=(state.open&&ideaOf(state.open))||(state.expanded&&ideaOf(cards[state.expanded]?.idea))||visible.map(o=>rowsOf(o.id).find(live)).find(Boolean);
+      if(!target){announce('There’s no argument to add a wording to.');return;}
+      const lead=cards[ordered(target)[0]],by=pick(othersHere()),id=addVersion(target.id,`Put simply: ${lead.claim.charAt(0).toLowerCase()}${lead.claim.slice(1)}`,'');
+      cards[id].by=by;
+      flashIds=[id];render();save();
+      announce(`${by} wrote another wording of “${short(ordered(target)[0])}”. It’s at the end of the row.`);return;
+    }
+    // The version you're looking at: the expanded card, else the open row's first live wording.
+    const openCard=()=>(state.expanded&&cards[state.expanded]&&!cards[state.expanded].gone&&!cards[state.expanded].split&&state.expanded)||(state.open&&ideaOf(state.open)&&ordered(ideaOf(state.open)).find(v=>!cards[v].gone&&!cards[v].hidden&&!cards[v].split));
+    if(action==='sim-edit') {
+      const id=openCard(),c=id&&cards[id];
+      if(!c){announce('Open a card first, then try this.');return;}
+      if(!c.by||c.by==='you'||c.by==='ai'){announce('Only a version’s author can edit it, and this one is yours. Open someone else’s.');return;}
+      c.prev=c.prev||c.claim;c.claim=c.claim.replace(/[.!?]?$/,', at least for the next few years.');c.edited=new Date().toISOString();
+      flashIds=[id];render();save();
+      announce(`${c.by} edited this version. “edited” shows the earlier wording.`);return;
+    }
+    if(action==='sim-combine') {
+      const id=openCard(),from=id&&ideaOf(cards[id].idea);
+      if(!from||from.merged){announce('Open a card first, then try this.');return;}
+      const into=rowsOf(from.option).find(i=>i.id!==from.id&&!i.merged&&live(i));
+      if(!into){announce('There’s no other argument on this side to combine it with.');return;}
+      from.merged={into:into.id,by:pick(othersHere()),at:new Date().toISOString()};
+      state.expanded=null;render();save();
+      announce(`${from.merged.by} combined this argument with “${short(ordered(into)[0])}”. It stays here, marked, until you update.`);return;
+    }
+    if(action==='sim-separate') {
+      const open=state.open&&ideaOf(state.open),id=openCard();
+      const rest=open&&open.versions.filter(v=>!cards[v].gone&&!cards[v].split&&!cards[v].hidden);
+      if(!open||rest.length<2){announce('Open an argument with two or more wordings first.');return;}
+      const card=cards[state.expanded]?.idea===open.id&&state.expanded!==rest[0]?state.expanded:rest[rest.length-1];
+      cards[card].split={by:pick(othersHere()),at:new Date().toISOString()};
+      if(state.expanded===card) state.expanded=null;
+      render();save();
+      announce(`${cards[card].split.by} made a wording a separate argument. It moves to the end of the column when you update.`);return;
+    }
+    if(action==='sim-delete') {
+      const id=(state.expanded&&!cards[state.expanded]?.gone&&state.expanded)||(state.open&&ideaOf(state.open)&&ordered(ideaOf(state.open)).find(v=>!cards[v].gone&&!cards[v].hidden));
+      if(!id||!cards[id]||cards[id].hidden||cards[id].gone){announce('Open a card first, then try this.');return;}
+      const c=cards[id];c.gone={by:c.by==='you'||c.by==='ai'||!c.by?'editor':c.by,at:new Date().toISOString()};
+      render();save();
+      announce(c.gone.by===c.by?`${c.by} deleted this version. It stays here, marked, until you update.`:'An editor removed this version. It stays here, marked, until you update.');return;
+    }
+  }
   root.addEventListener('click',event=>{
     const trigger=event.target.closest('button[data-action]');if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion='',revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||'',value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||''});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action.startsWith('sim-')||['order-update','merged-show','prev-toggle'].includes(action)){liveAction(action,id);return;}
+    if(state.offline&&['vote','contribute'].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
     if(action==='sign-in'){setPersona('you');announce('Signed in (simulated).');return;}
     if(action==='inbox'||action.startsWith('note')){noteAction(action,id);save();return;}
@@ -3624,7 +3815,6 @@
       }
       render(focus);save();return;
     }
-    if(action==='reorder') {state.updated=!state.updated;motion='reorder';focus='reorder';announce(state.updated?'Example shared-order update applied. New sample importance scores move two ideas up.':'Original example order restored.');}
     if(action==='ai-recheck') {queueCheck(id);focus='ai-recheck-'+id;announce('Checking.');}
     if(['add','add-idea'].includes(action)&&state.expanded&&cards[state.expanded]&&!cards[state.expanded].aiCheck) queueCheck(state.expanded);
     refreshChecks();

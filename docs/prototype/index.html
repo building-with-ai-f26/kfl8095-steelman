@@ -2261,6 +2261,21 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; font-size:12px; }
+  #steelman-study .sm-sim &gt; span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim [aria-pressed=&quot;true&quot;] { text-decoration:underline; font-weight:600; }
+  /* Board changed / offline: a pill that stays at the bottom of what you can see. */
+  #steelman-study .sm-fresh { position:absolute; left:50%; z-index:70; display:flex; align-items:center; gap:12px; translate:-50% 0; max-width:calc(100% - 32px); padding:8px 8px 8px 14px; border-radius:999px; background:var(--sm-ink); color:#fff; font-size:13px; white-space:nowrap; box-shadow:0 6px 18px rgb(0 0 0 / .18); }
+  #steelman-study .sm-fresh:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-fresh &gt; span { display:flex; align-items:center; gap:7px; }
+  #steelman-study .sm-fresh svg { width:15px; height:15px; flex:none; }
+  #steelman-study .sm-fresh button { padding:5px 12px; border:0; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:12px; font-weight:600; }
+  #steelman-study .sm-fresh.sm-quiet { padding-right:14px; }
+  #steelman-study .sm-gone .sm-removed-note { color:var(--sm-quiet); }
+  #steelman-study .sm-gone-link { margin:-8px 16px 12px 36px; font-size:12px; }
+  #steelman-study .sm-merged &gt; .sm-card-wrap { grid-column:2; }
+  #steelman-study .sm-edited { font-size:inherit; color:inherit; text-decoration:underline dotted; }
+  #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
@@ -3002,7 +3017,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;header class=&quot;sm-head&quot;&gt;&lt;/header&gt;
       &lt;main id=&quot;sm-content&quot;&gt;&lt;div class=&quot;sm-board&quot;&gt;&lt;/div&gt;&lt;/main&gt;
     &lt;/div&gt;
-    &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;reorder&quot; data-key=&quot;reorder&quot; aria-label=&quot;Simulate a change in the shared order&quot;&gt;&lt;i data-lucide=&quot;arrow-down-up&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Simulate a reorder&lt;/button&gt;&lt;/div&gt;
+    &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;span class=&quot;sm-sim&quot; role=&quot;group&quot; aria-label=&quot;Simulate other people (prototype tool)&quot;&gt;&lt;span&gt;Simulate others&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-votes&quot; data-key=&quot;sim-votes&quot;&gt;Votes&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-argument&quot; data-key=&quot;sim-argument&quot;&gt;New argument&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-wording&quot; data-key=&quot;sim-wording&quot;&gt;New wording&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-offline&quot; data-key=&quot;sim-offline&quot; aria-pressed=&quot;false&quot;&gt;Offline&lt;/button&gt;&lt;span&gt;Open card&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-edit&quot; data-key=&quot;sim-edit&quot;&gt;Edit&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-delete&quot; data-key=&quot;sim-delete&quot;&gt;Delete&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-combine&quot; data-key=&quot;sim-combine&quot;&gt;Combine&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-separate&quot; data-key=&quot;sim-separate&quot;&gt;Separate&lt;/button&gt;&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;sm-fresh&quot; role=&quot;status&quot; hidden&gt;&lt;/div&gt;
     &lt;div id=&quot;sm-status&quot; class=&quot;sm-live&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
   &lt;/div&gt;
   &lt;aside class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/aside&gt;
@@ -3269,7 +3285,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
+  function useDoc(next) { applyPending(next); next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
     for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
@@ -3299,7 +3315,6 @@ html&gt;body{padding:0}&lt;/style&gt;
     if (!data || ![2,3,4].includes(data.version)) return;
     const saved = data.state || {};
     for (const key of [&#x27;importance&#x27;,&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key] = saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27; ? saved[key] : {};
-    state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim===&#x27;string&#x27; ? saved.draftClaim : &#x27;&#x27;;
     state.draftReason = typeof saved.draftReason===&#x27;string&#x27; ? saved.draftReason : &#x27;&#x27;;
     state.ideaDraftClaim = typeof saved.ideaDraftClaim===&#x27;string&#x27; ? saved.ideaDraftClaim : &#x27;&#x27;;
@@ -3353,10 +3368,34 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Order is fixed and shared: rows by importance, wordings by articulation. Your own votes never move cards.
   // (A stable sort, so ties keep their saved order.)
   const byVotes = (list,votes) =&gt; [...list].sort((a,b)=&gt;votes(b)-votes(a));
-  // The shared importance score (the example&#x27;s &quot;Simulate a reorder&quot; adds 20 to two rows).
-  const sharedImportance = idea =&gt; idea.score+(state.updated&amp;&amp;[&#x27;control&#x27;,&#x27;rivals&#x27;].includes(idea.id)?20:0);
-  const ordered = idea =&gt; byVotes(idea.versions,id=&gt;cards[id].pref);
-  const rowsOf = option =&gt; byVotes(ideas.filter(i=&gt;i.option===option),sharedImportance);
+  const sharedImportance = idea =&gt; idea.score;
+  // The shared order moves while you read, but what you see doesn&#x27;t: the order is fixed when the board loads, and changes
+  // only when you choose Update (or reload). New arguments and wordings join the end of their column or row, so they never
+  // push anything. staleCount() says how many rows and wordings sit somewhere else in the live order.
+  const liveRows = option =&gt; byVotes(ideas.filter(i=&gt;i.option===option),sharedImportance);
+  const liveVersions = idea =&gt; byVotes(idea.versions,id=&gt;cards[id].pref);
+  const shownOrders = new WeakMap();
+  function fixShownOrder() { shownOrders.set(doc,{rows:Object.fromEntries(doc.options.map(o=&gt;[o.id,liveRows(o.id).map(i=&gt;i.id)])),versions:Object.fromEntries(ideas.map(i=&gt;[i.id,liveVersions(i)]))}); }
+  const shownOrder = () =&gt; { if(!shownOrders.has(doc)) fixShownOrder(); return shownOrders.get(doc); };
+  const keepSeen = (seen=[],live) =&gt; [...seen.filter(id=&gt;live.includes(id)),...live.filter(id=&gt;!seen.includes(id))];
+  const rowsOf = option =&gt; { const live=liveRows(option),byId=new Map(live.map(i=&gt;[i.id,i])); return keepSeen(shownOrder().rows[option],live.map(i=&gt;i.id)).map(id=&gt;byId.get(id)); };
+  const ordered = idea =&gt; keepSeen(shownOrder().versions[idea.id],liveVersions(idea));
+  function staleCount() {
+    if(state.view!==&#x27;board&#x27;) return 0;
+    // How many items have to move: everything outside the longest run already in live order.
+    const moved=(shown,live)=&gt;{const at=shown.map(id=&gt;live.indexOf(id)),run=[];for(const x of at){let lo=0,hi=run.length;while(lo&lt;hi){const m=(lo+hi)&gt;&gt;1;if(run[m]&lt;x)lo=m+1;else hi=m;}run[lo]=x;}return at.length-run.length;};
+    return doc.options.reduce((n,o)=&gt;n+moved(rowsOf(o.id).map(i=&gt;i.id),liveRows(o.id).map(i=&gt;i.id)),0)
+      +ideas.reduce((n,i)=&gt;n+moved(ordered(i),liveVersions(i)),0)
+      +Object.values(cards).filter(c=&gt;c.gone||c.split).length+ideas.filter(i=&gt;i.merged).length;
+  }
+  // Changes other people made to the structure keep their place, marked, until you update (or reload):
+  // a combined argument (idea.merged), a wording made into its own argument (card.split), a deleted version (card.gone).
+  function applyPending(d) {
+    for(const i of d.ideas) if(i.merged) { const t=d.ideas.find(x=&gt;x.id===i.merged.into&amp;&amp;!x.merged); if(t){i.versions.forEach(v=&gt;{d.cards[v].idea=t.id;});t.versions.push(...i.versions);i.versions=[];} delete i.merged; }
+    for(const [id,c] of Object.entries(d.cards)) if(c.split) { delete c.split; const from=d.ideas.find(x=&gt;x.versions.includes(id)); if(from&amp;&amp;from.versions.length&gt;1){from.versions=from.versions.filter(v=&gt;v!==id);const nid=&#x27;i&#x27;+(d.nextId++);c.idea=nid;c.pref=0;d.ideas.push({id:nid,option:from.option,score:0,versions:[id]});} }
+    for(const [id,c] of Object.entries(d.cards)) if(c.gone) { const i=d.ideas.find(x=&gt;x.versions.includes(id)); if(i) i.versions=i.versions.filter(v=&gt;v!==id); delete d.cards[id]; }
+    for(let k=d.ideas.length-1;k&gt;=0;k--) if(!d.ideas[k].versions.length) d.ideas.splice(k,1);
+  }
   // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
   // New: added in the last two days. Hot: the three wordings with the most votes for their age (articulation and evidence
   // assessments), so the set stays small however big the board gets.
@@ -3513,10 +3552,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;span class=&quot;sm-cred-group&quot;&gt;${credibility(id)}${aiCheckMark(id)}&lt;/span&gt;&lt;div class=&quot;sm-card-tools&quot;&gt;${handle}${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
-  const byline = id =&gt; { const by=cards[id].by; return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}&lt;/p&gt;`:&#x27;&#x27;; };
+  const byline = id =&gt; { const c=cards[id],by=c.by;
+    // An edited version says so; &quot;edited&quot; shows the wording it replaced.
+    const edited=c.prev?` · &lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-edited cursor-interaction&quot; data-action=&quot;prev-toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;prev-${id}&quot; aria-expanded=&quot;${!!state.showPrev?.[id]}&quot;&gt;edited&lt;/button&gt;`:&#x27;&#x27;;
+    const prev=c.prev&amp;&amp;state.showPrev?.[id]?`&lt;p class=&quot;sm-prev&quot;&gt;&lt;del&gt;${escape(c.prev)}&lt;/del&gt;&lt;/p&gt;`:&#x27;&#x27;;
+    return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}${edited}&lt;/p&gt;${prev}`:&#x27;&#x27;; };
   // mark: a highlight tag on the card&#x27;s top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark=&#x27;&#x27;, lit=false) {
     if(cards[id].hidden) return removedCard(id,inTrack);
+    if(cards[id].split) return `&lt;article class=&quot;sm-card sm-removed sm-gone ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;split&#x27;)}${escape(cards[id].split.by)} made this a separate argument&lt;/p&gt;&lt;/article&gt;`;
+    if(cards[id].gone) return `&lt;article class=&quot;sm-card sm-removed sm-gone ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;trash-2&#x27;)}${cards[id].gone.by===cards[id].by?`Deleted by ${escape(cards[id].by)}`:&#x27;Removed by an editor&#x27;}&lt;/p&gt;&lt;/article&gt;`;
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
     if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
@@ -3652,6 +3697,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () =&gt; state.moving&amp;&amp;cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
+    if(idea.merged) return mergedRow(idea);
     const open=state.open===idea.id,from=movingFrom(),mode=lensOf(idea.option);
     const lead=ordered(idea)[0],hits=idea.versions.filter(id=&gt;lit.has(id)).length,leadLit=lit.has(lead),inside=hits-(leadLit?1:0);
     // With a highlight on, rows without a match recede; a folded row with a match in its stack says so on its card.
@@ -3661,6 +3707,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
     const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
     return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
+  }
+  // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
+  function mergedRow(idea) {
+    const into=ideaOf(idea.merged.into),lead=into&amp;&amp;ordered(into)[0],draft=state.open===idea.id&amp;&amp;state.composing&amp;&amp;state.draftClaim.trim();
+    return `&lt;section class=&quot;sm-idea sm-merged&quot; data-node=&quot;${idea.id}&quot;&gt;&lt;div class=&quot;sm-card-wrap&quot;&gt;&lt;article class=&quot;sm-card sm-removed sm-gone&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;span&gt;${escape(idea.merged.by)} combined this with “${lead?escape(short(lead)):&#x27;another argument&#x27;}”${draft?&#x27;. Your draft goes with it.&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;/p&gt;${lead?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-gone-link cursor-interaction&quot; data-action=&quot;merged-show&quot; data-id=&quot;${lead}&quot; data-key=&quot;merged-show-${idea.id}&quot;&gt;Go to it&lt;/button&gt;`:&#x27;&#x27;}&lt;/article&gt;&lt;/div&gt;&lt;/section&gt;`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -3722,7 +3773,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // ── Strongest case: each option&#x27;s three most important arguments, each in its best-articulated wording. ──
   const CASE_SIZE=3;
   function caseColumn(option) {
-    const rows=rowsOf(option).filter(i=&gt;!cards[ordered(i)[0]].hidden),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const rows=rowsOf(option).filter(i=&gt;!i.merged&amp;&amp;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
     const items=top.map((idea,k)=&gt;{
       const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
       const facts=`&lt;span class=&quot;sm-case-facts&quot;&gt;&lt;span title=&quot;Importance: ${imp} net votes&quot;&gt;${icon(&#x27;arrow-up-narrow-wide&#x27;)}${imp}&lt;/span&gt;${n&gt;1?`&lt;span title=&quot;The best-articulated of ${n} wordings&quot;&gt;${icon(&#x27;layers&#x27;)}best of ${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`;
@@ -3801,7 +3852,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(!owner) return `&lt;section class=&quot;sm-decision&quot; aria-label=&quot;Decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;&lt;p class=&quot;sm-decision-why&quot;&gt;Not recorded yet.&lt;/p&gt;&lt;/section&gt;`;
     const d=state.decisionDraft||{option:&#x27;&#x27;,why:&#x27;&#x27;,cards:[]};
-    const leads=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(i=&gt;!cards[ordered(i)[0]].hidden).slice(0,3).map(i=&gt;ordered(i)[0]));
+    const leads=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(i=&gt;!i.merged&amp;&amp;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone).slice(0,3).map(i=&gt;ordered(i)[0]));
     return `&lt;section class=&quot;sm-decision sm-decision-form&quot; aria-label=&quot;Record the decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;`
       +`&lt;div class=&quot;sm-decision-options&quot; role=&quot;radiogroup&quot; aria-label=&quot;Chosen option&quot;&gt;${doc.options.map(o=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-decision-option cursor-interaction&quot; data-action=&quot;decision-option&quot; data-id=&quot;${o.id}&quot; data-key=&quot;decision-option-${o.id}&quot; aria-checked=&quot;${d.option===o.id}&quot;&gt;${escape(o.name)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
       +`&lt;textarea id=&quot;sm-decision-why&quot; data-key=&quot;decision-why&quot; rows=&quot;2&quot; maxlength=&quot;400&quot; placeholder=&quot;Why&quot; aria-label=&quot;Why this option&quot;&gt;${escape(d.why)}&lt;/textarea&gt;`
@@ -4935,6 +4986,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(home) root.dataset.zoom=&#x27;&#x27;;
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
     else render();
+    renderFresh();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
   const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-pw&#x27;,&#x27;profile-pw-cancel&#x27;,&#x27;profile-pw-save&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
@@ -5044,6 +5096,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
     if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;kind!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
+    if(kind===&#x27;reorder&#x27;&amp;&amp;updateAnchor){const a=board.querySelector(`[data-node=&quot;${updateAnchor}&quot;]`),from=beforeNodes.get(updateAnchor);if(a&amp;&amp;from!==undefined)scrollHost(a.getBoundingClientRect().top-from);updateAnchor=null;}
     if(focusKey){const el=root.querySelector(`[data-key=&quot;${focusKey}&quot;]`);el?.focus({preventScroll:true});if(el?.matches(&#x27;input[data-select]&#x27;))el.select();}
     if(!reduced&amp;&amp;kind) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -5076,6 +5129,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(box.bottom&gt;window.innerHeight) newTrack.closest(&#x27;[data-node]&#x27;).scrollIntoView({block:&#x27;nearest&#x27;,behavior:reduced?&#x27;auto&#x27;:&#x27;smooth&#x27;});
     }
     animateWires(kind&amp;&amp;!reduced?720:0);
+    renderFresh();
+    if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=&gt;board.querySelector(`[data-node=&quot;${i}&quot;] .sm-card, .sm-card[data-card=&quot;${i}&quot;]`)?.animate([{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / .35)&#x27;},{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / 0)&#x27;}],{duration:1600,easing:&#x27;ease-out&#x27;}));}
   }
   let lastToggled=null;
   // Moving your view to the k-th highlighted wording in a column: unfold whatever hides it (the column&#x27;s fold, its row&#x27;s
@@ -5206,11 +5261,147 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.target.id!==&#x27;sm-option-name&#x27;||!state.renamingOption||!event.target.isConnected) return;
     setTimeout(()=&gt;{if(!state.renamingOption)return;commitOptionName();render();save();});
   });
+  // ── Other people, live. The prototype simulates what a shared board would push to you: votes that change the shared
+  // order, new arguments and wordings, a deleted version, and losing the connection. Nothing you&#x27;re reading moves until
+  // you choose Update in the pill (or reload).
+  const freshEl = root.querySelector(&#x27;.sm-fresh&#x27;);
+  let updateAnchor=null, flashIds=[], backOnline=0;
+  // The part of the prototype you can see: the frame is as tall as its content, so the page around it scrolls.
+  function visibleBand() {
+    try { const f=window.frameElement; if(f){const r=f.getBoundingClientRect(),h=f.ownerDocument.defaultView.innerHeight;return {top:Math.max(0,-r.top),bottom:Math.min(window.innerHeight,h-r.top)};} } catch {}
+    return {top:0,bottom:window.innerHeight};
+  }
+  function scrollHost(dy) { if(!dy) return; try { if(window.frameElement){window.frameElement.ownerDocument.defaultView.scrollBy(0,dy);return;} } catch {} window.scrollBy(0,dy); }
+  function placeFresh() {
+    if(freshEl.hidden) return;
+    const band=visibleBand(),parent=freshEl.offsetParent||document.body,top=parent.getBoundingClientRect().top;
+    freshEl.style.top=Math.max(0,band.bottom-top-freshEl.offsetHeight-16)+&#x27;px&#x27;;
+  }
+  function renderFresh() {
+    const n=staleCount(),onBoard=state.view===&#x27;board&#x27;;
+    let html=&#x27;&#x27;;
+    if(onBoard&amp;&amp;state.offline) html=`&lt;span&gt;${icon(&#x27;wifi-off&#x27;)}Offline${state.queued?` · ${state.queued} waiting to send`:&#x27;&#x27;}&lt;/span&gt;`;
+    else if(onBoard&amp;&amp;backOnline&gt;Date.now()) html=`&lt;span&gt;${icon(&#x27;wifi&#x27;)}Back online${state.sent?` · ${state.sent} sent`:&#x27;&#x27;}&lt;/span&gt;`;
+    else if(onBoard&amp;&amp;n) html=`&lt;span&gt;${icon(&#x27;refresh-cw&#x27;)}${n} ${n===1?&#x27;change&#x27;:&#x27;changes&#x27;}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;order-update&quot; data-key=&quot;order-update&quot;&gt;Update&lt;/button&gt;`;
+    freshEl.classList.toggle(&#x27;sm-quiet&#x27;,!html.includes(&#x27;&lt;button&#x27;));
+    if(freshEl.innerHTML!==html){freshEl.innerHTML=html;if(html&amp;&amp;globalThis.lucide)lucide.createIcons({attrs:{width:15,height:15}});}
+    freshEl.hidden=!html;
+    root.querySelector(&#x27;[data-key=&quot;sim-offline&quot;]&#x27;)?.setAttribute(&#x27;aria-pressed&#x27;,String(!!state.offline));
+    placeFresh();
+  }
+  try { const host=window.frameElement?window.frameElement.ownerDocument.defaultView:window; for(const ev of [&#x27;scroll&#x27;,&#x27;resize&#x27;]) host.addEventListener(ev,placeFresh,{passive:true}); } catch {}
+  // The row to hold still on Update: the card you have open, else the first row you can see.
+  function readingAnchor() {
+    if(state.expanded&amp;&amp;cards[state.expanded]) return cards[state.expanded].idea;
+    if(state.open&amp;&amp;ideaOf(state.open)) return state.open;
+    const band=visibleBand();
+    return [...board.querySelectorAll(&#x27;[data-node]&#x27;)].find(el=&gt;el.getBoundingClientRect().bottom&gt;band.top+60)?.dataset.node||null;
+  }
+  const othersHere = () =&gt; { const p=(PEOPLE[doc.question.org]||[]).filter(u=&gt;u!==ME); return p.length?p:[&#x27;jordan_w&#x27;,&#x27;tess.b&#x27;,&#x27;lin.zhao&#x27;]; };
+  const pick = list =&gt; list[Math.floor(Math.random()*list.length)];
+  const SIM_ARGS = {openweights:[&#x27;Open weights let Chinese labs set the defaults that developers everywhere build on.&#x27;,&#x27;Releasing weights hands rivals years of work for free, with nothing asked in return.&#x27;,&#x27;Cheap open models make it harder for anyone to charge for AI, including Chinese firms.&#x27;],
+    capstone:[&#x27;Graders can only compare teams fairly if they know which code was AI-written.&#x27;,&#x27;Shipping AI-written code is a skill students will need at their first job.&#x27;]};
+  function liveAction(action,targetId) {
+    if(state.view!==&#x27;board&#x27;) return;
+    if(action===&#x27;prev-toggle&#x27;){state.showPrev={...state.showPrev,[targetId]:!state.showPrev?.[targetId]};render(&#x27;prev-&#x27;+targetId);return;}
+    if(action===&#x27;merged-show&#x27;){reveal(targetId);return;}
+    const visible=doc.options.filter(o=&gt;!isHidden(o.id)), live=i=&gt;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone;
+    if(action===&#x27;order-update&#x27;) {
+      updateAnchor=readingAnchor();
+      const open=state.open&amp;&amp;ideaOf(state.open), option=open?.option, into=open?.merged?.into;
+      applyPending(doc);
+      let followed=&#x27;&#x27;;
+      if(into&amp;&amp;ideaOf(into)){state.open=into;updateAnchor=into;lastToggled=into;if(state.composing&amp;&amp;state.draftClaim.trim())followed=&#x27; Your draft moved with the argument.&#x27;;}
+      if(state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;state.open&amp;&amp;cards[state.expanded].idea!==state.open&amp;&amp;!into) state.open=null;
+      if(state.expanded&amp;&amp;!cards[state.expanded]) state.expanded=null;
+      let moved=&#x27;&#x27;;
+      if(state.open&amp;&amp;!ideaOf(state.open)) {
+        if(state.composing&amp;&amp;state.draftClaim.trim()){Object.assign(state,{composingIdea:option,ideaDraftClaim:state.draftClaim,ideaDraftReason:state.draftReason,draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;});moved=&#x27; The argument you were adding a wording to is gone, so your draft is now a new argument.&#x27;;}
+        Object.assign(state,{open:null,composing:false});
+      }
+      fixShownOrder();render(moved?&#x27;idea-claim&#x27;:followed?&#x27;draft&#x27;:&#x27;order-update&#x27;,&#x27;reorder&#x27;);save();
+      announce(&#x27;Board updated.&#x27;+moved+followed);return;
+    }
+    if(action===&#x27;sim-offline&#x27;) {
+      state.offline=!state.offline;
+      if(!state.offline){state.sent=state.queued||0;state.queued=0;backOnline=Date.now()+3500;setTimeout(renderFresh,3600);}
+      renderFresh();announce(state.offline?&#x27;Offline. Your changes will send when you’re back.&#x27;:&#x27;Back online.&#x27;);return;
+    }
+    if(state.offline){announce(&#x27;You’re offline: nothing from others arrives until you’re back.&#x27;);return;}
+    if(action===&#x27;sim-votes&#x27;) {
+      const touched=[];
+      for(const o of visible) {
+        const rows=rowsOf(o.id).filter(live).slice(0,ROW_LIMIT);if(rows.length&lt;2) continue;
+        const riser=rows[1+Math.floor(Math.random()*(rows.length-1))];
+        riser.score=sharedImportance(rows[0])+2+Math.floor(Math.random()*4);touched.push(riser.id);
+      }
+      const multi=(state.open&amp;&amp;ideaOf(state.open)?.versions.length&gt;1&amp;&amp;ideaOf(state.open))||ideas.find(i=&gt;i.versions.length&gt;1&amp;&amp;live(i));
+      if(multi){const v=ordered(multi),last=cards[v[v.length-1]];last.pref=cards[v[0]].pref+2;touched.push(v[v.length-1]);}
+      touched.forEach(i=&gt;{const c=cards[ideaOf(i)?ordered(ideaOf(i))[0]:i];if(c&amp;&amp;!c.gone){c.yes=(c.yes||0)+1;}});
+      flashIds=touched;render();save();
+      announce(`${touched.length+2} people voted. What you see stays in place until you update.`);return;
+    }
+    if(action===&#x27;sim-argument&#x27;) {
+      if(!visible.length) return;
+      const o=visible.reduce((a,b)=&gt;rowsOf(b.id).length&lt;rowsOf(a.id).length?b:a),by=pick(othersHere());
+      const idea=&#x27;sim&#x27;+(doc.nextId++),card=&#x27;v&#x27;+(doc.nextId++);
+      cards[card]={at:new Date().toISOString(),idea,claim:pick(SIM_ARGS[state.boardId]||[`Another reason for “${o.name}”, added while you were reading.`]),yes:0,no:0,pref:0,sources:[],explanation:&#x27;&#x27;,by};
+      ideas.push({id:idea,option:o.id,score:0,versions:[card]});
+      flashIds=[idea];render();save();
+      announce(`${by} added an argument to “${o.name}”. It’s at the end of the column.`);return;
+    }
+    if(action===&#x27;sim-wording&#x27;) {
+      const target=(state.open&amp;&amp;ideaOf(state.open))||(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea))||visible.map(o=&gt;rowsOf(o.id).find(live)).find(Boolean);
+      if(!target){announce(&#x27;There’s no argument to add a wording to.&#x27;);return;}
+      const lead=cards[ordered(target)[0]],by=pick(othersHere()),id=addVersion(target.id,`Put simply: ${lead.claim.charAt(0).toLowerCase()}${lead.claim.slice(1)}`,&#x27;&#x27;);
+      cards[id].by=by;
+      flashIds=[id];render();save();
+      announce(`${by} wrote another wording of “${short(ordered(target)[0])}”. It’s at the end of the row.`);return;
+    }
+    // The version you&#x27;re looking at: the expanded card, else the open row&#x27;s first live wording.
+    const openCard=()=&gt;(state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;!cards[state.expanded].gone&amp;&amp;!cards[state.expanded].split&amp;&amp;state.expanded)||(state.open&amp;&amp;ideaOf(state.open)&amp;&amp;ordered(ideaOf(state.open)).find(v=&gt;!cards[v].gone&amp;&amp;!cards[v].hidden&amp;&amp;!cards[v].split));
+    if(action===&#x27;sim-edit&#x27;) {
+      const id=openCard(),c=id&amp;&amp;cards[id];
+      if(!c){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      if(!c.by||c.by===&#x27;you&#x27;||c.by===&#x27;ai&#x27;){announce(&#x27;Only a version’s author can edit it, and this one is yours. Open someone else’s.&#x27;);return;}
+      c.prev=c.prev||c.claim;c.claim=c.claim.replace(/[.!?]?$/,&#x27;, at least for the next few years.&#x27;);c.edited=new Date().toISOString();
+      flashIds=[id];render();save();
+      announce(`${c.by} edited this version. “edited” shows the earlier wording.`);return;
+    }
+    if(action===&#x27;sim-combine&#x27;) {
+      const id=openCard(),from=id&amp;&amp;ideaOf(cards[id].idea);
+      if(!from||from.merged){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      const into=rowsOf(from.option).find(i=&gt;i.id!==from.id&amp;&amp;!i.merged&amp;&amp;live(i));
+      if(!into){announce(&#x27;There’s no other argument on this side to combine it with.&#x27;);return;}
+      from.merged={into:into.id,by:pick(othersHere()),at:new Date().toISOString()};
+      state.expanded=null;render();save();
+      announce(`${from.merged.by} combined this argument with “${short(ordered(into)[0])}”. It stays here, marked, until you update.`);return;
+    }
+    if(action===&#x27;sim-separate&#x27;) {
+      const open=state.open&amp;&amp;ideaOf(state.open),id=openCard();
+      const rest=open&amp;&amp;open.versions.filter(v=&gt;!cards[v].gone&amp;&amp;!cards[v].split&amp;&amp;!cards[v].hidden);
+      if(!open||rest.length&lt;2){announce(&#x27;Open an argument with two or more wordings first.&#x27;);return;}
+      const card=cards[state.expanded]?.idea===open.id&amp;&amp;state.expanded!==rest[0]?state.expanded:rest[rest.length-1];
+      cards[card].split={by:pick(othersHere()),at:new Date().toISOString()};
+      if(state.expanded===card) state.expanded=null;
+      render();save();
+      announce(`${cards[card].split.by} made a wording a separate argument. It moves to the end of the column when you update.`);return;
+    }
+    if(action===&#x27;sim-delete&#x27;) {
+      const id=(state.expanded&amp;&amp;!cards[state.expanded]?.gone&amp;&amp;state.expanded)||(state.open&amp;&amp;ideaOf(state.open)&amp;&amp;ordered(ideaOf(state.open)).find(v=&gt;!cards[v].gone&amp;&amp;!cards[v].hidden));
+      if(!id||!cards[id]||cards[id].hidden||cards[id].gone){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      const c=cards[id];c.gone={by:c.by===&#x27;you&#x27;||c.by===&#x27;ai&#x27;||!c.by?&#x27;editor&#x27;:c.by,at:new Date().toISOString()};
+      render();save();
+      announce(c.gone.by===c.by?`${c.by} deleted this version. It stays here, marked, until you update.`:&#x27;An editor removed this version. It stays here, marked, until you update.&#x27;);return;
+    }
+  }
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;,revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||&#x27;&#x27;,value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||&#x27;&#x27;});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action.startsWith(&#x27;sim-&#x27;)||[&#x27;order-update&#x27;,&#x27;merged-show&#x27;,&#x27;prev-toggle&#x27;].includes(action)){liveAction(action,id);return;}
+    if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
     if(action===&#x27;sign-in&#x27;){setPersona(&#x27;you&#x27;);announce(&#x27;Signed in (simulated).&#x27;);return;}
     if(action===&#x27;inbox&#x27;||action.startsWith(&#x27;note&#x27;)){noteAction(action,id);save();return;}
@@ -5506,7 +5697,6 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
       render(focus);save();return;
     }
-    if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     if(action===&#x27;ai-recheck&#x27;) {queueCheck(id);focus=&#x27;ai-recheck-&#x27;+id;announce(&#x27;Checking.&#x27;);}
     if([&#x27;add&#x27;,&#x27;add-idea&#x27;].includes(action)&amp;&amp;state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;!cards[state.expanded].aiCheck) queueCheck(state.expanded);
     refreshChecks();
