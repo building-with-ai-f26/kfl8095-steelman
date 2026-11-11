@@ -947,6 +947,19 @@
   #steelman-study .sm-landing-auth .sm-field input { height:38px; }
   #steelman-study .sm-landing-auth .sm-solid { height:40px; min-height:40px; font-size:14px; }
   #steelman-study .sm-landing-auth .sm-field-hint { margin-top:-6px; text-align:center; }
+  #steelman-study .sm-auth-head { margin:0; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-landing-qt { margin:0; font:600 18px/1.3 var(--sm-serif); overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-title { margin:0; font:600 17px/1.3 var(--sm-serif); }
+  #steelman-study .sm-auth-text { margin:-6px 0 0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-hint { text-align:left !important; margin-top:-8px !important; }
+  #steelman-study .sm-google { height:40px; gap:10px; font-size:14px; font-weight:600; }
+  #steelman-study .sm-g { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--sm-line); font:700 12px/1 var(--sm-sans); }
+  #steelman-study .sm-or { display:flex; align-items:center; gap:10px; margin:0; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-or::before, #steelman-study .sm-or::after { content:""; flex:1; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-auth-sim { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:10px 12px; border:1px dashed var(--sm-line); border-radius:6px; font-size:13px; }
+  #steelman-study .sm-auth-sim > span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-auth-links { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; }
+  #steelman-study :is(.sm-auth-sim,.sm-auth-links) .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-landing-look { justify-self:center; font-size:13px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:3px; }
   @media(max-width:560px) {
     #steelman-study .sm-landing { padding:24px 16px 48px; }
@@ -1276,7 +1289,7 @@
   });
   let PEOPLE = seedPeople();
   const ME = 'kieran_lamee';
-  const MY_EMAIL = 'kieran_lamee@example.com'; // a placeholder: the prototype has no accounts
+  const MY_EMAIL = 'kieran_lamee@example.com'; // a placeholder: the prototype has no accounts. state.myEmail can change.
   // What a space's admins set: roles (anyone unlisted is a member), community rules, pending invites and join requests,
   // and the mode new steelmen start in (unset: Open team in a private space, Public in a community).
   const seedSpaceMeta = () => ({
@@ -1317,7 +1330,7 @@
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
     'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','decision-option':'owner','decision-arg':'owner','decision-edit':'owner','decision-cancel':'owner','decision-save':'owner','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     inbox:'view','note-open':'view','note-read':'view','notes-read-all':'view','space-new':'view','space-create':'view','space-settings':'admin','space-canvas':'admin','space-kind':'admin','space-invite':'admin','space-invite-cancel':'admin','space-remove':'admin','space-approve':'admin','space-decline':'admin','space-rule-add':'admin','space-rule-remove':'admin','space-ai':'admin','space-mode':'admin',
-    'profile-pw':'view','profile-pw-save':'view','profile-pw-cancel':'view','sign-out':'view',
+    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-open':'view','profile-google':'view','sign-out':'view',
     settings:'owner'};
   const WHY = {admin:'Space admins only.',view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -1424,7 +1437,7 @@
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () => ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:'you',requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:'args',pwOpen:false,spaceEdit:null,spaceDraft:null,spaceError:'',spaceInvite:'',spaceInviteRole:'member',spaceInviteError:'',inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
+  const freshState = () => ({myEmail:MY_EMAIL,google:true,acct:{},sourceMore:false,renamingOption:null,newOption:null,optionDraft:'',moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:'',editDraftReason:'',undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:'',ideaDraftReason:'',drawer:null,confirmReset:false,commentTarget:null,commentDraft:'',replyTo:null,replyDraft:'',showResolved:false,importance:{},preference:{},assessments:{},draftClaim:'',draftReason:'',updated:false,openSources:{},doc:null,view:'home',boardId:'openweights',space:'all',sort:'hot',query:'',navOpen:false,zoom:'read',creating:false,createDraft:{q:'',options:['',''],space:null},createError:'',share:false,shareQuery:'',shareRole:'contribute',copied:'',lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:'you',requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:'args',spaceEdit:null,spaceDraft:null,spaceError:'',spaceInvite:'',spaceInviteRole:'member',spaceInviteError:'',inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:'dossier',density:'comfortable',type:'sans'};
@@ -1461,6 +1474,8 @@
     if (Array.isArray(saved.notes)) state.notes=saved.notes.filter(n=>n&&typeof n.id==='string').slice(0,30);
     if (saved.notesRead && typeof saved.notesRead==='object') state.notesRead=saved.notesRead;
     state.toured=saved.toured===true;
+    if(typeof saved.myEmail==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saved.myEmail)) state.myEmail=saved.myEmail;
+    if(typeof saved.google==='boolean') state.google=saved.google;
     if (typeof saved.spaceEdit==='string' && state.view==='home') state.spaceEdit=saved.spaceEdit;
     if (typeof saved.profile==='string' && state.view==='home') {state.profile=saved.profile;state.profileFrom=docs[saved.profileFrom]?saved.profileFrom:null;}
     if (['args','words','sources'].includes(saved.contribTab)) state.contribTab=saved.contribTab;
@@ -1477,7 +1492,7 @@
   }
   let lastSavedSnapshot='';
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit==='new'?null:state.spaceEdit,spaceDraft:null,spaceError:'',spaceInviteError:'',inbox:false,invite:null,tour:null,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,pwOpen:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:'',menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit==='new'?null:state.spaceEdit,spaceDraft:null,spaceError:'',spaceInviteError:'',inbox:false,invite:null,tour:null,query:'',navOpen:false,share:false,shareQuery:'',copied:'',drawer:null,confirmReset:false,replyTo:null,replyDraft:'',menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:'Steelman canvas cards',openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=>{});
   }
   function announce(message) { status.textContent=message; }
@@ -2563,10 +2578,17 @@
         +(usage.length?`<div class="sm-rgroup sm-usage"><h3>Recent usage</h3>${usage.map((u,i)=>`<button type="button" class="sm-rrow sm-rrow-button cursor-interaction" data-action="profile-board" data-id="${u.board}" data-key="usage-${i}"><span class="sm-rrow-label">${icon('bot')}<span>${u.kind==='draft'?'Draft arguments':u.n===1?'Evidence check':`Evidence checks · ${u.n}`}</span><small>${escape(docs[u.board].question.text)}</small></span><span class="sm-rrow-value"><b>−${u.n}</b><time datetime="${u.at}" title="${fullDate(u.at)}">${ago(u.at)}</time></span></button>`).join('')}</div>`:'')
         +`</section>`;
       const row=(label,value)=>`<div class="sm-rrow"><span class="sm-rrow-label">${label}</span>${value}</div>`;
-      const pw=state.pwOpen?`<div class="sm-pw-form" role="group" aria-label="Change password"><label>Current password<input id="sm-pw-current" type="password" autocomplete="current-password" data-key="pw-current"></label><label>New password<input id="sm-pw-new" type="password" autocomplete="new-password" data-key="pw-new"></label><p class="sm-field-hint">Simulated: nothing is saved or sent.</p><div>${button('profile-pw-cancel','Cancel','data-key="pw-cancel"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-pw-save" data-key="pw-save">Change password</button></div></div>`:'';
+      // Email changes take effect once the new address confirms them; sign-in is Google and/or an email link (no password).
+      const ae=state.acct||{};
+      const emailEdit=ae.editing?`<div class="sm-pw-form" role="group" aria-label="Change email"><label>New email<input id="sm-email-new" type="email" autocomplete="email" data-key="email-new" value="${escape(ae.draft||'')}" ${ae.error?'aria-invalid="true" aria-describedby="sm-email-error"':''}></label>${ae.error?`<p class="sm-field-error" id="sm-email-error">${escape(ae.error)}</p>`:''}<div>${button('profile-email-cancel','Cancel','data-key="email-cancel"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-email-save" data-key="email-save">Send link</button></div></div>`:'';
+      const pending=ae.pending?`<div class="sm-rrow sm-pending"><span class="sm-rrow-label">Confirming<small>${escape(ae.pending)}</small></span><span class="sm-rrow-control">${button('profile-email-resend',ae.resent?'Sent again':'Resend','data-key="email-resend"')}${button('profile-email-drop','Cancel','data-key="email-drop"')}</span></div><div class="sm-auth-sim"><span>Simulate</span><button type="button" class="sm-link-button cursor-interaction" data-action="profile-email-open" data-key="email-open">Open the link</button></div>`:'';
       const account=`<section class="sm-rail-card sm-account" aria-labelledby="sm-account-title"><h2 id="sm-account-title">Account</h2><div class="sm-rgroup">`
-        +row('Username',`<span class="sm-rrow-value">${escape(ME)}</span>`)+row('Email',`<span class="sm-rrow-value">${escape(MY_EMAIL)}</span>`)
-        +row('Password',state.pwOpen?'':`<span class="sm-rrow-control"><span class="sm-rrow-value sm-mask" aria-label="Hidden">••••••••</span>${button('profile-pw','Change','data-key="pw-open"')}</span>`)+pw+row('Tour<small>The three votes, on a board</small>',`<span class="sm-rrow-control">${button('tour-start','Take it','data-key="tour-start"')}</span>`)+`</div>`
+        +row('Username',`<span class="sm-rrow-value">${escape(ME)}</span>`)
+        +row('Email',ae.editing?'':`<span class="sm-rrow-control"><span class="sm-rrow-value">${escape(state.myEmail)}</span>${ae.pending?'':button('profile-email','Change','data-key="email-open-edit"')}</span>`)+emailEdit+pending+`</div>`
+        +`<div class="sm-rgroup"><h3>Sign in with</h3>`
+        +row(`Google<small>${state.google?escape(state.myEmail):'Not connected'}</small>`,`<span class="sm-rrow-control">${button('profile-google',state.google?'Disconnect':'Connect','data-key="google"')}</span>`)
+        +row('Email link<small>Always on</small>','')
+        +`</div><div class="sm-rgroup">`+row('Tour<small>The three votes, on a board</small>',`<span class="sm-rrow-control">${button('tour-start','Take it','data-key="tour-start"')}</span>`)+`</div>`
         +`<button type="button" class="sm-button sm-signout cursor-interaction" data-action="sign-out" data-key="sign-out">${icon('log-out')}Sign out</button></section>`;
       side=`<aside class="sm-profile-side" aria-label="Your credits and account">${credits}${account}</aside>`;
     }
@@ -2585,42 +2607,76 @@
     if(state.view==='board') leaveBoard();
     const d=docs[boardId];
     Object.assign(state,{view:'home',profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,persona:'out',
-      invite:{board:boardId,by:by||d.question.author,role:['view','vote','contribute','edit'].includes(role)?role:d.question.accessRole||'contribute',tab:'up',error:'',preview}});
-    renderView('auth-0');root.scrollIntoView({block:'start'});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
+      invite:{board:boardId,by:by||d.question.author,role:['view','vote','contribute','edit'].includes(role)?role:d.question.accessRole||'contribute',step:'start',email:'',error:'',preview}});
+    renderView('auth-google');root.scrollIntoView({block:'start'});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
   }
   function readInviteLink() {
     try { const h=new URLSearchParams(hostWindow().location.hash.slice(1)); return h.get('s')?openInvite(h.get('s'),h.get('by'),h.get('as')):false; } catch { return false; }
   }
   function clearInviteLink() { try { const w=hostWindow(); if(w.location.hash) w.history.replaceState(null,'',w.location.href.split('#')[0]); } catch {} }
+  // Sign in: Continue with Google, or a one-time link by email. Either way the email is confirmed, so there is no
+  // unconfirmed account. A first sign-in picks a username. The same panel serves an invite link and the top bar's Sign in.
+  const knownEmail = e => [state.myEmail,ME].includes(String(e).trim().toLowerCase());
+  const takenNames = () => new Set([ME,...Object.values(PEOPLE).flat()]);
+  function authCard(v) {
+    const err=v.error?`<p class="sm-field-error" id="sm-auth-error">${escape(v.error)}</p>`:'';
+    const field=(id,label,type,auto,value,extra='')=>`<label class="sm-field"><span>${label}</span><input id="sm-auth-${id}" type="${type}" autocomplete="${auto}" data-key="auth-${id}" value="${escape(value||'')}" ${v.error?'aria-invalid="true" aria-describedby="sm-auth-error"':''} ${extra}></label>`;
+    const sim=(...b)=>`<div class="sm-auth-sim"><span>Simulate</span>${b.join('')}</div>`;
+    const link=(action,label,key)=>`<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-key="${key}">${label}</button>`;
+    let body='';
+    if(v.step==='sent') body=`<h2 class="sm-auth-title">Check your email</h2><p class="sm-auth-text">We sent a sign-in link to <strong>${escape(v.email)}</strong>. It works once, for 15 minutes.</p>`
+      +sim(link('auth-open','Open the link','auth-open'),link('auth-expired','Open it too late','auth-expired'))
+      +`<div class="sm-auth-links">${link('auth-resend',v.resent?'Sent again':'Resend','auth-resend')}${link('auth-restart','Use a different email','auth-restart')}</div>`;
+    else if(v.step==='expired') body=`<h2 class="sm-auth-title">That link has expired</h2><p class="sm-auth-text">Links work once, for 15 minutes.</p><button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-again" data-key="auth-again">Email me a new link</button><div class="sm-auth-links">${link('auth-restart','Use a different email','auth-restart')}</div>`;
+    else if(v.step==='name') body=`<h2 class="sm-auth-title">Choose a username</h2>${field('name','Username','text','username',v.name,'maxlength="20" spellcheck="false"')}${err}<p class="sm-field-hint sm-auth-hint">Shown on everything you write.</p><button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-name" data-key="auth-name-go" data-primary>Continue</button>`;
+    else body=`<button type="button" class="sm-button sm-google cursor-interaction" data-action="auth-google" data-key="auth-google"><span class="sm-g" aria-hidden="true">G</span>Continue with Google</button><p class="sm-or"><span>or</span></p>${field('email','Email','email','email',v.email)}${err}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-send" data-key="auth-send" data-primary>Email me a link</button><p class="sm-field-hint sm-auth-hint">Simulated: you continue as ${escape(ME)}.</p>`;
+    return `<section class="sm-rail-card sm-landing-auth" aria-label="Sign in">${body}</section>`;
+  }
   function landingMarkup() {
-    const v=state.invite,d=docs[v.board],q=d.question,s=spaceOf(q.org),f=FEED[v.board]||{people:1};
-    const options=d.options.map(o=>{const n=d.ideas.filter(i=>i.option===o.id).length;return `<li><b>${escape(o.name)}</b><span>${n} ${n===1?'argument':'arguments'}</span></li>`;}).join('');
-    const up=v.tab==='up',field=(i,label,type,auto)=>`<label class="sm-field"><span>${label}</span><input id="sm-auth-${i}" type="${type}" autocomplete="${auto}" data-key="auth-${i}" ${v.error&&!v.filled?.[i]?'aria-invalid="true"':''}></label>`;
-    const fields=up?field(0,'Username','text','username')+field(1,'Email','email','email')+field(2,'Password','password','new-password'):field(0,'Username or email','text','username')+field(1,'Password','password','current-password');
-    return `<main class="sm-landing" data-canvas="${s.canvas}" aria-label="Invitation"><div class="sm-landing-inner">`
-      +`<p class="sm-landing-from"><span class="sm-avatar" aria-hidden="true">${escape(userInitials(v.by))}</span><span><strong>${escape(v.by)}</strong> invited you to weigh in</span></p>`
-      +`<section aria-label="The steelman"><div class="sm-landing-q">${spaceTag(s)}<h1>${escape(q.text)}</h1></div><ul class="sm-landing-options" style="--n:${d.options.length}">${options}</ul></section>`
-      +`<ul class="sm-landing-facts"><li>${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}</li><li>${icon('users')}${fmt(f.people||1)} ${f.people===1?'person':'people'}</li></ul>`
-      +`<section class="sm-rail-card sm-landing-auth" aria-label="${up?'Sign up':'Sign in'}"><div class="sm-sort" role="group" aria-label="Account">${[['up','Sign up'],['in','Sign in']].map(([k,l])=>`<button type="button" class="cursor-interaction" data-action="invite-tab" data-id="${k}" data-key="invite-tab-${k}" aria-pressed="${v.tab===k}">${l}</button>`).join('')}</div>`
-      +fields+(v.error?`<p class="sm-field-error">${escape(v.error)}</p>`:'')
-      +`<button type="button" class="sm-button sm-solid cursor-interaction" data-action="invite-auth" data-key="invite-auth">${up?'Create account':'Sign in'}</button><p class="sm-field-hint">Simulated: you continue as ${escape(ME)}.</p></section>`
-      +`<button type="button" class="sm-link-button sm-landing-look cursor-interaction" data-action="invite-look" data-key="invite-look">Look around first</button></div></main>`;
+    const v=state.invite,d=v.board&&docs[v.board],q=d?.question,s=spaceOf(q?.org||'none'),f=FEED[v.board]||{people:1};
+    const options=d?d.options.map(o=>{const n=d.ideas.filter(i=>i.option===o.id).length;return `<li><b>${escape(o.name)}</b><span>${n} ${n===1?'argument':'arguments'}</span></li>`;}).join(''):'';
+    const head=v.plain?`<h1 class="sm-auth-head">Sign in to take part</h1>`:`<p class="sm-landing-from"><span class="sm-avatar" aria-hidden="true">${escape(userInitials(v.by))}</span><span><strong>${escape(v.by)}</strong> invited you to weigh in</span></p>`;
+    const board=d?`<section aria-label="The steelman"><div class="sm-landing-q">${spaceTag(s)}${v.plain?`<p class="sm-landing-qt">${escape(q.text)}</p>`:`<h1>${escape(q.text)}</h1>`}</div><ul class="sm-landing-options" style="--n:${d.options.length}">${options}</ul></section>`:'';
+    const facts=v.plain||!d?'':`<ul class="sm-landing-facts"><li>${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}</li><li>${icon('users')}${fmt(f.people||1)} ${f.people===1?'person':'people'}</li></ul>`;
+    const back=v.step==='start'?`<button type="button" class="sm-link-button sm-landing-look cursor-interaction" data-action="invite-look" data-key="invite-look">${v.plain?'Not now':'Look around first'}</button>`:'';
+    return `<main class="sm-landing" data-canvas="${s.canvas}" aria-label="${v.plain?'Sign in':'Invitation'}"><div class="sm-landing-inner">${head}${board}${facts}${authCard(v)}${back}</div></main>`;
+  }
+  function openSignIn() {
+    const b=state.view==='board'?state.boardId:null;
+    if(state.view==='board') leaveBoard();
+    Object.assign(state,{view:'home',profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,
+      invite:{board:b,by:null,role:'you',plain:true,step:'start',email:'',error:''}});
+    renderView('auth-google');root.scrollIntoView({block:'start'});announce('Sign in.');
   }
   // Signing in opens the board with the invited role (Preview as follows it), then the tour on a first visit.
   function enterInvited(persona,withTour) {
     // A real link tours only a first visit; Share's Preview always shows the whole first visit.
     const b=state.invite.board,preview=state.invite.preview;state.invite=null;clearInviteLink();state.persona=persona;
-    openBoardAt(b);
+    if(b) openBoardAt(b); else renderView();
     if(withTour&&(!state.toured||preview)) setTimeout(startTour,250);
   }
   function inviteAction(action,id) {
     const v=state.invite;if(!v) return;
-    if(action==='invite-tab') {v.tab=id;v.error='';renderHome();root.querySelector(`[data-key="invite-tab-${id}"]`)?.focus();return;}
+    const show=(focus,msg)=>{renderHome();root.querySelector(`[data-key="${focus}"]`)?.focus();if(msg)announce(msg);};
+    const done=()=>{announce(v.via==='google'?'Signed in with Google (simulated).':'Signed in (simulated).');enterInvited(v.plain?'you':v.role,!v.plain);};
     if(action==='invite-look') {enterInvited('out',false);announce('Signed out: you can read. Sign in from the top bar to take part.');return;}
-    if(action==='invite-auth') {
-      const inputs=[...root.querySelectorAll('[id^="sm-auth-"]')],empty=inputs.findIndex(i=>!i.value.trim());
-      if(empty>=0){v.error='Fill in every field.';v.filled=inputs.map(i=>!!i.value.trim());const vals=inputs.map(i=>i.value);renderHome();root.querySelectorAll('[id^="sm-auth-"]').forEach((i,k)=>{i.value=vals[k];});root.querySelector(`#sm-auth-${empty}`)?.focus();announce(v.error);return;}
-      announce(v.tab==='up'?'Account created (simulated).':'Signed in (simulated).');enterInvited(v.role,true);
+    if(action==='auth-google') {v.via='google';v.error='';if(v.plain){done();return;}v.step='name';v.name='';show('auth-name');return;}
+    if(action==='auth-send') {
+      v.email=(root.querySelector('#sm-auth-email')?.value||'').trim();
+      v.error=!v.email?'Enter your email.':/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)?'':'That doesn’t look like an email address.';
+      if(v.error){show('auth-email',v.error);return;}
+      Object.assign(v,{via:'email',step:'sent',resent:false});show('auth-open',`Link sent to ${v.email}.`);return;
+    }
+    if(action==='auth-open') {if(knownEmail(v.email)){done();return;}v.step='name';v.name=v.email.split('@')[0].toLowerCase().replace(/[^a-z0-9._]/g,'').slice(0,20);v.error='';show('auth-name');return;}
+    if(action==='auth-expired') {v.step='expired';show('auth-again','That link has expired.');return;}
+    if(action==='auth-again') {Object.assign(v,{step:'sent',resent:false});show('auth-open',`New link sent to ${v.email}.`);return;}
+    if(action==='auth-resend') {v.resent=true;show('auth-resend',`Sent again to ${v.email}.`);return;}
+    if(action==='auth-restart') {Object.assign(v,{step:'start',error:''});show('auth-email');return;}
+    if(action==='auth-name') {
+      v.name=(root.querySelector('#sm-auth-name')?.value||'').trim();
+      v.error=!/^[a-z0-9._]{3,20}$/i.test(v.name)?'Use 3 to 20 letters, numbers, dots, or underscores.':takenNames().has(v.name.toLowerCase())?`${v.name} is taken.`:'';
+      if(v.error){show('auth-name',v.error);return;}
+      done();return;
     }
   }
   // The tour picks its examples from the board: its top argument, the argument with the most wordings, and the
@@ -3107,7 +3163,7 @@
     renderFresh();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-pw','profile-pw-cancel','profile-pw-save','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
+  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-open','profile-google','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
@@ -3156,7 +3212,7 @@
     if(action==='profile') {
       const from=state.view==='board'?state.boardId:null;
       if(from){leaveBoard();state.view='home';state.profileFrom=from;} else if(!state.profile) state.profileFrom=null;
-      Object.assign(state,{profile:id,contribTab:'args',pwOpen:false,creating:false});
+      Object.assign(state,{profile:id,contribTab:'args',acct:{},creating:false});
       renderView('profile-back');root.scrollIntoView({block:'start'});announce(id===ME?'Your profile.':`${id}’s profile.`);return;
     }
     if(action==='profile-back') {
@@ -3166,13 +3222,19 @@
     }
     if(action==='profile-card'||action==='profile-board') {const [b,card]=id.split('|');state.profile=null;state.profileFrom=null;if(docs[b])openBoardAt(b,card);return;}
     if(action==='profile-tab') {state.contribTab=id;renderHome();focusOn('profile-tab-'+id);return;}
-    if(action==='profile-pw') {state.pwOpen=true;renderHome();focusOn('pw-current');return;}
-    if(action==='profile-pw-cancel') {state.pwOpen=false;renderHome();focusOn('pw-open');return;}
-    if(action==='profile-pw-save') {
-      const next=root.querySelector('#sm-pw-new');
-      if(!next?.value){next?.setAttribute('aria-invalid','true');next?.focus();announce('Enter a new password.');return;}
-      state.pwOpen=false;renderHome();focusOn('pw-open');announce('Password changed (simulated).');return;
+    const acct=state.acct||(state.acct={});
+    if(action==='profile-email') {Object.assign(acct,{editing:true,draft:'',error:''});renderHome();focusOn('email-new');return;}
+    if(action==='profile-email-cancel') {Object.assign(acct,{editing:false,error:''});renderHome();focusOn('email-open-edit');return;}
+    if(action==='profile-email-save') {
+      const next=(root.querySelector('#sm-email-new')?.value||'').trim();acct.draft=next;
+      acct.error=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)?'That doesn’t look like an email address.':next.toLowerCase()===state.myEmail?'That’s already your email.':'';
+      if(acct.error){renderHome();focusOn('email-new');announce(acct.error);return;}
+      Object.assign(acct,{editing:false,pending:next,resent:false});renderHome();focusOn('email-resend');announce(`Link sent to ${next}. Your email changes when you open it.`);return;
     }
+    if(action==='profile-email-resend') {acct.resent=true;renderHome();focusOn('email-resend');announce(`Sent again to ${acct.pending}.`);return;}
+    if(action==='profile-email-drop') {acct.pending='';renderHome();focusOn('email-open-edit');announce('Email change cancelled.');return;}
+    if(action==='profile-email-open') {state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}.`);return;}
+    if(action==='profile-google') {state.google=!state.google;renderHome();focusOn('google');announce(state.google?'Google connected (simulated).':'Google disconnected. You can still sign in with an email link.');return;}
     if(action==='sign-out') {state.profile=null;state.profileFrom=null;setPersona('out');focusOn('sign-in');announce('Signed out (simulated). Preview as is now Signed out.');}
   }
   // After anything renders, controls your role can't use are marked unavailable, with the reason as their tooltip.
@@ -3521,10 +3583,10 @@
     if(action.startsWith('sim-')||['order-update','merged-show','prev-toggle'].includes(action)){liveAction(action,id);return;}
     if(state.offline&&['vote','contribute'].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith('rule-')){if(trigger.getAttribute('aria-disabled')==='true'){announce(trigger.dataset.tooltip||'Not available.');return;}applyRule(action,id,null,key);return;}
-    if(action==='sign-in'){setPersona('you');announce('Signed in (simulated).');return;}
+    if(action==='sign-in'){openSignIn();save();return;}
     if(action==='inbox'||action.startsWith('note')){noteAction(action,id);save();return;}
     if(action==='invite-preview'){const q=doc.question;openInvite(state.boardId,ME,q.visibility==='private'?'view':q.accessRole,true);save();return;}
-    if(action.startsWith('invite-')){inviteAction(action,id);save();return;}
+    if(action.startsWith('invite-')||action.startsWith('auth-')){inviteAction(action,id);save();return;}
     if(action.startsWith('tour-')){tourAction(action);save();return;}
     if(action==='request-access'){state.requested[state.boardId]=true;renderHead();save();root.querySelector('[data-key="settings"]')?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute('aria-disabled')!=='true'||action==='browse')homeAction(action,id,trigger);save();return;}
@@ -3845,12 +3907,12 @@
     }
     if(event.key==='Escape'&&state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector('[data-key="nav-toggle"]')?.focus();return;}
     if(state.tour&&['Escape','ArrowRight','ArrowLeft'].includes(event.key)&&!event.target.closest?.('input,textarea,select')){event.preventDefault();tourAction(event.key==='Escape'?'tour-skip':event.key==='ArrowRight'?'tour-next':'tour-back');save();return;}
-    if(event.key==='Enter'&&event.target.id?.startsWith('sm-auth-')){event.preventDefault();root.querySelector('[data-key="invite-auth"]')?.click();return;}
+    if(event.key==='Enter'&&event.target.id?.startsWith('sm-auth-')){event.preventDefault();root.querySelector('.sm-landing-auth [data-primary]')?.click();return;}
     if(event.key==='Escape'&&state.inbox){event.preventDefault();state.inbox=false;renderSite();root.querySelector('[data-key="inbox"]')?.focus();announce('Notifications closed.');save();return;}
     if(event.key==='Enter'&&event.target.id==='sm-space-invite'){event.preventDefault();root.querySelector('[data-key="space-invite-send"]')?.click();return;}
     if(event.key==='Enter'&&event.target.id==='sm-space-name'&&state.spaceEdit==='new'){event.preventDefault();root.querySelector('[data-key="space-create"]')?.click();return;}
     if(event.key==='Escape'&&!busy&&state.view==='home'&&state.spaceEdit&&!state.profile&&!state.creating){event.preventDefault();root.querySelector('[data-key="space-back"]')?.click();return;}
-    if(event.key==='Escape'&&!busy&&state.view==='home'&&state.profile){event.preventDefault();root.querySelector(`[data-key="${state.pwOpen?'pw-cancel':'profile-back'}"]`)?.click();return;}
+    if(event.key==='Escape'&&!busy&&state.view==='home'&&state.profile){event.preventDefault();root.querySelector(`[data-key="${state.acct?.editing?'email-cancel':'profile-back'}"]`)?.click();return;}
     if(event.key!=='Escape'||busy||state.view!=='board')return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery='';render('share');announce('Sharing closed.');return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key="menu-${id}"]`)?.focus();return;}

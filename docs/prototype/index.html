@@ -2829,6 +2829,19 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-landing-auth .sm-field input { height:38px; }
   #steelman-study .sm-landing-auth .sm-solid { height:40px; min-height:40px; font-size:14px; }
   #steelman-study .sm-landing-auth .sm-field-hint { margin-top:-6px; text-align:center; }
+  #steelman-study .sm-auth-head { margin:0; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-landing-qt { margin:0; font:600 18px/1.3 var(--sm-serif); overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-title { margin:0; font:600 17px/1.3 var(--sm-serif); }
+  #steelman-study .sm-auth-text { margin:-6px 0 0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-hint { text-align:left !important; margin-top:-8px !important; }
+  #steelman-study .sm-google { height:40px; gap:10px; font-size:14px; font-weight:600; }
+  #steelman-study .sm-g { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--sm-line); font:700 12px/1 var(--sm-sans); }
+  #steelman-study .sm-or { display:flex; align-items:center; gap:10px; margin:0; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-or::before, #steelman-study .sm-or::after { content:&quot;&quot;; flex:1; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-auth-sim { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:10px 12px; border:1px dashed var(--sm-line); border-radius:6px; font-size:13px; }
+  #steelman-study .sm-auth-sim &gt; span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-auth-links { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; }
+  #steelman-study :is(.sm-auth-sim,.sm-auth-links) .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-landing-look { justify-self:center; font-size:13px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:3px; }
   @media(max-width:560px) {
     #steelman-study .sm-landing { padding:24px 16px 48px; }
@@ -3158,7 +3171,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   let PEOPLE = seedPeople();
   const ME = &#x27;kieran_lamee&#x27;;
-  const MY_EMAIL = &#x27;kieran_lamee@example.com&#x27;; // a placeholder: the prototype has no accounts
+  const MY_EMAIL = &#x27;kieran_lamee@example.com&#x27;; // a placeholder: the prototype has no accounts. state.myEmail can change.
   // What a space&#x27;s admins set: roles (anyone unlisted is a member), community rules, pending invites and join requests,
   // and the mode new steelmen start in (unset: Open team in a private space, Public in a community).
   const seedSpaceMeta = () =&gt; ({
@@ -3199,7 +3212,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
     &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;decision-option&#x27;:&#x27;owner&#x27;,&#x27;decision-arg&#x27;:&#x27;owner&#x27;,&#x27;decision-edit&#x27;:&#x27;owner&#x27;,&#x27;decision-cancel&#x27;:&#x27;owner&#x27;,&#x27;decision-save&#x27;:&#x27;owner&#x27;,&#x27;report-open&#x27;:&#x27;view&#x27;,&#x27;report-card&#x27;:&#x27;view&#x27;,&#x27;report-withdraw&#x27;:&#x27;view&#x27;,&#x27;hide-open&#x27;:&#x27;edit&#x27;,&#x27;hide-card&#x27;:&#x27;edit&#x27;,&#x27;restore-card&#x27;:&#x27;edit&#x27;,&#x27;reports-dismiss&#x27;:&#x27;edit&#x27;,&#x27;comment-report-open&#x27;:&#x27;view&#x27;,&#x27;comment-report&#x27;:&#x27;view&#x27;,&#x27;comment-report-withdraw&#x27;:&#x27;view&#x27;,&#x27;comment-hide-open&#x27;:&#x27;edit&#x27;,&#x27;comment-hide&#x27;:&#x27;edit&#x27;,&#x27;comment-restore&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
     inbox:&#x27;view&#x27;,&#x27;note-open&#x27;:&#x27;view&#x27;,&#x27;note-read&#x27;:&#x27;view&#x27;,&#x27;notes-read-all&#x27;:&#x27;view&#x27;,&#x27;space-new&#x27;:&#x27;view&#x27;,&#x27;space-create&#x27;:&#x27;view&#x27;,&#x27;space-settings&#x27;:&#x27;admin&#x27;,&#x27;space-canvas&#x27;:&#x27;admin&#x27;,&#x27;space-kind&#x27;:&#x27;admin&#x27;,&#x27;space-invite&#x27;:&#x27;admin&#x27;,&#x27;space-invite-cancel&#x27;:&#x27;admin&#x27;,&#x27;space-remove&#x27;:&#x27;admin&#x27;,&#x27;space-approve&#x27;:&#x27;admin&#x27;,&#x27;space-decline&#x27;:&#x27;admin&#x27;,&#x27;space-rule-add&#x27;:&#x27;admin&#x27;,&#x27;space-rule-remove&#x27;:&#x27;admin&#x27;,&#x27;space-ai&#x27;:&#x27;admin&#x27;,&#x27;space-mode&#x27;:&#x27;admin&#x27;,
-    &#x27;profile-pw&#x27;:&#x27;view&#x27;,&#x27;profile-pw-save&#x27;:&#x27;view&#x27;,&#x27;profile-pw-cancel&#x27;:&#x27;view&#x27;,&#x27;sign-out&#x27;:&#x27;view&#x27;,
+    &#x27;profile-email&#x27;:&#x27;view&#x27;,&#x27;profile-email-save&#x27;:&#x27;view&#x27;,&#x27;profile-email-cancel&#x27;:&#x27;view&#x27;,&#x27;profile-email-resend&#x27;:&#x27;view&#x27;,&#x27;profile-email-drop&#x27;:&#x27;view&#x27;,&#x27;profile-email-open&#x27;:&#x27;view&#x27;,&#x27;profile-google&#x27;:&#x27;view&#x27;,&#x27;sign-out&#x27;:&#x27;view&#x27;,
     settings:&#x27;owner&#x27;};
   const WHY = {admin:&#x27;Space admins only.&#x27;,view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
   const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
@@ -3306,7 +3319,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:&#x27;args&#x27;,pwOpen:false,spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteRole:&#x27;member&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
+  const freshState = () =&gt; ({myEmail:MY_EMAIL,google:true,acct:{},sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:&#x27;args&#x27;,spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteRole:&#x27;member&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -3343,6 +3356,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     if (Array.isArray(saved.notes)) state.notes=saved.notes.filter(n=&gt;n&amp;&amp;typeof n.id===&#x27;string&#x27;).slice(0,30);
     if (saved.notesRead &amp;&amp; typeof saved.notesRead===&#x27;object&#x27;) state.notesRead=saved.notesRead;
     state.toured=saved.toured===true;
+    if(typeof saved.myEmail===&#x27;string&#x27;&amp;&amp;/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saved.myEmail)) state.myEmail=saved.myEmail;
+    if(typeof saved.google===&#x27;boolean&#x27;) state.google=saved.google;
     if (typeof saved.spaceEdit===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) state.spaceEdit=saved.spaceEdit;
     if (typeof saved.profile===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) {state.profile=saved.profile;state.profileFrom=docs[saved.profileFrom]?saved.profileFrom:null;}
     if ([&#x27;args&#x27;,&#x27;words&#x27;,&#x27;sources&#x27;].includes(saved.contribTab)) state.contribTab=saved.contribTab;
@@ -3359,7 +3374,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit===&#x27;new&#x27;?null:state.spaceEdit,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,invite:null,tour:null,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,pwOpen:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit===&#x27;new&#x27;?null:state.spaceEdit,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,invite:null,tour:null,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -4445,10 +4460,17 @@ html&gt;body{padding:0}&lt;/style&gt;
         +(usage.length?`&lt;div class=&quot;sm-rgroup sm-usage&quot;&gt;&lt;h3&gt;Recent usage&lt;/h3&gt;${usage.map((u,i)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-rrow sm-rrow-button cursor-interaction&quot; data-action=&quot;profile-board&quot; data-id=&quot;${u.board}&quot; data-key=&quot;usage-${i}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;span&gt;${u.kind===&#x27;draft&#x27;?&#x27;Draft arguments&#x27;:u.n===1?&#x27;Evidence check&#x27;:`Evidence checks · ${u.n}`}&lt;/span&gt;&lt;small&gt;${escape(docs[u.board].question.text)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;&lt;b&gt;−${u.n}&lt;/b&gt;&lt;time datetime=&quot;${u.at}&quot; title=&quot;${fullDate(u.at)}&quot;&gt;${ago(u.at)}&lt;/time&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;)
         +`&lt;/section&gt;`;
       const row=(label,value)=&gt;`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}&lt;/span&gt;${value}&lt;/div&gt;`;
-      const pw=state.pwOpen?`&lt;div class=&quot;sm-pw-form&quot; role=&quot;group&quot; aria-label=&quot;Change password&quot;&gt;&lt;label&gt;Current password&lt;input id=&quot;sm-pw-current&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; data-key=&quot;pw-current&quot;&gt;&lt;/label&gt;&lt;label&gt;New password&lt;input id=&quot;sm-pw-new&quot; type=&quot;password&quot; autocomplete=&quot;new-password&quot; data-key=&quot;pw-new&quot;&gt;&lt;/label&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: nothing is saved or sent.&lt;/p&gt;&lt;div&gt;${button(&#x27;profile-pw-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;pw-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;profile-pw-save&quot; data-key=&quot;pw-save&quot;&gt;Change password&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+      // Email changes take effect once the new address confirms them; sign-in is Google and/or an email link (no password).
+      const ae=state.acct||{};
+      const emailEdit=ae.editing?`&lt;div class=&quot;sm-pw-form&quot; role=&quot;group&quot; aria-label=&quot;Change email&quot;&gt;&lt;label&gt;New email&lt;input id=&quot;sm-email-new&quot; type=&quot;email&quot; autocomplete=&quot;email&quot; data-key=&quot;email-new&quot; value=&quot;${escape(ae.draft||&#x27;&#x27;)}&quot; ${ae.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-email-error&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;${ae.error?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-email-error&quot;&gt;${escape(ae.error)}&lt;/p&gt;`:&#x27;&#x27;}&lt;div&gt;${button(&#x27;profile-email-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;email-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;profile-email-save&quot; data-key=&quot;email-save&quot;&gt;Send link&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+      const pending=ae.pending?`&lt;div class=&quot;sm-rrow sm-pending&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;Confirming&lt;small&gt;${escape(ae.pending)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-email-resend&#x27;,ae.resent?&#x27;Sent again&#x27;:&#x27;Resend&#x27;,&#x27;data-key=&quot;email-resend&quot;&#x27;)}${button(&#x27;profile-email-drop&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;email-drop&quot;&#x27;)}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-auth-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;profile-email-open&quot; data-key=&quot;email-open&quot;&gt;Open the link&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
       const account=`&lt;section class=&quot;sm-rail-card sm-account&quot; aria-labelledby=&quot;sm-account-title&quot;&gt;&lt;h2 id=&quot;sm-account-title&quot;&gt;Account&lt;/h2&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`
-        +row(&#x27;Username&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(ME)}&lt;/span&gt;`)+row(&#x27;Email&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(MY_EMAIL)}&lt;/span&gt;`)
-        +row(&#x27;Password&#x27;,state.pwOpen?&#x27;&#x27;:`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value sm-mask&quot; aria-label=&quot;Hidden&quot;&gt;••••••••&lt;/span&gt;${button(&#x27;profile-pw&#x27;,&#x27;Change&#x27;,&#x27;data-key=&quot;pw-open&quot;&#x27;)}&lt;/span&gt;`)+pw+row(&#x27;Tour&lt;small&gt;The three votes, on a board&lt;/small&gt;&#x27;,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;tour-start&#x27;,&#x27;Take it&#x27;,&#x27;data-key=&quot;tour-start&quot;&#x27;)}&lt;/span&gt;`)+`&lt;/div&gt;`
+        +row(&#x27;Username&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(ME)}&lt;/span&gt;`)
+        +row(&#x27;Email&#x27;,ae.editing?&#x27;&#x27;:`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(state.myEmail)}&lt;/span&gt;${ae.pending?&#x27;&#x27;:button(&#x27;profile-email&#x27;,&#x27;Change&#x27;,&#x27;data-key=&quot;email-open-edit&quot;&#x27;)}&lt;/span&gt;`)+emailEdit+pending+`&lt;/div&gt;`
+        +`&lt;div class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;Sign in with&lt;/h3&gt;`
+        +row(`Google&lt;small&gt;${state.google?escape(state.myEmail):&#x27;Not connected&#x27;}&lt;/small&gt;`,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-google&#x27;,state.google?&#x27;Disconnect&#x27;:&#x27;Connect&#x27;,&#x27;data-key=&quot;google&quot;&#x27;)}&lt;/span&gt;`)
+        +row(&#x27;Email link&lt;small&gt;Always on&lt;/small&gt;&#x27;,&#x27;&#x27;)
+        +`&lt;/div&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`+row(&#x27;Tour&lt;small&gt;The three votes, on a board&lt;/small&gt;&#x27;,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;tour-start&#x27;,&#x27;Take it&#x27;,&#x27;data-key=&quot;tour-start&quot;&#x27;)}&lt;/span&gt;`)+`&lt;/div&gt;`
         +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-signout cursor-interaction&quot; data-action=&quot;sign-out&quot; data-key=&quot;sign-out&quot;&gt;${icon(&#x27;log-out&#x27;)}Sign out&lt;/button&gt;&lt;/section&gt;`;
       side=`&lt;aside class=&quot;sm-profile-side&quot; aria-label=&quot;Your credits and account&quot;&gt;${credits}${account}&lt;/aside&gt;`;
     }
@@ -4467,42 +4489,76 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view===&#x27;board&#x27;) leaveBoard();
     const d=docs[boardId];
     Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,persona:&#x27;out&#x27;,
-      invite:{board:boardId,by:by||d.question.author,role:[&#x27;view&#x27;,&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;].includes(role)?role:d.question.accessRole||&#x27;contribute&#x27;,tab:&#x27;up&#x27;,error:&#x27;&#x27;,preview}});
-    renderView(&#x27;auth-0&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
+      invite:{board:boardId,by:by||d.question.author,role:[&#x27;view&#x27;,&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;].includes(role)?role:d.question.accessRole||&#x27;contribute&#x27;,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;,preview}});
+    renderView(&#x27;auth-google&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
   }
   function readInviteLink() {
     try { const h=new URLSearchParams(hostWindow().location.hash.slice(1)); return h.get(&#x27;s&#x27;)?openInvite(h.get(&#x27;s&#x27;),h.get(&#x27;by&#x27;),h.get(&#x27;as&#x27;)):false; } catch { return false; }
   }
   function clearInviteLink() { try { const w=hostWindow(); if(w.location.hash) w.history.replaceState(null,&#x27;&#x27;,w.location.href.split(&#x27;#&#x27;)[0]); } catch {} }
+  // Sign in: Continue with Google, or a one-time link by email. Either way the email is confirmed, so there is no
+  // unconfirmed account. A first sign-in picks a username. The same panel serves an invite link and the top bar&#x27;s Sign in.
+  const knownEmail = e =&gt; [state.myEmail,ME].includes(String(e).trim().toLowerCase());
+  const takenNames = () =&gt; new Set([ME,...Object.values(PEOPLE).flat()]);
+  function authCard(v) {
+    const err=v.error?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-auth-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;;
+    const field=(id,label,type,auto,value,extra=&#x27;&#x27;)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${id}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${id}&quot; value=&quot;${escape(value||&#x27;&#x27;)}&quot; ${v.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-auth-error&quot;&#x27;:&#x27;&#x27;} ${extra}&gt;&lt;/label&gt;`;
+    const sim=(...b)=&gt;`&lt;div class=&quot;sm-auth-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;${b.join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const link=(action,label,key)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;${action}&quot; data-key=&quot;${key}&quot;&gt;${label}&lt;/button&gt;`;
+    let body=&#x27;&#x27;;
+    if(v.step===&#x27;sent&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Check your email&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;We sent a sign-in link to &lt;strong&gt;${escape(v.email)}&lt;/strong&gt;. It works once, for 15 minutes.&lt;/p&gt;`
+      +sim(link(&#x27;auth-open&#x27;,&#x27;Open the link&#x27;,&#x27;auth-open&#x27;),link(&#x27;auth-expired&#x27;,&#x27;Open it too late&#x27;,&#x27;auth-expired&#x27;))
+      +`&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-resend&#x27;,v.resent?&#x27;Sent again&#x27;:&#x27;Resend&#x27;,&#x27;auth-resend&#x27;)}${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
+    else if(v.step===&#x27;expired&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;That link has expired&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;Links work once, for 15 minutes.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-again&quot; data-key=&quot;auth-again&quot;&gt;Email me a new link&lt;/button&gt;&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
+    else if(v.step===&#x27;name&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Choose a username&lt;/h2&gt;${field(&#x27;name&#x27;,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;,v.name,&#x27;maxlength=&quot;20&quot; spellcheck=&quot;false&quot;&#x27;)}${err}&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Shown on everything you write.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-name&quot; data-key=&quot;auth-name-go&quot; data-primary&gt;Continue&lt;/button&gt;`;
+    else body=`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-google cursor-interaction&quot; data-action=&quot;auth-google&quot; data-key=&quot;auth-google&quot;&gt;&lt;span class=&quot;sm-g&quot; aria-hidden=&quot;true&quot;&gt;G&lt;/span&gt;Continue with Google&lt;/button&gt;&lt;p class=&quot;sm-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/p&gt;${field(&#x27;email&#x27;,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;,v.email)}${err}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-send&quot; data-key=&quot;auth-send&quot; data-primary&gt;Email me a link&lt;/button&gt;&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Simulated: you continue as ${escape(ME)}.&lt;/p&gt;`;
+    return `&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;Sign in&quot;&gt;${body}&lt;/section&gt;`;
+  }
   function landingMarkup() {
-    const v=state.invite,d=docs[v.board],q=d.question,s=spaceOf(q.org),f=FEED[v.board]||{people:1};
-    const options=d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;);
-    const up=v.tab===&#x27;up&#x27;,field=(i,label,type,auto)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${i}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${i}&quot; ${v.error&amp;&amp;!v.filled?.[i]?&#x27;aria-invalid=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;`;
-    const fields=up?field(0,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;)+field(2,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;new-password&#x27;):field(0,&#x27;Username or email&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;current-password&#x27;);
-    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;Invitation&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;`
-      +`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`
-      +`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`
-      +`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`
-      +`&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;${up?&#x27;Sign up&#x27;:&#x27;Sign in&#x27;}&quot;&gt;&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Account&quot;&gt;${[[&#x27;up&#x27;,&#x27;Sign up&#x27;],[&#x27;in&#x27;,&#x27;Sign in&#x27;]].map(([k,l])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;invite-tab&quot; data-id=&quot;${k}&quot; data-key=&quot;invite-tab-${k}&quot; aria-pressed=&quot;${v.tab===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
-      +fields+(v.error?`&lt;p class=&quot;sm-field-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;)
-      +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;invite-auth&quot; data-key=&quot;invite-auth&quot;&gt;${up?&#x27;Create account&#x27;:&#x27;Sign in&#x27;}&lt;/button&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: you continue as ${escape(ME)}.&lt;/p&gt;&lt;/section&gt;`
-      +`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;Look around first&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;`;
+    const v=state.invite,d=v.board&amp;&amp;docs[v.board],q=d?.question,s=spaceOf(q?.org||&#x27;none&#x27;),f=FEED[v.board]||{people:1};
+    const options=d?d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;):&#x27;&#x27;;
+    const head=v.plain?`&lt;h1 class=&quot;sm-auth-head&quot;&gt;Sign in to take part&lt;/h1&gt;`:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
+    const board=d?`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}${v.plain?`&lt;p class=&quot;sm-landing-qt&quot;&gt;${escape(q.text)}&lt;/p&gt;`:`&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;`}&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`:&#x27;&#x27;;
+    const facts=v.plain||!d?&#x27;&#x27;:`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`;
+    const back=v.step===&#x27;start&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;${v.plain?&#x27;Not now&#x27;:&#x27;Look around first&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;${v.plain?&#x27;Sign in&#x27;:&#x27;Invitation&#x27;}&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;${head}${board}${facts}${authCard(v)}${back}&lt;/div&gt;&lt;/main&gt;`;
+  }
+  function openSignIn() {
+    const b=state.view===&#x27;board&#x27;?state.boardId:null;
+    if(state.view===&#x27;board&#x27;) leaveBoard();
+    Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,
+      invite:{board:b,by:null,role:&#x27;you&#x27;,plain:true,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;}});
+    renderView(&#x27;auth-google&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(&#x27;Sign in.&#x27;);
   }
   // Signing in opens the board with the invited role (Preview as follows it), then the tour on a first visit.
   function enterInvited(persona,withTour) {
     // A real link tours only a first visit; Share&#x27;s Preview always shows the whole first visit.
     const b=state.invite.board,preview=state.invite.preview;state.invite=null;clearInviteLink();state.persona=persona;
-    openBoardAt(b);
+    if(b) openBoardAt(b); else renderView();
     if(withTour&amp;&amp;(!state.toured||preview)) setTimeout(startTour,250);
   }
   function inviteAction(action,id) {
     const v=state.invite;if(!v) return;
-    if(action===&#x27;invite-tab&#x27;) {v.tab=id;v.error=&#x27;&#x27;;renderHome();root.querySelector(`[data-key=&quot;invite-tab-${id}&quot;]`)?.focus();return;}
+    const show=(focus,msg)=&gt;{renderHome();root.querySelector(`[data-key=&quot;${focus}&quot;]`)?.focus();if(msg)announce(msg);};
+    const done=()=&gt;{announce(v.via===&#x27;google&#x27;?&#x27;Signed in with Google (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.plain?&#x27;you&#x27;:v.role,!v.plain);};
     if(action===&#x27;invite-look&#x27;) {enterInvited(&#x27;out&#x27;,false);announce(&#x27;Signed out: you can read. Sign in from the top bar to take part.&#x27;);return;}
-    if(action===&#x27;invite-auth&#x27;) {
-      const inputs=[...root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;)],empty=inputs.findIndex(i=&gt;!i.value.trim());
-      if(empty&gt;=0){v.error=&#x27;Fill in every field.&#x27;;v.filled=inputs.map(i=&gt;!!i.value.trim());const vals=inputs.map(i=&gt;i.value);renderHome();root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;).forEach((i,k)=&gt;{i.value=vals[k];});root.querySelector(`#sm-auth-${empty}`)?.focus();announce(v.error);return;}
-      announce(v.tab===&#x27;up&#x27;?&#x27;Account created (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.role,true);
+    if(action===&#x27;auth-google&#x27;) {v.via=&#x27;google&#x27;;v.error=&#x27;&#x27;;if(v.plain){done();return;}v.step=&#x27;name&#x27;;v.name=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
+    if(action===&#x27;auth-send&#x27;) {
+      v.email=(root.querySelector(&#x27;#sm-auth-email&#x27;)?.value||&#x27;&#x27;).trim();
+      v.error=!v.email?&#x27;Enter your email.&#x27;:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)?&#x27;&#x27;:&#x27;That doesn’t look like an email address.&#x27;;
+      if(v.error){show(&#x27;auth-email&#x27;,v.error);return;}
+      Object.assign(v,{via:&#x27;email&#x27;,step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`Link sent to ${v.email}.`);return;
+    }
+    if(action===&#x27;auth-open&#x27;) {if(knownEmail(v.email)){done();return;}v.step=&#x27;name&#x27;;v.name=v.email.split(&#x27;@&#x27;)[0].toLowerCase().replace(/[^a-z0-9._]/g,&#x27;&#x27;).slice(0,20);v.error=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
+    if(action===&#x27;auth-expired&#x27;) {v.step=&#x27;expired&#x27;;show(&#x27;auth-again&#x27;,&#x27;That link has expired.&#x27;);return;}
+    if(action===&#x27;auth-again&#x27;) {Object.assign(v,{step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`New link sent to ${v.email}.`);return;}
+    if(action===&#x27;auth-resend&#x27;) {v.resent=true;show(&#x27;auth-resend&#x27;,`Sent again to ${v.email}.`);return;}
+    if(action===&#x27;auth-restart&#x27;) {Object.assign(v,{step:&#x27;start&#x27;,error:&#x27;&#x27;});show(&#x27;auth-email&#x27;);return;}
+    if(action===&#x27;auth-name&#x27;) {
+      v.name=(root.querySelector(&#x27;#sm-auth-name&#x27;)?.value||&#x27;&#x27;).trim();
+      v.error=!/^[a-z0-9._]{3,20}$/i.test(v.name)?&#x27;Use 3 to 20 letters, numbers, dots, or underscores.&#x27;:takenNames().has(v.name.toLowerCase())?`${v.name} is taken.`:&#x27;&#x27;;
+      if(v.error){show(&#x27;auth-name&#x27;,v.error);return;}
+      done();return;
     }
   }
   // The tour picks its examples from the board: its top argument, the argument with the most wordings, and the
@@ -4989,7 +5045,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     renderFresh();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-pw&#x27;,&#x27;profile-pw-cancel&#x27;,&#x27;profile-pw-save&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
+  const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-email&#x27;,&#x27;profile-email-cancel&#x27;,&#x27;profile-email-save&#x27;,&#x27;profile-email-resend&#x27;,&#x27;profile-email-drop&#x27;,&#x27;profile-email-open&#x27;,&#x27;profile-google&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
   function homeAction(action,id,trigger) {
     if(action===&#x27;browse&#x27;) {announce(&#x27;Browsing public communities is coming soon.&#x27;);return;}
     if(action===&#x27;create-open&#x27;) {
@@ -5038,7 +5094,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;profile&#x27;) {
       const from=state.view===&#x27;board&#x27;?state.boardId:null;
       if(from){leaveBoard();state.view=&#x27;home&#x27;;state.profileFrom=from;} else if(!state.profile) state.profileFrom=null;
-      Object.assign(state,{profile:id,contribTab:&#x27;args&#x27;,pwOpen:false,creating:false});
+      Object.assign(state,{profile:id,contribTab:&#x27;args&#x27;,acct:{},creating:false});
       renderView(&#x27;profile-back&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(id===ME?&#x27;Your profile.&#x27;:`${id}’s profile.`);return;
     }
     if(action===&#x27;profile-back&#x27;) {
@@ -5048,13 +5104,19 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(action===&#x27;profile-card&#x27;||action===&#x27;profile-board&#x27;) {const [b,card]=id.split(&#x27;|&#x27;);state.profile=null;state.profileFrom=null;if(docs[b])openBoardAt(b,card);return;}
     if(action===&#x27;profile-tab&#x27;) {state.contribTab=id;renderHome();focusOn(&#x27;profile-tab-&#x27;+id);return;}
-    if(action===&#x27;profile-pw&#x27;) {state.pwOpen=true;renderHome();focusOn(&#x27;pw-current&#x27;);return;}
-    if(action===&#x27;profile-pw-cancel&#x27;) {state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);return;}
-    if(action===&#x27;profile-pw-save&#x27;) {
-      const next=root.querySelector(&#x27;#sm-pw-new&#x27;);
-      if(!next?.value){next?.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);next?.focus();announce(&#x27;Enter a new password.&#x27;);return;}
-      state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);announce(&#x27;Password changed (simulated).&#x27;);return;
+    const acct=state.acct||(state.acct={});
+    if(action===&#x27;profile-email&#x27;) {Object.assign(acct,{editing:true,draft:&#x27;&#x27;,error:&#x27;&#x27;});renderHome();focusOn(&#x27;email-new&#x27;);return;}
+    if(action===&#x27;profile-email-cancel&#x27;) {Object.assign(acct,{editing:false,error:&#x27;&#x27;});renderHome();focusOn(&#x27;email-open-edit&#x27;);return;}
+    if(action===&#x27;profile-email-save&#x27;) {
+      const next=(root.querySelector(&#x27;#sm-email-new&#x27;)?.value||&#x27;&#x27;).trim();acct.draft=next;
+      acct.error=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)?&#x27;That doesn’t look like an email address.&#x27;:next.toLowerCase()===state.myEmail?&#x27;That’s already your email.&#x27;:&#x27;&#x27;;
+      if(acct.error){renderHome();focusOn(&#x27;email-new&#x27;);announce(acct.error);return;}
+      Object.assign(acct,{editing:false,pending:next,resent:false});renderHome();focusOn(&#x27;email-resend&#x27;);announce(`Link sent to ${next}. Your email changes when you open it.`);return;
     }
+    if(action===&#x27;profile-email-resend&#x27;) {acct.resent=true;renderHome();focusOn(&#x27;email-resend&#x27;);announce(`Sent again to ${acct.pending}.`);return;}
+    if(action===&#x27;profile-email-drop&#x27;) {acct.pending=&#x27;&#x27;;renderHome();focusOn(&#x27;email-open-edit&#x27;);announce(&#x27;Email change cancelled.&#x27;);return;}
+    if(action===&#x27;profile-email-open&#x27;) {state.myEmail=acct.pending.toLowerCase();acct.pending=&#x27;&#x27;;renderHome();focusOn(&#x27;email-open-edit&#x27;);announce(`Your email is now ${state.myEmail}.`);return;}
+    if(action===&#x27;profile-google&#x27;) {state.google=!state.google;renderHome();focusOn(&#x27;google&#x27;);announce(state.google?&#x27;Google connected (simulated).&#x27;:&#x27;Google disconnected. You can still sign in with an email link.&#x27;);return;}
     if(action===&#x27;sign-out&#x27;) {state.profile=null;state.profileFrom=null;setPersona(&#x27;out&#x27;);focusOn(&#x27;sign-in&#x27;);announce(&#x27;Signed out (simulated). Preview as is now Signed out.&#x27;);}
   }
   // After anything renders, controls your role can&#x27;t use are marked unavailable, with the reason as their tooltip.
@@ -5403,10 +5465,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action.startsWith(&#x27;sim-&#x27;)||[&#x27;order-update&#x27;,&#x27;merged-show&#x27;,&#x27;prev-toggle&#x27;].includes(action)){liveAction(action,id);return;}
     if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
-    if(action===&#x27;sign-in&#x27;){setPersona(&#x27;you&#x27;);announce(&#x27;Signed in (simulated).&#x27;);return;}
+    if(action===&#x27;sign-in&#x27;){openSignIn();save();return;}
     if(action===&#x27;inbox&#x27;||action.startsWith(&#x27;note&#x27;)){noteAction(action,id);save();return;}
     if(action===&#x27;invite-preview&#x27;){const q=doc.question;openInvite(state.boardId,ME,q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole,true);save();return;}
-    if(action.startsWith(&#x27;invite-&#x27;)){inviteAction(action,id);save();return;}
+    if(action.startsWith(&#x27;invite-&#x27;)||action.startsWith(&#x27;auth-&#x27;)){inviteAction(action,id);save();return;}
     if(action.startsWith(&#x27;tour-&#x27;)){tourAction(action);save();return;}
     if(action===&#x27;request-access&#x27;){state.requested[state.boardId]=true;renderHead();save();root.querySelector(&#x27;[data-key=&quot;settings&quot;]&#x27;)?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)!==&#x27;true&#x27;||action===&#x27;browse&#x27;)homeAction(action,id,trigger);save();return;}
@@ -5727,12 +5789,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(&#x27;[data-key=&quot;nav-toggle&quot;]&#x27;)?.focus();return;}
     if(state.tour&amp;&amp;[&#x27;Escape&#x27;,&#x27;ArrowRight&#x27;,&#x27;ArrowLeft&#x27;].includes(event.key)&amp;&amp;!event.target.closest?.(&#x27;input,textarea,select&#x27;)){event.preventDefault();tourAction(event.key===&#x27;Escape&#x27;?&#x27;tour-skip&#x27;:event.key===&#x27;ArrowRight&#x27;?&#x27;tour-next&#x27;:&#x27;tour-back&#x27;);save();return;}
-    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id?.startsWith(&#x27;sm-auth-&#x27;)){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;invite-auth&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id?.startsWith(&#x27;sm-auth-&#x27;)){event.preventDefault();root.querySelector(&#x27;.sm-landing-auth [data-primary]&#x27;)?.click();return;}
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.inbox){event.preventDefault();state.inbox=false;renderSite();root.querySelector(&#x27;[data-key=&quot;inbox&quot;]&#x27;)?.focus();announce(&#x27;Notifications closed.&#x27;);save();return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-invite&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-invite-send&quot;]&#x27;)?.click();return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-name&#x27;&amp;&amp;state.spaceEdit===&#x27;new&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-create&quot;]&#x27;)?.click();return;}
     if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.spaceEdit&amp;&amp;!state.profile&amp;&amp;!state.creating){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-back&quot;]&#x27;)?.click();return;}
-    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.profile){event.preventDefault();root.querySelector(`[data-key=&quot;${state.pwOpen?&#x27;pw-cancel&#x27;:&#x27;profile-back&#x27;}&quot;]`)?.click();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.profile){event.preventDefault();root.querySelector(`[data-key=&quot;${state.acct?.editing?&#x27;email-cancel&#x27;:&#x27;profile-back&#x27;}&quot;]`)?.click();return;}
     if(event.key!==&#x27;Escape&#x27;||busy||state.view!==&#x27;board&#x27;)return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery=&#x27;&#x27;;render(&#x27;share&#x27;);announce(&#x27;Sharing closed.&#x27;);return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key=&quot;menu-${id}&quot;]`)?.focus();return;}

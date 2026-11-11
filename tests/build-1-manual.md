@@ -734,6 +734,24 @@ Others' structural changes are flags applied on Update or load (`applyPending()`
 | Phone width (375 px) | Edit, Separate, Combine, Update: no horizontal overflow; placeholder 203 px wide in a 343 px frame |
 | Console | No errors |
 
+## November 11 — Sign-in and account (L-01, L-04)
+
+Decisions: sign in with Google or a one-time email link (no passwords); people who join through a link must confirm their email, which both methods do by design. `authCard()` serves the invite landing and `openSignIn()` (top bar and board header). The account card's password rows are replaced by email change and sign-in methods; `state.myEmail` and `state.google` are saved.
+
+| Check | Observed result |
+| --- | --- |
+| Invite link (capstone, maya.chen) | Landing with Continue with Google, or, Email, Email me a link; focus on Google |
+| Bad email | "not-an-email" → "That doesn't look like an email address.", field marked invalid, value kept |
+| Link sent (Enter in the field) | "We sent a sign-in link to sam.k@school.edu. It works once, for 15 minutes."; focus on Open the link; Resend → "Sent again" |
+| Expired | Open it too late → "That link has expired" → Email me a new link → back to Check your email |
+| Username | Prefilled "sam.k"; "jordan_w" → "jordan_w is taken."; "a!" → "Use 3 to 20 letters, numbers, dots, or underscores."; "sam_k" → board as Contributor, tour starts |
+| Change email | Same address → "That's already your email."; kieran@school.edu → Confirming row, focus on Resend, Change hidden; Open the link → "Your email is now kieran@school.edu." |
+| Google | Disconnect → "Google disconnected. You can still sign in with an email link."; Connect restores |
+| Top-bar Sign in, no board | "Sign in to take part"; KIERAN@school.edu (the changed email, any case) → straight in, no username step, no tour |
+| Sign in from a board | Signed out on open-weights → panel shows its question → Google → back on the board as you |
+| Phone width (375 px) | Start, sent, and username steps: no horizontal overflow |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
