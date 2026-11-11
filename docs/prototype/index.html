@@ -2278,6 +2278,10 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
   #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
   #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  #steelman-study .sm-link-note { display:flex; align-items:center; gap:8px; max-width:640px; margin:12px auto 0; padding:8px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-link-note svg { width:15px; height:15px; flex:none; }
+  #steelman-study .sm-link-note span { flex:1; }
+  #steelman-study .sm-link-note .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
   #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
@@ -3596,7 +3600,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${lit?&#x27;sm-lit&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;} ${commenting(&#x27;card:&#x27;+id)?&#x27;sm-commenting&#x27;:&#x27;&#x27;} ${ai?&#x27;sm-ai&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot; ${flagTag(id)?&#x27;data-flagged&#x27;:&#x27;&#x27;}&gt;${mark}${ai}${flagTag(id)}&lt;button type=&quot;button&quot; class=&quot;sm-card-menu-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;${id}&quot; data-key=&quot;menu-${id}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${menuOpen}&quot; aria-label=&quot;Options for this version&quot; data-tooltip=&quot;Options&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;${byline(id)}&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
-  function menuMarkup(id) { return cards[id]&amp;&amp;state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?modItems(id):&#x27;&#x27;); }
+  function menuMarkup(id) { return cards[id]&amp;&amp;state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;copy-link&quot; data-id=&quot;v:${id}&quot; data-key=&quot;copy-link-${id}&quot;&gt;${icon(&#x27;link&#x27;)}&lt;span&gt;Copy link&lt;/span&gt;&lt;/button&gt;`+modItems(id):&#x27;&#x27;); }
   function baseMenuMarkup(id) {
     const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
     if(id.startsWith(&#x27;lens:&#x27;)) {
@@ -3994,12 +3998,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       :picking?Object.entries(REASONS).map(([k,l])=&gt;linkButton(picking===&#x27;report&#x27;?&#x27;comment-report&#x27;:&#x27;comment-hide&#x27;,c.id,l,`data-value=&quot;${k}&quot;`)).join(&#x27;&#x27;)+linkButton(&#x27;comment-pick-cancel&#x27;,c.id,&#x27;Cancel&#x27;):[
       !isReply&amp;&amp;!c.resolved?linkButton(&#x27;reply&#x27;,c.id,&#x27;Reply&#x27;):&#x27;&#x27;,
       !isReply?linkButton(&#x27;resolve&#x27;,c.id,c.resolved?&#x27;Reopen&#x27;:&#x27;Resolve&#x27;):&#x27;&#x27;,
+      linkButton(&#x27;copy-link&#x27;,&#x27;c:&#x27;+c.id,&#x27;Link&#x27;),
       c.by===&#x27;you&#x27;?linkButton(&#x27;delete-comment&#x27;,c.id,&#x27;Delete&#x27;):&#x27;&#x27;,
       others&amp;&amp;can(&#x27;view&#x27;)?(c.reports?.some(r=&gt;r.by===&#x27;you&#x27;)?linkButton(&#x27;comment-report-withdraw&#x27;,c.id,&#x27;Reported · Undo&#x27;):linkButton(&#x27;comment-report-open&#x27;,c.id,&#x27;Report&#x27;)):&#x27;&#x27;,
       others&amp;&amp;can(&#x27;edit&#x27;)?linkButton(&#x27;comment-hide-open&#x27;,c.id,&#x27;Hide&#x27;):&#x27;&#x27;
     ].join(&#x27;&#x27;);
     const flags=can(&#x27;edit&#x27;)&amp;&amp;c.reports?.length&amp;&amp;!c.hidden?`&lt;span class=&quot;sm-comment-flag&quot; data-tooltip=&quot;${escape(reasonsOf(c.reports))}&quot;&gt;${icon(&#x27;flag&#x27;)}${c.reports.length}&lt;/span&gt;`:&#x27;&#x27;;
-    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${c.deleted?escape(who):userLink(c.by,escape(who))}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
+    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; data-comment=&quot;${c.id}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${c.deleted?escape(who):userLink(c.by,escape(who))}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -4501,6 +4506,72 @@ html&gt;body{padding:0}&lt;/style&gt;
   // A shared link (#s=&lt;board&gt;&amp;by=&lt;who&gt;&amp;as=&lt;role&gt;) opens the landing; Share&#x27;s Preview opens it too.
   const ROLE_GLYPH = {view:&#x27;eye&#x27;,vote:&#x27;arrow-up-down&#x27;,contribute:&#x27;pencil&#x27;,edit:&#x27;user-check&#x27;,owner:&#x27;crown&#x27;};
   const hostWindow = () =&gt; { try { return window.parent!==window&amp;&amp;window.parent.location.href?window.parent:window; } catch { return window; } };
+  // ── Links. Every board, version, and comment has an address. In the prototype it sits after # in the page&#x27;s own
+  // address: b=board, v=version, c=comment. The address follows what you have open, so Back, reload, and copying the
+  // address all work. Version ids survive combining and separating, so a version&#x27;s link keeps working.
+  const linkParams = () =&gt; { try { return new URLSearchParams(hostWindow().location.hash.slice(1)); } catch { return new URLSearchParams(); } };
+  const pageBase = () =&gt; { try { return hostWindow().location.href.split(&#x27;#&#x27;)[0]; } catch { return &#x27;https://steelman.example/&#x27;; } };
+  const hashFor = parts =&gt; { const p=new URLSearchParams();for(const [k,v] of Object.entries(parts)) if(v) p.set(k,v);const h=p.toString();return h?&#x27;#&#x27;+h:&#x27;&#x27;; };
+  function currentLink() {
+    if(state.view!==&#x27;board&#x27;||state.invite||state.deletedNotice||state.notFound) return {};
+    return {b:state.boardId,v:state.expanded&amp;&amp;cards[state.expanded]?state.expanded:&#x27;&#x27;,c:state.drawer===&#x27;comments&#x27;&amp;&amp;state.linkComment&amp;&amp;state.commentTarget===state.linkComment.target?state.linkComment.id:&#x27;&#x27;};
+  }
+  let followingAddress=false,addressSynced=false;
+  // Opening another board (or leaving one) adds a step to the browser&#x27;s history; opening a card replaces the current step.
+  function syncAddress() {
+    if(followingAddress||state.invite) return;
+    try {
+      const w=hostWindow(),next=currentLink(),url=pageBase()+hashFor(next);
+      if(url===w.location.href){addressSynced=true;return;}
+      const was=linkParams().get(&#x27;b&#x27;)||&#x27;&#x27;;
+      w.history[addressSynced&amp;&amp;(next.b||&#x27;&#x27;)!==was?&#x27;pushState&#x27;:&#x27;replaceState&#x27;](null,&#x27;&#x27;,url);
+      addressSynced=true;
+    } catch {}
+  }
+  function copyLink(url,focusKey) {
+    const ok=()=&gt;announce(&#x27;Link copied.&#x27;),no=()=&gt;announce(`Copying isn’t allowed here. The link is ${url}`);
+    if(navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok,no); else no();
+    root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
+  }
+  // Bring a version into view whatever hides it: a hidden column, the column&#x27;s fold, its row&#x27;s stack, or the row&#x27;s fold.
+  function prepareReveal(cardId) {
+    const idea=ideaOf(cards[cardId].idea);
+    delete state.hiddenCols[colKey(idea.option)];
+    const rows=rowsOf(idea.option),at=rows.indexOf(idea);
+    if(at&gt;=shownRows(idea.option,rows)) state.shownRows[colKey(idea.option)]=at+1;
+    const vs=ordered(idea),k=vs.indexOf(cardId);
+    if(k&gt;0){state.open=idea.id;lastToggled=idea.id;if(k&gt;=(state.shownVersions[idea.id]||VERSION_LIMIT))state.shownVersions[idea.id]=k+1;}
+    state.expanded=cardId;
+  }
+  // Opening a link. Signed out on a board that isn&#x27;t open to anyone with the link: sign in first (without showing the
+  // question), then land where the link points. A missing board, version, or comment says so.
+  function openLink(p) {
+    const b=p.get(&#x27;b&#x27;),v=p.get(&#x27;v&#x27;),c=p.get(&#x27;c&#x27;);
+    state.inbox=false;state.profile=null;state.profileFrom=null;state.spaceEdit=null;state.deletedNotice=false;state.notFound=false;
+    if(!docs[b]) {if(state.view===&#x27;board&#x27;)leaveBoard();state.view=&#x27;home&#x27;;state.notFound=true;renderView(&#x27;not-found-back&#x27;);announce(&#x27;That steelman doesn’t exist.&#x27;);return;}
+    if(state.persona===&#x27;out&#x27;&amp;&amp;docs[b].question.visibility!==&#x27;link&#x27;) {openSignIn({board:b,hide:true,then:{b,v,c}});return;}
+    leaveBoard();state.view=&#x27;board&#x27;;state.boardId=b;useDoc(docs[b]);
+    let note=&#x27;&#x27;,target=null;
+    if(v) { if(cards[v]) {prepareReveal(v);target=`.sm-card[data-card=&quot;${v}&quot;]`;} else note=&#x27;That version was deleted.&#x27;; }
+    if(c) {
+      const cm=doc.comments.find(x=&gt;x.id===c),top=cm&amp;&amp;(cm.parent?doc.comments.find(x=&gt;x.id===cm.parent):cm);
+      if(!cm||cm.deleted||!top) note=note||&#x27;That comment was deleted.&#x27;;
+      else {
+        if(top.target.startsWith(&#x27;card:&#x27;)&amp;&amp;cards[top.target.slice(5)]) {const id=top.target.slice(5);prepareReveal(id);state.expanded=v||null;target=target||`.sm-card[data-card=&quot;${id}&quot;]`;}
+        Object.assign(state,{drawer:&#x27;comments&#x27;,commentTarget:top.target,replyTo:null,showResolved:!!top.resolved,linkComment:{id:c,target:top.target}});
+      }
+    }
+    state.linkNote=note;
+    followingAddress=true;renderView(note?&#x27;link-note-close&#x27;:&#x27;zoom-read&#x27;);followingAddress=false;syncAddress();
+    root.scrollIntoView({block:&#x27;start&#x27;});
+    const ring=el=&gt;{if(!el)return;el.scrollIntoView({block:&#x27;center&#x27;});el.classList.remove(&#x27;sm-arrived&#x27;);void el.offsetWidth;el.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-arrived&#x27;),1400);};
+    ring(target&amp;&amp;board.querySelector(target));
+    if(c) ring(root.querySelector(`.sm-drawer [data-comment=&quot;${c}&quot;]`));
+    announce(note?`${note} Opened “${doc.question.text}”.`:`Opened “${doc.question.text}”.`);
+  }
+  function notFoundMarkup() {
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${spaceOf(&#x27;none&#x27;).canvas}&quot; aria-label=&quot;Not found&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;&lt;section class=&quot;sm-rail-card sm-landing-auth&quot;&gt;&lt;h2 class=&quot;sm-auth-title&quot;&gt;This steelman doesn’t exist&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;It may have been deleted, or the link is incomplete.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;not-found-back&quot; data-key=&quot;not-found-back&quot;&gt;Go to your steelmen&lt;/button&gt;&lt;/section&gt;&lt;/div&gt;&lt;/main&gt;`;
+  }
   function inviteUrl() {
     let base=&#x27;https://steelman.example/&#x27;;try{base=hostWindow().location.href.split(&#x27;#&#x27;)[0];}catch{}
     const q=doc.question;return `${base}#s=${encodeURIComponent(state.boardId)}&amp;by=${encodeURIComponent(ME)}&amp;as=${q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole}`;
@@ -4574,19 +4645,19 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;Sign in&quot;&gt;${body}&lt;/section&gt;`;
   }
   function landingMarkup() {
-    const v=state.invite,d=v.board&amp;&amp;docs[v.board],q=d?.question,s=spaceOf(q?.org||&#x27;none&#x27;),f=FEED[v.board]||{people:1};
+    const v=state.invite,d=!v.hide&amp;&amp;v.board&amp;&amp;docs[v.board],q=d?.question,s=spaceOf(q?.org||&#x27;none&#x27;),f=FEED[v.board]||{people:1};
     const options=d?d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;):&#x27;&#x27;;
-    const head=v.plain?`&lt;h1 class=&quot;sm-auth-head&quot;&gt;Sign in to take part&lt;/h1&gt;`:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
+    const head=v.plain?`&lt;h1 class=&quot;sm-auth-head&quot;&gt;${v.hide?&#x27;Sign in to open this steelman&#x27;:&#x27;Sign in to take part&#x27;}&lt;/h1&gt;`:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
     const board=d?`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}${v.plain?`&lt;p class=&quot;sm-landing-qt&quot;&gt;${escape(q.text)}&lt;/p&gt;`:`&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;`}&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`:&#x27;&#x27;;
     const facts=v.plain||!d?&#x27;&#x27;:`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`;
     const back=v.step===&#x27;start&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;${v.plain?&#x27;Not now&#x27;:&#x27;Look around first&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
     return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;${v.plain?&#x27;Sign in&#x27;:&#x27;Invitation&#x27;}&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;${head}${board}${facts}${authCard(v)}${back}&lt;/div&gt;&lt;/main&gt;`;
   }
-  function openSignIn() {
-    const b=state.view===&#x27;board&#x27;?state.boardId:null;
+  function openSignIn(opts={}) {
+    const b=opts.board||(state.view===&#x27;board&#x27;?state.boardId:null);
     if(state.view===&#x27;board&#x27;) leaveBoard();
     Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,
-      invite:{board:b,by:null,role:&#x27;you&#x27;,plain:true,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;}});
+      invite:{board:b,by:null,role:&#x27;you&#x27;,plain:true,hide:!!opts.hide,then:opts.then||null,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;}});
     renderView(&#x27;auth-google&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(&#x27;Sign in.&#x27;);
   }
   // Signing in opens the board with the invited role (Preview as follows it), then the tour on a first visit.
@@ -4599,7 +4670,9 @@ html&gt;body{padding:0}&lt;/style&gt;
   function inviteAction(action,id) {
     const v=state.invite;if(!v) return;
     const show=(focus,msg)=&gt;{renderHome();root.querySelector(`[data-key=&quot;${focus}&quot;]`)?.focus();if(msg)announce(msg);};
-    const done=()=&gt;{announce(v.via===&#x27;google&#x27;?&#x27;Signed in with Google (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.plain?&#x27;you&#x27;:v.role,!v.plain);};
+    const done=()=&gt;{
+      if(v.then){state.invite=null;state.persona=&#x27;you&#x27;;openLink(new URLSearchParams(Object.entries(v.then).filter(([,x])=&gt;x)));announce(&#x27;Signed in (simulated).&#x27;);return;}
+      announce(v.via===&#x27;google&#x27;?&#x27;Signed in with Google (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.plain?&#x27;you&#x27;:v.role,!v.plain);};
     if(action===&#x27;auth-privacy&#x27;) {openPrivacy();return;}
     if(action===&#x27;invite-look&#x27;) {enterInvited(&#x27;out&#x27;,false);announce(&#x27;Signed out: you can read. Sign in from the top bar to take part.&#x27;);return;}
     if(action===&#x27;auth-google&#x27;) {v.via=&#x27;google&#x27;;v.error=&#x27;&#x27;;if(v.plain){done();return;}v.step=&#x27;name&#x27;;v.name=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
@@ -4900,6 +4973,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   function renderHome() {
     if(state.deletedNotice) {homeEl.innerHTML=deletedMarkup();return;}
+    if(state.notFound) {homeEl.innerHTML=notFoundMarkup();return;}
     if(state.invite) {homeEl.innerHTML=landingMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(state.spaceEdit&amp;&amp;(state.spaceEdit===&#x27;new&#x27;?state.persona===&#x27;out&#x27;||!state.spaceDraft:!SPACES.some(x=&gt;x.id===state.spaceEdit)||!isSpaceAdmin(state.spaceEdit))) state.spaceEdit=null;
     if(!state.profile&amp;&amp;state.spaceEdit) {homeEl.innerHTML=sidebar()+spaceSettingsMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
@@ -5095,7 +5169,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Leaving a board closes whatever was open on it; votes stay, keyed by card.
   function leaveBoard() {
     if(state.tour){state.tour=null;const t=root.querySelector(&#x27;.sm-tour&#x27;);t.hidden=true;t.innerHTML=&#x27;&#x27;;}
-    Object.assign(state,{zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
+    Object.assign(state,{linkNote:&#x27;&#x27;,linkComment:null,zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
   }
   function renderView(focusKey) {
     const home=state.view===&#x27;home&#x27;;
@@ -5103,7 +5177,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(home) root.dataset.zoom=&#x27;&#x27;;
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
     else render();
-    renderFresh();
+    renderFresh();syncAddress();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
   const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-email&#x27;,&#x27;profile-email-cancel&#x27;,&#x27;profile-email-save&#x27;,&#x27;profile-email-resend&#x27;,&#x27;profile-email-drop&#x27;,&#x27;profile-email-open&#x27;,&#x27;profile-google&#x27;,&#x27;profile-analytics&#x27;,&#x27;profile-privacy&#x27;,&#x27;profile-download&#x27;,&#x27;profile-delete&#x27;,&#x27;profile-delete-cancel&#x27;,&#x27;profile-delete-confirm&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
@@ -5224,7 +5298,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const oldTrack=board.querySelector(&#x27;.sm-track&#x27;), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest(&#x27;[data-node]&#x27;)?.dataset.node;
     board.style.setProperty(&#x27;--sm-cols&#x27;,boardColumns());
     board.innerHTML=boardMarkup();
-    headEl.innerHTML=headMarkup();headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
+    headEl.innerHTML=headMarkup()+(state.linkNote?`&lt;p class=&quot;sm-link-note&quot; role=&quot;status&quot;&gt;${icon(&#x27;info&#x27;)}&lt;span&gt;${escape(state.linkNote)}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;link-note-close&quot; data-key=&quot;link-note-close&quot;&gt;Dismiss&lt;/button&gt;&lt;/p&gt;`:&#x27;&#x27;);headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
     renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
@@ -5263,7 +5337,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(box.bottom&gt;window.innerHeight) newTrack.closest(&#x27;[data-node]&#x27;).scrollIntoView({block:&#x27;nearest&#x27;,behavior:reduced?&#x27;auto&#x27;:&#x27;smooth&#x27;});
     }
     animateWires(kind&amp;&amp;!reduced?720:0);
-    renderFresh();
+    renderFresh();syncAddress();
     if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=&gt;board.querySelector(`[data-node=&quot;${i}&quot;] .sm-card, .sm-card[data-card=&quot;${i}&quot;]`)?.animate([{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / .35)&#x27;},{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / 0)&#x27;}],{duration:1600,easing:&#x27;ease-out&#x27;}));}
   }
   let lastToggled=null;
@@ -5538,6 +5612,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
     if(action===&#x27;sign-in&#x27;){openSignIn();save();return;}
+    if(action===&#x27;copy-link&#x27;){const [kind,x]=[id.slice(0,1),id.slice(2)];const cm=kind===&#x27;c&#x27;&amp;&amp;doc.comments.find(y=&gt;y.id===x);
+      const url=pageBase()+hashFor(kind===&#x27;v&#x27;?{b:state.boardId,v:x}:{b:state.boardId,c:x});
+      if(kind===&#x27;v&#x27;){state.menu=null;renderMenu();copyLink(url,&#x27;menu-&#x27;+x);} else copyLink(url,`copy-link-c:${x}`);report(&#x27;copy-link&#x27;,{board:state.boardId,kind});return;}
+    if(action===&#x27;link-note-close&#x27;){state.linkNote=&#x27;&#x27;;render(&#x27;zoom-read&#x27;);return;}
+    if(action===&#x27;not-found-back&#x27;){state.notFound=false;renderView(&#x27;side-&#x27;+state.space);return;}
     if(action===&#x27;deleted-done&#x27;){state.deletedNotice=false;renderView(&#x27;side-&#x27;+state.space);announce(&#x27;Signed out.&#x27;);return;}
     if(action===&#x27;inbox&#x27;||action.startsWith(&#x27;note&#x27;)){noteAction(action,id);save();return;}
     if(action===&#x27;invite-preview&#x27;){const q=doc.question;openInvite(state.boardId,ME,q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole,true);save();return;}
@@ -5746,7 +5825,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;comments&#x27;) {
       state.share=false;
       if(commenting(id)){focus=closeDrawer();}
-      else {state.drawer=&#x27;comments&#x27;;state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus=&#x27;comment-text&#x27;;announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
+      else {state.drawer=&#x27;comments&#x27;;state.commentTarget=id;state.linkComment=null;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus=&#x27;comment-text&#x27;;announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
     }
     if(action===&#x27;comment-add&#x27;) {
       const text=state.commentDraft.trim(),field=root.querySelector(&#x27;#sm-comment&#x27;);
@@ -5973,8 +6052,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   root.addEventListener(&#x27;dragend&#x27;,endDrag);
   restore(window.openai?.widgetState);
-  if(!readInviteLink()) renderView();
+  if(!readInviteLink()) { const p=linkParams(); if(p.get(&#x27;b&#x27;)) openLink(p); else renderView(); }
   try { hostWindow().addEventListener(&#x27;hashchange&#x27;,()=&gt;{if(readInviteLink())save();}); } catch {}
+  // Back and Forward: go where the address now points (a board, a version, a comment, or the list).
+  try { hostWindow().addEventListener(&#x27;popstate&#x27;,()=&gt;{
+    const p=linkParams();if(p.get(&#x27;s&#x27;)) return;
+    followingAddress=true;
+    if(p.get(&#x27;b&#x27;)) openLink(p); else if(state.view===&#x27;board&#x27;||state.notFound){leaveBoard();state.view=&#x27;home&#x27;;state.notFound=false;renderView(&#x27;side-&#x27;+state.space);}
+    followingAddress=false;save();
+  }); } catch {}
   window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});
   new ResizeObserver(()=&gt;animateWires()).observe(scene);
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=&gt;render()});tweak.addSelect(design,&#x27;type&#x27;,{label:&#x27;Argument typography&#x27;,options:[{label:&#x27;Graphics sans&#x27;,value:&#x27;sans&#x27;},{label:&#x27;Editorial serif&#x27;,value:&#x27;serif&#x27;}]});tweak.addSelect(design,&#x27;density&#x27;,{label:&#x27;Card density&#x27;,options:[{label:&#x27;Comfortable&#x27;,value:&#x27;comfortable&#x27;},{label:&#x27;Compact&#x27;,value:&#x27;compact&#x27;}]});}

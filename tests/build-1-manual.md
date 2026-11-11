@@ -784,6 +784,24 @@ Decisions: edits work like Reddit (allowed any time, labelled "edited"); any edi
 | Console | No errors |
 | Testing note | With the browser pane hidden, animations never finish and the prototype ignores clicks while one runs; tests finished them by hand |
 
+## November 11 — Links (M-06)
+
+The page's address carries `b` (board), `v` (version), and `c` (comment) after `#`. `syncAddress()` pushes a history step when the board changes and replaces it otherwise; `openLink()` handles incoming links, Back, and Forward; `prepareReveal()` opens whatever hides a version.
+
+| Check | Observed result |
+| --- | --- |
+| Address follows | Open board → `#b=openweights`; expand independenceNarrow (third wording) → `#b=openweights&v=independenceNarrow` |
+| Copy link | Version ⋯ → Copy link copies `…/prototype/?v=c5#b=openweights&v=independenceNarrow`, "Link copied."; comment Link copies `…#b=openweights&c=c-y1` |
+| Open a version link | Row unfolds, context and evidence open, card rings |
+| Open a comment link | Comments panel opens on its version; comment c-y1 rings |
+| Deleted version | `#b=openweights&v=nope` (fresh load) → board with "That version was deleted. · Dismiss", focus on Dismiss; address cleaned to `#b=openweights` |
+| Unknown board | `#b=nosuch` → "This steelman doesn't exist", Go to your steelmen |
+| Signed out, POD 6 board | `#b=capstone&v=capstone-1-0v` → "Sign in to open this steelman", no question shown; Google → the board, version open, address kept |
+| Back / Forward | List → board → wordmark → Back: board (`#b=openweights`); Forward: list (no hash) |
+| Phone width (375 px) | Link note 285 px wide; not-found screen: no horizontal overflow |
+| Console | No errors |
+| Not checked | A version link into a hidden column, or past a column's fold of 10 (no example board has one); the code clears both |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
