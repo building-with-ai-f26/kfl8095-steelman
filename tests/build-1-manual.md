@@ -849,7 +849,7 @@ A design session, not a prototype change. `plans/architecture.md` (requirements,
 
 ## November 11 — Architecture review (B-05, M-01, M-02)
 
-The independent audit of the architecture documents, by a second agent session (Claude Fable 5.2). Documents only; no code and no feature row changed. Its revisions await the builder's approval (architecture.md, Q19). What it changed: live updates read rows stamped with the board's change number, and votes are no longer logged (M-01, M-02); every write is safe to send twice by its shape, replacing `client_op_id`; a pull request never touches staging, and per-pull-request previews are dropped; a new section on automated testing and unattended agent work (architecture.md §8, decision record 006); M0 has an ordered backlog with machine-checkable acceptance tests.
+The independent audit of the architecture documents, by a second agent session (Claude Fable 5.2). Documents only; no code and no feature row changed. The builder approved its revisions the same day (architecture.md, Q19) and chose to keep the offline queue in memory while the tab is open rather than save it across a closed tab (Q20). What it changed: live updates read rows stamped with the board's change number, and votes are no longer logged (M-01, M-02); every write is safe to send twice by its shape, replacing `client_op_id`; a pull request never touches staging, and per-pull-request previews are dropped; a new section on automated testing and unattended agent work (architecture.md §8, decision record 006); M0 has an ordered backlog with machine-checkable acceptance tests.
 
 | Check | Observed result |
 | --- | --- |

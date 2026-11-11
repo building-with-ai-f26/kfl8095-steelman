@@ -1,6 +1,6 @@
 # Steelman architecture
 
-**Status:** draft, written one step at a time. Steps 1–7 were approved on Nov 11. An independent review the same day then revised them and added step 8; **the revisions await the builder's approval**. What the review changed: live updates read stamped rows instead of a log of every vote (§2, §3); writes are safe to repeat by their shape (§2); the delivery pipeline no longer touches staging from a pull request (§6); and testing and unattended agent work have their own section (§8). The phased build plan is in `plans/build-plan.md`.
+**Status:** draft, written one step at a time. Steps 1–7 were approved on Nov 11. An independent review the same day then revised them and added step 8; the builder approved the revisions that day (Q19). Who merges agents' pull requests is still open (Q18). What the review changed: live updates read stamped rows instead of a log of every vote (§2, §3); writes are safe to repeat by their shape (§2); the delivery pipeline no longer touches staging from a pull request (§6); and testing and unattended agent work have their own section (§8). The phased build plan is in `plans/build-plan.md`.
 
 This document describes the real product that replaces the browser-local prototype. The prototype (`docs/prototype/source/steelman-refined.html`) is the design spec; `plans/features.csv` is the feature record. **MVP = T1 Core + T2 Launch: 31 features.**
 
@@ -18,7 +18,7 @@ Grouped by the jobs the MVP has to do. Feature IDs are from `plans/features.csv`
 | F2 | **Edit like Reddit.** An author can edit or delete their own version at any time. An edited version says "edited" and keeps every earlier wording. | A-06 |
 | F3 | **Three separate judgments.** Importance: +1/−1 per person per argument. Articulation: +1/−1 per person per version (only when the argument has two or more). Credibility: yes/no per person per version. Each can be changed or withdrawn. One active judgment per person per target, always. | B-01, B-02, B-03, B-04 |
 | F4 | **Sources.** Add, edit, and remove sources on a version. Any edit to the wording, and any change to its sources, starts that version's credibility assessments over. Importance and articulation votes stay. | C-01, B-03 |
-| F5 | **Shared order, held still.** The server computes one shared order from votes. A reader's order is fixed when the board loads. Others' votes update counts in place; new arguments and wordings join the end; deletions and edits show in place, marked; "N changes · Update" applies the rest. Drafts follow their argument. Your own actions queue while offline and send when you reconnect. | B-05, M-02 |
+| F5 | **Shared order, held still.** The server computes one shared order from votes. A reader's order is fixed when the board loads. Others' votes update counts in place; new arguments and wordings join the end; deletions and edits show in place, marked; "N changes · Update" applies the rest. Drafts follow their argument. Your own actions queue while offline and send when you reconnect, for as long as the tab stays open (step 3). | B-05, M-02 |
 | F6 | **Strongest case.** Each option's top three arguments, each in its best-articulated wording. Derived, never stored by hand. | E-01 |
 | F7 | **Accounts without passwords.** Sign in with Google or a one-time email link; both confirm the email. First sign-in picks a unique username. Change email (confirmed by a link to the new address), connect or disconnect Google, sign out. | L-01, L-04 |
 | F8 | **Access and roles, enforced on the server.** General access: only invited people, or anyone with the link (with a role). Roles Viewer → Voter → Contributor → Editor → Owner, as in `plans/permissions.md`. A link-shared board requires a confirmed email. Every write is checked on the server, not just hidden in the UI. | H-02, H-03 |
@@ -276,7 +276,15 @@ The server saves it as numbered **published orders**. A new one is made only whe
 
 ### Offline queue and conflicts
 
-While offline, the browser keeps your actions in a queue in the browser's own storage (IndexedDB). On reconnecting, it sends them **in order**, then asks for changes as usual. Because every write is safe to send twice (step 2), a send that was interrupted is simply repeated. The same property keeps the queue small: for votes it only has to hold **your latest choice per item**, not every tap, and the things you wrote already carry their final IDs.
+While offline, the browser keeps your actions in a queue **in memory, for as long as the tab is open**. On reconnecting, it sends them **in order**, then asks for changes as usual. Because every write is safe to send twice (step 2), a send that was interrupted is simply repeated. The same property keeps the queue small: for votes it only has to hold **your latest choice per item**, not every tap, and the things you wrote already carry their final IDs.
+
+**The queue is not saved across a closed tab in the MVP** (Q20). The first draft kept it in the browser's storage (IndexedDB), so actions survived closing the tab or the browser. That is the expensive half of "offline": a saved queue has to be read back by a later version of the app, replayed against a board loaded fresh, and thrown away if someone else has signed in since. The people this is for are classmates on campus wifi, whose connection drops for seconds, not days. So:
+
+- what you see is the same as in the prototype: "Offline · 1 waiting to send", then "Back online · 1 sent";
+- closing or reloading a tab with actions waiting brings up the browser's own "Leave site? Changes you made may not be saved" prompt;
+- an analytics event records each time someone leaves anyway, with how many actions were waiting (a count, never their content).
+
+If that event shows people losing actions, saving the queue is added then. Nothing else has to change for it: the queue's contents and the server's rules stay the same, and only where the queue lives moves.
 
 Conflicts are rare by design: **nobody overwrites anybody.** A better wording is a new version, and votes are one per person. So no locking and no merge algorithm are needed, only clear rules for actions that went stale while you were away:
 
@@ -311,7 +319,7 @@ Online writes follow the same rules. Being offline just makes staleness more lik
 ```mermaid
 flowchart LR
   subgraph User["Reader's browser"]
-    App["Steelman web app<br/>React + TypeScript<br/>offline queue in IndexedDB"]
+    App["Steelman web app<br/>React + TypeScript<br/>offline queue in memory"]
   end
 
   subgraph Cloud["Our cloud project (step 5)"]
@@ -375,7 +383,7 @@ One repository folder, `app/`, with three parts. The split is by what a part is 
 |---|---|---|
 | `shared/` | The rules: the order, `staleCount()`, the meter, the policy table, input schemas, and the browser's sync rules (how changed rows are merged into what's on screen; what the offline queue keeps) | Nothing. Pure functions: same input, same output, no clock, no network, no database. Used by both other parts |
 | `server/` | Routes, sign-in, the write path, SQL, migrations | The database and outside services, each behind a small interface (email, analytics, the clock) so tests can swap in a stand-in |
-| `web/` | Screens, polling, and the offline queue's storage. The decisions those make are in `shared/`, so the simulation can run them without a browser | The API only |
+| `web/` | Screens, polling, and holding the offline queue. The decisions those make are in `shared/`, so the simulation can run them without a browser | The API only |
 
 **One write path.** Every change to a board goes through one function that does the same six things in one transaction: lock the board's counter, load what the write refers to, ask `can()`, apply the stale-write rules (step 3), make the change, stamp the rows (and add a change row if it's structural). Each kind of write (set a vote, add a wording, hide) supplies only its own middle step. So the invariants of step 2 are enforced in one place, a new feature can't forget one, and a test of that one path covers them all.
 
@@ -742,4 +750,5 @@ Running list. **Bold** ones change the design and are asked now; the rest have a
 | Q16 | Staging's database: a stopped Cloud SQL instance vs. a free Neon database | Cloud SQL, started by the deploy workflow and stopped nightly (step 6). Staging exists to rehearse production's deploy, and the part most likely to go wrong is Cloud Run's connection to Cloud SQL and its database roles, which a Neon database wouldn't exercise. Neon's free plan (1 GB, 100 compute-hours a month) would save about $2 a month | Assumed |
 | Q17 | Minimum age | 13 and over (COPPA) | **Answered** Nov 11 |
 | **Q18** | **Who merges a pull request an agent opened?** The builder isn't available to review each one | Until the builder says otherwise: the builder merges. Recommended: after M0, let a pull request merge itself when every gate in §8 is green and it touches nothing on the stop-and-ask list. `main` only ever deploys to staging; a production release still needs the builder's approval. Check first whether the course needs a pod reviewer's sign-off on each pull request | **Open** |
-| Q19 | The review's revisions (row stamps instead of logging votes; writes safe to repeat by shape; no previews; §8) | Applied to this document, pending approval | **Open** |
+| Q19 | The review's revisions (row stamps instead of logging votes; writes safe to repeat by shape; no previews; §8) | Approved by the builder | **Answered** Nov 11 |
+| Q20 | Does the offline queue survive a closed tab? | Not in the MVP: it lives in memory while the tab is open, with the browser's leave warning and an event that counts actions lost. Saved to the browser's storage later if that event shows a need (step 3) | **Answered** Nov 11 |

@@ -1,6 +1,6 @@
 # 002. One Postgres database: current-state tables with stamped rows, plus a change log for structure
 
-**Status:** accepted Nov 11; revised the same day by an independent review (votes are no longer logged), pending the builder's approval · **Date:** 2026-11-11 · **Details:** [architecture.md §2](../architecture.md#2-data-model)
+**Status:** accepted Nov 11; revised the same day by an independent review (votes are no longer logged), which the builder approved · **Date:** 2026-11-11 · **Details:** [architecture.md §2](../architecture.md#2-data-model)
 
 ## Context
 Steelman's rules are relational and strict: one vote per person per target, assessments tied to the wording they judged, stable version IDs across combine and separate, an audit trail for moderation, and reversible structural changes. Readers also need "what changed since change N" for live updates.

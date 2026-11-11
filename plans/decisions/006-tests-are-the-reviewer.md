@@ -1,6 +1,6 @@
 # 006. Unattended agent work, gated by automated tests
 
-**Status:** proposed by an independent review, pending the builder's approval · **Date:** 2026-11-11 · **Details:** [architecture.md §8](../architecture.md#8-testing-and-unattended-work)
+**Status:** accepted (proposed by an independent review; approved by the builder, except who merges, which is open as Q18) · **Date:** 2026-11-11 · **Details:** [architecture.md §8](../architecture.md#8-testing-and-unattended-work)
 
 ## Context
 The builder isn't on this project full time or part time. Agents build it one backlog item at a time, mostly with nobody watching. The first draft relied on the builder reviewing every pull request, and several of its "done when" checks needed a person at a browser. Votes are the product, and the worst failures are silent (counts that disagree, a vote on the wrong wording), so "it looked fine" was never a good enough check anyway.
