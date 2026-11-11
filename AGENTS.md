@@ -6,6 +6,7 @@
 - **What this repo builds:** Steelman, a shared argument document for understanding the strongest case for each option. Build 1 is a static Product Page plus a supplied browser-local card prototype.
 - **Primary user & core workflow:** Pod 6 classmates are the initial reachable testers. Read the two cases, compare wording, inspect evidence, and suggest a better version. The class PRD is in `docs/index.html`; the original long-term vision is preserved in `docs/reference/steelman-prd-v0.4.md`.
 - **Tech stack:** Buildless HTML, CSS, and JavaScript. GitHub Pages serves `main:/docs`. No backend, private keys, package installation, or live AI calls. Usage analytics and session replay go to PostHog (US cloud) through `docs/analytics.js`, using PostHog's public project key; the prototype's frame posts action names to its page, which forwards them.
+- **Feature audit:** `plans/features.csv` lists every feature with its MVP tier, development complexity, and design readiness (1–5; design-ready means 4). It is the record; `plans/feature-audit.xlsx` is generated from it by `python3 scripts/build-feature-audit.py` (needs `openpyxl`) and is never edited by hand.
 - **Visual identity:** Design tokens live in `docs/design/tokens.css`; the specimen is `docs/design/index.html` and the identity brief is `docs/design/README.md`. After changing tokens or the prototype source, run `python3 scripts/sync-prototype.py`. The canvas contour tile comes from `python3 scripts/make-contours.py`.
 
 ## 2. Commands
@@ -13,6 +14,7 @@
 - **Run locally:** `python3 -m http.server 8000 --bind 127.0.0.1 --directory docs`, then open `http://127.0.0.1:8000/` or `/prototype/`. Alternatively, open `docs/prototype/index.html` directly.
 - **Verify:** `git diff --check`, then follow `tests/build-1-manual.md`. Use browser checks for actual behavior; do not claim user research from agent testing.
 - **Run model evals:** Not applicable to Build 1; no model runs in the prototype.
+- **Rebuild the feature audit:** `python3 scripts/build-feature-audit.py` (requires `pip install openpyxl`; only this script needs it).
 
 ## 3. Non-Negotiable Engineering Rules
 1. **Plan before coding:** Before touching multiple files, propose a brief plan and wait for approval.
@@ -20,4 +22,5 @@
 3. **Explainability:** Avoid unnecessary abstractions or dependencies. Help the human builder understand the main components, what changed, why it matters, what could break, and how it was checked.
 4. **Verify changes:** Run relevant checks. For a reproducible logic bug, use a failing test to demonstrate the fix when practical. Record manual checks and known limitations; follow the selected Build 4 evaluation track.
 5. **Zero secrets in code:** Never hardcode API keys, tokens, or credentials. Always read from environment variables (`.env`) and update `.env.example` when new variables are needed.
-6. **Stop when looping:** If a fix fails twice in a row, stop, summarize what failed, and ask the human before trying a third approach.
+6. **Keep the feature audit current:** When a change adds a feature, changes what one does, or closes a design gap, update its row in `plans/features.csv` in the same PR: `status`, `readiness`, `design_gaps`, `changed` (today's date), and `evidence` (the dated `tests/build-1-manual.md` entry). Give a new feature the next free ID in its area; never renumber. Change `tier` or `complexity` only with the human's agreement. Then run `python3 scripts/build-feature-audit.py`, and name the feature IDs in the test-log entry's heading.
+7. **Stop when looping:** If a fix fails twice in a row, stop, summarize what failed, and ask the human before trying a third approach.

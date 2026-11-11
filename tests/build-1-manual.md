@@ -690,6 +690,17 @@ The landing opens from a link hash (`#s=<board>&by=<user>&as=<role>`, read from 
 | Phone width (375 px) | Landing: no overflow, options two across; tour: each note stays fully on screen; Articulation frames only the leading wording |
 | Console | No errors |
 
+## November 11 — Feature audit (L-04, M-01)
+
+`plans/features.csv` holds the feature audit (89 rows, fixed IDs); `scripts/build-feature-audit.py` builds `plans/feature-audit.xlsx` from it. L-04 and M-01 gained design-gap notes; no ratings changed.
+
+| Check | Observed result |
+| --- | --- |
+| Rebuild | "89 features → plans/feature-audit.xlsx" |
+| Same content | Features sheet matches the hand-built workbook cell for cell; Summary adds a "Not yet design-ready" row (T1 6, T2 5) |
+| Validation | A tier of "T9 Core" stops the build: "features.csv line 2 (A-01): tier must be one of …" |
+| Formulas | Not recalculated here (no LibreOffice); the workbook recalculates on open |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
