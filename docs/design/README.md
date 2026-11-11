@@ -46,7 +46,7 @@ A short record of how Steelman should look and feel, and why. Change it when a d
 
 | Topic | Decision |
 | --- | --- |
-| Italics | No italic serif anywhere. The serif is for questions and headings only. What italics used to set apart (dates, "Draft", empty states, deleted comments) is now Libre Franklin Light (300) in `--sm-quiet` (#707070, 4.9:1 on white). Vote messages ("Important.") are 12px medium sans. |
+| Italics | No italic serif anywhere. The serif is for questions and headings only. What italics used to set apart (dates, "Draft", empty states, deleted comments) is now Libre Franklin Light (300) in `--sm-quiet` (#5a5a5a: 6.9:1 on white and at least 4.6:1 on every space canvas; darkened from #707070 in the November 11 accessibility pass, with `--sm-muted` from #686868 to #565656, because muted text sits directly on the canvas in places). Vote messages ("Important.") are 12px medium sans. |
 | Dates | Relative everywhere ("4d ago"), with the full date on hover, using even-width figures. The prototype's "now" is fixed at November 9, 2026. |
 | Axis labels | Small tracked capitals (11px, medium) instead of light lowercase italic. Where the axes sit is batch B. |
 | Type scale | 11, 12, 13, 14, 16, 20, 24, 32 px, plus the 23px wordmark. Initials alone use 10px, in circles of at least 24px. Nothing else is below 11px. |

@@ -16,8 +16,8 @@
 
   /* Ink */
   --sm-ink:#242424;          /* text and strong rules */
-  --sm-muted:#686868;        /* secondary text */
-  --sm-quiet:#707070;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif) */
+  --sm-muted:#565656;        /* secondary text; at least 4.5:1 on white and on every space canvas */
+  --sm-quiet:#5a5a5a;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif); 4.5:1 on every canvas */
   --sm-selected:#292929;     /* pressed controls */
   --sm-on-selected:#fff;     /* icon or text on a pressed control */
 

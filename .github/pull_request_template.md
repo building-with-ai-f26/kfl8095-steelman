@@ -13,7 +13,10 @@
 ### 4. How did you check it?
 Describe the relevant automated checks, evals, or manual testing and their results. Name anything still unverified.
 
-### 5. Cost & Agent Note
+### 5. Feature audit
+- [ ] Rows in `plans/features.csv` updated for the features this changes (IDs: ), and `plans/feature-audit.xlsx` rebuilt, or no feature changed
+
+### 6. Cost & Agent Note
 - **Agent / Model used:** 
 - **Approx. token/API cost for this PR:** `$`
 

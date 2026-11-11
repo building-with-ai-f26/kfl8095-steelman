@@ -690,13 +690,158 @@ The landing opens from a link hash (`#s=<board>&by=<user>&as=<role>`, read from 
 | Phone width (375 px) | Landing: no overflow, options two across; tour: each note stays fully on screen; Articulation frames only the leading wording |
 | Console | No errors |
 
+## November 11 — Feature audit (L-04, M-01)
+
+`plans/features.csv` holds the feature audit (89 rows, fixed IDs); `scripts/build-feature-audit.py` builds `plans/feature-audit.xlsx` from it. L-04 and M-01 gained design-gap notes; no ratings changed.
+
+| Check | Observed result |
+| --- | --- |
+| Rebuild | "89 features → plans/feature-audit.xlsx" |
+| Same content | Features sheet matches the hand-built workbook cell for cell; Summary adds a "Not yet design-ready" row (T1 6, T2 5) |
+| Validation | A tier of "T9 Core" stops the build: "features.csv line 2 (A-01): tier must be one of …" |
+| Formulas | Not recalculated here (no LibreOffice); the workbook recalculates on open |
+
+## November 11 — Live changes (B-05, M-02)
+
+The order you see is fixed when a board opens (`shownOrder()`); `rowsOf()` and `ordered()` keep that order and put anything new at the end. `staleCount()` counts the fewest moves to reach the live order, plus versions others deleted. **Simulate others** in the bottom bar replaces **Simulate a reorder**.
+
+| Check | Observed result |
+| --- | --- |
+| Votes | Row order on screen unchanged; status "5 people voted. What you see stays in place until you update."; pill "3 changes · Update" (was 9 before counting fewest moves) |
+| New argument | Appended to the column with the fewest rows; earlier rows unchanged |
+| New wording | Unfolded single-wording row goes from 1 to 2 wordings, new one last |
+| Update | Rows reorder; the first row on screen (control) moved 7 px on screen; pill disappears; status "Board updated." |
+| Delete open card | Open version shows "Removed by an editor" in place; pill counts it; gone after Update and after reload |
+| Draft on a vanished argument | Writing "My sharper wording" on a single-wording row, then delete + Update → New argument form in the same column with the draft, focus in it, status explains |
+| Offline | "Offline" → importance vote → "Offline · 1 waiting to send"; Votes ignored while offline; back → "Back online · 1 sent", then "3 changes · Update" |
+| Strongest case | 6 items after a delete + Update; deleted versions skipped |
+| Phone width (375 px) | Pill centered 16 px above the bottom of the screen; toolbar wraps; no horizontal overflow |
+| Console | No errors after votes, argument, wording, delete, Update, Strongest case |
+| Not checked | Pill tracking real scrolling in a visible browser (the pane was hidden; checked by firing scroll events) |
+
+## November 11 — Live changes, structure (M-02)
+
+Others' structural changes are flags applied on Update or load (`applyPending()`): `idea.merged`, `card.split`, `card.gone`. An edit sets `card.prev`. **Simulate others** gains an **Open card** group: Edit, Delete, Combine, Separate.
+
+| Check | Observed result |
+| --- | --- |
+| Edit | On maya.chen's leading wording: status "maya.chen edited this version…"; byline shows "edited"; clicking it shows the earlier wording struck through |
+| Separate | Placeholder "omar_h made this a separate argument" in place; row keeps its wording count; pill "1 change" |
+| Combine while writing | With a draft in the open row: one-line placeholder "lin.zhao combined this with '…'. Your draft goes with it." and **Go to it** (rings the other argument); pill "2 changes" |
+| Update | Old row gone; the other argument opens with 4 wordings and the draft in its form, focus on it; status "Board updated. Your draft moved with the argument."; the separated wording is a new row (i1) at the end of the column |
+| Reload with a combine pending | Applied: no placeholder, no pill |
+| Placeholder layout | Combined placeholder spans the card column (first build sat in the vote column; fixed) |
+| Phone width (375 px) | Edit, Separate, Combine, Update: no horizontal overflow; placeholder 203 px wide in a 343 px frame |
+| Console | No errors |
+
+## November 11 — Sign-in and account (L-01, L-04)
+
+Decisions: sign in with Google or a one-time email link (no passwords); people who join through a link must confirm their email, which both methods do by design. `authCard()` serves the invite landing and `openSignIn()` (top bar and board header). The account card's password rows are replaced by email change and sign-in methods; `state.myEmail` and `state.google` are saved.
+
+| Check | Observed result |
+| --- | --- |
+| Invite link (capstone, maya.chen) | Landing with Continue with Google, or, Email, Email me a link; focus on Google |
+| Bad email | "not-an-email" → "That doesn't look like an email address.", field marked invalid, value kept |
+| Link sent (Enter in the field) | "We sent a sign-in link to sam.k@school.edu. It works once, for 15 minutes."; focus on Open the link; Resend → "Sent again" |
+| Expired | Open it too late → "That link has expired" → Email me a new link → back to Check your email |
+| Username | Prefilled "sam.k"; "jordan_w" → "jordan_w is taken."; "a!" → "Use 3 to 20 letters, numbers, dots, or underscores."; "sam_k" → board as Contributor, tour starts |
+| Change email | Same address → "That's already your email."; kieran@school.edu → Confirming row, focus on Resend, Change hidden; Open the link → "Your email is now kieran@school.edu." |
+| Google | Disconnect → "Google disconnected. You can still sign in with an email link."; Connect restores |
+| Top-bar Sign in, no board | "Sign in to take part"; KIERAN@school.edu (the changed email, any case) → straight in, no username step, no tour |
+| Sign in from a board | Signed out on open-weights → panel shows its question → Google → back on the board as you |
+| Phone width (375 px) | Start, sent, and username steps: no horizontal overflow |
+| Console | No errors |
+
+## November 11 — Privacy, consent, deletion (M-07, M-08)
+
+Decisions: analytics follow common US practice (notice with opt-out; Global Privacy Control and Do Not Track honored). A deleted account's arguments, wordings, and sources stay, credited to deleted_account. `docs/analytics.js` now shows the notice and exposes `window.steelmanAnalytics`; `docs/privacy.html` is new; the prototype's Account card gains a Privacy group and Delete account.
+
+| Check | Observed result |
+| --- | --- |
+| First visit, Product Page | Notice "Steelman records anonymous usage and screen replays to improve it. Typed text is hidden. Privacy · Turn off · OK"; analytics on |
+| Turn off | Stored "off"; PostHog opted out; notice gone |
+| Reload with analytics off | Only PostHog library files load; no event, flags, or replay requests |
+| Privacy page | Shows "off" and Turn on; Turn on → "on", stored "on"; footer link on the Product Page |
+| Account → Usage analytics | Turn off → "Usage analytics off. Nothing more is sent from this browser."; the page's stored choice changes too |
+| Download | Saves steelman-data.json: account, sign-in methods, votes, and 4 boards with what you wrote (wording, context, option, date) and comments |
+| Privacy notice / sign-in panel Privacy link | Opens /privacy.html in a new tab |
+| Delete account | Form lists what's removed and what stays (deleted_account); "kieran" → "Type kieran_lamee exactly."; correct name → "Your account is deleted", Preview as Signed out; Back to Steelman → the list |
+| Phone width (375 px) | Notice 16 px from the edges and bottom; account card and delete form: no horizontal overflow |
+| Console | No errors |
+| Not checked | A browser that sends Global Privacy Control (the test browser sends neither signal) |
+
+## November 11 — Card integrity (A-06, B-03, C-03)
+
+Decisions: edits work like Reddit (allowed any time, labelled "edited"); any edit, and any change to a version's sources, starts its credibility assessments over, with a warning first; importance and articulation votes stay. The value-judgment marker (C-04) is dropped: an unsupported argument can still matter, which is what the separate importance vote is for. `markEvidenceChanged()` now resets `yes`/`no` and your own assessment, and records why (`resetBy`).
+
+| Check | Observed result |
+| --- | --- |
+| Edit own version (control, 15 of 17 supported) | Form shows "17 assessments start over when you save. Votes stay."; save → "Your version was updated and says “edited”. Its 17 assessments start over; votes stay."; meter Unreviewed; importance unchanged; byline "you · edited"; edited shows the earlier wording; evidence section "This version was edited, so assessments started over." |
+| Add a source (1 assessment) | Form warns "1 assessment starts over when you save."; save → Unreviewed; "The evidence changed, so assessments started over." |
+| Remove a source (1 assessment) | First click → "Remove · 1 assessment starts over" and an announcement; second click removes, meter Unreviewed; Undo restores 100% of 1 |
+| Someone else edits (Simulate others → Edit) | Assessments start over; status says so |
+| Phone width (375 px) | Edit form with warning, source form: no horizontal overflow |
+| Console | No errors |
+| Testing note | With the browser pane hidden, animations never finish and the prototype ignores clicks while one runs; tests finished them by hand |
+
+## November 11 — Links (M-06)
+
+The page's address carries `b` (board), `v` (version), and `c` (comment) after `#`. `syncAddress()` pushes a history step when the board changes and replaces it otherwise; `openLink()` handles incoming links, Back, and Forward; `prepareReveal()` opens whatever hides a version.
+
+| Check | Observed result |
+| --- | --- |
+| Address follows | Open board → `#b=openweights`; expand independenceNarrow (third wording) → `#b=openweights&v=independenceNarrow` |
+| Copy link | Version ⋯ → Copy link copies `…/prototype/?v=c5#b=openweights&v=independenceNarrow`, "Link copied."; comment Link copies `…#b=openweights&c=c-y1` |
+| Open a version link | Row unfolds, context and evidence open, card rings |
+| Open a comment link | Comments panel opens on its version; comment c-y1 rings |
+| Deleted version | `#b=openweights&v=nope` (fresh load) → board with "That version was deleted. · Dismiss", focus on Dismiss; address cleaned to `#b=openweights` |
+| Unknown board | `#b=nosuch` → "This steelman doesn't exist", Go to your steelmen |
+| Signed out, POD 6 board | `#b=capstone&v=capstone-1-0v` → "Sign in to open this steelman", no question shown; Google → the board, version open, address kept |
+| Back / Forward | List → board → wordmark → Back: board (`#b=openweights`); Forward: list (no hash) |
+| Phone width (375 px) | Link note 285 px wide; not-found screen: no horizontal overflow |
+| Console | No errors |
+| Not checked | A version link into a hidden column, or past a column's fold of 10 (no example board has one); the code clears both |
+
+## November 11 — Phones (M-03)
+
+Decision: on phones, tabs switch sides; swiping stays with unfolded rows. `sideTabs()` renders the tabs; CSS hides the other columns at 640 px and below; `placeSides()` pins the bar (the frame grows to its content, so position:sticky can't); `switchSide()` remembers each side's scroll position. Wires skip hidden columns.
+
+| Check | Observed result |
+| --- | --- |
+| Open-weights at 375 px | Tabs "Why it makes sense 6" (selected) and "Why it might not 5"; only the first side shown; page 2,875 px tall (was 4,549) |
+| Pinned | Scrolled into the board: bar at the top of the screen |
+| Switch | Tap "Why it might not" → only that side; its top sits just under the bar; status "Why it might not: 5 arguments." |
+| Keeps place | Scroll 400 px down "might not", switch away and back → same place (343 px into the column) |
+| Link to the other side | `#b=openweights&v=control` while on "might not" → switches to "makes sense", card shown |
+| Layout | Bar ends 20 px above the column at rest; no horizontal overflow |
+| Desktop (992 px) | No tabs; both columns; Strongest case shows two columns; wires drawn |
+| Console | No errors |
+| Not checked | Real phones and touch (emulated width only) |
+
+## November 11 — Accessibility pass (M-04)
+
+axe-core 4.10.2 was loaded into the prototype frame and run on each screen; contrast was also computed directly (axe can't see behind the canvas texture). Keyboard checks used real Tab and Enter presses.
+
+| Check | Observed result |
+| --- | --- |
+| axe, first run | Board: duplicate banner (the question header), content outside landmarks; comments panel: `aside` with role dialog; list: no level-one heading; phone top bar: Board, Strongest case, Share, New steelman without names; inbox and Share: headers counted as banners |
+| Fixes | Question header is a labelled section; panel is a div; list has a hidden "Home" (or space) h1; root's stray label removed; icon-only buttons labelled; inbox and Share headers are plain elements |
+| axe, final | No violations: list, inbox, New steelman, profile, board, unfolded row + expanded card + comments, Share, Settings, Strongest case (desktop); list, New steelman, inbox, board, other side, profile (375 px) |
+| Contrast | Muted text on canvases was 3.3–3.9:1 (removed-card notes on slate, "Add an argument", case caption). Tokens: `--sm-muted` #686868 → #565656, `--sm-quiet` #707070 → #5a5a5a; now at least 4.6:1 on every canvas and 6.9:1 on white. The breadcrumb "/" (decorative, hidden from screen readers) stays lighter |
+| Keyboard, board | Order: top bar → question tools → per row: importance ↑↓, stack, menu, wording, author, AI check, combine, comments, expand |
+| Keyboard, core loop | Enter on a stack unfolds the row (focus stays on the leading wording); Tab reaches each wording's articulation ↑↓; Enter on expand opens sources, Add a source, AI check, assess Yes/No, Suggest a better version |
+| Jump to | Tab from Settings → "Jump to Why it makes sense" (appears), "Jump to Why it might not"; Enter → focus in that side's header; status "Why it might not." |
+| Reduced motion | CSS stops transitions and animations; `play()` now skips scripted animations too |
+| Console | No errors |
+| Not checked | A real screen reader, a keyboard-only user, Windows high-contrast mode |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
 - No claim of full screen-reader, cross-browser, or device coverage.
 - Standalone state persists in browser local storage when available; it does not sync with other users or devices. Fonts and icons need internet access.
 - Material revision history and shared collaboration are not implemented. Presence, other viewers, spaces, and invitations are simulated.
-- The order-update control simulates a change; it does not validate an aggregation algorithm.
+- Live changes from other people are simulated (Simulate others); they don't validate an aggregation algorithm or a realtime backend.
 
 ## Re-run manually
 

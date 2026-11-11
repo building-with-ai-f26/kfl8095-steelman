@@ -1810,8 +1810,8 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   /* Ink */
   --sm-ink:#242424;          /* text and strong rules */
-  --sm-muted:#686868;        /* secondary text */
-  --sm-quiet:#707070;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif) */
+  --sm-muted:#565656;        /* secondary text; at least 4.5:1 on white and on every space canvas */
+  --sm-quiet:#5a5a5a;        /* light-weight quiet text: dates, drafts, empty states (replaces italic serif); 4.5:1 on every canvas */
   --sm-selected:#292929;     /* pressed controls */
   --sm-on-selected:#fff;     /* icon or text on a pressed control */
 
@@ -2261,6 +2261,45 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   #steelman-study .sm-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 25px; border-top:1px solid var(--sm-line); background:var(--sm-card); }
   #steelman-study .sm-example { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim { display:flex; align-items:center; flex-wrap:wrap; gap:4px 14px; font-size:12px; }
+  #steelman-study .sm-sim &gt; span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-sim [aria-pressed=&quot;true&quot;] { text-decoration:underline; font-weight:600; }
+  /* Board changed / offline: a pill that stays at the bottom of what you can see. */
+  #steelman-study .sm-fresh { position:absolute; left:50%; z-index:70; display:flex; align-items:center; gap:12px; translate:-50% 0; max-width:calc(100% - 32px); padding:8px 8px 8px 14px; border-radius:999px; background:var(--sm-ink); color:#fff; font-size:13px; white-space:nowrap; box-shadow:0 6px 18px rgb(0 0 0 / .18); }
+  #steelman-study .sm-fresh:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-fresh &gt; span { display:flex; align-items:center; gap:7px; }
+  #steelman-study .sm-fresh svg { width:15px; height:15px; flex:none; }
+  #steelman-study .sm-fresh button { padding:5px 12px; border:0; border-radius:999px; background:#fff; color:var(--sm-ink); font-size:12px; font-weight:600; }
+  #steelman-study .sm-fresh.sm-quiet { padding-right:14px; }
+  #steelman-study .sm-gone .sm-removed-note { color:var(--sm-quiet); }
+  #steelman-study .sm-gone-link { margin:-8px 16px 12px 36px; font-size:12px; }
+  #steelman-study .sm-merged &gt; .sm-card-wrap { grid-column:2; }
+  #steelman-study .sm-edited { font-size:inherit; color:inherit; text-decoration:underline dotted; }
+  #steelman-study .sm-source-warn { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:12px; line-height:1.45; color:var(--sm-ink); }
+  #steelman-study .sm-source-warn svg { width:14px; height:14px; flex:none; margin-top:1px; }
+  #steelman-study .sm-edit-warn { padding:0 16px 8px; }
+  /* Jump links: hidden until focused, then a dark pill at the top of the board. */
+  #steelman-study .sm-skip { grid-column:1 / -1; position:relative; z-index:31; display:flex; gap:8px; height:0; }
+  #steelman-study .sm-skip button { padding:8px 14px; border:0; border-radius:999px; background:var(--sm-ink); color:#fff; font:600 13px/1.2 var(--sm-sans); box-shadow:var(--sm-shadow-sm); translate:0 -44px; }
+  #steelman-study .sm-skip button:not(:focus) { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  /* Side tabs: phones only. */
+  #steelman-study .sm-sides { display:none; }
+  @media(max-width:640px) {
+    #steelman-study[data-zoom=&quot;read&quot;] .sm-sides { grid-column:1 / -1; position:relative; z-index:30; display:flex; gap:4px; margin:-14px 0 -10px -12px; padding:4px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+    #steelman-study .sm-sides.sm-pinned { box-shadow:0 6px 16px rgb(0 0 0 / .22); }
+    #steelman-study .sm-sides button { flex:1 1 0; min-width:0; display:grid; gap:1px; padding:7px 8px; border:0; border-radius:5px; background:transparent; color:#ffffffb3; text-align:center; }
+    #steelman-study .sm-sides button span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 13px/1.25 var(--sm-serif); }
+    #steelman-study .sm-sides button small { font-size:11px; color:inherit; opacity:.8; }
+    #steelman-study .sm-sides [aria-selected=&quot;true&quot;] { background:#fff; color:var(--sm-ink); }
+    #steelman-study[data-zoom=&quot;read&quot;] .sm-board &gt; :is(.sm-column:not(.sm-side-on),.sm-col-hidden,.sm-col-gap) { display:none; }
+  }
+  #steelman-study .sm-link-note { display:flex; align-items:center; gap:8px; max-width:640px; margin:12px auto 0; padding:8px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); font-size:13px; }
+  #steelman-study .sm-link-note svg { width:15px; height:15px; flex:none; }
+  #steelman-study .sm-link-note span { flex:1; }
+  #steelman-study .sm-link-note .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-armed { color:#b4434f !important; font-weight:600; }
+  #steelman-study .sm-prev { margin:4px 0 0; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-sr { position:absolute; width:1px; height:1px; margin:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
   #steelman-study .sm-text-button { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:6px; padding:5px 0; color:var(--sm-muted); font-size:12px; }
   #steelman-study .sm-text-button:hover { color:var(--sm-ink); text-decoration:underline; }
@@ -2533,7 +2572,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* ── Share: a panel under the Share button, like a file&#x27;s share sheet. ── */
   #steelman-study .sm-share { position:absolute; top:64px; right:16px; z-index:45; display:grid; width:440px; max-width:calc(100% - 32px); background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-share[hidden] { display:none; }
-  #steelman-study .sm-share &gt; header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-share &gt; .sm-share-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 10px 10px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-share h2 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-share-body { display:grid; gap:18px; padding:16px 18px 18px; }
   #steelman-study .sm-share h3 { margin:0 0 8px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
@@ -2786,6 +2825,12 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-pw-form input { height:36px; padding:0 10px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font-size:14px; }
   #steelman-study .sm-pw-form input:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
   #steelman-study .sm-pw-form &gt; div { display:flex; justify-content:flex-end; gap:8px; }
+  #steelman-study .sm-delete-link { justify-self:center; font-size:12px; color:var(--sm-muted); text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-delete-form { padding:14px; border:1px solid #b4434f66; border-radius:8px; }
+  #steelman-study .sm-delete-form h3 { margin:0; font:600 15px/1.3 var(--sm-serif); }
+  #steelman-study .sm-delete-form p { margin:0; font-size:13px; line-height:1.5; }
+  #steelman-study .sm-danger { background:#b4434f; border-color:#b4434f; color:#fff; }
+  #steelman-study .sm-auth-hint .sm-link-button { font-size:inherit; text-decoration:underline; text-underline-offset:2px; }
   #steelman-study .sm-signout { justify-self:stretch; height:36px; font-size:13px; }
   #steelman-study .sm-user-link { padding:0; border:0; background:none; font:inherit; color:inherit; text-align:inherit; cursor:pointer; }
   #steelman-study .sm-user-link:hover { text-decoration:underline; text-underline-offset:3px; }
@@ -2814,6 +2859,19 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-landing-auth .sm-field input { height:38px; }
   #steelman-study .sm-landing-auth .sm-solid { height:40px; min-height:40px; font-size:14px; }
   #steelman-study .sm-landing-auth .sm-field-hint { margin-top:-6px; text-align:center; }
+  #steelman-study .sm-auth-head { margin:0; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.3px; }
+  #steelman-study .sm-landing-qt { margin:0; font:600 18px/1.3 var(--sm-serif); overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-title { margin:0; font:600 17px/1.3 var(--sm-serif); }
+  #steelman-study .sm-auth-text { margin:-6px 0 0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+  #steelman-study .sm-auth-hint { text-align:left !important; margin-top:-8px !important; }
+  #steelman-study .sm-google { height:40px; gap:10px; font-size:14px; font-weight:600; }
+  #steelman-study .sm-g { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--sm-line); font:700 12px/1 var(--sm-sans); }
+  #steelman-study .sm-or { display:flex; align-items:center; gap:10px; margin:0; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-or::before, #steelman-study .sm-or::after { content:&quot;&quot;; flex:1; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-auth-sim { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:10px 12px; border:1px dashed var(--sm-line); border-radius:6px; font-size:13px; }
+  #steelman-study .sm-auth-sim &gt; span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-auth-links { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; }
+  #steelman-study :is(.sm-auth-sim,.sm-auth-links) .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-landing-look { justify-self:center; font-size:13px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:3px; }
   @media(max-width:560px) {
     #steelman-study .sm-landing { padding:24px 16px 48px; }
@@ -2846,11 +2904,11 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(100vh - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-inbox[hidden] { display:none; }
   #steelman-study .sm-inbox:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
-  #steelman-study .sm-inbox &gt; header { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
   #steelman-study .sm-inbox h2 { flex:1; min-width:0; font:600 16px/1.3 var(--sm-serif); }
   #steelman-study .sm-inbox h2 small { margin-left:6px; font:500 12px var(--sm-sans); color:var(--sm-muted); font-variant-numeric:tabular-nums; }
-  #steelman-study .sm-inbox &gt; header .sm-link-button { font-size:12px; color:var(--sm-ink); }
-  #steelman-study .sm-inbox &gt; header .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head .sm-link-button { font-size:12px; color:var(--sm-ink); }
+  #steelman-study .sm-inbox &gt; .sm-inbox-head .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study .sm-inbox-list { overflow:auto; margin:0; padding:0; list-style:none; overscroll-behavior:contain; }
   #steelman-study .sm-note { display:flex; align-items:stretch; }
   #steelman-study .sm-note + .sm-note { border-top:1px solid var(--sm-line); }
@@ -2993,19 +3051,20 @@ html&gt;body{padding:0}&lt;/style&gt;
     #steelman-study .sm-crumb-here { display:none; }
   }
 &lt;/style&gt;
-&lt;div id=&quot;steelman-study&quot; aria-label=&quot;Steelman canvas prototype&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
+&lt;div id=&quot;steelman-study&quot; data-indicator=&quot;dossier&quot; data-density=&quot;comfortable&quot;&gt;
   &lt;header class=&quot;sm-site&quot;&gt;&lt;div class=&quot;sm-wordmark&quot;&gt;&lt;svg class=&quot;sm-logo&quot; viewBox=&quot;0 0 55.95 44.65&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;&lt;polygon points=&quot;10.96,1.00 20.92,6.75 20.92,18.25 10.96,24.00 1.00,18.25 1.00,6.75&quot; fill=&quot;currentColor&quot;/&gt;&lt;polygon points=&quot;33.65,1.85 42.87,7.18 42.87,17.82 33.65,23.15 24.43,17.82 24.43,7.17&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot;/&gt;&lt;polygon points=&quot;22.30,21.50 31.53,26.82 31.53,37.47 22.30,42.80 13.08,37.47 13.08,26.82&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot;/&gt;&lt;polygon points=&quot;44.99,21.50 54.22,26.82 54.22,37.47 44.99,42.80 35.77,37.47 35.77,26.82&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot; stroke-linejoin=&quot;miter&quot; stroke-linecap=&quot;butt&quot; pathLength=&quot;18&quot; stroke-dasharray=&quot;.5 .5&quot; stroke-dashoffset=&quot;.25&quot;/&gt;&lt;/svg&gt;steelman.&lt;/div&gt;&lt;/header&gt;
   &lt;div class=&quot;sm-home&quot; hidden&gt;&lt;/div&gt;
   &lt;div class=&quot;sm-surface&quot;&gt;
     &lt;div class=&quot;sm-scene&quot;&gt;
       &lt;svg class=&quot;sm-links&quot; aria-hidden=&quot;true&quot;&gt;&lt;/svg&gt;
-      &lt;header class=&quot;sm-head&quot;&gt;&lt;/header&gt;
+      &lt;section class=&quot;sm-head&quot; aria-label=&quot;The question&quot;&gt;&lt;/section&gt;
       &lt;main id=&quot;sm-content&quot;&gt;&lt;div class=&quot;sm-board&quot;&gt;&lt;/div&gt;&lt;/main&gt;
     &lt;/div&gt;
-    &lt;div class=&quot;sm-toolbar&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;reorder&quot; data-key=&quot;reorder&quot; aria-label=&quot;Simulate a change in the shared order&quot;&gt;&lt;i data-lucide=&quot;arrow-down-up&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Simulate a reorder&lt;/button&gt;&lt;/div&gt;
+    &lt;div class=&quot;sm-toolbar&quot; role=&quot;region&quot; aria-label=&quot;Prototype tools&quot;&gt;&lt;span class=&quot;sm-example&quot;&gt;Example claims, evidence &amp; votes&lt;/span&gt;&lt;span class=&quot;sm-sim&quot; role=&quot;group&quot; aria-label=&quot;Simulate other people (prototype tool)&quot;&gt;&lt;span&gt;Simulate others&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-votes&quot; data-key=&quot;sim-votes&quot;&gt;Votes&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-argument&quot; data-key=&quot;sim-argument&quot;&gt;New argument&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-wording&quot; data-key=&quot;sim-wording&quot;&gt;New wording&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-offline&quot; data-key=&quot;sim-offline&quot; aria-pressed=&quot;false&quot;&gt;Offline&lt;/button&gt;&lt;span&gt;Open card&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-edit&quot; data-key=&quot;sim-edit&quot;&gt;Edit&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-delete&quot; data-key=&quot;sim-delete&quot;&gt;Delete&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-combine&quot; data-key=&quot;sim-combine&quot;&gt;Combine&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;sim-separate&quot; data-key=&quot;sim-separate&quot;&gt;Separate&lt;/button&gt;&lt;/span&gt;&lt;/div&gt;
+    &lt;div class=&quot;sm-fresh&quot; role=&quot;status&quot; hidden&gt;&lt;/div&gt;
     &lt;div id=&quot;sm-status&quot; class=&quot;sm-live&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
   &lt;/div&gt;
-  &lt;aside class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/aside&gt;
+  &lt;div class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/div&gt;
   &lt;div class=&quot;sm-menu&quot; role=&quot;menu&quot; aria-label=&quot;Version options&quot; hidden&gt;&lt;/div&gt;
   &lt;section class=&quot;sm-share&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-share-title&quot; hidden&gt;&lt;/section&gt;
   &lt;section class=&quot;sm-inbox&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-inbox-title&quot; hidden&gt;&lt;/section&gt;
@@ -3142,7 +3201,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   let PEOPLE = seedPeople();
   const ME = &#x27;kieran_lamee&#x27;;
-  const MY_EMAIL = &#x27;kieran_lamee@example.com&#x27;; // a placeholder: the prototype has no accounts
+  const MY_EMAIL = &#x27;kieran_lamee@example.com&#x27;; // a placeholder: the prototype has no accounts. state.myEmail can change.
   // What a space&#x27;s admins set: roles (anyone unlisted is a member), community rules, pending invites and join requests,
   // and the mode new steelmen start in (unset: Open team in a private space, Public in a community).
   const seedSpaceMeta = () =&gt; ({
@@ -3183,7 +3242,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
     &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;decision-option&#x27;:&#x27;owner&#x27;,&#x27;decision-arg&#x27;:&#x27;owner&#x27;,&#x27;decision-edit&#x27;:&#x27;owner&#x27;,&#x27;decision-cancel&#x27;:&#x27;owner&#x27;,&#x27;decision-save&#x27;:&#x27;owner&#x27;,&#x27;report-open&#x27;:&#x27;view&#x27;,&#x27;report-card&#x27;:&#x27;view&#x27;,&#x27;report-withdraw&#x27;:&#x27;view&#x27;,&#x27;hide-open&#x27;:&#x27;edit&#x27;,&#x27;hide-card&#x27;:&#x27;edit&#x27;,&#x27;restore-card&#x27;:&#x27;edit&#x27;,&#x27;reports-dismiss&#x27;:&#x27;edit&#x27;,&#x27;comment-report-open&#x27;:&#x27;view&#x27;,&#x27;comment-report&#x27;:&#x27;view&#x27;,&#x27;comment-report-withdraw&#x27;:&#x27;view&#x27;,&#x27;comment-hide-open&#x27;:&#x27;edit&#x27;,&#x27;comment-hide&#x27;:&#x27;edit&#x27;,&#x27;comment-restore&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
     inbox:&#x27;view&#x27;,&#x27;note-open&#x27;:&#x27;view&#x27;,&#x27;note-read&#x27;:&#x27;view&#x27;,&#x27;notes-read-all&#x27;:&#x27;view&#x27;,&#x27;space-new&#x27;:&#x27;view&#x27;,&#x27;space-create&#x27;:&#x27;view&#x27;,&#x27;space-settings&#x27;:&#x27;admin&#x27;,&#x27;space-canvas&#x27;:&#x27;admin&#x27;,&#x27;space-kind&#x27;:&#x27;admin&#x27;,&#x27;space-invite&#x27;:&#x27;admin&#x27;,&#x27;space-invite-cancel&#x27;:&#x27;admin&#x27;,&#x27;space-remove&#x27;:&#x27;admin&#x27;,&#x27;space-approve&#x27;:&#x27;admin&#x27;,&#x27;space-decline&#x27;:&#x27;admin&#x27;,&#x27;space-rule-add&#x27;:&#x27;admin&#x27;,&#x27;space-rule-remove&#x27;:&#x27;admin&#x27;,&#x27;space-ai&#x27;:&#x27;admin&#x27;,&#x27;space-mode&#x27;:&#x27;admin&#x27;,
-    &#x27;profile-pw&#x27;:&#x27;view&#x27;,&#x27;profile-pw-save&#x27;:&#x27;view&#x27;,&#x27;profile-pw-cancel&#x27;:&#x27;view&#x27;,&#x27;sign-out&#x27;:&#x27;view&#x27;,
+    &#x27;profile-email&#x27;:&#x27;view&#x27;,&#x27;profile-email-save&#x27;:&#x27;view&#x27;,&#x27;profile-email-cancel&#x27;:&#x27;view&#x27;,&#x27;profile-email-resend&#x27;:&#x27;view&#x27;,&#x27;profile-email-drop&#x27;:&#x27;view&#x27;,&#x27;profile-email-open&#x27;:&#x27;view&#x27;,&#x27;profile-google&#x27;:&#x27;view&#x27;,&#x27;profile-analytics&#x27;:&#x27;view&#x27;,&#x27;profile-privacy&#x27;:&#x27;view&#x27;,&#x27;profile-download&#x27;:&#x27;view&#x27;,&#x27;profile-delete&#x27;:&#x27;view&#x27;,&#x27;profile-delete-cancel&#x27;:&#x27;view&#x27;,&#x27;profile-delete-confirm&#x27;:&#x27;view&#x27;,&#x27;sign-out&#x27;:&#x27;view&#x27;,
     settings:&#x27;owner&#x27;};
   const WHY = {admin:&#x27;Space admins only.&#x27;,view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
   const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
@@ -3269,7 +3328,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   let docs = seedDocs();
   // Working aliases into state.doc; edits mutate the document directly and are saved with it.
   let doc,cards,sources,ideas;
-  function useDoc(next) { next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
+  function useDoc(next) { applyPending(next); next.question.people||=[]; next.question.rules||=defaultRules(next.question.org); if(!Array.isArray(next.pending)) next.pending=[]; if(!Array.isArray(next.log)) next.log=[];
     for(const [id,c] of Object.entries(next.cards)) if(c.aiCheck){ if(c.aiCheck.pending) c.aiCheck=simulateCheck(next,id); else c.aiCheck.sig??=evidenceSig(next,c); } next.question.accessRole||=&#x27;contribute&#x27;; next.options=next.options.filter(o=&gt;o.name||next.ideas.some(i=&gt;i.option===o.id)); if(!Array.isArray(next.comments)) next.comments=seedComments(); if(!Array.isArray(next.suggestions)) next.suggestions=[]; doc=state.doc=next; ({cards,sources,ideas}=next); }
   function validDoc(d) {
     return !!d &amp;&amp; typeof d.question?.text===&#x27;string&#x27; &amp;&amp; Array.isArray(d.options) &amp;&amp; Array.isArray(d.ideas) &amp;&amp; d.cards &amp;&amp; typeof d.cards===&#x27;object&#x27; &amp;&amp; d.sources &amp;&amp; typeof d.sources===&#x27;object&#x27;
@@ -3290,7 +3349,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:&#x27;args&#x27;,pwOpen:false,spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteRole:&#x27;member&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
+  const freshState = () =&gt; ({myEmail:MY_EMAIL,google:true,acct:{},sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:&#x27;args&#x27;,spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteRole:&#x27;member&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -3299,7 +3358,6 @@ html&gt;body{padding:0}&lt;/style&gt;
     if (!data || ![2,3,4].includes(data.version)) return;
     const saved = data.state || {};
     for (const key of [&#x27;importance&#x27;,&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key] = saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27; ? saved[key] : {};
-    state.updated = !!saved.updated;
     state.draftClaim = typeof saved.draftClaim===&#x27;string&#x27; ? saved.draftClaim : &#x27;&#x27;;
     state.draftReason = typeof saved.draftReason===&#x27;string&#x27; ? saved.draftReason : &#x27;&#x27;;
     state.ideaDraftClaim = typeof saved.ideaDraftClaim===&#x27;string&#x27; ? saved.ideaDraftClaim : &#x27;&#x27;;
@@ -3328,6 +3386,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     if (Array.isArray(saved.notes)) state.notes=saved.notes.filter(n=&gt;n&amp;&amp;typeof n.id===&#x27;string&#x27;).slice(0,30);
     if (saved.notesRead &amp;&amp; typeof saved.notesRead===&#x27;object&#x27;) state.notesRead=saved.notesRead;
     state.toured=saved.toured===true;
+    if(typeof saved.myEmail===&#x27;string&#x27;&amp;&amp;/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saved.myEmail)) state.myEmail=saved.myEmail;
+    if(typeof saved.google===&#x27;boolean&#x27;) state.google=saved.google;
     if (typeof saved.spaceEdit===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) state.spaceEdit=saved.spaceEdit;
     if (typeof saved.profile===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) {state.profile=saved.profile;state.profileFrom=docs[saved.profileFrom]?saved.profileFrom:null;}
     if ([&#x27;args&#x27;,&#x27;words&#x27;,&#x27;sources&#x27;].includes(saved.contribTab)) state.contribTab=saved.contribTab;
@@ -3344,7 +3404,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit===&#x27;new&#x27;?null:state.spaceEdit,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,invite:null,tour:null,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,pwOpen:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit===&#x27;new&#x27;?null:state.spaceEdit,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,invite:null,tour:null,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -3353,10 +3413,34 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Order is fixed and shared: rows by importance, wordings by articulation. Your own votes never move cards.
   // (A stable sort, so ties keep their saved order.)
   const byVotes = (list,votes) =&gt; [...list].sort((a,b)=&gt;votes(b)-votes(a));
-  // The shared importance score (the example&#x27;s &quot;Simulate a reorder&quot; adds 20 to two rows).
-  const sharedImportance = idea =&gt; idea.score+(state.updated&amp;&amp;[&#x27;control&#x27;,&#x27;rivals&#x27;].includes(idea.id)?20:0);
-  const ordered = idea =&gt; byVotes(idea.versions,id=&gt;cards[id].pref);
-  const rowsOf = option =&gt; byVotes(ideas.filter(i=&gt;i.option===option),sharedImportance);
+  const sharedImportance = idea =&gt; idea.score;
+  // The shared order moves while you read, but what you see doesn&#x27;t: the order is fixed when the board loads, and changes
+  // only when you choose Update (or reload). New arguments and wordings join the end of their column or row, so they never
+  // push anything. staleCount() says how many rows and wordings sit somewhere else in the live order.
+  const liveRows = option =&gt; byVotes(ideas.filter(i=&gt;i.option===option),sharedImportance);
+  const liveVersions = idea =&gt; byVotes(idea.versions,id=&gt;cards[id].pref);
+  const shownOrders = new WeakMap();
+  function fixShownOrder() { shownOrders.set(doc,{rows:Object.fromEntries(doc.options.map(o=&gt;[o.id,liveRows(o.id).map(i=&gt;i.id)])),versions:Object.fromEntries(ideas.map(i=&gt;[i.id,liveVersions(i)]))}); }
+  const shownOrder = () =&gt; { if(!shownOrders.has(doc)) fixShownOrder(); return shownOrders.get(doc); };
+  const keepSeen = (seen=[],live) =&gt; [...seen.filter(id=&gt;live.includes(id)),...live.filter(id=&gt;!seen.includes(id))];
+  const rowsOf = option =&gt; { const live=liveRows(option),byId=new Map(live.map(i=&gt;[i.id,i])); return keepSeen(shownOrder().rows[option],live.map(i=&gt;i.id)).map(id=&gt;byId.get(id)); };
+  const ordered = idea =&gt; keepSeen(shownOrder().versions[idea.id],liveVersions(idea));
+  function staleCount() {
+    if(state.view!==&#x27;board&#x27;) return 0;
+    // How many items have to move: everything outside the longest run already in live order.
+    const moved=(shown,live)=&gt;{const at=shown.map(id=&gt;live.indexOf(id)),run=[];for(const x of at){let lo=0,hi=run.length;while(lo&lt;hi){const m=(lo+hi)&gt;&gt;1;if(run[m]&lt;x)lo=m+1;else hi=m;}run[lo]=x;}return at.length-run.length;};
+    return doc.options.reduce((n,o)=&gt;n+moved(rowsOf(o.id).map(i=&gt;i.id),liveRows(o.id).map(i=&gt;i.id)),0)
+      +ideas.reduce((n,i)=&gt;n+moved(ordered(i),liveVersions(i)),0)
+      +Object.values(cards).filter(c=&gt;c.gone||c.split).length+ideas.filter(i=&gt;i.merged).length;
+  }
+  // Changes other people made to the structure keep their place, marked, until you update (or reload):
+  // a combined argument (idea.merged), a wording made into its own argument (card.split), a deleted version (card.gone).
+  function applyPending(d) {
+    for(const i of d.ideas) if(i.merged) { const t=d.ideas.find(x=&gt;x.id===i.merged.into&amp;&amp;!x.merged); if(t){i.versions.forEach(v=&gt;{d.cards[v].idea=t.id;});t.versions.push(...i.versions);i.versions=[];} delete i.merged; }
+    for(const [id,c] of Object.entries(d.cards)) if(c.split) { delete c.split; const from=d.ideas.find(x=&gt;x.versions.includes(id)); if(from&amp;&amp;from.versions.length&gt;1){from.versions=from.versions.filter(v=&gt;v!==id);const nid=&#x27;i&#x27;+(d.nextId++);c.idea=nid;c.pref=0;d.ideas.push({id:nid,option:from.option,score:0,versions:[id]});} }
+    for(const [id,c] of Object.entries(d.cards)) if(c.gone) { const i=d.ideas.find(x=&gt;x.versions.includes(id)); if(i) i.versions=i.versions.filter(v=&gt;v!==id); delete d.cards[id]; }
+    for(let k=d.ideas.length-1;k&gt;=0;k--) if(!d.ideas[k].versions.length) d.ideas.splice(k,1);
+  }
   // Highlight: instead of reordering, a column can mark the wordings worth a look and move your view to them, one at a time.
   // New: added in the last two days. Hot: the three wordings with the most votes for their age (articulation and evidence
   // assessments), so the set stays small however big the board gets.
@@ -3513,20 +3597,26 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;span class=&quot;sm-cred-group&quot;&gt;${credibility(id)}${aiCheckMark(id)}&lt;/span&gt;&lt;div class=&quot;sm-card-tools&quot;&gt;${handle}${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
-  const byline = id =&gt; { const by=cards[id].by; return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}&lt;/p&gt;`:&#x27;&#x27;; };
+  const byline = id =&gt; { const c=cards[id],by=c.by;
+    // An edited version says so; &quot;edited&quot; shows the wording it replaced.
+    const edited=c.prev?` · &lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-edited cursor-interaction&quot; data-action=&quot;prev-toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;prev-${id}&quot; aria-expanded=&quot;${!!state.showPrev?.[id]}&quot;&gt;edited&lt;/button&gt;`:c.edited?&#x27; · edited&#x27;:&#x27;&#x27;;
+    const prev=c.prev&amp;&amp;state.showPrev?.[id]?`&lt;p class=&quot;sm-prev&quot;&gt;&lt;del&gt;${escape(c.prev)}&lt;/del&gt;&lt;/p&gt;`:&#x27;&#x27;;
+    return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}${edited}&lt;/p&gt;${prev}`:&#x27;&#x27;; };
   // mark: a highlight tag on the card&#x27;s top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark=&#x27;&#x27;, lit=false) {
     if(cards[id].hidden) return removedCard(id,inTrack);
+    if(cards[id].split) return `&lt;article class=&quot;sm-card sm-removed sm-gone ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;split&#x27;)}${escape(cards[id].split.by)} made this a separate argument&lt;/p&gt;&lt;/article&gt;`;
+    if(cards[id].gone) return `&lt;article class=&quot;sm-card sm-removed sm-gone ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;trash-2&#x27;)}${cards[id].gone.by===cards[id].by?`Deleted by ${escape(cards[id].by)}`:&#x27;Removed by an editor&#x27;}&lt;/p&gt;&lt;/article&gt;`;
     const expanded=state.expanded===id;
     // Your own version, edited in place with the same draft card used to write it.
-    if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
+    if(state.editing===id) return `&lt;form class=&quot;sm-card sm-compose-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-edit-form&quot; data-card=&quot;${id}&quot; aria-label=&quot;Edit your version&quot;&gt;&lt;textarea id=&quot;sm-edit-claim&quot; class=&quot;sm-draft-claim&quot; data-key=&quot;edit-claim&quot; maxlength=&quot;500&quot; aria-label=&quot;Your version&quot;&gt;${escape(state.editDraftClaim)}&lt;/textarea&gt;&lt;textarea id=&quot;sm-edit-reason&quot; class=&quot;sm-draft-reason&quot; data-key=&quot;edit-reason&quot; maxlength=&quot;700&quot; placeholder=&quot;Context (optional)&quot; aria-label=&quot;Context (optional)&quot;&gt;${escape(state.editDraftReason)}&lt;/textarea&gt;${stats(id).n?`&lt;p class=&quot;sm-source-warn sm-edit-warn&quot; role=&quot;note&quot;&gt;${icon(&#x27;triangle-alert&#x27;)}${stats(id).n} ${stats(id).n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over when you save. Votes stay.&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-card-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;cancel-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;cancel-edit&quot; aria-label=&quot;Cancel editing&quot; data-tooltip=&quot;Cancel&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-primary cursor-interaction&quot; data-action=&quot;save-edit&quot; data-id=&quot;${id}&quot; data-key=&quot;save-edit&quot; aria-label=&quot;Save changes&quot; data-tooltip=&quot;Save&quot;&gt;${icon(&#x27;check&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
     const menuOpen=state.menu===id;
     const draft=cards[id].ai,tip=draft?`${draft.basis} ${draft.limits}`:&#x27;&#x27;;
     const ai=cards[id].by===&#x27;ai&#x27;?`&lt;span class=&quot;sm-ai-tag&quot; role=&quot;img&quot; tabindex=&quot;0&quot; aria-label=&quot;${escape(tip)}&quot; data-tooltip=&quot;${escape(tip)}&quot;&gt;${icon(&#x27;bot&#x27;)}AI draft&lt;/span&gt;`:&#x27;&#x27;;
     return `&lt;article class=&quot;sm-card ${inTrack?&#x27;sm-version-face&#x27;:&#x27;&#x27;} ${lit?&#x27;sm-lit&#x27;:&#x27;&#x27;} ${expanded?&#x27;sm-expanded&#x27;:&#x27;&#x27;} ${commenting(&#x27;card:&#x27;+id)?&#x27;sm-commenting&#x27;:&#x27;&#x27;} ${ai?&#x27;sm-ai&#x27;:&#x27;&#x27;}&quot; data-card=&quot;${id}&quot; ${flagTag(id)?&#x27;data-flagged&#x27;:&#x27;&#x27;}&gt;${mark}${ai}${flagTag(id)}&lt;button type=&quot;button&quot; class=&quot;sm-card-menu-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;${id}&quot; data-key=&quot;menu-${id}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${menuOpen}&quot; aria-label=&quot;Options for this version&quot; data-tooltip=&quot;Options&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-claim-button cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;claim-${id}&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;&lt;span class=&quot;sm-claim&quot;&gt;${escape(cards[id].claim)}&lt;/span&gt;&lt;/button&gt;${byline(id)}&lt;div class=&quot;sm-card-meta&quot;&gt;${cardMeta(id)}&lt;/div&gt;&lt;div class=&quot;sm-card-reveal&quot; id=&quot;sm-reveal-${id}&quot; ${expanded?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;${expanded?evidenceContent(id):&#x27;&#x27;}&lt;/div&gt;&lt;/article&gt;`;
   }
   // Card options. Only the author can edit or delete; anyone can start a revised version from the wording.
-  function menuMarkup(id) { return cards[id]&amp;&amp;state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?modItems(id):&#x27;&#x27;); }
+  function menuMarkup(id) { return cards[id]&amp;&amp;state.menuView?reasonMenu(id):baseMenuMarkup(id)+(cards[id]?`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;copy-link&quot; data-id=&quot;v:${id}&quot; data-key=&quot;copy-link-${id}&quot;&gt;${icon(&#x27;link&#x27;)}&lt;span&gt;Copy link&lt;/span&gt;&lt;/button&gt;`+modItems(id):&#x27;&#x27;); }
   function baseMenuMarkup(id) {
     const item=(action,glyph,label,hint=&#x27;&#x27;,disabled=false)=&gt;`&lt;button type=&quot;button&quot; role=&quot;menuitem&quot; class=&quot;sm-menu-item cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${id}&quot; data-key=&quot;${action}-${id}&quot; ${disabled?&#x27;aria-disabled=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;${icon(glyph)}&lt;span&gt;${label}${hint?`&lt;small&gt;${hint}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;/button&gt;`;
     if(id.startsWith(&#x27;lens:&#x27;)) {
@@ -3652,6 +3742,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // While moving a version, every other row in its option becomes a target.
   const movingFrom = () =&gt; state.moving&amp;&amp;cards[state.moving]?ideaOf(cards[state.moving].idea):null;
   function row(idea,lit=new Set()) {
+    if(idea.merged) return mergedRow(idea);
     const open=state.open===idea.id,from=movingFrom(),mode=lensOf(idea.option);
     const lead=ordered(idea)[0],hits=idea.versions.filter(id=&gt;lit.has(id)).length,leadLit=lit.has(lead),inside=hits-(leadLit?1:0);
     // With a highlight on, rows without a match recede; a folded row with a match in its stack says so on its card.
@@ -3661,6 +3752,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
     const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
     return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
+  }
+  // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
+  function mergedRow(idea) {
+    const into=ideaOf(idea.merged.into),lead=into&amp;&amp;ordered(into)[0],draft=state.open===idea.id&amp;&amp;state.composing&amp;&amp;state.draftClaim.trim();
+    return `&lt;section class=&quot;sm-idea sm-merged&quot; data-node=&quot;${idea.id}&quot;&gt;&lt;div class=&quot;sm-card-wrap&quot;&gt;&lt;article class=&quot;sm-card sm-removed sm-gone&quot;&gt;&lt;p class=&quot;sm-removed-note&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;span&gt;${escape(idea.merged.by)} combined this with “${lead?escape(short(lead)):&#x27;another argument&#x27;}”${draft?&#x27;. Your draft goes with it.&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;/p&gt;${lead?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-gone-link cursor-interaction&quot; data-action=&quot;merged-show&quot; data-id=&quot;${lead}&quot; data-key=&quot;merged-show-${idea.id}&quot;&gt;Go to it&lt;/button&gt;`:&#x27;&#x27;}&lt;/article&gt;&lt;/div&gt;&lt;/section&gt;`;
   }
   function moveBanner(option) {
     const from=movingFrom();
@@ -3716,13 +3812,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(undo&amp;&amp;!undoShown) rowsHtml+=undo;
     rowsHtml+=rowFold(option,rest,n,lit);
     const first=option===firstVisible();
-    return `&lt;section class=&quot;sm-column ${first?&#x27;sm-first&#x27;:&#x27;&#x27;}&quot; data-option=&quot;${option}&quot; ${lensOf(option)?`data-lens=&quot;${lensOf(option)}&quot;`:&#x27;&#x27;} aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${first?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${lensControl(option)}${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;${lensBar(option)}${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-column ${first?&#x27;sm-first&#x27;:&#x27;&#x27;} ${option===activeSide()?&#x27;sm-side-on&#x27;:&#x27;&#x27;}&quot; id=&quot;sm-col-${option}&quot; data-option=&quot;${option}&quot; ${lensOf(option)?`data-lens=&quot;${lensOf(option)}&quot;`:&#x27;&#x27;} aria-label=&quot;${optionName(option)}&quot;&gt;&lt;canvas class=&quot;sm-texture&quot; aria-hidden=&quot;true&quot;&gt;&lt;/canvas&gt;${first?`&lt;div class=&quot;sm-col-vaxis&quot;&gt;${axis(&#x27;v&#x27;,&#x27;more important&#x27;,&#x27;less important&#x27;)}&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-column-head ${commenting(&#x27;option:&#x27;+option)?&#x27;sm-commenting&#x27;:&#x27;&#x27;}&quot;&gt;${optionTitle(option)}&lt;div class=&quot;sm-column-tools&quot;&gt;${lensControl(option)}${commentButton(&#x27;option:&#x27;+option,&#x27;sm-head-button&#x27;,&#x27;option&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-head-button cursor-interaction&quot; data-action=&quot;card-menu&quot; data-id=&quot;option:${option}&quot; data-key=&quot;menu-option:${option}&quot; aria-haspopup=&quot;menu&quot; aria-expanded=&quot;${state.menu===&#x27;option:&#x27;+option}&quot; aria-label=&quot;Options for ${escape(optionName(option))}&quot; data-tooltip=&quot;Option settings&quot;&gt;${icon(&#x27;ellipsis&#x27;)}&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;${lensBar(option)}${rowsHtml}${addArgument(option)}&lt;/section&gt;`;
   }
   const MAX_OPTIONS=4;
   // ── Strongest case: each option&#x27;s three most important arguments, each in its best-articulated wording. ──
   const CASE_SIZE=3;
   function caseColumn(option) {
-    const rows=rowsOf(option).filter(i=&gt;!cards[ordered(i)[0]].hidden),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
+    const rows=rowsOf(option).filter(i=&gt;!i.merged&amp;&amp;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone),top=rows.slice(0,CASE_SIZE),rest=rows.length-top.length;
     const items=top.map((idea,k)=&gt;{
       const id=ordered(idea)[0],n=idea.versions.length,imp=importanceScore(idea);
       const facts=`&lt;span class=&quot;sm-case-facts&quot;&gt;&lt;span title=&quot;Importance: ${imp} net votes&quot;&gt;${icon(&#x27;arrow-up-narrow-wide&#x27;)}${imp}&lt;/span&gt;${n&gt;1?`&lt;span title=&quot;The best-articulated of ${n} wordings&quot;&gt;${icon(&#x27;layers&#x27;)}best of ${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`;
@@ -3737,7 +3833,56 @@ html&gt;body{padding:0}&lt;/style&gt;
     // A deleted option has no column to hold its Undo bar, so it spans the board instead.
     const orphanUndo=state.undo&amp;&amp;!doc.options.some(o=&gt;o.id===state.undo.option)?`&lt;div class=&quot;sm-board-undo&quot;&gt;${undoMarkup()}&lt;/div&gt;`:&#x27;&#x27;;
     const add=doc.options.length&lt;MAX_OPTIONS?`&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-add-option-col&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-add-option cursor-interaction&quot; data-action=&quot;add-option&quot; data-key=&quot;add-option&quot; aria-label=&quot;Add an option&quot; data-tooltip=&quot;Add an option&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span class=&quot;sm-add-short&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;sm-add-long&quot;&gt;Add an option&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
-    return orphanUndo+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+    return orphanUndo+skipLinks()+sideTabs()+doc.options.map(o=&gt;column(o.id)).join(&#x27;&lt;div class=&quot;sm-col-gap&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;&#x27;)+add;
+  }
+  // Keyboard: each argument has about ten stops, so the board starts with links that jump to each side.
+  // They stay out of sight until focused.
+  function skipLinks() {
+    return `&lt;nav class=&quot;sm-skip&quot; aria-label=&quot;Jump to a side&quot;&gt;${doc.options.filter(o=&gt;!isHidden(o.id)||phone()).map(o=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;skip-side&quot; data-id=&quot;${o.id}&quot; data-key=&quot;skip-${o.id}&quot;&gt;Jump to ${escape(o.name)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/nav&gt;`;
+  }
+  function skipToSide(option) {
+    if(phone()&amp;&amp;option!==activeSide()) switchSide(option);
+    const col=board.querySelector(`.sm-column[data-option=&quot;${option}&quot;]`),first=col?.querySelector(&#x27;.sm-column-head [data-action], [data-action]&#x27;);
+    col?.scrollIntoView({block:&#x27;start&#x27;,behavior:reducedMotion()?&#x27;auto&#x27;:&#x27;smooth&#x27;});first?.focus({preventScroll:true});
+    announce(`${optionName(option)}.`);
+  }
+  // Phones show one side at a time. The tabs under the question name each side and its argument count; they stay
+  // pinned to the top of the screen while you scroll the side (see placeSides). Switching keeps your place on each side.
+  // Swiping is left to unfolded rows, which scroll sideways, so a swipe never means two things.
+  const phone = () =&gt; window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
+  function activeSide() {
+    const pick=state.side?.[state.boardId];
+    if(pick&amp;&amp;doc.options.some(o=&gt;o.id===pick)) return pick;
+    return (doc.options.find(o=&gt;!isHidden(o.id))||doc.options[0])?.id;
+  }
+  function sideTabs() {
+    const on=activeSide();
+    return `&lt;div class=&quot;sm-sides&quot; role=&quot;tablist&quot; aria-label=&quot;Sides&quot;&gt;${doc.options.map(o=&gt;{const n=ideas.filter(i=&gt;i.option===o.id&amp;&amp;!i.merged).length;
+      return `&lt;button type=&quot;button&quot; role=&quot;tab&quot; class=&quot;cursor-interaction&quot; data-action=&quot;side&quot; data-id=&quot;${o.id}&quot; data-key=&quot;side-tab-${o.id}&quot; aria-selected=&quot;${o.id===on}&quot; aria-controls=&quot;sm-col-${o.id}&quot;&gt;&lt;span&gt;${escape(o.name)}&lt;/span&gt;&lt;small&gt;${n}&lt;/small&gt;&lt;/button&gt;`;}).join(&#x27;&#x27;)}&lt;/div&gt;`;
+  }
+  // The other side: remember how far down you were on this one, show the other, and return to your place there.
+  function switchSide(option) {
+    if(!doc.options.some(o=&gt;o.id===option)) return;
+    const was=activeSide(),bar=board.querySelector(&#x27;.sm-sides&#x27;),band=visibleBand();
+    const colTop=id=&gt;board.querySelector(`.sm-column[data-option=&quot;${id}&quot;]`)?.getBoundingClientRect().top;
+    const pinned=bar&amp;&amp;bar.classList.contains(&#x27;sm-pinned&#x27;);
+    state.sidePos={...state.sidePos,[colKey(was)]:pinned?Math.max(0,band.top+bar.offsetHeight-colTop(was)):0};
+    delete state.hiddenCols[colKey(option)];
+    state.side={...state.side,[state.boardId]:option};
+    if(state.open&amp;&amp;ideaOf(state.open)?.option!==option){state.open=null;state.composing=false;}
+    if(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea)?.option!==option) state.expanded=null;
+    render(&#x27;side-tab-&#x27;+option);
+    if(pinned){const b2=board.querySelector(&#x27;.sm-sides&#x27;);scrollHost(colTop(option)+(state.sidePos[colKey(option)]||0)-visibleBand().top-b2.offsetHeight);placeSides();}
+    announce(`${optionName(option)}: ${ideas.filter(i=&gt;i.option===option).length} arguments.`);
+  }
+  // Emulates position:sticky: the frame grows to fit the page, so the bar moves itself to the top of what you can see.
+  function placeSides() {
+    const bar=board.querySelector(&#x27;.sm-sides&#x27;);if(!bar) return;
+    if(!bar.offsetParent){bar.style.transform=&#x27;&#x27;;return;}
+    bar.style.transform=&#x27;&#x27;;
+    const band=visibleBand(),r=bar.getBoundingClientRect(),b=board.getBoundingClientRect();
+    const shift=Math.max(0,Math.min(band.top-r.top,b.bottom-r.bottom-8));
+    bar.style.transform=shift?`translateY(${shift}px)`:&#x27;&#x27;;bar.classList.toggle(&#x27;sm-pinned&#x27;,shift&gt;0);
   }
   function boardColumns() {
     if(state.zoom===&#x27;case&#x27;) return doc.options.map(()=&gt;&#x27;minmax(0,1fr)&#x27;).join(&#x27; 32px &#x27;);
@@ -3754,7 +3899,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const mine=source.by===&#x27;you&#x27;,ref=`data-id=&quot;${cardId}&quot; data-source=&quot;${id}&quot;`;
       const actions=[
         mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;edit-source&quot; ${ref} data-key=&quot;edit-source-${key}&quot;&gt;Edit&lt;/button&gt;`:&#x27;&#x27;,
-        mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;Remove from this version&quot;&gt;Remove&lt;/button&gt;`:&#x27;&#x27;,
+        mine?`${(()=&gt;{const n=stats(cardId).n,armed=state.removeArmed===key;return `&lt;button type=&quot;button&quot; class=&quot;sm-link-button ${armed?&#x27;sm-armed&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;${armed?`Remove: ${n} assessments start over`:&#x27;Remove from this version&#x27;}&quot;&gt;${armed?`Remove · ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over`:&#x27;Remove&#x27;}&lt;/button&gt;`;})()}`:&#x27;&#x27;,
         !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report that it can’t be opened&quot;&gt;Can’t open it?&lt;/button&gt;`:&#x27;&#x27;,
         source.reportedBy===&#x27;you&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;`:&#x27;&#x27;
       ].join(&#x27;&#x27;);
@@ -3764,7 +3909,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     }).join(&#x27;&#x27;);
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-add-source cursor-interaction&quot; data-action=&quot;add-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;add-source-${cardId}&quot;&gt;${icon(&#x27;plus&#x27;)}Add a source&lt;/button&gt;`;
-    const changed=card.evidenceChanged?`&lt;p class=&quot;sm-evidence-changed&quot;&gt;${icon(&#x27;info&#x27;)}The evidence changed after some people assessed this wording.&lt;/p&gt;`:&#x27;&#x27;;
+    const changed=card.evidenceChanged?`&lt;p class=&quot;sm-evidence-changed&quot;&gt;${icon(&#x27;info&#x27;)}${card.resetBy===&#x27;edit&#x27;?&#x27;This version was edited&#x27;:&#x27;The evidence changed&#x27;}, so assessments started over.&lt;/p&gt;`:&#x27;&#x27;;
     return `&lt;section class=&quot;sm-card-context&quot; aria-label=&quot;Context&quot;&gt;&lt;h3&gt;Context&lt;/h3&gt;${brief?`&lt;p class=&quot;sm-brief&quot;&gt;${escape(brief)}&lt;/p&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No context yet.&lt;/p&gt;&#x27;}&lt;/section&gt;${`&lt;section class=&quot;sm-evidence-group&quot; aria-label=&quot;Evidence and its assessment&quot;&gt;&lt;h3&gt;Evidence&lt;/h3&gt;${changed}${sourceRows?`&lt;div class=&quot;sm-source-list&quot;&gt;${sourceRows}&lt;/div&gt;`:&#x27;&lt;p class=&quot;sm-meta&quot;&gt;No sources yet.&lt;/p&gt;&#x27;}${addControl}&lt;div class=&quot;sm-evidence-vote&quot;&gt;&lt;h4&gt;Does the evidence back this wording?${aiEvidenceControls(cardId)}&lt;/h4&gt;&lt;div class=&quot;sm-assess-actions&quot; role=&quot;group&quot; aria-label=&quot;Does the evidence back this wording?&quot;&gt;${button(&#x27;assess&#x27;,icon(&#x27;check&#x27;)+&#x27; Yes&#x27;,`data-value=&quot;yes&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-yes&quot; aria-label=&quot;Supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;yes&#x27;}&quot; ${!card.sources.some(id=&gt;!sources[id].unavailable)?&#x27;disabled&#x27;:&#x27;&#x27;}`)}${button(&#x27;assess&#x27;,icon(&#x27;x&#x27;)+&#x27; No&#x27;,`data-value=&quot;no&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-no&quot; aria-label=&quot;Not supported as worded&quot; aria-pressed=&quot;${assessment===&#x27;no&#x27;}&quot;`)}${assessment?`&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;assess&quot; data-value=&quot;skip&quot; data-id=&quot;${cardId}&quot; data-key=&quot;assess-skip&quot; aria-label=&quot;Withdraw assessment&quot;&gt;Undo&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;/section&gt;`}`;
   }
 
@@ -3801,7 +3946,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(!owner) return `&lt;section class=&quot;sm-decision&quot; aria-label=&quot;Decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;&lt;p class=&quot;sm-decision-why&quot;&gt;Not recorded yet.&lt;/p&gt;&lt;/section&gt;`;
     const d=state.decisionDraft||{option:&#x27;&#x27;,why:&#x27;&#x27;,cards:[]};
-    const leads=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(i=&gt;!cards[ordered(i)[0]].hidden).slice(0,3).map(i=&gt;ordered(i)[0]));
+    const leads=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(i=&gt;!i.merged&amp;&amp;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone).slice(0,3).map(i=&gt;ordered(i)[0]));
     return `&lt;section class=&quot;sm-decision sm-decision-form&quot; aria-label=&quot;Record the decision&quot;&gt;&lt;h2&gt;${icon(&#x27;gavel&#x27;)}Decision&lt;/h2&gt;`
       +`&lt;div class=&quot;sm-decision-options&quot; role=&quot;radiogroup&quot; aria-label=&quot;Chosen option&quot;&gt;${doc.options.map(o=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-decision-option cursor-interaction&quot; data-action=&quot;decision-option&quot; data-id=&quot;${o.id}&quot; data-key=&quot;decision-option-${o.id}&quot; aria-checked=&quot;${d.option===o.id}&quot;&gt;${escape(o.name)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
       +`&lt;textarea id=&quot;sm-decision-why&quot; data-key=&quot;decision-why&quot; rows=&quot;2&quot; maxlength=&quot;400&quot; placeholder=&quot;Why&quot; aria-label=&quot;Why this option&quot;&gt;${escape(d.why)}&lt;/textarea&gt;`
@@ -3918,12 +4063,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       :picking?Object.entries(REASONS).map(([k,l])=&gt;linkButton(picking===&#x27;report&#x27;?&#x27;comment-report&#x27;:&#x27;comment-hide&#x27;,c.id,l,`data-value=&quot;${k}&quot;`)).join(&#x27;&#x27;)+linkButton(&#x27;comment-pick-cancel&#x27;,c.id,&#x27;Cancel&#x27;):[
       !isReply&amp;&amp;!c.resolved?linkButton(&#x27;reply&#x27;,c.id,&#x27;Reply&#x27;):&#x27;&#x27;,
       !isReply?linkButton(&#x27;resolve&#x27;,c.id,c.resolved?&#x27;Reopen&#x27;:&#x27;Resolve&#x27;):&#x27;&#x27;,
+      linkButton(&#x27;copy-link&#x27;,&#x27;c:&#x27;+c.id,&#x27;Link&#x27;),
       c.by===&#x27;you&#x27;?linkButton(&#x27;delete-comment&#x27;,c.id,&#x27;Delete&#x27;):&#x27;&#x27;,
       others&amp;&amp;can(&#x27;view&#x27;)?(c.reports?.some(r=&gt;r.by===&#x27;you&#x27;)?linkButton(&#x27;comment-report-withdraw&#x27;,c.id,&#x27;Reported · Undo&#x27;):linkButton(&#x27;comment-report-open&#x27;,c.id,&#x27;Report&#x27;)):&#x27;&#x27;,
       others&amp;&amp;can(&#x27;edit&#x27;)?linkButton(&#x27;comment-hide-open&#x27;,c.id,&#x27;Hide&#x27;):&#x27;&#x27;
     ].join(&#x27;&#x27;);
     const flags=can(&#x27;edit&#x27;)&amp;&amp;c.reports?.length&amp;&amp;!c.hidden?`&lt;span class=&quot;sm-comment-flag&quot; data-tooltip=&quot;${escape(reasonsOf(c.reports))}&quot;&gt;${icon(&#x27;flag&#x27;)}${c.reports.length}&lt;/span&gt;`:&#x27;&#x27;;
-    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${c.deleted?escape(who):userLink(c.by,escape(who))}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
+    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; data-comment=&quot;${c.id}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${c.deleted?escape(who):userLink(c.by,escape(who))}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -3991,16 +4137,25 @@ html&gt;body{padding:0}&lt;/style&gt;
     [&#x27;limit&#x27;,&#x27;Limits&#x27;,&#x27;What it does not show&#x27;,false,300]
   ];
   // Changing the evidence after people assessed the wording is flagged, so earlier assessments are read in context.
-  function markEvidenceChanged(cardId) { if(stats(cardId).n) cards[cardId].evidenceChanged=true; }
+  // Changing a version&#x27;s sources starts its credibility assessments over: old judgments were about other evidence.
+  // The person making the change is warned first (the source form, or a second click on Remove).
+  const citing = sourceId =&gt; Object.keys(cards).filter(k=&gt;cards[k].sources.includes(sourceId));
+  const assessedOn = ids =&gt; ids.reduce((n,k)=&gt;n+stats(k).n,0);
+  // Editing the wording or context does the same (importance and articulation votes stay).
+  function markEvidenceChanged(cardId,why=&#x27;evidence&#x27;) {
+    if(!stats(cardId).n) return;
+    const c=cards[cardId];c.yes=0;c.no=0;delete state.assessments[cardId];c.evidenceChanged=new Date().toISOString();c.resetBy=why;
+  }
   function saveSource() {
     const {card:cardId,source:sourceId}=state.sourceForm,draft=state.sourceDraft;
     const clean=Object.fromEntries(SOURCE_FIELDS.map(([f,,,,max])=&gt;[f,String(draft[f]||&#x27;&#x27;).replace(/\s+/g,&#x27; &#x27;).trim().slice(0,max)]));
     const missing=SOURCE_FIELDS.filter(([f,,,req])=&gt;req&amp;&amp;!clean[f]).map(([f])=&gt;f);
     if(missing.length) return {missing};
     let id=sourceId;
+    const affected=id?citing(id):[cardId];
     if(id) Object.assign(sources[id],clean);
     else {id=&#x27;s&#x27;+(doc.nextId++);sources[id]={...clean,by:&#x27;you&#x27;,at:new Date().toISOString()};cards[cardId].sources.push(id);}
-    markEvidenceChanged(cardId);
+    affected.forEach(markEvidenceChanged);
     state.openSources[cardId+&#x27;/&#x27;+id]=true;
     state.sourceForm=null;state.sourceDraft={};
     return {id,added:!sourceId};
@@ -4020,7 +4175,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const control=tag===&#x27;input&#x27;?`&lt;input id=&quot;${id}&quot; type=&quot;text&quot; data-field=&quot;${f}&quot; data-key=&quot;src-${f}&quot; maxlength=&quot;${max}&quot; placeholder=&quot;${hint}&quot; value=&quot;${escape(d[f]||&#x27;&#x27;)}&quot;&gt;`:`&lt;textarea id=&quot;${id}&quot; data-field=&quot;${f}&quot; data-key=&quot;src-${f}&quot; maxlength=&quot;${max}&quot; rows=&quot;2&quot; placeholder=&quot;${hint}&quot;&gt;${escape(d[f]||&#x27;&#x27;)}&lt;/textarea&gt;`;
       return `&lt;div class=&quot;sm-source-field&quot;&gt;&lt;label for=&quot;${id}&quot;&gt;${label}${req?&#x27;&#x27;:&#x27; &lt;span&gt;(optional)&lt;/span&gt;&#x27;}&lt;/label&gt;${control}&lt;/div&gt;`;
     }).join(&#x27;&#x27;);
-    return `&lt;form class=&quot;sm-source-form&quot; id=&quot;sm-source-form&quot; aria-label=&quot;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&quot;&gt;&lt;h4&gt;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&lt;/h4&gt;${fields}${more?&#x27;&#x27;:`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-source-more cursor-interaction&quot; data-action=&quot;source-more&quot; data-id=&quot;${cardId}&quot; data-key=&quot;source-more&quot;&gt;${icon(&#x27;plus&#x27;)}Backs up &amp;amp; limits&lt;/button&gt;`}&lt;div class=&quot;sm-source-form-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;cancel-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;cancel-source&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;save-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;save-source&quot;&gt;${editing?&#x27;Save source&#x27;:&#x27;Add source&#x27;}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
+    return `&lt;form class=&quot;sm-source-form&quot; id=&quot;sm-source-form&quot; aria-label=&quot;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&quot;&gt;&lt;h4&gt;${editing?&#x27;Edit source&#x27;:&#x27;Add a source&#x27;}&lt;/h4&gt;${fields}${more?&#x27;&#x27;:`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-source-more cursor-interaction&quot; data-action=&quot;source-more&quot; data-id=&quot;${cardId}&quot; data-key=&quot;source-more&quot;&gt;${icon(&#x27;plus&#x27;)}Backs up &amp;amp; limits&lt;/button&gt;`}${(()=&gt;{const n=assessedOn(editing?citing(editing):[cardId]);return n?`&lt;p class=&quot;sm-source-warn&quot; role=&quot;note&quot;&gt;${icon(&#x27;triangle-alert&#x27;)}${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over when you save.&lt;/p&gt;`:&#x27;&#x27;;})()}&lt;div class=&quot;sm-source-form-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;cancel-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;cancel-source&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;save-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;save-source&quot;&gt;${editing?&#x27;Save source&#x27;:&#x27;Add source&#x27;}&lt;/button&gt;&lt;/div&gt;&lt;/form&gt;`;
   }
   // Move a version into another row of the same option (same idea), or split it into a new row (different idea).
   // Its articulation votes and comments travel with it. A row left empty is removed.
@@ -4112,7 +4267,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   const links=root.querySelector(&#x27;.sm-links&#x27;);
   const reducedMotion=()=&gt;window.matchMedia(&#x27;(prefers-reduced-motion:reduce)&#x27;).matches;
   let busy=false;
-  function play(el,frames,options={}) { return el.animate(frames,{duration:motion(&#x27;medium&#x27;),easing:EASE,...options}).finished.catch(()=&gt;{}); }
+  // Reduced motion: no movement anywhere, even from callers that don&#x27;t check.
+  function play(el,frames,options={}) { if(reducedMotion()) return Promise.resolve(); return el.animate(frames,{duration:motion(&#x27;medium&#x27;),easing:EASE,...options}).finished.catch(()=&gt;{}); }
   // Exit motion runs before the board re-renders, so folding and collapsing read as physical.
   function foldOut(ideaId) {
     const node=board.querySelector(`[data-node=&quot;${ideaId}&quot;]`), first=node?.querySelector(&#x27;.sm-version-face&#x27;);
@@ -4196,7 +4352,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const line=(x1,y1,x2,y2)=&gt;`M${x1} ${y1}L${x2} ${y2}`;
     const path=d=&gt;`&lt;path d=&quot;${d}&quot;/&gt;`;
     const port=(x,y)=&gt;`&lt;circle cx=&quot;${x}&quot; cy=&quot;${y}&quot; r=&quot;3&quot;/&gt;`;
-    const columns=[...board.querySelectorAll(&#x27;.sm-column,.sm-col-hidden&#x27;)];
+    const columns=[...board.querySelectorAll(&#x27;.sm-column,.sm-col-hidden&#x27;)].filter(c=&gt;c.offsetParent!==null);
     const narrow=window.matchMedia(&#x27;(max-width:640px)&#x27;).matches;
     let markup=port(qx,qy);
     columns.forEach((column,index)=&gt;{
@@ -4394,11 +4550,20 @@ html&gt;body{padding:0}&lt;/style&gt;
         +(usage.length?`&lt;div class=&quot;sm-rgroup sm-usage&quot;&gt;&lt;h3&gt;Recent usage&lt;/h3&gt;${usage.map((u,i)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-rrow sm-rrow-button cursor-interaction&quot; data-action=&quot;profile-board&quot; data-id=&quot;${u.board}&quot; data-key=&quot;usage-${i}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;span&gt;${u.kind===&#x27;draft&#x27;?&#x27;Draft arguments&#x27;:u.n===1?&#x27;Evidence check&#x27;:`Evidence checks · ${u.n}`}&lt;/span&gt;&lt;small&gt;${escape(docs[u.board].question.text)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;&lt;b&gt;−${u.n}&lt;/b&gt;&lt;time datetime=&quot;${u.at}&quot; title=&quot;${fullDate(u.at)}&quot;&gt;${ago(u.at)}&lt;/time&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;)
         +`&lt;/section&gt;`;
       const row=(label,value)=&gt;`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}&lt;/span&gt;${value}&lt;/div&gt;`;
-      const pw=state.pwOpen?`&lt;div class=&quot;sm-pw-form&quot; role=&quot;group&quot; aria-label=&quot;Change password&quot;&gt;&lt;label&gt;Current password&lt;input id=&quot;sm-pw-current&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; data-key=&quot;pw-current&quot;&gt;&lt;/label&gt;&lt;label&gt;New password&lt;input id=&quot;sm-pw-new&quot; type=&quot;password&quot; autocomplete=&quot;new-password&quot; data-key=&quot;pw-new&quot;&gt;&lt;/label&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: nothing is saved or sent.&lt;/p&gt;&lt;div&gt;${button(&#x27;profile-pw-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;pw-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;profile-pw-save&quot; data-key=&quot;pw-save&quot;&gt;Change password&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+      // Email changes take effect once the new address confirms them; sign-in is Google and/or an email link (no password).
+      const ae=state.acct||{};
+      const emailEdit=ae.editing?`&lt;div class=&quot;sm-pw-form&quot; role=&quot;group&quot; aria-label=&quot;Change email&quot;&gt;&lt;label&gt;New email&lt;input id=&quot;sm-email-new&quot; type=&quot;email&quot; autocomplete=&quot;email&quot; data-key=&quot;email-new&quot; value=&quot;${escape(ae.draft||&#x27;&#x27;)}&quot; ${ae.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-email-error&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;${ae.error?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-email-error&quot;&gt;${escape(ae.error)}&lt;/p&gt;`:&#x27;&#x27;}&lt;div&gt;${button(&#x27;profile-email-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;email-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;profile-email-save&quot; data-key=&quot;email-save&quot;&gt;Send link&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+      const pending=ae.pending?`&lt;div class=&quot;sm-rrow sm-pending&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;Confirming&lt;small&gt;${escape(ae.pending)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-email-resend&#x27;,ae.resent?&#x27;Sent again&#x27;:&#x27;Resend&#x27;,&#x27;data-key=&quot;email-resend&quot;&#x27;)}${button(&#x27;profile-email-drop&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;email-drop&quot;&#x27;)}&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sm-auth-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;profile-email-open&quot; data-key=&quot;email-open&quot;&gt;Open the link&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;;
       const account=`&lt;section class=&quot;sm-rail-card sm-account&quot; aria-labelledby=&quot;sm-account-title&quot;&gt;&lt;h2 id=&quot;sm-account-title&quot;&gt;Account&lt;/h2&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`
-        +row(&#x27;Username&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(ME)}&lt;/span&gt;`)+row(&#x27;Email&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(MY_EMAIL)}&lt;/span&gt;`)
-        +row(&#x27;Password&#x27;,state.pwOpen?&#x27;&#x27;:`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value sm-mask&quot; aria-label=&quot;Hidden&quot;&gt;••••••••&lt;/span&gt;${button(&#x27;profile-pw&#x27;,&#x27;Change&#x27;,&#x27;data-key=&quot;pw-open&quot;&#x27;)}&lt;/span&gt;`)+pw+row(&#x27;Tour&lt;small&gt;The three votes, on a board&lt;/small&gt;&#x27;,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;tour-start&#x27;,&#x27;Take it&#x27;,&#x27;data-key=&quot;tour-start&quot;&#x27;)}&lt;/span&gt;`)+`&lt;/div&gt;`
-        +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-signout cursor-interaction&quot; data-action=&quot;sign-out&quot; data-key=&quot;sign-out&quot;&gt;${icon(&#x27;log-out&#x27;)}Sign out&lt;/button&gt;&lt;/section&gt;`;
+        +row(&#x27;Username&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(ME)}&lt;/span&gt;`)
+        +row(&#x27;Email&#x27;,ae.editing?&#x27;&#x27;:`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(state.myEmail)}&lt;/span&gt;${ae.pending?&#x27;&#x27;:button(&#x27;profile-email&#x27;,&#x27;Change&#x27;,&#x27;data-key=&quot;email-open-edit&quot;&#x27;)}&lt;/span&gt;`)+emailEdit+pending+`&lt;/div&gt;`
+        +`&lt;div class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;Sign in with&lt;/h3&gt;`
+        +row(`Google&lt;small&gt;${state.google?escape(state.myEmail):&#x27;Not connected&#x27;}&lt;/small&gt;`,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-google&#x27;,state.google?&#x27;Disconnect&#x27;:&#x27;Connect&#x27;,&#x27;data-key=&quot;google&quot;&#x27;)}&lt;/span&gt;`)
+        +row(&#x27;Email link&lt;small&gt;Always on&lt;/small&gt;&#x27;,&#x27;&#x27;)
+        +`&lt;/div&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`+row(&#x27;Tour&lt;small&gt;The three votes, on a board&lt;/small&gt;&#x27;,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;tour-start&#x27;,&#x27;Take it&#x27;,&#x27;data-key=&quot;tour-start&quot;&#x27;)}&lt;/span&gt;`)+`&lt;/div&gt;`
+        +privacyGroup()
+        +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-signout cursor-interaction&quot; data-action=&quot;sign-out&quot; data-key=&quot;sign-out&quot;&gt;${icon(&#x27;log-out&#x27;)}Sign out&lt;/button&gt;`
+        +(state.acct?.deleting?deleteForm():`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-delete-link cursor-interaction&quot; data-action=&quot;profile-delete&quot; data-key=&quot;delete-open&quot;&gt;Delete account&lt;/button&gt;`)+`&lt;/section&gt;`;
       side=`&lt;aside class=&quot;sm-profile-side&quot; aria-label=&quot;Your credits and account&quot;&gt;${credits}${account}&lt;/aside&gt;`;
     }
     return `&lt;main class=&quot;sm-profile&quot; id=&quot;sm-profile&quot; ${self?&#x27;data-self&#x27;:&#x27;&#x27;} aria-label=&quot;${self?&#x27;Your profile&#x27;:&#x27;Profile: &#x27;+escape(user)}&quot;&gt;${back}${head}&lt;div class=&quot;sm-profile-main&quot;&gt;${earn}${contrib}&lt;/div&gt;${side}&lt;/main&gt;`;
@@ -4407,6 +4572,72 @@ html&gt;body{padding:0}&lt;/style&gt;
   // A shared link (#s=&lt;board&gt;&amp;by=&lt;who&gt;&amp;as=&lt;role&gt;) opens the landing; Share&#x27;s Preview opens it too.
   const ROLE_GLYPH = {view:&#x27;eye&#x27;,vote:&#x27;arrow-up-down&#x27;,contribute:&#x27;pencil&#x27;,edit:&#x27;user-check&#x27;,owner:&#x27;crown&#x27;};
   const hostWindow = () =&gt; { try { return window.parent!==window&amp;&amp;window.parent.location.href?window.parent:window; } catch { return window; } };
+  // ── Links. Every board, version, and comment has an address. In the prototype it sits after # in the page&#x27;s own
+  // address: b=board, v=version, c=comment. The address follows what you have open, so Back, reload, and copying the
+  // address all work. Version ids survive combining and separating, so a version&#x27;s link keeps working.
+  const linkParams = () =&gt; { try { return new URLSearchParams(hostWindow().location.hash.slice(1)); } catch { return new URLSearchParams(); } };
+  const pageBase = () =&gt; { try { return hostWindow().location.href.split(&#x27;#&#x27;)[0]; } catch { return &#x27;https://steelman.example/&#x27;; } };
+  const hashFor = parts =&gt; { const p=new URLSearchParams();for(const [k,v] of Object.entries(parts)) if(v) p.set(k,v);const h=p.toString();return h?&#x27;#&#x27;+h:&#x27;&#x27;; };
+  function currentLink() {
+    if(state.view!==&#x27;board&#x27;||state.invite||state.deletedNotice||state.notFound) return {};
+    return {b:state.boardId,v:state.expanded&amp;&amp;cards[state.expanded]?state.expanded:&#x27;&#x27;,c:state.drawer===&#x27;comments&#x27;&amp;&amp;state.linkComment&amp;&amp;state.commentTarget===state.linkComment.target?state.linkComment.id:&#x27;&#x27;};
+  }
+  let followingAddress=false,addressSynced=false;
+  // Opening another board (or leaving one) adds a step to the browser&#x27;s history; opening a card replaces the current step.
+  function syncAddress() {
+    if(followingAddress||state.invite) return;
+    try {
+      const w=hostWindow(),next=currentLink(),url=pageBase()+hashFor(next);
+      if(url===w.location.href){addressSynced=true;return;}
+      const was=linkParams().get(&#x27;b&#x27;)||&#x27;&#x27;;
+      w.history[addressSynced&amp;&amp;(next.b||&#x27;&#x27;)!==was?&#x27;pushState&#x27;:&#x27;replaceState&#x27;](null,&#x27;&#x27;,url);
+      addressSynced=true;
+    } catch {}
+  }
+  function copyLink(url,focusKey) {
+    const ok=()=&gt;announce(&#x27;Link copied.&#x27;),no=()=&gt;announce(`Copying isn’t allowed here. The link is ${url}`);
+    if(navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok,no); else no();
+    root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
+  }
+  // Bring a version into view whatever hides it: a hidden column, the column&#x27;s fold, its row&#x27;s stack, or the row&#x27;s fold.
+  function prepareReveal(cardId) {
+    const idea=ideaOf(cards[cardId].idea);
+    delete state.hiddenCols[colKey(idea.option)];
+    const rows=rowsOf(idea.option),at=rows.indexOf(idea);
+    if(at&gt;=shownRows(idea.option,rows)) state.shownRows[colKey(idea.option)]=at+1;
+    const vs=ordered(idea),k=vs.indexOf(cardId);
+    if(k&gt;0){state.open=idea.id;lastToggled=idea.id;if(k&gt;=(state.shownVersions[idea.id]||VERSION_LIMIT))state.shownVersions[idea.id]=k+1;}
+    state.expanded=cardId;
+  }
+  // Opening a link. Signed out on a board that isn&#x27;t open to anyone with the link: sign in first (without showing the
+  // question), then land where the link points. A missing board, version, or comment says so.
+  function openLink(p) {
+    const b=p.get(&#x27;b&#x27;),v=p.get(&#x27;v&#x27;),c=p.get(&#x27;c&#x27;);
+    state.inbox=false;state.profile=null;state.profileFrom=null;state.spaceEdit=null;state.deletedNotice=false;state.notFound=false;
+    if(!docs[b]) {if(state.view===&#x27;board&#x27;)leaveBoard();state.view=&#x27;home&#x27;;state.notFound=true;renderView(&#x27;not-found-back&#x27;);announce(&#x27;That steelman doesn’t exist.&#x27;);return;}
+    if(state.persona===&#x27;out&#x27;&amp;&amp;docs[b].question.visibility!==&#x27;link&#x27;) {openSignIn({board:b,hide:true,then:{b,v,c}});return;}
+    leaveBoard();state.view=&#x27;board&#x27;;state.boardId=b;useDoc(docs[b]);
+    let note=&#x27;&#x27;,target=null;
+    if(v) { if(cards[v]) {prepareReveal(v);target=`.sm-card[data-card=&quot;${v}&quot;]`;} else note=&#x27;That version was deleted.&#x27;; }
+    if(c) {
+      const cm=doc.comments.find(x=&gt;x.id===c),top=cm&amp;&amp;(cm.parent?doc.comments.find(x=&gt;x.id===cm.parent):cm);
+      if(!cm||cm.deleted||!top) note=note||&#x27;That comment was deleted.&#x27;;
+      else {
+        if(top.target.startsWith(&#x27;card:&#x27;)&amp;&amp;cards[top.target.slice(5)]) {const id=top.target.slice(5);prepareReveal(id);state.expanded=v||null;target=target||`.sm-card[data-card=&quot;${id}&quot;]`;}
+        Object.assign(state,{drawer:&#x27;comments&#x27;,commentTarget:top.target,replyTo:null,showResolved:!!top.resolved,linkComment:{id:c,target:top.target}});
+      }
+    }
+    state.linkNote=note;
+    followingAddress=true;renderView(note?&#x27;link-note-close&#x27;:&#x27;zoom-read&#x27;);followingAddress=false;syncAddress();
+    root.scrollIntoView({block:&#x27;start&#x27;});
+    const ring=el=&gt;{if(!el)return;el.scrollIntoView({block:&#x27;center&#x27;});el.classList.remove(&#x27;sm-arrived&#x27;);void el.offsetWidth;el.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-arrived&#x27;),1400);};
+    ring(target&amp;&amp;board.querySelector(target));
+    if(c) ring(root.querySelector(`.sm-drawer [data-comment=&quot;${c}&quot;]`));
+    announce(note?`${note} Opened “${doc.question.text}”.`:`Opened “${doc.question.text}”.`);
+  }
+  function notFoundMarkup() {
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${spaceOf(&#x27;none&#x27;).canvas}&quot; aria-label=&quot;Not found&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;&lt;section class=&quot;sm-rail-card sm-landing-auth&quot;&gt;&lt;h2 class=&quot;sm-auth-title&quot;&gt;This steelman doesn’t exist&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;It may have been deleted, or the link is incomplete.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;not-found-back&quot; data-key=&quot;not-found-back&quot;&gt;Go to your steelmen&lt;/button&gt;&lt;/section&gt;&lt;/div&gt;&lt;/main&gt;`;
+  }
   function inviteUrl() {
     let base=&#x27;https://steelman.example/&#x27;;try{base=hostWindow().location.href.split(&#x27;#&#x27;)[0];}catch{}
     const q=doc.question;return `${base}#s=${encodeURIComponent(state.boardId)}&amp;by=${encodeURIComponent(ME)}&amp;as=${q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole}`;
@@ -4416,42 +4647,117 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view===&#x27;board&#x27;) leaveBoard();
     const d=docs[boardId];
     Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,persona:&#x27;out&#x27;,
-      invite:{board:boardId,by:by||d.question.author,role:[&#x27;view&#x27;,&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;].includes(role)?role:d.question.accessRole||&#x27;contribute&#x27;,tab:&#x27;up&#x27;,error:&#x27;&#x27;,preview}});
-    renderView(&#x27;auth-0&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
+      invite:{board:boardId,by:by||d.question.author,role:[&#x27;view&#x27;,&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;].includes(role)?role:d.question.accessRole||&#x27;contribute&#x27;,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;,preview}});
+    renderView(&#x27;auth-google&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
   }
   function readInviteLink() {
     try { const h=new URLSearchParams(hostWindow().location.hash.slice(1)); return h.get(&#x27;s&#x27;)?openInvite(h.get(&#x27;s&#x27;),h.get(&#x27;by&#x27;),h.get(&#x27;as&#x27;)):false; } catch { return false; }
   }
   function clearInviteLink() { try { const w=hostWindow(); if(w.location.hash) w.history.replaceState(null,&#x27;&#x27;,w.location.href.split(&#x27;#&#x27;)[0]); } catch {} }
+  // ── Privacy. Usage analytics are real: the page around the prototype runs them (docs/analytics.js), and this switch
+  // changes the same setting as its first-visit notice. Downloading your data is real too (your contributions in this
+  // browser, as JSON). Deleting the account is simulated.
+  const analytics = () =&gt; { try { return hostWindow().steelmanAnalytics||null; } catch { return null; } };
+  function openPrivacy() { try { const w=hostWindow();w.open(new URL(&#x27;../privacy.html&#x27;,w.location.href).href,&#x27;_blank&#x27;,&#x27;noopener&#x27;); } catch {} }
+  function privacyGroup() {
+    const a=analytics(),on=a?.enabled();
+    const value=!a?&#x27;&lt;span class=&quot;sm-rrow-value&quot;&gt;Not running here&lt;/span&gt;&#x27;:a.signal?&#x27;&lt;span class=&quot;sm-rrow-value&quot;&gt;Off · browser signal&lt;/span&gt;&#x27;
+      :`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${on?&#x27;On&#x27;:&#x27;Off&#x27;}&lt;/span&gt;${button(&#x27;profile-analytics&#x27;,on?&#x27;Turn off&#x27;:&#x27;Turn on&#x27;,&#x27;data-key=&quot;analytics&quot;&#x27;)}&lt;/span&gt;`;
+    return `&lt;div class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;Privacy&lt;/h3&gt;`
+      +`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;Usage analytics&lt;small&gt;Clicks and screen replays; typed text is hidden&lt;/small&gt;&lt;/span&gt;${value}&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;Your data&lt;small&gt;What you wrote, voted, and assessed&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-download&#x27;,&#x27;Download&#x27;,&#x27;data-key=&quot;download&quot;&#x27;)}&lt;/span&gt;&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;Privacy notice&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;profile-privacy&#x27;,&#x27;Read&#x27;,&#x27;data-key=&quot;privacy&quot;&#x27;)}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;`;
+  }
+  const DELETED = &#x27;deleted_account&#x27;;
+  function deleteForm() {
+    const e=state.acct.deleteError;
+    return `&lt;div class=&quot;sm-pw-form sm-delete-form&quot; role=&quot;group&quot; aria-labelledby=&quot;sm-delete-title&quot;&gt;&lt;h3 id=&quot;sm-delete-title&quot;&gt;Delete your account?&lt;/h3&gt;`
+      +`&lt;p&gt;Your email, votes, assessments, and comments are removed. Arguments, wordings, and sources you wrote stay on their boards, credited to &lt;b&gt;${DELETED}&lt;/b&gt;.&lt;/p&gt;`
+      +`&lt;label&gt;Type ${escape(ME)} to confirm&lt;input id=&quot;sm-delete-name&quot; type=&quot;text&quot; autocomplete=&quot;off&quot; spellcheck=&quot;false&quot; data-key=&quot;delete-name&quot; ${e?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-delete-error&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;${e?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-delete-error&quot;&gt;${escape(e)}&lt;/p&gt;`:&#x27;&#x27;}`
+      +`&lt;div&gt;${button(&#x27;profile-delete-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;delete-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-danger cursor-interaction&quot; data-action=&quot;profile-delete-confirm&quot; data-key=&quot;delete-confirm&quot;&gt;Delete account&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
+  }
+  function downloadData() {
+    const mine=Object.values(docs).map(d=&gt;({board:d.question.text,
+      wrote:Object.values(d.cards).filter(c=&gt;c.by===&#x27;you&#x27;).map(c=&gt;({wording:c.claim,context:c.explanation||&#x27;&#x27;,option:d.options.find(o=&gt;o.id===d.ideas.find(i=&gt;i.id===c.idea)?.option)?.name||&#x27;&#x27;,at:c.at})),
+      comments:(d.comments||[]).filter(c=&gt;c.by===&#x27;you&#x27;&amp;&amp;!c.deleted).map(c=&gt;({text:c.text,at:c.at}))})).filter(b=&gt;b.wrote.length||b.comments.length);
+    const data={exported:new Date().toISOString(),account:{username:ME,email:state.myEmail,signIn:[...(state.google?[&#x27;Google&#x27;]:[]),&#x27;Email link&#x27;]},
+      votes:{importance:state.importance,articulation:state.preference,evidence:state.assessments},boards:mine};
+    try {
+      const w=hostWindow(),a=w.document.createElement(&#x27;a&#x27;);
+      a.href=w.URL.createObjectURL(new w.Blob([JSON.stringify(data,null,2)],{type:&#x27;application/json&#x27;}));a.download=&#x27;steelman-data.json&#x27;;
+      w.document.body.appendChild(a);a.click();a.remove();setTimeout(()=&gt;w.URL.revokeObjectURL(a.href),2000);
+      return true;
+    } catch { return false; }
+  }
+  function deletedMarkup() {
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${spaceOf(&#x27;none&#x27;).canvas}&quot; aria-label=&quot;Account deleted&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;&lt;section class=&quot;sm-rail-card sm-landing-auth&quot;&gt;&lt;h2 class=&quot;sm-auth-title&quot;&gt;Your account is deleted&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;Your email, votes, assessments, and comments are gone. What you wrote stays on its boards, credited to ${DELETED}.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;deleted-done&quot; data-key=&quot;deleted-done&quot;&gt;Back to Steelman&lt;/button&gt;&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Simulated: nothing was deleted.&lt;/p&gt;&lt;/section&gt;&lt;/div&gt;&lt;/main&gt;`;
+  }
+  // Sign in: Continue with Google, or a one-time link by email. Either way the email is confirmed, so there is no
+  // unconfirmed account. A first sign-in picks a username. The same panel serves an invite link and the top bar&#x27;s Sign in.
+  const knownEmail = e =&gt; [state.myEmail,ME].includes(String(e).trim().toLowerCase());
+  const takenNames = () =&gt; new Set([ME,...Object.values(PEOPLE).flat()]);
+  function authCard(v) {
+    const err=v.error?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-auth-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;;
+    const field=(id,label,type,auto,value,extra=&#x27;&#x27;)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${id}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${id}&quot; value=&quot;${escape(value||&#x27;&#x27;)}&quot; ${v.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-auth-error&quot;&#x27;:&#x27;&#x27;} ${extra}&gt;&lt;/label&gt;`;
+    const sim=(...b)=&gt;`&lt;div class=&quot;sm-auth-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;${b.join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const link=(action,label,key)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;${action}&quot; data-key=&quot;${key}&quot;&gt;${label}&lt;/button&gt;`;
+    let body=&#x27;&#x27;;
+    if(v.step===&#x27;sent&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Check your email&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;We sent a sign-in link to &lt;strong&gt;${escape(v.email)}&lt;/strong&gt;. It works once, for 15 minutes.&lt;/p&gt;`
+      +sim(link(&#x27;auth-open&#x27;,&#x27;Open the link&#x27;,&#x27;auth-open&#x27;),link(&#x27;auth-expired&#x27;,&#x27;Open it too late&#x27;,&#x27;auth-expired&#x27;))
+      +`&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-resend&#x27;,v.resent?&#x27;Sent again&#x27;:&#x27;Resend&#x27;,&#x27;auth-resend&#x27;)}${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
+    else if(v.step===&#x27;expired&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;That link has expired&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;Links work once, for 15 minutes.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-again&quot; data-key=&quot;auth-again&quot;&gt;Email me a new link&lt;/button&gt;&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
+    else if(v.step===&#x27;name&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Choose a username&lt;/h2&gt;${field(&#x27;name&#x27;,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;,v.name,&#x27;maxlength=&quot;20&quot; spellcheck=&quot;false&quot;&#x27;)}${err}&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Shown on everything you write.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-name&quot; data-key=&quot;auth-name-go&quot; data-primary&gt;Continue&lt;/button&gt;`;
+    else body=`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-google cursor-interaction&quot; data-action=&quot;auth-google&quot; data-key=&quot;auth-google&quot;&gt;&lt;span class=&quot;sm-g&quot; aria-hidden=&quot;true&quot;&gt;G&lt;/span&gt;Continue with Google&lt;/button&gt;&lt;p class=&quot;sm-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/p&gt;${field(&#x27;email&#x27;,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;,v.email)}${err}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-send&quot; data-key=&quot;auth-send&quot; data-primary&gt;Email me a link&lt;/button&gt;&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Simulated: you continue as ${escape(ME)}. &lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;auth-privacy&quot; data-key=&quot;auth-privacy&quot;&gt;Privacy&lt;/button&gt;&lt;/p&gt;`;
+    return `&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;Sign in&quot;&gt;${body}&lt;/section&gt;`;
+  }
   function landingMarkup() {
-    const v=state.invite,d=docs[v.board],q=d.question,s=spaceOf(q.org),f=FEED[v.board]||{people:1};
-    const options=d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;);
-    const up=v.tab===&#x27;up&#x27;,field=(i,label,type,auto)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${i}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${i}&quot; ${v.error&amp;&amp;!v.filled?.[i]?&#x27;aria-invalid=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;`;
-    const fields=up?field(0,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;)+field(2,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;new-password&#x27;):field(0,&#x27;Username or email&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;current-password&#x27;);
-    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;Invitation&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;`
-      +`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`
-      +`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`
-      +`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`
-      +`&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;${up?&#x27;Sign up&#x27;:&#x27;Sign in&#x27;}&quot;&gt;&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Account&quot;&gt;${[[&#x27;up&#x27;,&#x27;Sign up&#x27;],[&#x27;in&#x27;,&#x27;Sign in&#x27;]].map(([k,l])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;invite-tab&quot; data-id=&quot;${k}&quot; data-key=&quot;invite-tab-${k}&quot; aria-pressed=&quot;${v.tab===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
-      +fields+(v.error?`&lt;p class=&quot;sm-field-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;)
-      +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;invite-auth&quot; data-key=&quot;invite-auth&quot;&gt;${up?&#x27;Create account&#x27;:&#x27;Sign in&#x27;}&lt;/button&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: you continue as ${escape(ME)}.&lt;/p&gt;&lt;/section&gt;`
-      +`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;Look around first&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;`;
+    const v=state.invite,d=!v.hide&amp;&amp;v.board&amp;&amp;docs[v.board],q=d?.question,s=spaceOf(q?.org||&#x27;none&#x27;),f=FEED[v.board]||{people:1};
+    const options=d?d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;):&#x27;&#x27;;
+    const head=v.plain?`&lt;h1 class=&quot;sm-auth-head&quot;&gt;${v.hide?&#x27;Sign in to open this steelman&#x27;:&#x27;Sign in to take part&#x27;}&lt;/h1&gt;`:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
+    const board=d?`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}${v.plain?`&lt;p class=&quot;sm-landing-qt&quot;&gt;${escape(q.text)}&lt;/p&gt;`:`&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;`}&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`:&#x27;&#x27;;
+    const facts=v.plain||!d?&#x27;&#x27;:`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`;
+    const back=v.step===&#x27;start&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;${v.plain?&#x27;Not now&#x27;:&#x27;Look around first&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;${v.plain?&#x27;Sign in&#x27;:&#x27;Invitation&#x27;}&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;${head}${board}${facts}${authCard(v)}${back}&lt;/div&gt;&lt;/main&gt;`;
+  }
+  function openSignIn(opts={}) {
+    const b=opts.board||(state.view===&#x27;board&#x27;?state.boardId:null);
+    if(state.view===&#x27;board&#x27;) leaveBoard();
+    Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,
+      invite:{board:b,by:null,role:&#x27;you&#x27;,plain:true,hide:!!opts.hide,then:opts.then||null,step:&#x27;start&#x27;,email:&#x27;&#x27;,error:&#x27;&#x27;}});
+    renderView(&#x27;auth-google&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(&#x27;Sign in.&#x27;);
   }
   // Signing in opens the board with the invited role (Preview as follows it), then the tour on a first visit.
   function enterInvited(persona,withTour) {
     // A real link tours only a first visit; Share&#x27;s Preview always shows the whole first visit.
     const b=state.invite.board,preview=state.invite.preview;state.invite=null;clearInviteLink();state.persona=persona;
-    openBoardAt(b);
+    if(b) openBoardAt(b); else renderView();
     if(withTour&amp;&amp;(!state.toured||preview)) setTimeout(startTour,250);
   }
   function inviteAction(action,id) {
     const v=state.invite;if(!v) return;
-    if(action===&#x27;invite-tab&#x27;) {v.tab=id;v.error=&#x27;&#x27;;renderHome();root.querySelector(`[data-key=&quot;invite-tab-${id}&quot;]`)?.focus();return;}
+    const show=(focus,msg)=&gt;{renderHome();root.querySelector(`[data-key=&quot;${focus}&quot;]`)?.focus();if(msg)announce(msg);};
+    const done=()=&gt;{
+      if(v.then){state.invite=null;state.persona=&#x27;you&#x27;;openLink(new URLSearchParams(Object.entries(v.then).filter(([,x])=&gt;x)));announce(&#x27;Signed in (simulated).&#x27;);return;}
+      announce(v.via===&#x27;google&#x27;?&#x27;Signed in with Google (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.plain?&#x27;you&#x27;:v.role,!v.plain);};
+    if(action===&#x27;auth-privacy&#x27;) {openPrivacy();return;}
     if(action===&#x27;invite-look&#x27;) {enterInvited(&#x27;out&#x27;,false);announce(&#x27;Signed out: you can read. Sign in from the top bar to take part.&#x27;);return;}
-    if(action===&#x27;invite-auth&#x27;) {
-      const inputs=[...root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;)],empty=inputs.findIndex(i=&gt;!i.value.trim());
-      if(empty&gt;=0){v.error=&#x27;Fill in every field.&#x27;;v.filled=inputs.map(i=&gt;!!i.value.trim());const vals=inputs.map(i=&gt;i.value);renderHome();root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;).forEach((i,k)=&gt;{i.value=vals[k];});root.querySelector(`#sm-auth-${empty}`)?.focus();announce(v.error);return;}
-      announce(v.tab===&#x27;up&#x27;?&#x27;Account created (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.role,true);
+    if(action===&#x27;auth-google&#x27;) {v.via=&#x27;google&#x27;;v.error=&#x27;&#x27;;if(v.plain){done();return;}v.step=&#x27;name&#x27;;v.name=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
+    if(action===&#x27;auth-send&#x27;) {
+      v.email=(root.querySelector(&#x27;#sm-auth-email&#x27;)?.value||&#x27;&#x27;).trim();
+      v.error=!v.email?&#x27;Enter your email.&#x27;:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)?&#x27;&#x27;:&#x27;That doesn’t look like an email address.&#x27;;
+      if(v.error){show(&#x27;auth-email&#x27;,v.error);return;}
+      Object.assign(v,{via:&#x27;email&#x27;,step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`Link sent to ${v.email}.`);return;
+    }
+    if(action===&#x27;auth-open&#x27;) {if(knownEmail(v.email)){done();return;}v.step=&#x27;name&#x27;;v.name=v.email.split(&#x27;@&#x27;)[0].toLowerCase().replace(/[^a-z0-9._]/g,&#x27;&#x27;).slice(0,20);v.error=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
+    if(action===&#x27;auth-expired&#x27;) {v.step=&#x27;expired&#x27;;show(&#x27;auth-again&#x27;,&#x27;That link has expired.&#x27;);return;}
+    if(action===&#x27;auth-again&#x27;) {Object.assign(v,{step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`New link sent to ${v.email}.`);return;}
+    if(action===&#x27;auth-resend&#x27;) {v.resent=true;show(&#x27;auth-resend&#x27;,`Sent again to ${v.email}.`);return;}
+    if(action===&#x27;auth-restart&#x27;) {Object.assign(v,{step:&#x27;start&#x27;,error:&#x27;&#x27;});show(&#x27;auth-email&#x27;);return;}
+    if(action===&#x27;auth-name&#x27;) {
+      v.name=(root.querySelector(&#x27;#sm-auth-name&#x27;)?.value||&#x27;&#x27;).trim();
+      v.error=!/^[a-z0-9._]{3,20}$/i.test(v.name)?&#x27;Use 3 to 20 letters, numbers, dots, or underscores.&#x27;:takenNames().has(v.name.toLowerCase())?`${v.name} is taken.`:&#x27;&#x27;;
+      if(v.error){show(&#x27;auth-name&#x27;,v.error);return;}
+      done();return;
     }
   }
   // The tour picks its examples from the board: its top argument, the argument with the most wordings, and the
@@ -4592,7 +4898,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const open=state.inbox&amp;&amp;state.persona!==&#x27;out&#x27;;inboxEl.hidden=!open;
     if(!open){inboxEl.innerHTML=&#x27;&#x27;;return;}
     const list=notesList(),unread=list.filter(n=&gt;!isRead(n)).length;
-    inboxEl.innerHTML=`&lt;header&gt;&lt;h2 id=&quot;sm-inbox-title&quot;&gt;Notifications${unread?`&lt;small&gt;${unread} new&lt;/small&gt;`:&#x27;&#x27;}&lt;/h2&gt;${unread?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;notes-read-all&quot; data-key=&quot;notes-read-all&quot;&gt;Mark all read&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox-close&quot; aria-label=&quot;Close notifications&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
+    inboxEl.innerHTML=`&lt;div class=&quot;sm-inbox-head&quot;&gt;&lt;h2 id=&quot;sm-inbox-title&quot;&gt;Notifications${unread?`&lt;small&gt;${unread} new&lt;/small&gt;`:&#x27;&#x27;}&lt;/h2&gt;${unread?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;notes-read-all&quot; data-key=&quot;notes-read-all&quot;&gt;Mark all read&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox-close&quot; aria-label=&quot;Close notifications&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`
       +(list.length?`&lt;ul class=&quot;sm-inbox-list&quot;&gt;${list.map(noteMarkup).join(&#x27;&#x27;)}&lt;/ul&gt;`:`&lt;p class=&quot;sm-inbox-empty&quot;&gt;Nothing yet.&lt;/p&gt;`);
     inboxEl.style.top=(siteEl.offsetHeight+8)+&#x27;px&#x27;;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
@@ -4732,13 +5038,15 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;space-mode&#x27;) {SPACE_META.defaults[s.id]=id;redo(&#x27;space-mode-&#x27;+id,`New steelmen in ${s.name} start as ${MODES[id].label}.`);}
   }
   function renderHome() {
+    if(state.deletedNotice) {homeEl.innerHTML=deletedMarkup();return;}
+    if(state.notFound) {homeEl.innerHTML=notFoundMarkup();return;}
     if(state.invite) {homeEl.innerHTML=landingMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(state.spaceEdit&amp;&amp;(state.spaceEdit===&#x27;new&#x27;?state.persona===&#x27;out&#x27;||!state.spaceDraft:!SPACES.some(x=&gt;x.id===state.spaceEdit)||!isSpaceAdmin(state.spaceEdit))) state.spaceEdit=null;
     if(!state.profile&amp;&amp;state.spaceEdit) {homeEl.innerHTML=sidebar()+spaceSettingsMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(state.profile) {homeEl.innerHTML=sidebar()+profileMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     const list=visibleBoards();
     const empty=state.query.trim()?&#x27;No steelmen match that search.&#x27;:state.sort===&#x27;help&#x27;?&#x27;Every option here has at least two arguments.&#x27;:&#x27;Nothing here yet.&#x27;;
-    homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
+    homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;&lt;h1 class=&quot;sm-sr&quot;&gt;${state.space===&#x27;all&#x27;?&#x27;Home&#x27;:escape(spaceOf(state.space).name)}&lt;/h1&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
       +(list.length?`&lt;ol class=&quot;sm-feed-list&quot;&gt;${list.map(post).join(&#x27;&#x27;)}&lt;/ol&gt;`:`&lt;p class=&quot;sm-feed-empty&quot;&gt;${empty}&lt;/p&gt;`)+`&lt;/main&gt;${rail()}`;
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   }
@@ -4749,16 +5057,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view===&#x27;board&#x27;) {
       const s=spaceOf(doc.question.org);
       const f=FEED[state.boardId]||{here:[]}, pub=doc.question.visibility===&#x27;link&#x27;;
-      const viewBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;span&gt;${label}&lt;/span&gt;&lt;/button&gt;`;
+      const viewBtn=(level,glyph,label)=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;zoom&quot; data-id=&quot;${level}&quot; data-key=&quot;zoom-${level}&quot; aria-pressed=&quot;${state.zoom===level}&quot; aria-label=&quot;${label}&quot; data-tooltip=&quot;${label}&quot;&gt;${icon(glyph)}&lt;span&gt;${label}&lt;/span&gt;&lt;/button&gt;`;
       tools=`&lt;div class=&quot;sm-zoom&quot; role=&quot;group&quot; aria-label=&quot;View&quot;&gt;${viewBtn(&#x27;read&#x27;,&#x27;layout-grid&#x27;,&#x27;Board&#x27;)}${viewBtn(&#x27;case&#x27;,&#x27;award&#x27;,&#x27;Strongest case&#x27;)}&lt;/div&gt;`
         // Who else has this board open: faces only. They don&#x27;t appear on cards.
         +(f.here.length?`&lt;span class=&quot;sm-site-faces&quot; role=&quot;img&quot; aria-label=&quot;Also here: ${escape(f.here.join(&#x27;, &#x27;))}${f.more?` and ${f.more} more`:&#x27;&#x27;}&quot;&gt;${f.here.map(u=&gt;`&lt;span title=&quot;${escape(u)} is here&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}${f.more?`&lt;span title=&quot;${f.more} more&quot;&gt;+${f.more}&lt;/span&gt;`:&#x27;&#x27;}&lt;/span&gt;`:&#x27;&#x27;)
         +(can(&#x27;edit&#x27;)&amp;&amp;reviewCount()?`&lt;button type=&quot;button&quot; class=&quot;sm-review-button cursor-interaction&quot; data-action=&quot;review-next&quot; data-key=&quot;review-next&quot; data-tooltip=&quot;Next to review&quot;&gt;${icon(&#x27;inbox&#x27;)}&lt;b&gt;${reviewCount()}&lt;/b&gt;&lt;span&gt;to review&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;)
-        +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
+        +`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share&quot; aria-label=&quot;Share&quot; aria-expanded=&quot;${state.share}&quot; aria-controls=&quot;sm-share-title&quot;&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}&lt;span&gt;Share&lt;/span&gt;&lt;/button&gt;`;
       middle=`&lt;nav class=&quot;sm-crumbs&quot; aria-label=&quot;Breadcrumb&quot;&gt;&lt;span aria-hidden=&quot;true&quot;&gt;/&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${s.id}&quot; data-key=&quot;crumb-space&quot;&gt;${escape(s.name)}&lt;/button&gt;&lt;/nav&gt;`;
     } else {
       menu=`&lt;button type=&quot;button&quot; class=&quot;sm-nav-toggle cursor-interaction&quot; data-action=&quot;nav-toggle&quot; data-key=&quot;nav-toggle&quot; aria-expanded=&quot;${state.navOpen}&quot; aria-controls=&quot;sm-side&quot; aria-label=&quot;Spaces menu&quot;&gt;${icon(state.navOpen?&#x27;x&#x27;:&#x27;menu&#x27;)}&lt;/button&gt;`;
-      tools=`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;create-open&quot; data-key=&quot;create-open&quot; aria-haspopup=&quot;dialog&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New steelman&lt;/span&gt;&lt;/button&gt;&lt;label class=&quot;sm-search&quot;&gt;${icon(&#x27;search&#x27;)}&lt;input id=&quot;sm-search&quot; type=&quot;search&quot; data-key=&quot;search&quot; placeholder=&quot;Search steelmen&quot; aria-label=&quot;Search steelmen&quot; value=&quot;${escape(state.query)}&quot;&gt;&lt;/label&gt;`;
+      tools=`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;create-open&quot; data-key=&quot;create-open&quot; aria-label=&quot;New steelman&quot; aria-haspopup=&quot;dialog&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New steelman&lt;/span&gt;&lt;/button&gt;&lt;label class=&quot;sm-search&quot;&gt;${icon(&#x27;search&#x27;)}&lt;input id=&quot;sm-search&quot; type=&quot;search&quot; data-key=&quot;search&quot; placeholder=&quot;Search steelmen&quot; aria-label=&quot;Search steelmen&quot; value=&quot;${escape(state.query)}&quot;&gt;&lt;/label&gt;`;
     }
     if(state.view===&#x27;home&#x27;&amp;&amp;state.invite){tools=&#x27;&#x27;;menu=&#x27;&#x27;;}
     root.toggleAttribute(&#x27;data-nav-open&#x27;,state.view===&#x27;home&#x27;&amp;&amp;state.navOpen);
@@ -4854,7 +5162,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const generalSelect=`&lt;select id=&quot;sm-share-general&quot; data-key=&quot;share-general&quot; aria-label=&quot;General access&quot; ${owner?&#x27;&#x27;:&#x27;disabled&#x27;}&gt;${Object.entries(general).map(([v,[,l]])=&gt;`&lt;option value=&quot;${v}&quot; ${v===q.visibility?&#x27;selected&#x27;:&#x27;&#x27;} ${v===&#x27;org&#x27;&amp;&amp;personal?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${escape(l)}${v===&#x27;org&#x27;&amp;&amp;personal?&#x27; (choose a space first)&#x27;:&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
     const ownerNote=owner?&#x27;&#x27;:`&lt;p class=&quot;sm-access-hint&quot;&gt;Only ${escape(q.author)} can change access. You can still invite people and copy the link.&lt;/p&gt;`;
     const link=inviteUrl();
-    return `&lt;header&gt;&lt;h2 id=&quot;sm-share-title&quot;&gt;Share&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share-close&quot; aria-label=&quot;Close sharing&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
+    return `&lt;div class=&quot;sm-share-head&quot;&gt;&lt;h2 id=&quot;sm-share-title&quot;&gt;Share&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share-close&quot; aria-label=&quot;Close sharing&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/div&gt;`
       +`&lt;div class=&quot;sm-share-body&quot;&gt;&lt;div class=&quot;sm-share-invite&quot;&gt;&lt;div class=&quot;sm-share-field&quot;&gt;&lt;input id=&quot;sm-share-q&quot; type=&quot;text&quot; data-key=&quot;share-q&quot; autocomplete=&quot;off&quot; placeholder=&quot;Username or email&quot; aria-label=&quot;Invite by username or email&quot; aria-controls=&quot;sm-share-suggest&quot; value=&quot;${escape(state.shareQuery)}&quot;&gt;${roleSelect(&#x27;new&#x27;,RANK[state.shareRole]&gt;RANK[myRole()]?myRole():state.shareRole,&#x27;id=&quot;sm-share-role&quot; data-key=&quot;share-role&quot;&#x27;,false,myRole())}&lt;ul class=&quot;sm-share-suggest&quot; id=&quot;sm-share-suggest&quot;&gt;${shareSuggestions()}&lt;/ul&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;share-invite&quot; data-key=&quot;share-invite&quot;&gt;Invite&lt;/button&gt;&lt;/div&gt;`
       +`&lt;section aria-labelledby=&quot;sm-people-title&quot;&gt;&lt;h3 id=&quot;sm-people-title&quot;&gt;People with access&lt;/h3&gt;&lt;ul class=&quot;sm-people&quot;&gt;${people}&lt;/ul&gt;&lt;/section&gt;`
       +`&lt;section aria-labelledby=&quot;sm-general-title&quot;&gt;&lt;h3 id=&quot;sm-general-title&quot;&gt;General access&lt;/h3&gt;&lt;div class=&quot;sm-person&quot;&gt;&lt;span class=&quot;sm-avatar sm-access&quot; aria-hidden=&quot;true&quot;&gt;${icon(accessIcon)}&lt;/span&gt;&lt;span&gt;${generalSelect}&lt;/span&gt;${q.visibility===&#x27;private&#x27;?&#x27;&#x27;:roleSelect(&#x27;general&#x27;,q.accessRole,&#x27;id=&quot;sm-share-access-role&quot; data-key=&quot;share-access-role&quot;&#x27;,!owner)}&lt;/div&gt;&lt;p class=&quot;sm-access-hint&quot;&gt;${escape(accessHint)}&lt;/p&gt;${ownerNote}&lt;/section&gt;&lt;/div&gt;`
@@ -4927,7 +5235,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // Leaving a board closes whatever was open on it; votes stay, keyed by card.
   function leaveBoard() {
     if(state.tour){state.tour=null;const t=root.querySelector(&#x27;.sm-tour&#x27;);t.hidden=true;t.innerHTML=&#x27;&#x27;;}
-    Object.assign(state,{zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
+    Object.assign(state,{linkNote:&#x27;&#x27;,linkComment:null,zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
   }
   function renderView(focusKey) {
     const home=state.view===&#x27;home&#x27;;
@@ -4935,9 +5243,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(home) root.dataset.zoom=&#x27;&#x27;;
     if(home){renderSite();renderHome();renderShare();renderCreate();drawer.hidden=true;menuEl.hidden=true;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
     else render();
+    renderFresh();syncAddress();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-pw&#x27;,&#x27;profile-pw-cancel&#x27;,&#x27;profile-pw-save&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
+  const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-email&#x27;,&#x27;profile-email-cancel&#x27;,&#x27;profile-email-save&#x27;,&#x27;profile-email-resend&#x27;,&#x27;profile-email-drop&#x27;,&#x27;profile-email-open&#x27;,&#x27;profile-google&#x27;,&#x27;profile-analytics&#x27;,&#x27;profile-privacy&#x27;,&#x27;profile-download&#x27;,&#x27;profile-delete&#x27;,&#x27;profile-delete-cancel&#x27;,&#x27;profile-delete-confirm&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
   function homeAction(action,id,trigger) {
     if(action===&#x27;browse&#x27;) {announce(&#x27;Browsing public communities is coming soon.&#x27;);return;}
     if(action===&#x27;create-open&#x27;) {
@@ -4986,7 +5295,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;profile&#x27;) {
       const from=state.view===&#x27;board&#x27;?state.boardId:null;
       if(from){leaveBoard();state.view=&#x27;home&#x27;;state.profileFrom=from;} else if(!state.profile) state.profileFrom=null;
-      Object.assign(state,{profile:id,contribTab:&#x27;args&#x27;,pwOpen:false,creating:false});
+      Object.assign(state,{profile:id,contribTab:&#x27;args&#x27;,acct:{},creating:false});
       renderView(&#x27;profile-back&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(id===ME?&#x27;Your profile.&#x27;:`${id}’s profile.`);return;
     }
     if(action===&#x27;profile-back&#x27;) {
@@ -4996,13 +5305,30 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(action===&#x27;profile-card&#x27;||action===&#x27;profile-board&#x27;) {const [b,card]=id.split(&#x27;|&#x27;);state.profile=null;state.profileFrom=null;if(docs[b])openBoardAt(b,card);return;}
     if(action===&#x27;profile-tab&#x27;) {state.contribTab=id;renderHome();focusOn(&#x27;profile-tab-&#x27;+id);return;}
-    if(action===&#x27;profile-pw&#x27;) {state.pwOpen=true;renderHome();focusOn(&#x27;pw-current&#x27;);return;}
-    if(action===&#x27;profile-pw-cancel&#x27;) {state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);return;}
-    if(action===&#x27;profile-pw-save&#x27;) {
-      const next=root.querySelector(&#x27;#sm-pw-new&#x27;);
-      if(!next?.value){next?.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);next?.focus();announce(&#x27;Enter a new password.&#x27;);return;}
-      state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);announce(&#x27;Password changed (simulated).&#x27;);return;
+    const acct=state.acct||(state.acct={});
+    if(action===&#x27;profile-email&#x27;) {Object.assign(acct,{editing:true,draft:&#x27;&#x27;,error:&#x27;&#x27;});renderHome();focusOn(&#x27;email-new&#x27;);return;}
+    if(action===&#x27;profile-email-cancel&#x27;) {Object.assign(acct,{editing:false,error:&#x27;&#x27;});renderHome();focusOn(&#x27;email-open-edit&#x27;);return;}
+    if(action===&#x27;profile-email-save&#x27;) {
+      const next=(root.querySelector(&#x27;#sm-email-new&#x27;)?.value||&#x27;&#x27;).trim();acct.draft=next;
+      acct.error=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)?&#x27;That doesn’t look like an email address.&#x27;:next.toLowerCase()===state.myEmail?&#x27;That’s already your email.&#x27;:&#x27;&#x27;;
+      if(acct.error){renderHome();focusOn(&#x27;email-new&#x27;);announce(acct.error);return;}
+      Object.assign(acct,{editing:false,pending:next,resent:false});renderHome();focusOn(&#x27;email-resend&#x27;);announce(`Link sent to ${next}. Your email changes when you open it.`);return;
     }
+    if(action===&#x27;profile-email-resend&#x27;) {acct.resent=true;renderHome();focusOn(&#x27;email-resend&#x27;);announce(`Sent again to ${acct.pending}.`);return;}
+    if(action===&#x27;profile-email-drop&#x27;) {acct.pending=&#x27;&#x27;;renderHome();focusOn(&#x27;email-open-edit&#x27;);announce(&#x27;Email change cancelled.&#x27;);return;}
+    if(action===&#x27;profile-email-open&#x27;) {state.myEmail=acct.pending.toLowerCase();acct.pending=&#x27;&#x27;;renderHome();focusOn(&#x27;email-open-edit&#x27;);announce(`Your email is now ${state.myEmail}.`);return;}
+    if(action===&#x27;profile-analytics&#x27;) {const a=analytics();if(a){a.set(!a.enabled());renderHome();focusOn(&#x27;analytics&#x27;);announce(a.enabled()?&#x27;Usage analytics on.&#x27;:&#x27;Usage analytics off. Nothing more is sent from this browser.&#x27;);}return;}
+    if(action===&#x27;profile-privacy&#x27;) {openPrivacy();return;}
+    if(action===&#x27;profile-download&#x27;) {announce(downloadData()?&#x27;Downloaded steelman-data.json.&#x27;:&#x27;Couldn’t start the download here.&#x27;);return;}
+    if(action===&#x27;profile-delete&#x27;) {Object.assign(acct,{deleting:true,deleteError:&#x27;&#x27;});renderHome();focusOn(&#x27;delete-name&#x27;);return;}
+    if(action===&#x27;profile-delete-cancel&#x27;) {acct.deleting=false;renderHome();focusOn(&#x27;delete-open&#x27;);return;}
+    if(action===&#x27;profile-delete-confirm&#x27;) {
+      const typed=(root.querySelector(&#x27;#sm-delete-name&#x27;)?.value||&#x27;&#x27;).trim();
+      if(typed!==ME){acct.deleteError=`Type ${ME} exactly.`;renderHome();focusOn(&#x27;delete-name&#x27;);announce(acct.deleteError);return;}
+      state.acct={};state.profile=null;state.profileFrom=null;setPersona(&#x27;out&#x27;);state.deletedNotice=true;renderView(&#x27;deleted-done&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});
+      announce(&#x27;Account deleted (simulated).&#x27;);return;
+    }
+    if(action===&#x27;profile-google&#x27;) {state.google=!state.google;renderHome();focusOn(&#x27;google&#x27;);announce(state.google?&#x27;Google connected (simulated).&#x27;:&#x27;Google disconnected. You can still sign in with an email link.&#x27;);return;}
     if(action===&#x27;sign-out&#x27;) {state.profile=null;state.profileFrom=null;setPersona(&#x27;out&#x27;);focusOn(&#x27;sign-in&#x27;);announce(&#x27;Signed out (simulated). Preview as is now Signed out.&#x27;);}
   }
   // After anything renders, controls your role can&#x27;t use are marked unavailable, with the reason as their tooltip.
@@ -5036,14 +5362,16 @@ html&gt;body{padding:0}&lt;/style&gt;
     const beforeFaces=new Map([...board.querySelectorAll(&#x27;.sm-card[data-card]&#x27;)].map(el=&gt;[el.dataset.card,el.getBoundingClientRect()]));
     const oldTemplate=getComputedStyle(board).gridTemplateColumns;
     const oldTrack=board.querySelector(&#x27;.sm-track&#x27;), scrollLeft=oldTrack?.scrollLeft||0, trackIdea=oldTrack?.closest(&#x27;[data-node]&#x27;)?.dataset.node;
+    if(state.view===&#x27;board&#x27;&amp;&amp;state.zoom!==&#x27;case&#x27;&amp;&amp;phone()){const focusOn=(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea)?.option)||(state.open&amp;&amp;ideaOf(state.open)?.option)||state.composingIdea;if(focusOn&amp;&amp;focusOn!==activeSide())state.side={...state.side,[state.boardId]:focusOn};}
     board.style.setProperty(&#x27;--sm-cols&#x27;,boardColumns());
     board.innerHTML=boardMarkup();
-    headEl.innerHTML=headMarkup();headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
+    headEl.innerHTML=headMarkup()+(state.linkNote?`&lt;p class=&quot;sm-link-note&quot; role=&quot;status&quot;&gt;${icon(&#x27;info&#x27;)}&lt;span&gt;${escape(state.linkNote)}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;link-note-close&quot; data-key=&quot;link-note-close&quot;&gt;Dismiss&lt;/button&gt;&lt;/p&gt;`:&#x27;&#x27;);headEl.classList.toggle(&#x27;sm-commenting&#x27;,commenting(&#x27;question&#x27;));
     renderDrawer();renderMenu();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector(&#x27;.sm-track&#x27;);
     if(newTrack&amp;&amp;trackIdea===state.open&amp;&amp;kind!==&#x27;added&#x27;) newTrack.scrollLeft=scrollLeft;
     positionDrawer();positionMenu();
+    if(kind===&#x27;reorder&#x27;&amp;&amp;updateAnchor){const a=board.querySelector(`[data-node=&quot;${updateAnchor}&quot;]`),from=beforeNodes.get(updateAnchor);if(a&amp;&amp;from!==undefined)scrollHost(a.getBoundingClientRect().top-from);updateAnchor=null;}
     if(focusKey){const el=root.querySelector(`[data-key=&quot;${focusKey}&quot;]`);el?.focus({preventScroll:true});if(el?.matches(&#x27;input[data-select]&#x27;))el.select();}
     if(!reduced&amp;&amp;kind) {
       const newTemplate=getComputedStyle(board).gridTemplateColumns;
@@ -5076,6 +5404,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(box.bottom&gt;window.innerHeight) newTrack.closest(&#x27;[data-node]&#x27;).scrollIntoView({block:&#x27;nearest&#x27;,behavior:reduced?&#x27;auto&#x27;:&#x27;smooth&#x27;});
     }
     animateWires(kind&amp;&amp;!reduced?720:0);
+    renderFresh();syncAddress();placeSides();
+    if(flashIds.length){const ids=flashIds;flashIds=[];if(!reduced)ids.forEach(i=&gt;board.querySelector(`[data-node=&quot;${i}&quot;] .sm-card, .sm-card[data-card=&quot;${i}&quot;]`)?.animate([{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / .35)&#x27;},{boxShadow:&#x27;0 0 0 3px rgb(36 36 36 / 0)&#x27;}],{duration:1600,easing:&#x27;ease-out&#x27;}));}
   }
   let lastToggled=null;
   // Moving your view to the k-th highlighted wording in a column: unfold whatever hides it (the column&#x27;s fold, its row&#x27;s
@@ -5206,16 +5536,161 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(event.target.id!==&#x27;sm-option-name&#x27;||!state.renamingOption||!event.target.isConnected) return;
     setTimeout(()=&gt;{if(!state.renamingOption)return;commitOptionName();render();save();});
   });
+  // ── Other people, live. The prototype simulates what a shared board would push to you: votes that change the shared
+  // order, new arguments and wordings, a deleted version, and losing the connection. Nothing you&#x27;re reading moves until
+  // you choose Update in the pill (or reload).
+  const freshEl = root.querySelector(&#x27;.sm-fresh&#x27;);
+  let updateAnchor=null, flashIds=[], backOnline=0;
+  // The part of the prototype you can see: the frame is as tall as its content, so the page around it scrolls.
+  function visibleBand() {
+    try { const f=window.frameElement; if(f){const r=f.getBoundingClientRect(),h=f.ownerDocument.defaultView.innerHeight;return {top:Math.max(0,-r.top),bottom:Math.min(window.innerHeight,h-r.top)};} } catch {}
+    return {top:0,bottom:window.innerHeight};
+  }
+  function scrollHost(dy) { if(!dy) return; try { if(window.frameElement){window.frameElement.ownerDocument.defaultView.scrollBy(0,dy);return;} } catch {} window.scrollBy(0,dy); }
+  function placeFresh() {
+    placeSides();
+    if(freshEl.hidden) return;
+    const band=visibleBand(),parent=freshEl.offsetParent||document.body,top=parent.getBoundingClientRect().top;
+    freshEl.style.top=Math.max(0,band.bottom-top-freshEl.offsetHeight-16)+&#x27;px&#x27;;
+  }
+  function renderFresh() {
+    const n=staleCount(),onBoard=state.view===&#x27;board&#x27;;
+    let html=&#x27;&#x27;;
+    if(onBoard&amp;&amp;state.offline) html=`&lt;span&gt;${icon(&#x27;wifi-off&#x27;)}Offline${state.queued?` · ${state.queued} waiting to send`:&#x27;&#x27;}&lt;/span&gt;`;
+    else if(onBoard&amp;&amp;backOnline&gt;Date.now()) html=`&lt;span&gt;${icon(&#x27;wifi&#x27;)}Back online${state.sent?` · ${state.sent} sent`:&#x27;&#x27;}&lt;/span&gt;`;
+    else if(onBoard&amp;&amp;n) html=`&lt;span&gt;${icon(&#x27;refresh-cw&#x27;)}${n} ${n===1?&#x27;change&#x27;:&#x27;changes&#x27;}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;order-update&quot; data-key=&quot;order-update&quot;&gt;Update&lt;/button&gt;`;
+    freshEl.classList.toggle(&#x27;sm-quiet&#x27;,!html.includes(&#x27;&lt;button&#x27;));
+    if(freshEl.innerHTML!==html){freshEl.innerHTML=html;if(html&amp;&amp;globalThis.lucide)lucide.createIcons({attrs:{width:15,height:15}});}
+    freshEl.hidden=!html;
+    root.querySelector(&#x27;[data-key=&quot;sim-offline&quot;]&#x27;)?.setAttribute(&#x27;aria-pressed&#x27;,String(!!state.offline));
+    placeFresh();
+  }
+  try { const host=window.frameElement?window.frameElement.ownerDocument.defaultView:window; for(const ev of [&#x27;scroll&#x27;,&#x27;resize&#x27;]) host.addEventListener(ev,placeFresh,{passive:true}); } catch {}
+  // The row to hold still on Update: the card you have open, else the first row you can see.
+  function readingAnchor() {
+    if(state.expanded&amp;&amp;cards[state.expanded]) return cards[state.expanded].idea;
+    if(state.open&amp;&amp;ideaOf(state.open)) return state.open;
+    const band=visibleBand();
+    return [...board.querySelectorAll(&#x27;[data-node]&#x27;)].find(el=&gt;el.getBoundingClientRect().bottom&gt;band.top+60)?.dataset.node||null;
+  }
+  const othersHere = () =&gt; { const p=(PEOPLE[doc.question.org]||[]).filter(u=&gt;u!==ME); return p.length?p:[&#x27;jordan_w&#x27;,&#x27;tess.b&#x27;,&#x27;lin.zhao&#x27;]; };
+  const pick = list =&gt; list[Math.floor(Math.random()*list.length)];
+  const SIM_ARGS = {openweights:[&#x27;Open weights let Chinese labs set the defaults that developers everywhere build on.&#x27;,&#x27;Releasing weights hands rivals years of work for free, with nothing asked in return.&#x27;,&#x27;Cheap open models make it harder for anyone to charge for AI, including Chinese firms.&#x27;],
+    capstone:[&#x27;Graders can only compare teams fairly if they know which code was AI-written.&#x27;,&#x27;Shipping AI-written code is a skill students will need at their first job.&#x27;]};
+  function liveAction(action,targetId) {
+    if(state.view!==&#x27;board&#x27;) return;
+    if(action===&#x27;prev-toggle&#x27;){state.showPrev={...state.showPrev,[targetId]:!state.showPrev?.[targetId]};render(&#x27;prev-&#x27;+targetId);return;}
+    if(action===&#x27;merged-show&#x27;){reveal(targetId);return;}
+    const visible=doc.options.filter(o=&gt;!isHidden(o.id)), live=i=&gt;!cards[ordered(i)[0]].hidden&amp;&amp;!cards[ordered(i)[0]].gone;
+    if(action===&#x27;order-update&#x27;) {
+      updateAnchor=readingAnchor();
+      const open=state.open&amp;&amp;ideaOf(state.open), option=open?.option, into=open?.merged?.into;
+      applyPending(doc);
+      let followed=&#x27;&#x27;;
+      if(into&amp;&amp;ideaOf(into)){state.open=into;updateAnchor=into;lastToggled=into;if(state.composing&amp;&amp;state.draftClaim.trim())followed=&#x27; Your draft moved with the argument.&#x27;;}
+      if(state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;state.open&amp;&amp;cards[state.expanded].idea!==state.open&amp;&amp;!into) state.open=null;
+      if(state.expanded&amp;&amp;!cards[state.expanded]) state.expanded=null;
+      let moved=&#x27;&#x27;;
+      if(state.open&amp;&amp;!ideaOf(state.open)) {
+        if(state.composing&amp;&amp;state.draftClaim.trim()){Object.assign(state,{composingIdea:option,ideaDraftClaim:state.draftClaim,ideaDraftReason:state.draftReason,draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;});moved=&#x27; The argument you were adding a wording to is gone, so your draft is now a new argument.&#x27;;}
+        Object.assign(state,{open:null,composing:false});
+      }
+      fixShownOrder();render(moved?&#x27;idea-claim&#x27;:followed?&#x27;draft&#x27;:&#x27;order-update&#x27;,&#x27;reorder&#x27;);save();
+      announce(&#x27;Board updated.&#x27;+moved+followed);return;
+    }
+    if(action===&#x27;sim-offline&#x27;) {
+      state.offline=!state.offline;
+      if(!state.offline){state.sent=state.queued||0;state.queued=0;backOnline=Date.now()+3500;setTimeout(renderFresh,3600);}
+      renderFresh();announce(state.offline?&#x27;Offline. Your changes will send when you’re back.&#x27;:&#x27;Back online.&#x27;);return;
+    }
+    if(state.offline){announce(&#x27;You’re offline: nothing from others arrives until you’re back.&#x27;);return;}
+    if(action===&#x27;sim-votes&#x27;) {
+      const touched=[];
+      for(const o of visible) {
+        const rows=rowsOf(o.id).filter(live).slice(0,ROW_LIMIT);if(rows.length&lt;2) continue;
+        const riser=rows[1+Math.floor(Math.random()*(rows.length-1))];
+        riser.score=sharedImportance(rows[0])+2+Math.floor(Math.random()*4);touched.push(riser.id);
+      }
+      const multi=(state.open&amp;&amp;ideaOf(state.open)?.versions.length&gt;1&amp;&amp;ideaOf(state.open))||ideas.find(i=&gt;i.versions.length&gt;1&amp;&amp;live(i));
+      if(multi){const v=ordered(multi),last=cards[v[v.length-1]];last.pref=cards[v[0]].pref+2;touched.push(v[v.length-1]);}
+      touched.forEach(i=&gt;{const c=cards[ideaOf(i)?ordered(ideaOf(i))[0]:i];if(c&amp;&amp;!c.gone){c.yes=(c.yes||0)+1;}});
+      flashIds=touched;render();save();
+      announce(`${touched.length+2} people voted. What you see stays in place until you update.`);return;
+    }
+    if(action===&#x27;sim-argument&#x27;) {
+      if(!visible.length) return;
+      const o=visible.reduce((a,b)=&gt;rowsOf(b.id).length&lt;rowsOf(a.id).length?b:a),by=pick(othersHere());
+      const idea=&#x27;sim&#x27;+(doc.nextId++),card=&#x27;v&#x27;+(doc.nextId++);
+      cards[card]={at:new Date().toISOString(),idea,claim:pick(SIM_ARGS[state.boardId]||[`Another reason for “${o.name}”, added while you were reading.`]),yes:0,no:0,pref:0,sources:[],explanation:&#x27;&#x27;,by};
+      ideas.push({id:idea,option:o.id,score:0,versions:[card]});
+      flashIds=[idea];render();save();
+      announce(`${by} added an argument to “${o.name}”. It’s at the end of the column.`);return;
+    }
+    if(action===&#x27;sim-wording&#x27;) {
+      const target=(state.open&amp;&amp;ideaOf(state.open))||(state.expanded&amp;&amp;ideaOf(cards[state.expanded]?.idea))||visible.map(o=&gt;rowsOf(o.id).find(live)).find(Boolean);
+      if(!target){announce(&#x27;There’s no argument to add a wording to.&#x27;);return;}
+      const lead=cards[ordered(target)[0]],by=pick(othersHere()),id=addVersion(target.id,`Put simply: ${lead.claim.charAt(0).toLowerCase()}${lead.claim.slice(1)}`,&#x27;&#x27;);
+      cards[id].by=by;
+      flashIds=[id];render();save();
+      announce(`${by} wrote another wording of “${short(ordered(target)[0])}”. It’s at the end of the row.`);return;
+    }
+    // The version you&#x27;re looking at: the expanded card, else the open row&#x27;s first live wording.
+    const openCard=()=&gt;(state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;!cards[state.expanded].gone&amp;&amp;!cards[state.expanded].split&amp;&amp;state.expanded)||(state.open&amp;&amp;ideaOf(state.open)&amp;&amp;ordered(ideaOf(state.open)).find(v=&gt;!cards[v].gone&amp;&amp;!cards[v].hidden&amp;&amp;!cards[v].split));
+    if(action===&#x27;sim-edit&#x27;) {
+      const id=openCard(),c=id&amp;&amp;cards[id];
+      if(!c){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      if(!c.by||c.by===&#x27;you&#x27;||c.by===&#x27;ai&#x27;){announce(&#x27;Only a version’s author can edit it, and this one is yours. Open someone else’s.&#x27;);return;}
+      c.prev=c.claim;c.claim=c.claim.replace(/[.!?]?$/,&#x27;, at least for the next few years.&#x27;);c.edited=new Date().toISOString();markEvidenceChanged(id,&#x27;edit&#x27;);
+      flashIds=[id];render();save();
+      announce(`${c.by} edited this version, so its assessments started over. “edited” shows the earlier wording.`);return;
+    }
+    if(action===&#x27;sim-combine&#x27;) {
+      const id=openCard(),from=id&amp;&amp;ideaOf(cards[id].idea);
+      if(!from||from.merged){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      const into=rowsOf(from.option).find(i=&gt;i.id!==from.id&amp;&amp;!i.merged&amp;&amp;live(i));
+      if(!into){announce(&#x27;There’s no other argument on this side to combine it with.&#x27;);return;}
+      from.merged={into:into.id,by:pick(othersHere()),at:new Date().toISOString()};
+      state.expanded=null;render();save();
+      announce(`${from.merged.by} combined this argument with “${short(ordered(into)[0])}”. It stays here, marked, until you update.`);return;
+    }
+    if(action===&#x27;sim-separate&#x27;) {
+      const open=state.open&amp;&amp;ideaOf(state.open),id=openCard();
+      const rest=open&amp;&amp;open.versions.filter(v=&gt;!cards[v].gone&amp;&amp;!cards[v].split&amp;&amp;!cards[v].hidden);
+      if(!open||rest.length&lt;2){announce(&#x27;Open an argument with two or more wordings first.&#x27;);return;}
+      const card=cards[state.expanded]?.idea===open.id&amp;&amp;state.expanded!==rest[0]?state.expanded:rest[rest.length-1];
+      cards[card].split={by:pick(othersHere()),at:new Date().toISOString()};
+      if(state.expanded===card) state.expanded=null;
+      render();save();
+      announce(`${cards[card].split.by} made a wording a separate argument. It moves to the end of the column when you update.`);return;
+    }
+    if(action===&#x27;sim-delete&#x27;) {
+      const id=(state.expanded&amp;&amp;!cards[state.expanded]?.gone&amp;&amp;state.expanded)||(state.open&amp;&amp;ideaOf(state.open)&amp;&amp;ordered(ideaOf(state.open)).find(v=&gt;!cards[v].gone&amp;&amp;!cards[v].hidden));
+      if(!id||!cards[id]||cards[id].hidden||cards[id].gone){announce(&#x27;Open a card first, then try this.&#x27;);return;}
+      const c=cards[id];c.gone={by:c.by===&#x27;you&#x27;||c.by===&#x27;ai&#x27;||!c.by?&#x27;editor&#x27;:c.by,at:new Date().toISOString()};
+      render();save();
+      announce(c.gone.by===c.by?`${c.by} deleted this version. It stays here, marked, until you update.`:&#x27;An editor removed this version. It stays here, marked, until you update.&#x27;);return;
+    }
+  }
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
     const trigger=event.target.closest(&#x27;button[data-action]&#x27;);if(!trigger || !root.contains(trigger) || busy)return;
     const {action,id,key,vote}=trigger.dataset; let focus=key,motion=&#x27;&#x27;,revealAfter=null;
     report(action,{board:state.boardId,view:state.view,id:id||&#x27;&#x27;,value:vote||trigger.dataset.value||trigger.dataset.lens||trigger.dataset.sort||&#x27;&#x27;});
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
+    if(action===&#x27;side&#x27;){switchSide(id);save();return;}
+    if(action===&#x27;skip-side&#x27;){skipToSide(id);return;}
+    if(action.startsWith(&#x27;sim-&#x27;)||[&#x27;order-update&#x27;,&#x27;merged-show&#x27;,&#x27;prev-toggle&#x27;].includes(action)){liveAction(action,id);return;}
+    if(state.offline&amp;&amp;[&#x27;vote&#x27;,&#x27;contribute&#x27;].includes(NEEDS[action])) state.queued=(state.queued||0)+1;
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
-    if(action===&#x27;sign-in&#x27;){setPersona(&#x27;you&#x27;);announce(&#x27;Signed in (simulated).&#x27;);return;}
+    if(action===&#x27;sign-in&#x27;){openSignIn();save();return;}
+    if(action===&#x27;copy-link&#x27;){const [kind,x]=[id.slice(0,1),id.slice(2)];const cm=kind===&#x27;c&#x27;&amp;&amp;doc.comments.find(y=&gt;y.id===x);
+      const url=pageBase()+hashFor(kind===&#x27;v&#x27;?{b:state.boardId,v:x}:{b:state.boardId,c:x});
+      if(kind===&#x27;v&#x27;){state.menu=null;renderMenu();copyLink(url,&#x27;menu-&#x27;+x);} else copyLink(url,`copy-link-c:${x}`);report(&#x27;copy-link&#x27;,{board:state.boardId,kind});return;}
+    if(action===&#x27;link-note-close&#x27;){state.linkNote=&#x27;&#x27;;render(&#x27;zoom-read&#x27;);return;}
+    if(action===&#x27;not-found-back&#x27;){state.notFound=false;renderView(&#x27;side-&#x27;+state.space);return;}
+    if(action===&#x27;deleted-done&#x27;){state.deletedNotice=false;renderView(&#x27;side-&#x27;+state.space);announce(&#x27;Signed out.&#x27;);return;}
     if(action===&#x27;inbox&#x27;||action.startsWith(&#x27;note&#x27;)){noteAction(action,id);save();return;}
     if(action===&#x27;invite-preview&#x27;){const q=doc.question;openInvite(state.boardId,ME,q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole,true);save();return;}
-    if(action.startsWith(&#x27;invite-&#x27;)){inviteAction(action,id);save();return;}
+    if(action.startsWith(&#x27;invite-&#x27;)||action.startsWith(&#x27;auth-&#x27;)){inviteAction(action,id);save();return;}
     if(action.startsWith(&#x27;tour-&#x27;)){tourAction(action);save();return;}
     if(action===&#x27;request-access&#x27;){state.requested[state.boardId]=true;renderHead();save();root.querySelector(&#x27;[data-key=&quot;settings&quot;]&#x27;)?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)!==&#x27;true&#x27;||action===&#x27;browse&#x27;)homeAction(action,id,trigger);save();return;}
@@ -5305,8 +5780,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;save-edit&#x27;) {
       const claim=state.editDraftClaim.replace(/\s+/g,&#x27; &#x27;).trim(),field=root.querySelector(&#x27;#sm-edit-claim&#x27;);
       if(!claim){field.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);field.focus();announce(&#x27;A version needs wording.&#x27;);return;}
-      const card=cards[id];card.claim=claim.slice(0,500);card.explanation=state.editDraftReason.trim().slice(0,700);delete card.brief;
-      state.editing=null;focus=&#x27;claim-&#x27;+id;announce(&#x27;Your version was updated.&#x27;);
+      const card=cards[id],next=claim.slice(0,500),reason=state.editDraftReason.trim().slice(0,700),was=card.brief||card.explanation||&#x27;&#x27;;
+      // Like Reddit: edits are allowed and keep their votes; the version says &quot;edited&quot;, which shows the earlier wording.
+      const changed=next!==card.claim||reason!==was,n=stats(id).n;
+      if(next!==card.claim){card.prev=card.claim;}
+      if(changed){card.edited=new Date().toISOString();markEvidenceChanged(id,&#x27;edit&#x27;);}
+      card.claim=next;card.explanation=reason;delete card.brief;
+      state.editing=null;focus=&#x27;claim-&#x27;+id;announce(changed?`Your version was updated and says “edited”.${n?` Its ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over; votes stay.`:&#x27;&#x27;}`:&#x27;No changes.&#x27;);
     }
     if(action===&#x27;revise-card&#x27;) {
       const ideaId=cards[id].idea,wasOpen=state.open===ideaId;
@@ -5335,7 +5815,11 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
       focus=`src-${id}/${result.id}`;announce(result.added?&#x27;Source added. It is open below so you can check it.&#x27;:&#x27;Source updated.&#x27;);
     }
-    if(action===&#x27;remove-source&#x27;) {removeSource(id,trigger.dataset.source);focus=&#x27;undo&#x27;;announce(&#x27;Source removed from this version. Undo is available for ten seconds.&#x27;);}
+    if(action===&#x27;remove-source&#x27;) {
+      const key=`${id}/${trigger.dataset.source}`,n=stats(id).n;
+      if(n&amp;&amp;state.removeArmed!==key){state.removeArmed=key;focus=&#x27;remove-source-&#x27;+key;announce(`Removing this source starts ${n} ${n===1?&#x27;assessment&#x27;:&#x27;assessments&#x27;} over. Click Remove again to confirm.`);}
+      else {state.removeArmed=null;removeSource(id,trigger.dataset.source);focus=&#x27;undo&#x27;;announce(`Source removed from this version${n?`; ${n===1?&#x27;its assessment starts&#x27;:`its ${n} assessments start`} over`:&#x27;&#x27;}. Undo is available for ten seconds.`);}
+    }
     if(action===&#x27;report-source&#x27;) {const src=sources[trigger.dataset.source];src.unavailable=true;src.reportedBy=&#x27;you&#x27;;focus=`src-${id}/${trigger.dataset.source}`;announce(&#x27;Reported as unavailable for every version that cites it. An unavailable source does not make the claim false.&#x27;);}
     if(action===&#x27;unreport-source&#x27;) {const src=sources[trigger.dataset.source];delete src.unavailable;delete src.reportedBy;focus=`src-${id}/${trigger.dataset.source}`;announce(&#x27;Report withdrawn.&#x27;);}
     if(action===&#x27;undo&#x27;) {if(!state.undo)return;focus=undoDelete();announce(&#x27;Restored.&#x27;);}
@@ -5411,7 +5895,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;comments&#x27;) {
       state.share=false;
       if(commenting(id)){focus=closeDrawer();}
-      else {state.drawer=&#x27;comments&#x27;;state.commentTarget=id;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus=&#x27;comment-text&#x27;;announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
+      else {state.drawer=&#x27;comments&#x27;;state.commentTarget=id;state.linkComment=null;state.replyTo=null;state.showResolved=false;state.confirmReset=false;focus=&#x27;comment-text&#x27;;announce(`Comments on this ${describeTarget(id).kind.toLowerCase()} opened beside the board.`);}
     }
     if(action===&#x27;comment-add&#x27;) {
       const text=state.commentDraft.trim(),field=root.querySelector(&#x27;#sm-comment&#x27;);
@@ -5506,7 +5990,6 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
       render(focus);save();return;
     }
-    if(action===&#x27;reorder&#x27;) {state.updated=!state.updated;motion=&#x27;reorder&#x27;;focus=&#x27;reorder&#x27;;announce(state.updated?&#x27;Example shared-order update applied. New sample importance scores move two ideas up.&#x27;:&#x27;Original example order restored.&#x27;);}
     if(action===&#x27;ai-recheck&#x27;) {queueCheck(id);focus=&#x27;ai-recheck-&#x27;+id;announce(&#x27;Checking.&#x27;);}
     if([&#x27;add&#x27;,&#x27;add-idea&#x27;].includes(action)&amp;&amp;state.expanded&amp;&amp;cards[state.expanded]&amp;&amp;!cards[state.expanded].aiCheck) queueCheck(state.expanded);
     refreshChecks();
@@ -5537,12 +6020,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     }
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(&#x27;[data-key=&quot;nav-toggle&quot;]&#x27;)?.focus();return;}
     if(state.tour&amp;&amp;[&#x27;Escape&#x27;,&#x27;ArrowRight&#x27;,&#x27;ArrowLeft&#x27;].includes(event.key)&amp;&amp;!event.target.closest?.(&#x27;input,textarea,select&#x27;)){event.preventDefault();tourAction(event.key===&#x27;Escape&#x27;?&#x27;tour-skip&#x27;:event.key===&#x27;ArrowRight&#x27;?&#x27;tour-next&#x27;:&#x27;tour-back&#x27;);save();return;}
-    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id?.startsWith(&#x27;sm-auth-&#x27;)){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;invite-auth&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id?.startsWith(&#x27;sm-auth-&#x27;)){event.preventDefault();root.querySelector(&#x27;.sm-landing-auth [data-primary]&#x27;)?.click();return;}
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.inbox){event.preventDefault();state.inbox=false;renderSite();root.querySelector(&#x27;[data-key=&quot;inbox&quot;]&#x27;)?.focus();announce(&#x27;Notifications closed.&#x27;);save();return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-invite&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-invite-send&quot;]&#x27;)?.click();return;}
     if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-name&#x27;&amp;&amp;state.spaceEdit===&#x27;new&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-create&quot;]&#x27;)?.click();return;}
     if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.spaceEdit&amp;&amp;!state.profile&amp;&amp;!state.creating){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-back&quot;]&#x27;)?.click();return;}
-    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.profile){event.preventDefault();root.querySelector(`[data-key=&quot;${state.pwOpen?&#x27;pw-cancel&#x27;:&#x27;profile-back&#x27;}&quot;]`)?.click();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.profile){event.preventDefault();root.querySelector(`[data-key=&quot;${state.acct?.editing?&#x27;email-cancel&#x27;:&#x27;profile-back&#x27;}&quot;]`)?.click();return;}
     if(event.key!==&#x27;Escape&#x27;||busy||state.view!==&#x27;board&#x27;)return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery=&#x27;&#x27;;render(&#x27;share&#x27;);announce(&#x27;Sharing closed.&#x27;);return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key=&quot;menu-${id}&quot;]`)?.focus();return;}
@@ -5639,8 +6122,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   root.addEventListener(&#x27;dragend&#x27;,endDrag);
   restore(window.openai?.widgetState);
-  if(!readInviteLink()) renderView();
+  if(!readInviteLink()) { const p=linkParams(); if(p.get(&#x27;b&#x27;)) openLink(p); else renderView(); }
   try { hostWindow().addEventListener(&#x27;hashchange&#x27;,()=&gt;{if(readInviteLink())save();}); } catch {}
+  // Back and Forward: go where the address now points (a board, a version, a comment, or the list).
+  try { hostWindow().addEventListener(&#x27;popstate&#x27;,()=&gt;{
+    const p=linkParams();if(p.get(&#x27;s&#x27;)) return;
+    followingAddress=true;
+    if(p.get(&#x27;b&#x27;)) openLink(p); else if(state.view===&#x27;board&#x27;||state.notFound){leaveBoard();state.view=&#x27;home&#x27;;state.notFound=false;renderView(&#x27;side-&#x27;+state.space);}
+    followingAddress=false;save();
+  }); } catch {}
   window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});
   new ResizeObserver(()=&gt;animateWires()).observe(scene);
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=&gt;render()});tweak.addSelect(design,&#x27;type&#x27;,{label:&#x27;Argument typography&#x27;,options:[{label:&#x27;Graphics sans&#x27;,value:&#x27;sans&#x27;},{label:&#x27;Editorial serif&#x27;,value:&#x27;serif&#x27;}]});tweak.addSelect(design,&#x27;density&#x27;,{label:&#x27;Card density&#x27;,options:[{label:&#x27;Comfortable&#x27;,value:&#x27;comfortable&#x27;},{label:&#x27;Compact&#x27;,value:&#x27;compact&#x27;}]});}
