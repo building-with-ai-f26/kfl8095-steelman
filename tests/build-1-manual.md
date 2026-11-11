@@ -615,6 +615,81 @@ Reports (`reports`), removals (`hidden`), and a per-board log (`doc.log`) on ver
 | Phone width (375 px) | List and standups board: no horizontal overflow |
 | Console | No errors |
 
+## November 10 — Profile and points (Tier 1, component 1)
+
+The profile opens from the avatar in the top bar and from any username (list authors, the question's author, card bylines, comment authors, History). It replaces the list beside the sidebar; back (or Escape) returns to the board or list it came from. `contributionsOf(user)` and `pointsOf(user)` compute everything from the boards, plus `EARLIER` counts for boards outside the prototype. Credits spent are logged in `state.usage` (seeded with `USAGE_SEED`). Example boards changed (sketch boards now have authors; you wrote one open-weights argument and two of its sources), so saves are now version 12.
+
+| Check | Observed result |
+| --- | --- |
+| Your profile (1440 px) | Dark header: KL, "kieran_lamee you", six space tags, 210 points; Points rows 4 × 25, 5 × 10, 1 × 15, 9 × 5; Contributions: Arguments 4, Wordings 0, Sources 2; Credits and Account on the right |
+| Top-three rule | Denver's lone argument and the capstone argument earn nothing (sides under four arguments); "China controls AI where it's deployed" earns +25 |
+| Credits | Personal 50, POD 6 480; Recent usage: Draft arguments −20, then evidence checks grouped by board and day, each opening its board |
+| Byline → profile | jordan_w on the open-weights board opens his profile without Credits or Account, 470 points; back link names the board; Escape returns to the board |
+| List author → profile | Opens kieran_lamee; Escape returns to the list |
+| Contribution → card | Sources tab → "US clouds host DeepSeek-R1" opens the open-weights board on the trust card, ringed |
+| Change password | Opens with focus in Current password; Save with no new password marks it invalid; with one, closes and announces "Password changed (simulated)." |
+| Sign out | Preview as switches to Signed out, the avatar becomes Sign in, the list shows; Sign in restores Your access |
+| Phone width (375 px) | Header stacks name, tags, then points; no horizontal overflow |
+| Console | No errors |
+
+## November 10 — Create and edit a space (Tier 1, component 2; AI plan A1)
+
+Spaces are now saved state instead of fixed values: `SPACES`, `SPACE_AI` (`budget`, `used` before this visit, `allow`), `PEOPLE` (members), and `SPACE_META` (roles, rules, invites, requests, starting mode). They're seeded from functions, saved as `spaceStore`, and reset by Reset to the original example. `spaceCredits(id)` = budget − used − spent; the seeded balances are unchanged (POD 6 480, Northwind 2000, Personal 50, Brooklyn 1200, Campus 0, Future of Work 800). New space actions need `view`, and settings actions need the new `admin` level (`isSpaceAdmin`).
+
+| Check | Observed result |
+| --- | --- |
+| POD 6 card | Rules (2), Moderators "you, maya.chen, jordan_w", Settings |
+| Settings (1440 px) | Banner, Basics / Members / Rules on the left; AI and New steelmen start as on the right |
+| Join requests | Approve kt_nguyen → members 9 → 10, focus moves to the next Approve |
+| Invite | Unknown username → "No one is called nobody_here. Try their email."; an email as Moderator → listed as invited |
+| Roles | jordan_w → Admin; with you as the only admin, your role menu is disabled |
+| Rules | Add a rule focuses the new field; typed text appears on the space card after Escape |
+| AI | Drafts off → the open-weights board's How it runs fades Draft arguments; budget 600 → 1,000 shows "880 left" |
+| Starting mode | Edited → New steelman in POD 6 opens with Edited |
+| Canvas and name | Sage updates the banner and sidebar swatch; renaming updates the sidebar as you type |
+| New space | Empty name → "Name the space."; "Brooklyn streets" → "There's already a space with that name."; a public "Park Slope Parents" (lilac) joins Communities, appears in the New steelman picker, opens its settings with you as the only admin; its card shows no Join |
+| Roles in Preview as | Viewer: no Settings on POD 6; Signed out: New space blocked; Campus Life (not admin): no Settings |
+| Personal | Basics (no access choice), AI, New steelmen start as |
+| Phone width (375 px) | List, settings, New space, and profile: no horizontal overflow |
+| Console | No errors |
+
+## November 10 — Notifications (Tier 1, component 3)
+
+`notesList()` merges seeded notifications (`NOTES_SEED`), ones worked out from the boards (review, moderate, closing, decision, join requests; their ids include the count or date, so a change makes them unread again), and ones added this visit (`state.notes`, from accepting or declining your own held item). Read state lives in `state.notesRead`. Example boards changed (a comment of yours with a reply, a declined capstone wording, the capstone board closing Nov 10, an accepted bike-lane argument, you among the standups voters), so saves are now version 13.
+
+| Check | Observed result |
+| --- | --- |
+| Bell | "Notifications, 8 unread", badge 8; hidden when signed out |
+| Inbox (1440 px) | Closes tomorrow (Nov 10); 2 contributions waiting for your review; kt_nguyen and bwells asked to join POD 6; lin.zhao replied (quote); maya.chen declined your wording (quote and reason); 2 reports to look at; priya_s recorded the decision: Go async; read: invite to edit, rtorres accepted your argument |
+| Reply | Opens the open-weights board with the comments panel on the "China controls AI" card |
+| Declined | Opens capstone, rings the declined held card, focus on Dismiss |
+| Review / reports | Focus lands on Accept for p2 (capstone) and on the reported card's menu (bike lane) |
+| Decision | Opens standups at the Decision block |
+| Join request | Opens POD 6 settings with focus on Approve for kt_nguyen |
+| Accepted | Opens the bike-lane board and rings the card |
+| Read state | Dot toggles unread (2 → 3); Mark all read → no badge and no Mark all read button |
+| Close | Escape closes and returns focus to the bell; clicking outside closes |
+| Live | As Contributor on capstone, add an argument (held); as Editor, Accept → "Your argument was accepted" appears unread at the top |
+| Phone width (375 px) | Inbox spans the width under the top bar; list and boards (capstone, open-weights, bike lane): no horizontal overflow |
+| Console | No errors |
+
+## November 10 — Invite landing and onboarding (Tier 1, component 4)
+
+The landing opens from a link hash (`#s=<board>&by=<user>&as=<role>`, read from the page around the prototype frame, and on `hashchange`) or from Share → Preview. While it shows, Preview as is Signed out and the top bar shows only the wordmark. Signing up or in (simulated) clears the hash, sets Preview as to the invited role, opens the board, and starts the tour if `state.toured` isn't set (Preview always does). `tourSteps()` picks its examples from the board; the spotlight is a positioned hole with a page-wide shadow, re-measured after a row finishes unfolding.
+
+| Check | Observed result |
+| --- | --- |
+| Link (1440 px) | `#s=capstone&by=maya.chen&as=contribute` → "maya.chen invited you to weigh in", POD 6 question box with two option headers and wires, "You can read, comment, vote, and write.", "5 people" |
+| Sign up | Empty → "Fill in every field.", focus on Username; filled → capstone board, Preview as Contributor, hash cleared, tour starts with focus on Next |
+| Tour (capstone) | Importance (top argument in "Allow it, with disclosure"), then Evidence ("75% of 8"); no Articulation step (every argument has one wording); Done → "Tour done." |
+| Tour (open-weights, from profile) | Importance, then Articulation (unfolds the independence row; spotlight covers the axis and all three wordings), then Evidence |
+| Skip | Escape → "Tour skipped. Take it again from your profile." |
+| Share | Link field shows `http://localhost:8000/prototype/#s=openweights&by=kieran_lamee&as=contribute`; Preview → landing from kieran_lamee, 7 people |
+| Look around first | Board opens signed out ("You're signed out: you can read."), no tour |
+| Sign in tab + Enter | Signs in; after a first tour, a real link no longer tours |
+| Phone width (375 px) | Landing: no overflow, options two across; tour: each note stays fully on screen; Articulation frames only the leading wording |
+| Console | No errors |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

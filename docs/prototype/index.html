@@ -2728,6 +2728,231 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-join[aria-pressed=&quot;true&quot;] { background:var(--sm-card); color:var(--sm-ink); border-color:var(--sm-line); }
   #steelman-study .sm-join[aria-pressed=&quot;true&quot;]:hover { background:var(--sm-soft); }
   #steelman-study .sm-feed &gt; .sm-space-card { display:grid; }
+  /* Profile: a dark header like the board&#x27;s question box, then points and contributions; your credits and account on the side. */
+  #steelman-study .sm-profile { grid-column:2 / -1; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-content:start; width:100%; max-width:1080px; min-width:0; padding:24px 32px 56px; }
+  #steelman-study .sm-profile-main, #steelman-study .sm-profile-side { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; align-content:start; min-width:0; }
+  #steelman-study .sm-profile-back { justify-self:start; margin:-4px 0 -6px; }
+  #steelman-study .sm-profile-back:hover { color:var(--sm-ink); }
+  #steelman-study .sm-profile-head { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:18px; padding:24px; border-radius:10px; background:var(--sm-grain) var(--sm-ink); color:#fff; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-profile-avatar { display:grid; place-items:center; width:64px; height:64px; border-radius:50%; background:#fff; color:var(--sm-ink); font:700 22px/1 var(--sm-sans); letter-spacing:.02em; }
+  #steelman-study .sm-profile-who { display:grid; gap:10px; min-width:0; }
+  #steelman-study .sm-profile-who h1 { font:700 28px/1.1 var(--sm-serif); letter-spacing:-.4px; overflow-wrap:anywhere; }
+  #steelman-study .sm-profile-who h1 small { margin-left:8px; font:500 12px/1 var(--sm-sans); letter-spacing:.04em; color:#ffffff8c; }
+  #steelman-study .sm-profile-spaces { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
+  #steelman-study .sm-profile-head .sm-tag { background:transparent; border-color:#ffffffb3; color:#fff; }
+  #steelman-study .sm-profile-head button.sm-tag:hover { background:#ffffff1a; }
+  #steelman-study .sm-profile-head :focus-visible { outline-color:#fff; }
+  #steelman-study .sm-profile-points { display:grid; justify-items:end; gap:6px; padding-left:20px; border-left:1px solid #ffffff2e; }
+  #steelman-study .sm-profile-points b { font:700 36px/1 var(--sm-serif); font-variant-numeric:tabular-nums; letter-spacing:-.5px; }
+  #steelman-study .sm-profile-points span { display:inline-flex; align-items:center; gap:5px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:#ffffff8c; }
+  #steelman-study .sm-profile-points svg { width:13px; height:13px; }
+  #steelman-study .sm-profile .sm-rail-card { grid-template-columns:minmax(0,1fr); gap:12px; padding:18px 20px; }
+  #steelman-study .sm-profile .sm-rail-card &gt; h2 { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  #steelman-study .sm-profile .sm-rail-card &gt; h2 span { font-weight:500; letter-spacing:.04em; text-transform:none; }
+  #steelman-study .sm-profile .sm-rgroup &gt; .sm-rrow:first-child { border-top:0; }
+  #steelman-study .sm-profile .sm-rgroup &gt; .sm-rrow:last-child { border-bottom:0; }
+  #steelman-study .sm-earn .sm-rrow-label { display:grid; grid-template-columns:auto 1fr; column-gap:10px; }
+  #steelman-study .sm-earn .sm-rrow-label svg { grid-row:span 2; align-self:center; width:16px; height:16px; color:var(--sm-muted); }
+  #steelman-study .sm-earn .sm-rrow-value, #steelman-study .sm-pool .sm-rrow-value { font:600 14px/1 var(--sm-sans); color:var(--sm-ink); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-earn[data-zero] { color:var(--sm-quiet); }
+  #steelman-study .sm-earn[data-zero] .sm-rrow-value { color:var(--sm-quiet); font-weight:400; }
+  #steelman-study .sm-contrib-tabs b { margin-left:2px; font-weight:500; font-variant-numeric:tabular-nums; opacity:.7; }
+  #steelman-study .sm-contrib-list { display:grid; margin:0 -8px; padding:0; list-style:none; }
+  #steelman-study .sm-contrib-list li + li { border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-contrib-list button { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:6px 16px; width:100%; padding:12px 8px; border:0; border-radius:6px; background:transparent; text-align:left; }
+  #steelman-study .sm-contrib-list button:hover { background:var(--sm-soft); }
+  #steelman-study .sm-contrib-list strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font:400 15px/1.4 var(--sm-serif); }
+  #steelman-study .sm-contrib-list small { grid-column:1; display:flex; align-items:center; gap:6px; min-width:0; font:300 12px/1.4 var(--sm-sans); color:var(--sm-quiet); }
+  #steelman-study .sm-contrib-q { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-contrib-list .sm-swatch { flex:none; }
+  #steelman-study .sm-profile-back, #steelman-study .sm-profile-head { grid-column:1 / -1; }
+  #steelman-study .sm-contrib-list small time { flex:none; }
+  #steelman-study .sm-contrib-pts { grid-column:2; grid-row:1 / span 2; align-self:center; min-width:36px; font:600 13px/1 var(--sm-sans); font-variant-numeric:tabular-nums; text-align:right; color:var(--sm-ink); }
+  #steelman-study .sm-contrib-empty { margin:0; padding:24px 16px; border:1px dashed #9a9a9a; border-radius:6px; text-align:center; font:300 13px/1.5 var(--sm-sans); color:var(--sm-quiet); }
+  #steelman-study .sm-pool .sm-rrow-label &gt; span { display:flex; align-items:center; gap:8px; }
+  #steelman-study .sm-pool .sm-rrow-value small { margin-left:4px; font:400 11px var(--sm-sans); color:var(--sm-muted); }
+  #steelman-study .sm-usage h3 { margin:6px 0 2px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-usage .sm-rrow-button { min-height:48px; }
+  #steelman-study .sm-usage .sm-rrow-label { display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:10px; }
+  #steelman-study .sm-usage .sm-rrow-label svg { grid-row:span 2; align-self:center; width:16px; height:16px; color:var(--sm-ai); }
+  #steelman-study .sm-usage .sm-rrow-label small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-usage .sm-rrow-value { display:grid; gap:3px; justify-items:end; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-usage .sm-rrow-value b { font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-usage .sm-rrow-value time { font:300 11px/1 var(--sm-sans); color:var(--sm-quiet); white-space:nowrap; }
+  #steelman-study .sm-account .sm-rrow-value { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--sm-ink); }
+  #steelman-study .sm-account .sm-mask { letter-spacing:.18em; }
+  #steelman-study .sm-pw-form { display:grid; gap:10px; padding:4px 0 14px; }
+  #steelman-study .sm-pw-form label { display:grid; gap:4px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-pw-form input { height:36px; padding:0 10px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font-size:14px; }
+  #steelman-study .sm-pw-form input:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-pw-form &gt; div { display:flex; justify-content:flex-end; gap:8px; }
+  #steelman-study .sm-signout { justify-self:stretch; height:36px; font-size:13px; }
+  #steelman-study .sm-user-link { padding:0; border:0; background:none; font:inherit; color:inherit; text-align:inherit; cursor:pointer; }
+  #steelman-study .sm-user-link:hover { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study button.sm-me { border:0; padding:0; cursor:pointer; }
+  /* Invite landing: the board&#x27;s canvas, its skeleton (the dark question and option headers), your role, then sign up or sign in. */
+  #steelman-study .sm-landing { grid-column:1 / -1; display:grid; justify-items:center; align-content:start; min-height:calc(100vh - 57px); padding:48px 16px 64px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+  #steelman-study .sm-landing-inner { display:grid; gap:18px; width:100%; max-width:560px; min-width:0; }
+  #steelman-study .sm-landing-from { display:flex; align-items:center; gap:10px; margin:0; font-size:14px; color:var(--sm-ink); }
+  #steelman-study .sm-landing-from .sm-avatar { width:30px; height:30px; background:#fff; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-landing-from strong { font-weight:600; }
+  #steelman-study .sm-landing-q { display:grid; gap:12px; padding:22px 24px 24px; border-radius:6px; background:var(--sm-grain) var(--sm-ink); color:#fff; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-landing-q .sm-tag { justify-self:start; background:transparent; border-color:#ffffffb3; color:#fff; }
+  #steelman-study .sm-landing-q h1 { font:700 26px/1.2 var(--sm-serif); letter-spacing:-.4px; overflow-wrap:anywhere; }
+  #steelman-study .sm-landing-options { --n:2; position:relative; display:grid; grid-template-columns:repeat(var(--n),minmax(0,1fr)); gap:12px; margin:0; padding:22px 0 0; list-style:none; }
+  #steelman-study .sm-landing-options::before { content:&quot;&quot;; position:absolute; top:0; left:50%; height:11px; border-left:1px solid var(--sm-wire); }
+  #steelman-study .sm-landing-options::after { content:&quot;&quot;; position:absolute; top:11px; left:calc((100% - (var(--n) - 1) * 12px) / var(--n) / 2); right:calc((100% - (var(--n) - 1) * 12px) / var(--n) / 2); border-top:1px solid var(--sm-wire); }
+  #steelman-study .sm-landing-options li { position:relative; display:grid; gap:4px; align-content:start; padding:12px 14px; border-radius:6px; background:var(--sm-ink); color:#fff; box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-landing-options li::before { content:&quot;&quot;; position:absolute; top:-11px; left:50%; height:11px; border-left:1px solid var(--sm-wire); }
+  #steelman-study .sm-landing-options b { font:600 15px/1.3 var(--sm-serif); overflow-wrap:anywhere; }
+  #steelman-study .sm-landing-options span { font:400 12px/1.3 var(--sm-sans); color:#ffffffa6; }
+  #steelman-study .sm-landing-facts { display:flex; flex-wrap:wrap; gap:6px 16px; margin:0; padding:0; list-style:none; font-size:13px; color:var(--sm-ink); }
+  #steelman-study .sm-landing-facts li { display:inline-flex; align-items:center; gap:6px; }
+  #steelman-study .sm-landing-facts svg { width:14px; height:14px; }
+  #steelman-study .sm-landing-auth { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; padding:20px; }
+  #steelman-study .sm-landing-auth .sm-sort { justify-self:start; }
+  #steelman-study .sm-landing-auth .sm-field input { height:38px; }
+  #steelman-study .sm-landing-auth .sm-solid { height:40px; min-height:40px; font-size:14px; }
+  #steelman-study .sm-landing-auth .sm-field-hint { margin-top:-6px; text-align:center; }
+  #steelman-study .sm-landing-look { justify-self:center; font-size:13px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:3px; }
+  @media(max-width:560px) {
+    #steelman-study .sm-landing { padding:24px 16px 48px; }
+    #steelman-study .sm-landing-q h1 { font-size:22px; }
+    #steelman-study .sm-landing-options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #steelman-study .sm-landing-options[style*=&quot;--n:2&quot;]::after { display:block; }
+    #steelman-study .sm-landing-options:not([style*=&quot;--n:2&quot;])::after, #steelman-study .sm-landing-options:not([style*=&quot;--n:2&quot;]) li::before, #steelman-study .sm-landing-options:not([style*=&quot;--n:2&quot;])::before { display:none; }
+  }
+  /* The tour: the page dims around the real cards it points at, with a short note beside them. */
+  #steelman-study .sm-tour { position:absolute; inset:0; z-index:60; pointer-events:none; }
+  #steelman-study .sm-tour[hidden] { display:none; }
+  #steelman-study .sm-tour-catch { position:absolute; inset:0; pointer-events:auto; }
+  #steelman-study .sm-tour-hole { position:absolute; border-radius:12px; box-shadow:0 0 0 2px #fff,0 0 0 9999px #2424248f; transition:left var(--sm-slow) var(--sm-ease),top var(--sm-slow) var(--sm-ease),width var(--sm-slow) var(--sm-ease),height var(--sm-slow) var(--sm-ease); }
+  #steelman-study .sm-tour-tip { position:absolute; display:grid; gap:10px; width:340px; max-width:calc(100% - 24px); padding:16px 18px 14px; border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow-lg); pointer-events:auto; }
+  #steelman-study .sm-tour-dots { display:flex; gap:5px; }
+  #steelman-study .sm-tour-dots span { width:6px; height:6px; border-radius:50%; background:var(--sm-line); }
+  #steelman-study .sm-tour-dots span[aria-current=&quot;true&quot;] { background:var(--sm-ink); }
+  #steelman-study .sm-tour-tip h2 { display:flex; align-items:center; gap:8px; font:600 17px/1.2 var(--sm-serif); }
+  #steelman-study .sm-tour-tip h2 svg { width:16px; height:16px; }
+  #steelman-study .sm-tour-tip p { margin:0; font-size:13px; line-height:1.5; color:var(--sm-muted); }
+  #steelman-study .sm-tour-tip p strong { font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-tour-tip footer { display:flex; align-items:center; gap:8px; padding-top:2px; }
+  #steelman-study .sm-tour-tip footer .sm-link-button { margin-right:auto; font-size:12px; }
+  #steelman-study .sm-tour-tip footer .sm-button { height:30px; min-height:30px; padding:0 12px; font-size:12px; }
+  /* Notifications: a bell with the unread count, and an inbox that drops below the top bar like Share. */
+  #steelman-study .sm-bell { position:relative; display:grid; place-items:center; width:32px; height:32px; flex:none; padding:0; border:0; border-radius:6px; background:transparent; color:var(--sm-ink); }
+  #steelman-study .sm-bell:hover, #steelman-study .sm-bell[aria-expanded=&quot;true&quot;] { background:var(--sm-soft); }
+  #steelman-study .sm-bell svg { width:18px; height:18px; stroke-width:1.75; }
+  #steelman-study .sm-bell b { position:absolute; top:0; right:-2px; min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:var(--sm-ink); color:#fff; font:700 10px/16px var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; box-shadow:0 0 0 2px #fff; }
+  #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(100vh - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  #steelman-study .sm-inbox[hidden] { display:none; }
+  #steelman-study .sm-inbox:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+  #steelman-study .sm-inbox &gt; header { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
+  #steelman-study .sm-inbox h2 { flex:1; min-width:0; font:600 16px/1.3 var(--sm-serif); }
+  #steelman-study .sm-inbox h2 small { margin-left:6px; font:500 12px var(--sm-sans); color:var(--sm-muted); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-inbox &gt; header .sm-link-button { font-size:12px; color:var(--sm-ink); }
+  #steelman-study .sm-inbox &gt; header .sm-link-button:hover { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-inbox-list { overflow:auto; margin:0; padding:0; list-style:none; overscroll-behavior:contain; }
+  #steelman-study .sm-note { display:flex; align-items:stretch; }
+  #steelman-study .sm-note + .sm-note { border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-note-main { display:flex; align-items:flex-start; gap:12px; flex:1; min-width:0; padding:14px 4px 14px 18px; border:0; background:transparent; text-align:left; }
+  #steelman-study .sm-note-main:hover { background:var(--sm-soft); }
+  #steelman-study .sm-note .sm-avatar, #steelman-study .sm-note-icon { width:30px; height:30px; margin-top:1px; }
+  #steelman-study .sm-note-icon { display:grid; place-items:center; flex:none; border-radius:50%; border:1px solid var(--sm-line); background:var(--sm-card); color:var(--sm-ink); }
+  #steelman-study .sm-note-icon svg { width:15px; height:15px; }
+  #steelman-study .sm-note-body { display:grid; gap:5px; min-width:0; font-size:13px; line-height:1.45; color:var(--sm-muted); }
+  #steelman-study .sm-note-text strong { font-weight:600; color:var(--sm-ink); }
+  #steelman-study .sm-note[data-unread] .sm-note-text { color:var(--sm-ink); }
+  #steelman-study .sm-note-quote { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; padding-left:10px; border-left:2px solid var(--sm-line); font:400 14px/1.4 var(--sm-serif); color:var(--sm-ink); }
+  #steelman-study .sm-note .sm-history-reason { justify-self:start; }
+  #steelman-study .sm-note small { display:flex; align-items:center; gap:6px; min-width:0; font:300 12px/1.4 var(--sm-sans); color:var(--sm-quiet); }
+  #steelman-study .sm-note small &gt; span:not(.sm-swatch) { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #steelman-study .sm-note small time { flex:none; }
+  #steelman-study .sm-note-dot { display:grid; place-items:center; width:40px; flex:none; padding:0; border:0; background:transparent; }
+  #steelman-study .sm-note-dot::before { content:&quot;&quot;; width:8px; height:8px; border-radius:50%; background:var(--sm-ink); transition:background var(--sm-fast),box-shadow var(--sm-fast); }
+  #steelman-study .sm-note:not([data-unread]) .sm-note-dot::before { background:transparent; }
+  #steelman-study .sm-note-dot:hover { background:var(--sm-soft); }
+  #steelman-study .sm-note:not([data-unread]) .sm-note-dot:hover::before { box-shadow:inset 0 0 0 1.5px var(--sm-wire); }
+  #steelman-study .sm-inbox-empty { margin:0; padding:44px 20px; text-align:center; font:300 13px/1.5 var(--sm-sans); color:var(--sm-quiet); }
+  @media(max-width:640px) { #steelman-study .sm-inbox { left:8px; right:8px; width:auto; max-width:none; } }
+  /* Phones: the wordmark keeps only its logo; on a board, the breadcrumb and your avatar step aside for the board&#x27;s tools. */
+  @media(max-width:480px) {
+    #steelman-study .sm-wordmark-text { display:none; }
+    #steelman-study .sm-site { gap:8px; }
+    #steelman-study .sm-site-tools { gap:4px; }
+    #steelman-study .sm-persona select { max-width:52px; }
+    #steelman-study:is([data-zoom=&quot;read&quot;],[data-zoom=&quot;case&quot;]) :is(.sm-crumbs,.sm-me) { display:none; }
+  }
+  /* Space settings and New space: the profile layout, a canvas banner, then cards of grouped rows. */
+  #steelman-study .sm-space-edit:not([data-self]) { max-width:760px; }
+  #steelman-study .sm-space-hero { grid-column:1 / -1; overflow:hidden; border:1px solid var(--sm-line); border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-space-hero .sm-space-banner { height:88px; transition:background-color var(--sm-medium); }
+  #steelman-study .sm-space-hero-body { display:grid; gap:8px; padding:16px 24px 20px; }
+  #steelman-study .sm-space-hero-label { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-space-hero h1 { font:700 28px/1.1 var(--sm-serif); letter-spacing:-.4px; overflow-wrap:anywhere; }
+  #steelman-study .sm-space-hero h1[data-empty] { color:var(--sm-quiet); font-weight:400; }
+  #steelman-study .sm-space-edit .sm-rail-card { gap:16px; }
+  #steelman-study .sm-space-edit .sm-rgroup { grid-template-columns:minmax(0,1fr); }
+  #steelman-study .sm-space-edit .sm-rgroup h3 { margin-bottom:10px; }
+  #steelman-study .sm-space-edit .sm-rgroup &gt; .sm-rrow:first-of-type { border-top:0; }
+  #steelman-study .sm-space-edit .sm-rselect { width:auto; max-width:100%; padding:4px 2px; border:0; border-radius:4px; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); text-align:right; cursor:pointer; }
+  #steelman-study .sm-space-edit .sm-rselect:hover:not(:disabled) { background:var(--sm-soft); }
+  #steelman-study .sm-space-edit .sm-rselect:disabled { color:var(--sm-muted); cursor:default; }
+  #steelman-study .sm-field { display:grid; gap:6px; font-size:13px; font-weight:500; }
+  #steelman-study .sm-field :is(input,textarea) { width:100%; padding:8px 10px; border:1px solid #c8c8c8; border-radius:6px; background:#fff; font:400 14px/1.45 var(--sm-sans); resize:vertical; }
+  #steelman-study .sm-field input#sm-space-name { font:600 17px/1.3 var(--sm-serif); }
+  #steelman-study .sm-field :is(input,textarea):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+  #steelman-study .sm-field [aria-invalid=&quot;true&quot;] { border-color:var(--sm-cred-weak); box-shadow:inset 3px 0 0 var(--sm-cred-weak); }
+  #steelman-study .sm-field-error { margin:-8px 0 0; font-size:12px; color:#b4434f; }
+  #steelman-study .sm-canvases { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; max-width:300px; }
+  #steelman-study .sm-canvas-pick { width:100%; height:30px; padding:0; border:1px solid #0000001f; border-radius:6px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-thumb-size); }
+  #steelman-study .sm-canvas-pick:hover { border-color:var(--sm-wire); }
+  #steelman-study .sm-canvas-pick[aria-checked=&quot;true&quot;] { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink),inset 0 0 0 2px #fff; }
+  #steelman-study .sm-kinds { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #steelman-study .sm-space-foot { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
+  #steelman-study .sm-space-foot .sm-button { height:34px; min-height:34px; font-size:13px; }
+  #steelman-study .sm-space-edit .sm-people { grid-template-columns:minmax(0,1fr); gap:0; }
+  #steelman-study .sm-space-edit .sm-people .sm-person + .sm-person { border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-space-edit .sm-person { min-height:48px; }
+  #steelman-study .sm-space-edit .sm-person .sm-button { min-height:28px; height:28px; padding:0 10px; font-size:12px; }
+  #steelman-study .sm-space-edit .sm-person .sm-link-button { margin-right:8px; font-size:12px; }
+  #steelman-study .sm-space-invite select { margin-right:4px; padding:4px 4px; border:0; border-radius:4px; background:transparent; color:var(--sm-muted); font:500 12px var(--sm-sans); }
+  #steelman-study .sm-rule-list { display:grid; margin:0; padding:0; list-style:none; counter-reset:rule; }
+  #steelman-study .sm-rule-list li { display:flex; align-items:center; gap:10px; min-height:44px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-rule-list li:first-child { border-top:0; }
+  #steelman-study .sm-rule-list li::before { counter-increment:rule; content:counter(rule); flex:none; width:18px; font:600 12px/1 var(--sm-sans); color:var(--sm-muted); font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-rule-list input { flex:1; min-width:0; height:32px; padding:0 6px; margin-left:-6px; border:1px solid transparent; border-radius:6px; background:transparent; font:400 14px var(--sm-sans); }
+  #steelman-study .sm-rule-list input:hover { border-color:var(--sm-line); }
+  #steelman-study .sm-rule-list input:focus-visible { outline:0; border-color:var(--sm-ink); background:#fff; }
+  #steelman-study .sm-add-rule { display:inline-flex; align-items:center; gap:6px; justify-self:start; padding:8px 12px; border:1px dashed #9a9a9a; border-radius:6px; font-size:12px; color:var(--sm-ink); }
+  #steelman-study .sm-add-rule:hover { background:var(--sm-soft); }
+  #steelman-study .sm-add-rule svg { width:14px; height:14px; }
+  #steelman-study .sm-budget-bar { height:4px; margin:-4px 0 10px; border-radius:999px; background:#e4e4e4; overflow:hidden; }
+  #steelman-study .sm-budget-bar span { display:block; height:100%; border-radius:inherit; background:var(--sm-ink); }
+  #steelman-study .sm-space-edit .sm-rrow-value strong { font-weight:600; color:var(--sm-ink); font-variant-numeric:tabular-nums; }
+  /* The space card: rules and moderators, then Join and Settings. */
+  #steelman-study .sm-space-sub { display:grid; gap:6px; padding-top:10px; border-top:1px solid var(--sm-line); }
+  #steelman-study .sm-space-sub h2 { font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+  #steelman-study .sm-space-rules { display:grid; gap:4px; margin:0; padding-left:18px; font-size:13px; line-height:1.45; color:var(--sm-ink); }
+  #steelman-study .sm-space-rules li::marker { color:var(--sm-muted); font-size:12px; font-variant-numeric:tabular-nums; }
+  #steelman-study .sm-space-mods { margin:0; font-size:13px; line-height:1.5; color:var(--sm-ink); }
+  #steelman-study .sm-space-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  #steelman-study .sm-space-actions .sm-button { height:32px; min-height:32px; padding:0 12px; font-size:13px; }
+  #steelman-study .sm-side-new { margin-top:12px; border:1px dashed #ffffff40; color:#ffffffb3; }
+  #steelman-study .sm-side-new:hover { color:#fff; border-color:#ffffff80; }
+  @media(max-width:560px) { #steelman-study .sm-space-hero-body { padding:14px 16px 16px; } #steelman-study .sm-space-hero h1 { font-size:24px; } #steelman-study .sm-space-edit .sm-person .sm-link-button { margin-right:2px; } }
+  #steelman-study button.sm-me:hover, #steelman-study button.sm-me[aria-current=&quot;true&quot;] { box-shadow:0 0 0 2px #fff,0 0 0 4px var(--sm-ink); }
+  @media(min-width:1100px) { #steelman-study .sm-profile[data-self] { grid-template-columns:minmax(0,1fr) 320px; align-items:start; } #steelman-study .sm-profile-side { position:sticky; top:16px; } }
+  @media(max-width:900px) { #steelman-study .sm-profile { grid-column:1; padding:16px 16px 40px; } }
+  @media(max-width:560px) {
+    #steelman-study .sm-profile-head { grid-template-columns:auto minmax(0,1fr); padding:18px; gap:14px; }
+    #steelman-study .sm-profile-avatar { width:48px; height:48px; font-size:17px; }
+    #steelman-study .sm-profile-who { display:contents; }
+    #steelman-study .sm-profile-who h1 { font-size:24px; }
+    #steelman-study .sm-profile-spaces { grid-column:1 / -1; }
+    #steelman-study .sm-profile-points { grid-column:1 / -1; grid-auto-flow:column; justify-content:start; align-items:baseline; gap:10px; padding:14px 0 0; border-left:0; border-top:1px solid #ffffff2e; }
+    #steelman-study .sm-profile-points b { font-size:28px; }
+    #steelman-study .sm-profile .sm-rail-card { padding:16px; }
+  }
   @media(min-width:1280px) {
     #steelman-study .sm-home { grid-template-columns:232px minmax(0,1fr) 320px; }
     #steelman-study .sm-rail { display:grid; position:sticky; top:0; align-self:start; }
@@ -2783,6 +3008,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   &lt;aside class=&quot;sm-drawer&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-drawer-title&quot; hidden&gt;&lt;/aside&gt;
   &lt;div class=&quot;sm-menu&quot; role=&quot;menu&quot; aria-label=&quot;Version options&quot; hidden&gt;&lt;/div&gt;
   &lt;section class=&quot;sm-share&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-share-title&quot; hidden&gt;&lt;/section&gt;
+  &lt;section class=&quot;sm-inbox&quot; role=&quot;dialog&quot; aria-modal=&quot;false&quot; aria-labelledby=&quot;sm-inbox-title&quot; hidden&gt;&lt;/section&gt;
+  &lt;div class=&quot;sm-tour&quot; hidden&gt;&lt;/div&gt;
   &lt;div class=&quot;sm-create-scrim&quot; data-action-scrim hidden&gt;&lt;/div&gt;
   &lt;section class=&quot;sm-create&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; aria-labelledby=&quot;sm-create-title&quot; hidden&gt;&lt;/section&gt;
 &lt;/div&gt;
@@ -2807,7 +3034,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     independenceNarrow: {at:&#x27;2026-11-08T19:30:00Z&#x27;, by:&#x27;priya_s&#x27;, brief:&#x27;This sticks to what happened and leaves the reader to draw the conclusion.&#x27;, idea:&#x27;independence&#x27;, claim:&#x27;Chinese developers built on Meta’s Llama in 2023 and 2024, and in July 2024 OpenAI cut off API access from China.&#x27;, yes:4, no:0, pref:5, sources:[&#x27;llamachina&#x27;,&#x27;openaiblock&#x27;], aiCheck:{verdict: &quot;supports&quot;, summary: &quot;Both events are in the sources as described.&quot;}, explanation:&#x27;Precise about the record. It doesn’t claim what China would do now.&#x27;},
     trust: {at:&#x27;2026-11-05T15:20:00Z&#x27;, by:&#x27;jordan_w&#x27;, brief:&#x27;A closed Chinese model reaches the West only as a service run from China. Open weights can run on Western servers instead.&#x27;, idea:&#x27;trust&#x27;, claim:&#x27;A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.&#x27;, yes:16, no:4, pref:19, sources:[&#x27;deepseekbans&#x27;,&#x27;clouds&#x27;,&#x27;airbnb&#x27;], aiCheck:{verdict: &quot;supports&quot;, summary: &quot;The sources show limits on DeepSeek’s app, and Western clouds and companies running Chinese weights themselves.&quot;}, explanation:&#x27;Restrictions so far target the hosted app, while US clouds and companies run the weights themselves.&#x27;},
     trustDomain: {at:&#x27;2026-11-06T16:00:00Z&#x27;, by:&#x27;tess.b&#x27;, brief:&#x27;The concern is where data goes and which country’s law governs it, not the domain name.&#x27;, idea:&#x27;trust&#x27;, claim:&#x27;Closed Chinese models wouldn’t be used in the West, because no one wants to send their data to a .cn service.&#x27;, yes:3, no:7, pref:6, sources:[&#x27;deepseekbans&#x27;], aiCheck:{verdict: &quot;doesnt&quot;, summary: &quot;The concern in the source is where data goes and which law applies, not the .cn address.&quot;}, explanation:&#x27;The point is right, the detail isn’t: DeepSeek’s app runs on a .com address. What worries regulators is that its privacy policy stores data in China.&#x27;},
-    control: {at:&#x27;2026-11-07T10:00:00Z&#x27;, by:&#x27;lin.zhao&#x27;, brief:&#x27;China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.&#x27;, idea:&#x27;control&#x27;, claim:&#x27;China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.&#x27;, yes:15, no:2, pref:10, sources:[&#x27;genaimeasures&#x27;,&#x27;cacfilings&#x27;], aiCheck:{verdict: &quot;supports&quot;, summary: &quot;The rules cover public services, and the filing counts show services pass through the regulator.&quot;}, explanation:&#x27;Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.&#x27;},
+    control: {at:&#x27;2026-11-07T10:00:00Z&#x27;, by:&#x27;you&#x27;, brief:&#x27;China regulates AI where it reaches the public, so it can control what people use at home without controlling the model itself.&#x27;, idea:&#x27;control&#x27;, claim:&#x27;China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.&#x27;, yes:15, no:2, pref:10, sources:[&#x27;genaimeasures&#x27;,&#x27;cacfilings&#x27;], aiCheck:{verdict: &quot;supports&quot;, summary: &quot;The rules cover public services, and the filing counts show services pass through the regulator.&quot;}, explanation:&#x27;Well supported as a description of how the rules work. Whether that control extends to weights used abroad is a separate question.&#x27;},
     influence: {at:&#x27;2026-11-06T12:00:00Z&#x27;, by:&#x27;maya.chen&#x27;, brief:&#x27;Being the base everyone builds on brings influence over tools, formats, and norms. Beijing has made open source a stated priority.&#x27;, idea:&#x27;influence&#x27;, claim:&#x27;Open release has made Chinese models among the most built-on in the world, which gives China influence over AI tools and norms.&#x27;, yes:7, no:5, pref:8, sources:[&#x27;haibrief&#x27;,&#x27;aiplus&#x27;,&#x27;downloads&#x27;], aiCheck:{verdict:&#x27;partly&#x27;,at:&#x27;2026-11-08T20:00:00Z&#x27;,summary:&#x27;The sources show that Chinese open models are widely built on. None shows that this gives China influence over tools or norms.&#x27;,sources:{haibrief:[&#x27;supports&#x27;,&#x27;Says Chinese open models have caught up in capability and adoption.&#x27;],aiplus:[&#x27;doesnt&#x27;,&#x27;Shows the state wants international influence, not that it has it.&#x27;],downloads:[&#x27;unopened&#x27;,&#x27;The attachment couldn’t be opened.&#x27;]},limits:&#x27;Read the source summaries on this board, not the full documents. “Influence over norms” is hard to measure, so a person may reasonably read the sources differently.&#x27;}, explanation:&#x27;Adoption is well documented; whether it turns into lasting influence is a judgment.&#x27;},
     // by is the author&#x27;s username (or &#x27;you&#x27; for yours). by:&#x27;ai&#x27; marks an AI draft. It starts like any new argument: no votes, unreviewed, no sources. ai says how it was drafted.
     community: {at:&#x27;2026-11-09T08:00:00Z&#x27;, by:&#x27;ai&#x27;, idea:&#x27;community&#x27;, claim:&#x27;Open release brings outside developers to Chinese models: they fine-tune them, test them, and build tools around them, and the labs can learn from that work for free.&#x27;, yes:0, no:0, pref:0, sources:[], aiCheck:{verdict: &quot;none&quot;, summary: &quot;An AI draft with no sources yet.&quot;}, brief:&#x27;A missing argument for this side: open weights as a way to recruit help, not only to spread influence.&#x27;,
@@ -2826,8 +3053,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     metaclosed: {name:&#x27;Meta weighs closing its frontier model&#x27;,locator:&#x27;New York Times, July 14, 2025; Zuckerberg remarks, July 30, 2025&#x27;,finding:&#x27;Meta’s superintelligence lab discussed not releasing its most powerful model openly; Zuckerberg later said Meta would be careful about what it open-sources.&#x27;,premise:&#x27;The supply of top American open weights depends on US companies’ choices.&#x27;,limit:&#x27;Meta said its open-source position was unchanged, and OpenAI released open weights (gpt-oss) in August 2025.&#x27;},
     llamachina: {name:&#x27;Chinese labs and Meta’s Llama&#x27;,locator:&#x27;South China Morning Post and TechNode reporting, 2023–2024&#x27;,finding:&#x27;Chinese firms used Llama in 2023 and 2024 to build their own models; 01.AI’s Yi used Llama’s architecture and later credited it.&#x27;,premise:&#x27;Before strong domestic open models existed, Chinese developers built on American ones.&#x27;,limit:&#x27;Shows past reliance, not that China would refuse American models today.&#x27;},
     deepseekbans: {name:&#x27;Restrictions on DeepSeek’s app&#x27;,locator:&#x27;Italy’s data regulator, January 30, 2025; Australian and Taiwanese government-device bans; DeepSeek privacy policy&#x27;,finding:&#x27;DeepSeek’s privacy policy says user data is stored in China. Italy’s regulator ordered it to stop processing Italians’ data, and several governments banned it on official devices.&#x27;,premise:&#x27;Western users and governments avoid AI services run from China.&#x27;,limit:&#x27;These actions target the hosted app, not the weights, and most cover government devices only.&#x27;},
-    clouds: {name:&#x27;US clouds host DeepSeek-R1&#x27;,locator:&#x27;AWS and Microsoft announcements, January 2025&#x27;,finding:&#x27;Amazon Bedrock and Microsoft’s Azure AI Foundry offered DeepSeek-R1, running on their own infrastructure.&#x27;,premise:&#x27;A Chinese model can run on Western servers, under Western control.&#x27;,limit:&#x27;Availability doesn’t show how much it is used.&#x27;},
-    airbnb: {name:&#x27;Airbnb’s customer-service agent&#x27;,locator:&#x27;Bloomberg, October 2025&#x27;,finding:&#x27;Airbnb’s CEO said its agent relies heavily on Alibaba’s Qwen because it is fast and cheap; the agent uses 13 models in all.&#x27;,premise:&#x27;Western companies will build on a Chinese model they can run on their own terms.&#x27;,limit:&#x27;One company, and congressional committees questioned the choice in April 2026.&#x27;},
+    clouds: {by:&#x27;you&#x27;,name:&#x27;US clouds host DeepSeek-R1&#x27;,locator:&#x27;AWS and Microsoft announcements, January 2025&#x27;,finding:&#x27;Amazon Bedrock and Microsoft’s Azure AI Foundry offered DeepSeek-R1, running on their own infrastructure.&#x27;,premise:&#x27;A Chinese model can run on Western servers, under Western control.&#x27;,limit:&#x27;Availability doesn’t show how much it is used.&#x27;},
+    airbnb: {by:&#x27;you&#x27;,name:&#x27;Airbnb’s customer-service agent&#x27;,locator:&#x27;Bloomberg, October 2025&#x27;,finding:&#x27;Airbnb’s CEO said its agent relies heavily on Alibaba’s Qwen because it is fast and cheap; the agent uses 13 models in all.&#x27;,premise:&#x27;Western companies will build on a Chinese model they can run on their own terms.&#x27;,limit:&#x27;One company, and congressional committees questioned the choice in April 2026.&#x27;},
     genaimeasures: {name:&#x27;Interim Measures for Generative AI Services&#x27;,locator:&#x27;Cyberspace Administration of China and other agencies, 2023, Article 2&#x27;,finding:&#x27;The rules apply to generative AI services offered to the public in mainland China, and exclude research and development not offered to the public.&#x27;,premise:&#x27;China regulates AI where it is deployed to the public, not where a model is built.&#x27;,limit:&#x27;The text doesn’t say how it applies to weights published for download.&#x27;},
     cacfilings: {name:&#x27;Generative AI service filings&#x27;,locator:&#x27;Cyberspace Administration of China, as of June 30, 2025&#x27;,finding:&#x27;439 generative AI services had completed filing with the regulator, and 233 apps or features built on them had registered.&#x27;,premise:&#x27;Public AI services in China pass through a regulator, whatever model they use.&#x27;,limit:&#x27;Filing counts don’t show how strictly content rules are enforced.&#x27;},
     aiplus: {name:&#x27;“AI+” action plan&#x27;,locator:&#x27;State Council of China, August 2025&#x27;,finding:&#x27;The plan lists building an open-source ecosystem among its priorities, including communities and projects with international influence.&#x27;,premise:&#x27;Open source is state policy, not only a company choice.&#x27;,limit:&#x27;Shows intent, not that the strategy works.&#x27;},
@@ -2863,6 +3090,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     {id:&#x27;c-o1&#x27;,target:&#x27;option:not&#x27;,by:&#x27;priya_s&#x27;,at:&#x27;2026-11-05T18:30:00Z&#x27;,text:&#x27;Rename this from “Bad idea” so it reads as a position, not a verdict?&#x27;,resolved:true},
     {id:&#x27;c-a1&#x27;,target:&#x27;card:independence&#x27;,by:&#x27;maya.chen&#x27;,at:&#x27;2026-11-06T09:15:00Z&#x27;,text:&#x27;Chinese labs did build on Llama in 2023. Doesn’t that cut against this?&#x27;},
     {id:&#x27;c-a2&#x27;,target:&#x27;card:independence&#x27;,parent:&#x27;c-a1&#x27;,by:&#x27;jordan_w&#x27;,at:&#x27;2026-11-06T10:40:00Z&#x27;,text:&#x27;It’s why the narrow version in this row mentions it. The point is they didn’t want to stay dependent.&#x27;},
+    {id:&#x27;c-y1&#x27;,target:&#x27;card:control&#x27;,by:&#x27;you&#x27;,at:&#x27;2026-11-07T11:00:00Z&#x27;,text:&#x27;The filing count is from June 2025. Has anyone seen a newer one?&#x27;},
+    {id:&#x27;c-y2&#x27;,target:&#x27;card:control&#x27;,parent:&#x27;c-y1&#x27;,by:&#x27;lin.zhao&#x27;,at:&#x27;2026-11-09T07:45:00Z&#x27;,text:&#x27;Not yet. I’ll check the regulator’s site and add it as a source if there’s an update.&#x27;},
     {id:&#x27;c-s1&#x27;,target:&#x27;card:backlash&#x27;,by:&#x27;samr_92&#x27;,at:&#x27;2026-11-06T13:05:00Z&#x27;,text:&#x27;Does the federal bill cover self-hosted weights, or only services run from China?&#x27;}
   ];
   const seedDoc = () =&gt; structuredClone({
@@ -2877,7 +3106,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   // ── Spaces and the list of steelmen ──
   // Private spaces (a class pod, a company, your own drafts) and public communities share one sidebar.
   // Every steelman lives in exactly one space; the space sets who can find it by default.
-  const SPACES = [
+  // Spaces, and everything their admins can change, are saved with the boards; these are the example values.
+  const seedSpaces = () =&gt; [
     {id:&#x27;pod6&#x27;,name:&#x27;POD 6&#x27;,kind:&#x27;private&#x27;,canvas:&#x27;stone&#x27;,members:9,about:&#x27;Building with AI · Fall 2026&#x27;},
     {id:&#x27;northwind&#x27;,name:&#x27;Northwind Studio&#x27;,kind:&#x27;private&#x27;,canvas:&#x27;cool&#x27;,members:42,about:&#x27;Company workspace&#x27;},
     {id:&#x27;none&#x27;,name:&#x27;Personal&#x27;,kind:&#x27;private&#x27;,canvas:&#x27;sand&#x27;,members:1,about:&#x27;Drafts only you can see&#x27;},
@@ -2885,27 +3115,64 @@ html&gt;body{padding:0}&lt;/style&gt;
     {id:&#x27;campus&#x27;,name:&#x27;Campus Life&#x27;,kind:&#x27;public&#x27;,canvas:&#x27;sage&#x27;,members:12406,about:&#x27;Teaching, grading, and student life&#x27;},
     {id:&#x27;worklab&#x27;,name:&#x27;Future of Work&#x27;,kind:&#x27;public&#x27;,canvas:&#x27;lilac&#x27;,members:8290,about:&#x27;How teams work and organize&#x27;}
   ];
+  let SPACES = seedSpaces();
+  const CANVAS_IDS = [&#x27;stone&#x27;,&#x27;cool&#x27;,&#x27;sand&#x27;,&#x27;slate&#x27;,&#x27;sage&#x27;,&#x27;lilac&#x27;];
   const spaceOf = id =&gt; SPACES.find(s=&gt;s.id===id) || SPACES[2];
   // How a board runs. A mode is a preset of two settings: whether new arguments publish right away, and who can change the structure.
   const MODES = {team:{label:&#x27;Open team&#x27;,glyph:&#x27;users&#x27;,publish:&#x27;now&#x27;,structure:&#x27;writers&#x27;},edited:{label:&#x27;Edited&#x27;,glyph:&#x27;user-check&#x27;,publish:&#x27;review&#x27;,structure:&#x27;editors&#x27;},public:{label:&#x27;Public&#x27;,glyph:&#x27;globe&#x27;,publish:&#x27;now&#x27;,structure:&#x27;editors&#x27;}};
   const JUDGMENTS = {importance:[&#x27;arrow-up-down&#x27;,&#x27;Importance&#x27;],articulation:[&#x27;arrow-left-right&#x27;,&#x27;Articulation&#x27;],evidence:[&#x27;file-check&#x27;,&#x27;Evidence&#x27;]};
   // Each space allows some AI features and holds the credits they spend (simulated).
-  const SPACE_AI = {pod6:{credits:480,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},northwind:{credits:2000,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},none:{credits:50,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},brooklyn:{credits:1200,allow:[&#x27;check&#x27;]},campus:{credits:0,allow:[]},worklab:{credits:800,allow:[&#x27;check&#x27;,&#x27;dupes&#x27;]}};
+  // Each space allows some AI features and has a monthly credit budget (simulated). Left = budget − used before this visit − spent since.
+  const seedSpaceAI = () =&gt; ({pod6:{budget:600,used:120,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},northwind:{budget:2500,used:500,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},none:{budget:50,used:0,allow:[&#x27;draft&#x27;,&#x27;check&#x27;,&#x27;dupes&#x27;]},brooklyn:{budget:1500,used:300,allow:[&#x27;check&#x27;]},campus:{budget:0,used:0,allow:[]},worklab:{budget:1000,used:200,allow:[&#x27;check&#x27;,&#x27;dupes&#x27;]}});
+  let SPACE_AI = seedSpaceAI();
+  const spaceCredits = id =&gt; Math.max(0,(SPACE_AI[id]?.budget||0)-(SPACE_AI[id]?.used||0)-(state.spent[id]||0));
   const AI_FEATURES = {draft:[&#x27;Draft arguments&#x27;,&#x27;20 credits&#x27;],check:[&#x27;Check evidence&#x27;,&#x27;1 per card&#x27;],dupes:[&#x27;Flag duplicates&#x27;,&#x27;5 per run&#x27;]};
   const aiAllowed = (spaceId,feature) =&gt; (SPACE_AI[spaceId]?.allow||[]).includes(feature);
-  function defaultRules(spaceId) { const m=MODES[spaceOf(spaceId).kind===&#x27;public&#x27;?&#x27;public&#x27;:&#x27;team&#x27;]; return {publish:m.publish,structure:m.structure,editors:[],judgments:{importance:true,articulation:true,evidence:true},ai:{draft:false,check:aiAllowed(spaceId,&#x27;check&#x27;),dupes:false},closes:&#x27;&#x27;}; }
+  function defaultRules(spaceId) { const m=MODES[SPACE_META.defaults[spaceId]||(spaceOf(spaceId).kind===&#x27;public&#x27;?&#x27;public&#x27;:&#x27;team&#x27;)]; return {publish:m.publish,structure:m.structure,editors:[],judgments:{importance:true,articulation:true,evidence:true},ai:{draft:false,check:aiAllowed(spaceId,&#x27;check&#x27;),dupes:false},closes:&#x27;&#x27;}; }
   const modeOf = r =&gt; Object.keys(MODES).find(k=&gt;MODES[k].publish===r.publish&amp;&amp;MODES[k].structure===r.structure)||&#x27;custom&#x27;;
   const TODAY = &#x27;2026-11-09&#x27;;
   function closedOf(d) { const q=d.question; return q.closed||(q.rules?.closes&amp;&amp;q.rules.closes&lt;=TODAY?{at:q.rules.closes+&#x27;T00:00:00Z&#x27;,by:&#x27;date&#x27;}:null); }
   const shortDate = iso =&gt; new Date(iso+&#x27;T12:00:00Z&#x27;).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
-  // People you could invite, by space. Anyone else can be invited by email.
-  const PEOPLE = {
+  // A space&#x27;s members (besides you), who are also the people you could invite to its boards. Anyone else can be invited by email.
+  const seedPeople = () =&gt; ({
     pod6:[&#x27;maya.chen&#x27;,&#x27;jordan_w&#x27;,&#x27;priya_s&#x27;,&#x27;samr_92&#x27;,&#x27;tess.b&#x27;,&#x27;omar_h&#x27;,&#x27;lin.zhao&#x27;,&#x27;dev_oka17&#x27;],
     northwind:[&#x27;priya_s&#x27;,&#x27;alexkim.dev&#x27;,&#x27;rafa_m&#x27;,&#x27;june.o&#x27;,&#x27;bo_lindqvist&#x27;],
     none:[&#x27;maya.chen&#x27;,&#x27;jordan_w&#x27;],
     brooklyn:[&#x27;dev_oka17&#x27;,&#x27;ana.lu&#x27;,&#x27;rtorres&#x27;,&#x27;kwame_b&#x27;],campus:[&#x27;samr_92&#x27;,&#x27;bwells&#x27;,&#x27;kt_nguyen&#x27;],worklab:[&#x27;alexkim.dev&#x27;,&#x27;june.o&#x27;]
-  };
+  });
+  let PEOPLE = seedPeople();
   const ME = &#x27;kieran_lamee&#x27;;
+  const MY_EMAIL = &#x27;kieran_lamee@example.com&#x27;; // a placeholder: the prototype has no accounts
+  // What a space&#x27;s admins set: roles (anyone unlisted is a member), community rules, pending invites and join requests,
+  // and the mode new steelmen start in (unset: Open team in a private space, Public in a community).
+  const seedSpaceMeta = () =&gt; ({
+    roles:{pod6:{[ME]:&#x27;admin&#x27;,&#x27;maya.chen&#x27;:&#x27;admin&#x27;,&#x27;jordan_w&#x27;:&#x27;moderator&#x27;},northwind:{priya_s:&#x27;admin&#x27;,rafa_m:&#x27;moderator&#x27;},none:{[ME]:&#x27;admin&#x27;},
+      brooklyn:{rtorres:&#x27;admin&#x27;,dev_oka17:&#x27;admin&#x27;,[ME]:&#x27;moderator&#x27;,&#x27;ana.lu&#x27;:&#x27;moderator&#x27;},campus:{samr_92:&#x27;admin&#x27;,bwells:&#x27;admin&#x27;,kt_nguyen:&#x27;moderator&#x27;},worklab:{&#x27;alexkim.dev&#x27;:&#x27;admin&#x27;,&#x27;june.o&#x27;:&#x27;moderator&#x27;}},
+    rules:{pod6:[&#x27;Argue the idea, not the classmate.&#x27;,&#x27;Add a source for any number.&#x27;],northwind:[],none:[],
+      brooklyn:[&#x27;Stick to streets, transit, and housing.&#x27;,&#x27;Argue the policy, not the person.&#x27;,&#x27;Back numbers with a source.&#x27;,&#x27;No ads or self-promotion.&#x27;],
+      campus:[&#x27;Be kind: classmates read this.&#x27;,&#x27;No names of students or staff.&#x27;,&#x27;Cite course policies when you can.&#x27;],worklab:[&#x27;Say when you speak from experience.&#x27;,&#x27;No recruiting or job posts.&#x27;]},
+    invites:{pod6:[{who:&#x27;ta.rivera@example.edu&#x27;,role:&#x27;member&#x27;,at:&#x27;2026-11-08T15:00:00Z&#x27;}]},
+    requests:{pod6:[{user:&#x27;kt_nguyen&#x27;,at:&#x27;2026-11-09T09:20:00Z&#x27;},{user:&#x27;bwells&#x27;,at:&#x27;2026-11-08T21:00:00Z&#x27;}]},
+    defaults:{}
+  });
+  let SPACE_META = seedSpaceMeta();
+  const SPACE_ROLES = {admin:&#x27;Admin&#x27;,moderator:&#x27;Moderator&#x27;,member:&#x27;Member&#x27;};
+  const roleIn = (id,user) =&gt; SPACE_META.roles[id]?.[user]||&#x27;member&#x27;;
+  // Space settings follow your real role; Preview as any board role other than Owner previews a plain member.
+  const isSpaceAdmin = id =&gt; [&#x27;you&#x27;,&#x27;owner&#x27;].includes(state.persona)&amp;&amp;roleIn(id,ME)===&#x27;admin&#x27;;
+  const resetSpaces = () =&gt; {SPACES=seedSpaces();SPACE_AI=seedSpaceAI();PEOPLE=seedPeople();SPACE_META=seedSpaceMeta();};
+  // Points, like karma (no money): earned for strengthening the debate, whichever side it&#x27;s on. Shown on profiles only.
+  const POINTS = {top:[25,&#x27;Argument in a side’s top three&#x27;,&#x27;arrow-up-down&#x27;],lead:[10,&#x27;Wording leads its row&#x27;,&#x27;arrow-left-right&#x27;],accepted:[15,&#x27;Accepted by an editor&#x27;,&#x27;user-check&#x27;],source:[5,&#x27;Source assessed as supporting&#x27;,&#x27;file-check&#x27;]};
+  // Points from boards that aren&#x27;t in the prototype, so the example users have a history.
+  const EARLIER = {[ME]:{top:3,lead:5,accepted:1,source:7},&#x27;maya.chen&#x27;:{top:11,lead:16,accepted:2,source:23},&#x27;jordan_w&#x27;:{top:8,lead:9,accepted:4,source:12},&#x27;priya_s&#x27;:{top:14,lead:22,accepted:0,source:31},&#x27;samr_92&#x27;:{top:6,lead:4,accepted:3,source:9},&#x27;tess.b&#x27;:{top:2,lead:6,accepted:5,source:4},&#x27;omar_h&#x27;:{top:1,lead:3,accepted:2,source:6},&#x27;lin.zhao&#x27;:{top:5,lead:7,accepted:1,source:14},&#x27;dev_oka17&#x27;:{top:9,lead:12,accepted:6,source:18},&#x27;rtorres&#x27;:{top:17,lead:25,accepted:3,source:40},&#x27;ana.lu&#x27;:{top:4,lead:8,accepted:7,source:11},&#x27;alexkim.dev&#x27;:{top:7,lead:5,accepted:0,source:8}};
+  // Credits already spent before this visit (AI checks and drafts). New spending is added to state.usage.
+  const USAGE_SEED = [
+    {at:&#x27;2026-11-09T08:00:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;openweights&#x27;,kind:&#x27;draft&#x27;,n:20},
+    {at:&#x27;2026-11-08T19:40:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;openweights&#x27;,kind:&#x27;check&#x27;,n:3},
+    {at:&#x27;2026-11-08T10:20:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;capstone&#x27;,kind:&#x27;check&#x27;,n:3},
+    {at:&#x27;2026-11-07T12:10:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;openweights&#x27;,kind:&#x27;check&#x27;,n:4},
+    {at:&#x27;2026-11-06T16:10:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;openweights&#x27;,kind:&#x27;check&#x27;,n:5},
+    {at:&#x27;2026-11-05T16:30:00Z&#x27;,space:&#x27;pod6&#x27;,board:&#x27;openweights&#x27;,kind:&#x27;check&#x27;,n:9}];
   // Roles build on each other. Signed out can only read.
   const RANK = {out:0,view:1,vote:2,contribute:3,edit:4,owner:5};
   const PERSONAS = {you:&#x27;Your access&#x27;,owner:&#x27;Owner&#x27;,edit:&#x27;Editor&#x27;,contribute:&#x27;Contributor&#x27;,vote:&#x27;Voter&#x27;,view:&#x27;Viewer&#x27;,out:&#x27;Signed out&#x27;};
@@ -2915,31 +3182,37 @@ html&gt;body{padding:0}&lt;/style&gt;
     importance:&#x27;vote&#x27;,preference:&#x27;vote&#x27;,assess:&#x27;vote&#x27;,
     compose:&#x27;contribute&#x27;,&#x27;compose-idea&#x27;:&#x27;contribute&#x27;,add:&#x27;contribute&#x27;,&#x27;add-idea&#x27;:&#x27;contribute&#x27;,&#x27;revise-card&#x27;:&#x27;contribute&#x27;,&#x27;edit-card&#x27;:&#x27;contribute&#x27;,&#x27;save-edit&#x27;:&#x27;contribute&#x27;,&#x27;delete-card&#x27;:&#x27;contribute&#x27;,&#x27;split-card&#x27;:&#x27;contribute&#x27;,&#x27;move-card&#x27;:&#x27;contribute&#x27;,&#x27;move-here&#x27;:&#x27;contribute&#x27;,
     &#x27;add-source&#x27;:&#x27;contribute&#x27;,&#x27;save-source&#x27;:&#x27;contribute&#x27;,&#x27;edit-source&#x27;:&#x27;contribute&#x27;,&#x27;remove-source&#x27;:&#x27;contribute&#x27;,&#x27;held-accept&#x27;:&#x27;edit&#x27;,&#x27;held-decline&#x27;:&#x27;edit&#x27;,&#x27;held-decline-confirm&#x27;:&#x27;edit&#x27;,&#x27;review-next&#x27;:&#x27;edit&#x27;,&#x27;decision-option&#x27;:&#x27;owner&#x27;,&#x27;decision-arg&#x27;:&#x27;owner&#x27;,&#x27;decision-edit&#x27;:&#x27;owner&#x27;,&#x27;decision-cancel&#x27;:&#x27;owner&#x27;,&#x27;decision-save&#x27;:&#x27;owner&#x27;,&#x27;report-open&#x27;:&#x27;view&#x27;,&#x27;report-card&#x27;:&#x27;view&#x27;,&#x27;report-withdraw&#x27;:&#x27;view&#x27;,&#x27;hide-open&#x27;:&#x27;edit&#x27;,&#x27;hide-card&#x27;:&#x27;edit&#x27;,&#x27;restore-card&#x27;:&#x27;edit&#x27;,&#x27;reports-dismiss&#x27;:&#x27;edit&#x27;,&#x27;comment-report-open&#x27;:&#x27;view&#x27;,&#x27;comment-report&#x27;:&#x27;view&#x27;,&#x27;comment-report-withdraw&#x27;:&#x27;view&#x27;,&#x27;comment-hide-open&#x27;:&#x27;edit&#x27;,&#x27;comment-hide&#x27;:&#x27;edit&#x27;,&#x27;comment-restore&#x27;:&#x27;edit&#x27;,&#x27;ai-recheck&#x27;:&#x27;contribute&#x27;,&#x27;held-withdraw&#x27;:&#x27;view&#x27;,&#x27;held-dismiss&#x27;:&#x27;view&#x27;,&#x27;add-option&#x27;:&#x27;structure&#x27;,&#x27;rename-option&#x27;:&#x27;structure&#x27;,&#x27;delete-option&#x27;:&#x27;structure&#x27;,&#x27;suggest-accept&#x27;:&#x27;contribute&#x27;,
+    inbox:&#x27;view&#x27;,&#x27;note-open&#x27;:&#x27;view&#x27;,&#x27;note-read&#x27;:&#x27;view&#x27;,&#x27;notes-read-all&#x27;:&#x27;view&#x27;,&#x27;space-new&#x27;:&#x27;view&#x27;,&#x27;space-create&#x27;:&#x27;view&#x27;,&#x27;space-settings&#x27;:&#x27;admin&#x27;,&#x27;space-canvas&#x27;:&#x27;admin&#x27;,&#x27;space-kind&#x27;:&#x27;admin&#x27;,&#x27;space-invite&#x27;:&#x27;admin&#x27;,&#x27;space-invite-cancel&#x27;:&#x27;admin&#x27;,&#x27;space-remove&#x27;:&#x27;admin&#x27;,&#x27;space-approve&#x27;:&#x27;admin&#x27;,&#x27;space-decline&#x27;:&#x27;admin&#x27;,&#x27;space-rule-add&#x27;:&#x27;admin&#x27;,&#x27;space-rule-remove&#x27;:&#x27;admin&#x27;,&#x27;space-ai&#x27;:&#x27;admin&#x27;,&#x27;space-mode&#x27;:&#x27;admin&#x27;,
+    &#x27;profile-pw&#x27;:&#x27;view&#x27;,&#x27;profile-pw-save&#x27;:&#x27;view&#x27;,&#x27;profile-pw-cancel&#x27;:&#x27;view&#x27;,&#x27;sign-out&#x27;:&#x27;view&#x27;,
     settings:&#x27;owner&#x27;};
-  const WHY = {view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
+  const WHY = {admin:&#x27;Space admins only.&#x27;,view:&#x27;Sign in to do this.&#x27;,vote:&#x27;Voting and assessing evidence need “can vote” access.&#x27;,contribute:&#x27;Writing and editing need “can contribute” access.&#x27;,edit:&#x27;Editors only.&#x27;,owner:&#x27;Only the board’s owner can change its settings.&#x27;,structure:&#x27;Editors only.&#x27;};
   const YOU_CAN = {out:&#x27;You’re signed out: you can read.&#x27;,view:&#x27;You can read and comment.&#x27;,vote:&#x27;You can read, comment, and vote.&#x27;,contribute:&#x27;You can read, comment, vote, and write.&#x27;,edit:&#x27;You can write, review, and reorganize.&#x27;,owner:&#x27;You own this board.&#x27;};
   const swatch = s =&gt; `&lt;span class=&quot;sm-swatch&quot; data-canvas=&quot;${s.canvas}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;`;
   const spaceTag = s =&gt; `&lt;span class=&quot;sm-tag&quot;&gt;${escape(s.name)}&lt;/span&gt;`;
-  // A smaller board sketched from options and arguments: [claim, importance, yes, no]. Each argument has one version.
+  // A smaller board sketched from options and arguments: [claim, importance, yes, no, author]. Each argument has one version.
+  // Without an author, one of the space&#x27;s people wrote it (the board&#x27;s author on a Personal draft).
   function sketchDoc(key,{q,author,posted,org,visibility,options}) {
     const d={question:{text:q,author,posted,org,visibility,accessRole:visibility===&#x27;link&#x27;?&#x27;vote&#x27;:&#x27;contribute&#x27;,people:[],contribute:&#x27;viewers&#x27;,vote:&#x27;viewers&#x27;},options:[],ideas:[],cards:{},sources:{},comments:[],suggestions:[],nextId:1};
     options.forEach(([name,args],oi)=&gt;{
       const option=`${key}-o${oi}`; d.options.push({id:option,name});
-      args.forEach(([claim,score,yes=0,no=0],ai)=&gt;{const idea=`${key}-${oi}-${ai}`,card=idea+&#x27;v&#x27;;const at=new Date(Date.parse(posted+&#x27;T09:00:00Z&#x27;)+(ai*7+oi*3)*36e5).toISOString();d.cards[card]={at,idea,claim,yes,no,pref:0,sources:[],explanation:&#x27;&#x27;};d.ideas.push({id:idea,option,score,versions:[card]});});
+      const pool=(PEOPLE[org]||[]).filter(u=&gt;u!==ME&amp;&amp;u!==author);
+    args.forEach(([claim,score,yes=0,no=0,by],ai)=&gt;{const idea=`${key}-${oi}-${ai}`,card=idea+&#x27;v&#x27;;const at=new Date(Date.parse(posted+&#x27;T09:00:00Z&#x27;)+(ai*7+oi*3)*36e5).toISOString();d.cards[card]={at,idea,claim,yes,no,pref:0,sources:[],explanation:&#x27;&#x27;,by:by||(org===&#x27;none&#x27;||!pool.length?(author===ME?&#x27;you&#x27;:author):pool[(oi*3+ai*2+key.length)%pool.length])};d.ideas.push({id:idea,option,score,versions:[card]});});
     });
     return d;
   }
   // The capstone example runs Edited: maya.chen owns it, you&#x27;re an editor, and two contributions wait for review.
   function editedExample(d) {
-    Object.assign(d.question.rules=defaultRules(&#x27;pod6&#x27;),{publish:&#x27;review&#x27;,structure:&#x27;editors&#x27;});
+    Object.assign(d.question.rules=defaultRules(&#x27;pod6&#x27;),{publish:&#x27;review&#x27;,structure:&#x27;editors&#x27;,closes:&#x27;2026-11-10&#x27;});
     d.question.people=[{user:ME,role:&#x27;edit&#x27;},{user:&#x27;jordan_w&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;tess.b&#x27;,role:&#x27;contribute&#x27;},{user:&#x27;omar_h&#x27;,role:&#x27;contribute&#x27;}];
     d.pending=[
       {id:&#x27;p1&#x27;,kind:&#x27;idea&#x27;,option:&#x27;capstone-o1&#x27;,claim:&#x27;Hand-written code is the only fair way to compare teams with different access to AI tools.&#x27;,reason:&#x27;&#x27;,by:&#x27;tess.b&#x27;,at:&#x27;2026-11-09T09:30:00Z&#x27;},
+      {id:&#x27;p3&#x27;,kind:&#x27;version&#x27;,idea:&#x27;capstone-1-0&#x27;,claim:&#x27;Students should be able to explain every line of code they ship.&#x27;,reason:&#x27;Close to the current wording. Try saying what graders would check.&#x27;,status:&#x27;declined&#x27;,by:&#x27;you&#x27;,at:&#x27;2026-11-08T16:00:00Z&#x27;},
       {id:&#x27;p2&#x27;,kind:&#x27;version&#x27;,idea:&#x27;capstone-0-0&#x27;,claim:&#x27;Disclosure shows graders how each team used AI, without banning tools students will use at work.&#x27;,reason:&#x27;Shorter, and says what graders get.&#x27;,by:&#x27;omar_h&#x27;,at:&#x27;2026-11-09T10:15:00Z&#x27;}];
     return d;
   }
   // The standups example is closed: priya_s recorded the decision, citing an argument from each side.
   function decidedExample(d) {
+    d.question.voted=[ME,&#x27;rafa_m&#x27;,&#x27;june.o&#x27;];
     d.question.closed={at:&#x27;2026-11-07T17:00:00Z&#x27;,by:&#x27;priya_s&#x27;,decision:{option:&#x27;standups-o0&#x27;,why:&#x27;Async frees a fixed slot across four time zones. We keep one live call a week for blockers people don’t write down.&#x27;,cards:[&#x27;standups-0-0v&#x27;,&#x27;standups-1-0v&#x27;],by:&#x27;priya_s&#x27;,at:&#x27;2026-11-07T17:00:00Z&#x27;}};
     d.log=[{at:&#x27;2026-11-07T17:00:00Z&#x27;,by:&#x27;priya_s&#x27;,did:&#x27;decided&#x27;,ref:&#x27;Go async&#x27;,reason:&#x27;&#x27;},{at:&#x27;2026-11-07T16:55:00Z&#x27;,by:&#x27;priya_s&#x27;,did:&#x27;closed&#x27;,ref:&#x27;&#x27;,reason:&#x27;&#x27;}];
     return d;
@@ -2953,6 +3226,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     add(&#x27;bikelane-x2&#x27;,&#x27;bikelane-o0&#x27;,&#x27;Drivers who complain about bike lanes should just move out of the city.&#x27;,1,{by:&#x27;cyclebro&#x27;,hidden:{by:&#x27;rtorres&#x27;,reason:&#x27;abuse&#x27;,at:&#x27;2026-11-08T18:20:00Z&#x27;}});
     d.comments=[{id:&#x27;bl-c1&#x27;,target:&#x27;question&#x27;,by:&#x27;ana.lu&#x27;,at:&#x27;2026-11-08T12:00:00Z&#x27;,text:&#x27;The DOT study covered 9th Avenue too. Worth adding as a source?&#x27;},
       {id:&#x27;bl-c2&#x27;,target:&#x27;question&#x27;,by:&#x27;promo_bk&#x27;,at:&#x27;2026-11-08T13:30:00Z&#x27;,text:&#x27;Join our group for the REAL story on 7th Ave!!&#x27;,reports:[{by:&#x27;dev_oka17&#x27;,reason:&#x27;spam&#x27;,at:&#x27;2026-11-08T14:00:00Z&#x27;}]}];
+    d.cards[&#x27;bikelane-0-1v&#x27;].accepted={by:&#x27;rtorres&#x27;,at:&#x27;2026-11-01T10:00:00Z&#x27;};
     d.log=[{at:&#x27;2026-11-08T18:20:00Z&#x27;,by:&#x27;rtorres&#x27;,did:&#x27;hid&#x27;,ref:&#x27;Drivers who complain about bike lanes should…&#x27;,reason:&#x27;abuse&#x27;}];
     return d;
   }
@@ -2960,13 +3234,13 @@ html&gt;body{padding:0}&lt;/style&gt;
     openweights:seedDoc(),
     capstone:editedExample(sketchDoc(&#x27;capstone&#x27;,{q:&#x27;Should capstone teams be allowed to ship AI-written code?&#x27;,author:&#x27;maya.chen&#x27;,posted:&#x27;2026-11-08&#x27;,org:&#x27;pod6&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Allow it, with disclosure&#x27;,[[&#x27;Disclosure keeps grading honest while letting teams build the way they will at work.&#x27;,34,6,2],[&#x27;A ban is hard to enforce; disclosure at least makes AI use visible.&#x27;,22,3,3]]],
-      [&#x27;Require hand-written code&#x27;,[[&#x27;Students can’t defend design trade-offs in code they didn’t write.&#x27;,29,4,1]]]]})),
+      [&#x27;Require hand-written code&#x27;,[[&#x27;Students can’t defend design trade-offs in code they didn’t write.&#x27;,29,4,1,&#x27;you&#x27;]]]]})),
     standups:decidedExample(sketchDoc(&#x27;standups&#x27;,{q:&#x27;Should we replace daily standups with written updates?&#x27;,author:&#x27;priya_s&#x27;,posted:&#x27;2026-11-03&#x27;,org:&#x27;northwind&#x27;,visibility:&#x27;org&#x27;,options:[
       [&#x27;Go async&#x27;,[[&#x27;Written updates free a fixed meeting slot for a team spread over four time zones.&#x27;,18,5,0],[&#x27;A written log shows who was blocked, days later.&#x27;,11,1,1]]],
       [&#x27;Keep live standups&#x27;,[[&#x27;Live standups surface blockers people don’t think to write down.&#x27;,15,2,2],[&#x27;New hires pick up team norms faster by hearing them daily.&#x27;,6]]],
       [&#x27;Two live days, three written&#x27;,[]]]})),
     bikelane:moderatedExample(sketchDoc(&#x27;bikelane&#x27;,{q:&#x27;Should 7th Avenue get a protected bike lane?&#x27;,author:&#x27;dev_oka17&#x27;,posted:&#x27;2026-10-29&#x27;,org:&#x27;brooklyn&#x27;,visibility:&#x27;link&#x27;,options:[
-      [&#x27;Build the protected lane&#x27;,[[&#x27;Protected lanes cut injuries on comparable avenues.&#x27;,61,22,6],[&#x27;A continuous lane connects the two park entrances.&#x27;,33,9,2],[&#x27;Delivery loading zones can be kept on side streets.&#x27;,18,3,7]]],
+      [&#x27;Build the protected lane&#x27;,[[&#x27;Protected lanes cut injuries on comparable avenues.&#x27;,61,22,6],[&#x27;A continuous lane connects the two park entrances.&#x27;,33,9,2,&#x27;you&#x27;],[&#x27;Delivery loading zones can be kept on side streets.&#x27;,18,3,7]]],
       [&#x27;Keep parking, paint a lane&#x27;,[[&#x27;Shops on the avenue depend on short-stay parking.&#x27;,47,8,9]]]]})),
     curve:sketchDoc(&#x27;curve&#x27;,{q:&#x27;Should intro courses grade on a curve?&#x27;,author:&#x27;samr_92&#x27;,posted:&#x27;2026-11-07&#x27;,org:&#x27;campus&#x27;,visibility:&#x27;link&#x27;,options:[
       [&#x27;Grade on a curve&#x27;,[[&#x27;A curve corrects for an exam that turned out harder than intended.&#x27;,40,9,4],[&#x27;Curving keeps grades comparable across sections with different instructors.&#x27;,21,2,5]]],
@@ -3016,7 +3290,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     idea.versions.push(id); return id;
   }
   // open: idea whose versions are unfolded. expanded: card whose context and evidence are showing. drawer: right-hand panel.
-  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{}});
+  const freshState = () =&gt; ({sourceMore:false,renamingOption:null,newOption:null,optionDraft:&#x27;&#x27;,moving:null,sourceForm:null,sourceDraft:{},menu:null,editing:null,editDraftClaim:&#x27;&#x27;,editDraftReason:&#x27;&#x27;,undo:null,open:null,expanded:null,composing:false,composingIdea:null,ideaDraftClaim:&#x27;&#x27;,ideaDraftReason:&#x27;&#x27;,drawer:null,confirmReset:false,commentTarget:null,commentDraft:&#x27;&#x27;,replyTo:null,replyDraft:&#x27;&#x27;,showResolved:false,importance:{},preference:{},assessments:{},draftClaim:&#x27;&#x27;,draftReason:&#x27;&#x27;,updated:false,openSources:{},doc:null,view:&#x27;home&#x27;,boardId:&#x27;openweights&#x27;,space:&#x27;all&#x27;,sort:&#x27;hot&#x27;,query:&#x27;&#x27;,navOpen:false,zoom:&#x27;read&#x27;,creating:false,createDraft:{q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null},createError:&#x27;&#x27;,share:false,shareQuery:&#x27;&#x27;,shareRole:&#x27;contribute&#x27;,copied:&#x27;&#x27;,lens:{},hiddenCols:{},step:{},shownRows:{},shownVersions:{},joined:{brooklyn:true,campus:true,worklab:true},persona:&#x27;you&#x27;,requested:{},spent:{},usage:[],profile:null,profileFrom:null,contribTab:&#x27;args&#x27;,pwOpen:false,spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteRole:&#x27;member&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,notes:[],notesRead:{},invite:null,tour:null,toured:false});
   let state = freshState();
   useDoc(docs.openweights);
   const design = {indicator:&#x27;dossier&#x27;,density:&#x27;comfortable&#x27;,type:&#x27;sans&#x27;};
@@ -3040,14 +3314,23 @@ html&gt;body{padding:0}&lt;/style&gt;
       for (const key of [&#x27;preference&#x27;,&#x27;assessments&#x27;,&#x27;openSources&#x27;]) state[key]=Object.fromEntries(Object.entries(state[key]).map(([k,v])=&gt;[renamed(k),v]));
       if (typeof saved.expanded===&#x27;string&#x27;) saved.expanded=renamed(saved.expanded);
     }
-    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 11) are dropped, so returning visitors get the current one.
-    if (saved.docsVersion===11 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
+    // Every board, and where you were in the list. Saves of an older example board (docsVersion below 13) are dropped, so returning visitors get the current one.
+    const st=saved.spaceStore;
+    if (st &amp;&amp; Array.isArray(st.spaces) &amp;&amp; st.spaces.every(x=&gt;x&amp;&amp;typeof x.id===&#x27;string&#x27;&amp;&amp;typeof x.name===&#x27;string&#x27;&amp;&amp;CANVAS_IDS.includes(x.canvas)) &amp;&amp; st.ai &amp;&amp; st.people &amp;&amp; st.meta?.roles) {SPACES=st.spaces;SPACE_AI=st.ai;PEOPLE=st.people;SPACE_META={...seedSpaceMeta(),...st.meta};}
+    if (saved.docsVersion===13 &amp;&amp; saved.docs &amp;&amp; typeof saved.docs===&#x27;object&#x27; &amp;&amp; Object.values(saved.docs).every(validDoc)) docs={...seedDocs(),...saved.docs};
     state.boardId = docs[saved.boardId] ? saved.boardId : &#x27;openweights&#x27;;
     state.view = saved.view===&#x27;board&#x27; ? &#x27;board&#x27; : &#x27;home&#x27;;
     if (saved.space===&#x27;all&#x27;||SPACES.some(s=&gt;s.id===saved.space)) state.space=saved.space;
     if (SORTS[saved.sort]) state.sort=saved.sort;
     if (PERSONAS[saved.persona]) state.persona=saved.persona;
     for (const key of [&#x27;lens&#x27;,&#x27;hiddenCols&#x27;,&#x27;joined&#x27;,&#x27;requested&#x27;,&#x27;spent&#x27;]) if (saved[key] &amp;&amp; typeof saved[key]===&#x27;object&#x27;) state[key]=saved[key];
+    if (Array.isArray(saved.usage)) state.usage=saved.usage.slice(0,50);
+    if (Array.isArray(saved.notes)) state.notes=saved.notes.filter(n=&gt;n&amp;&amp;typeof n.id===&#x27;string&#x27;).slice(0,30);
+    if (saved.notesRead &amp;&amp; typeof saved.notesRead===&#x27;object&#x27;) state.notesRead=saved.notesRead;
+    state.toured=saved.toured===true;
+    if (typeof saved.spaceEdit===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) state.spaceEdit=saved.spaceEdit;
+    if (typeof saved.profile===&#x27;string&#x27; &amp;&amp; state.view===&#x27;home&#x27;) {state.profile=saved.profile;state.profileFrom=docs[saved.profileFrom]?saved.profileFrom:null;}
+    if ([&#x27;args&#x27;,&#x27;words&#x27;,&#x27;sources&#x27;].includes(saved.contribTab)) state.contribTab=saved.contribTab;
     useDoc(docs[state.boardId]);
     // Version 2 stored a modal view; it has no meaning on the board, so it starts closed.
     if (data.version&gt;=3) {
@@ -3061,7 +3344,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   let lastSavedSnapshot=&#x27;&#x27;;
   function save() {
-    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:11,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
+    const privateContent={version:4,state:{...state,declining:null,declineDraft:&#x27;&#x27;,menuView:null,commentPick:null,decisionEditing:false,docs,docsVersion:13,spaceStore:{spaces:SPACES,ai:SPACE_AI,people:PEOPLE,meta:SPACE_META},spaceEdit:state.spaceEdit===&#x27;new&#x27;?null:state.spaceEdit,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;,inbox:false,invite:null,tour:null,query:&#x27;&#x27;,navOpen:false,share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,drawer:null,confirmReset:false,pwOpen:false,replyTo:null,replyDraft:&#x27;&#x27;,menu:null,editing:null,undo:null,sourceForm:null,sourceDraft:{},moving:null,renamingOption:null,newOption:null},design};lastSavedSnapshot=JSON.stringify(privateContent);
     if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{prototype:&#x27;Steelman canvas cards&#x27;,openIdea:state.open,expandedCard:state.expanded,design},privateContent}).catch(()=&gt;{});
   }
   function announce(message) { status.textContent=message; }
@@ -3120,7 +3403,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // A closed board is read-only: no votes, writing, reviewing, or reorganizing. Comments stay open.
   const closedNow = () =&gt; !!closedOf(doc);
   const LOCKED = new Set([&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;,&#x27;structure&#x27;]);
-  const can = level =&gt; closedNow()&amp;&amp;LOCKED.has(level)?false:level===&#x27;structure&#x27;?canStructure():RANK[myRole()]&gt;=RANK[level];
+  const can = level =&gt; level===&#x27;admin&#x27;?(state.spaceEdit===&#x27;new&#x27;?can(&#x27;view&#x27;):isSpaceAdmin(state.spaceEdit||state.space)):closedNow()&amp;&amp;LOCKED.has(level)?false:level===&#x27;structure&#x27;?canStructure():RANK[myRole()]&gt;=RANK[level];
   // The board&#x27;s rules say who changes its structure: anyone who can write, its editors, or only the owner.
   function canStructure() { const r=doc.question.rules; if(closedNow()) return false; if(myRole()===&#x27;owner&#x27;) return true; return r.structure===&#x27;writers&#x27;?can(&#x27;contribute&#x27;):r.structure===&#x27;editors&#x27;?can(&#x27;edit&#x27;):false; }
   // Under &quot;Editors review first&quot;, what anyone below editor adds waits for an editor.
@@ -3178,7 +3461,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // AI evidence checks (simulated: no model runs). With checks on, new wordings and changed evidence are checked
   // automatically, one credit each; anyone who can write can ask for a check from an opened card.
   const checksOn = () =&gt; doc.question.rules.ai.check&amp;&amp;aiAllowed(doc.question.org,&#x27;check&#x27;);
-  const creditsLeft = () =&gt; (SPACE_AI[doc.question.org]?.credits||0)-(state.spent[doc.question.org]||0);
+  const creditsLeft = () =&gt; spaceCredits(doc.question.org);
   // Declared as functions so loading a board (useDoc, early in the script) can use them.
   function evidenceSig(d,c) { return c.sources.map(s=&gt;s+(d.sources[s]?.unavailable?&#x27;!&#x27;:&#x27;&#x27;)).join(&#x27;,&#x27;); }
   function pseudo(str) { let h=0; for(const ch of str) h=(h*31+ch.charCodeAt(0))|0; return [&#x27;supports&#x27;,&#x27;partly&#x27;,&#x27;doesnt&#x27;][Math.abs(h)%3]; }
@@ -3194,7 +3477,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   function queueCheck(cardId) {
     if(!checksOn()||creditsLeft()&lt;1||!cards[cardId]) return;
     const org=doc.question.org,board=state.boardId;
-    state.spent[org]=(state.spent[org]||0)+1;cards[cardId].aiCheck={pending:true};
+    state.spent[org]=(state.spent[org]||0)+1;logUsage(org,board,&#x27;check&#x27;,1);cards[cardId].aiCheck={pending:true};
     setTimeout(()=&gt;{
       const d=docs[board],c=d?.cards[cardId];if(!c?.aiCheck?.pending) return;
       c.aiCheck=simulateCheck(d,cardId);
@@ -3230,7 +3513,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     return `&lt;span class=&quot;sm-cred-group&quot;&gt;${credibility(id)}${aiCheckMark(id)}&lt;/span&gt;&lt;div class=&quot;sm-card-tools&quot;&gt;${handle}${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
-  const byline = id =&gt; { const by=cards[id].by; return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by)}&lt;/p&gt;`:&#x27;&#x27;; };
+  const byline = id =&gt; { const by=cards[id].by; return by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;p class=&quot;sm-byline&quot;&gt;${userLink(by,by===&#x27;you&#x27;?&#x27;you&#x27;:escape(by))}&lt;/p&gt;`:&#x27;&#x27;; };
   // mark: a highlight tag on the card&#x27;s top edge (see lensTag); lit: the card itself matches the highlight.
   function cardFace(id, inTrack=false, mark=&#x27;&#x27;, lit=false) {
     if(cards[id].hidden) return removedCard(id,inTrack);
@@ -3363,7 +3646,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   const reasonMenu = id =&gt; `&lt;p class=&quot;sm-menu-note&quot;&gt;${state.menuView===&#x27;report&#x27;?&#x27;Report it as&#x27;:&#x27;Hide it as&#x27;}&lt;/p&gt;`+Object.entries(REASONS).map(([k,l])=&gt;modItem(state.menuView===&#x27;report&#x27;?&#x27;report-card&#x27;:&#x27;hide-card&#x27;,id,{spam:&#x27;ban&#x27;,abuse:&#x27;shield-alert&#x27;,offtopic:&#x27;move-right&#x27;,other:&#x27;circle-help&#x27;}[k],l,k)).join(&#x27;&#x27;);
   function historyMarkup() {
     const verbs={closed:&#x27;closed the board&#x27;,reopened:&#x27;reopened the board&#x27;,decided:&#x27;recorded the decision:&#x27;,hid:&#x27;hid&#x27;,restored:&#x27;restored&#x27;,dismissed:&#x27;dismissed reports on&#x27;,accepted:&#x27;accepted&#x27;,declined:&#x27;declined&#x27;,deleted:&#x27;deleted&#x27;};
-    return doc.log.length?`&lt;ol class=&quot;sm-history&quot;&gt;${doc.log.map(e=&gt;`&lt;li&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(e.by===&#x27;you&#x27;?ME:e.by))}&lt;/span&gt;&lt;p&gt;&lt;strong&gt;${e.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(e.by)}&lt;/strong&gt; ${verbs[e.did]||e.did}${[&#x27;closed&#x27;,&#x27;reopened&#x27;].includes(e.did)?&#x27;&#x27;:` “${escape(e.ref)}”`}${e.reason?` &lt;span class=&quot;sm-history-reason&quot;&gt;${escape(REASONS[e.reason]||e.reason)}&lt;/span&gt;`:&#x27;&#x27;}&lt;time datetime=&quot;${e.at}&quot; title=&quot;${fullDate(e.at)}&quot;&gt;${ago(e.at)}&lt;/time&gt;&lt;/p&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;Nothing yet.&lt;/p&gt;&#x27;;
+    return doc.log.length?`&lt;ol class=&quot;sm-history&quot;&gt;${doc.log.map(e=&gt;`&lt;li&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(e.by===&#x27;you&#x27;?ME:e.by))}&lt;/span&gt;&lt;p&gt;&lt;strong&gt;${userLink(e.by,e.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(e.by))}&lt;/strong&gt; ${verbs[e.did]||e.did}${[&#x27;closed&#x27;,&#x27;reopened&#x27;].includes(e.did)?&#x27;&#x27;:` “${escape(e.ref)}”`}${e.reason?` &lt;span class=&quot;sm-history-reason&quot;&gt;${escape(REASONS[e.reason]||e.reason)}&lt;/span&gt;`:&#x27;&#x27;}&lt;time datetime=&quot;${e.at}&quot; title=&quot;${fullDate(e.at)}&quot;&gt;${ago(e.at)}&lt;/time&gt;&lt;/p&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;Nothing yet.&lt;/p&gt;&#x27;;
   }
   const heldId = () =&gt; { let id; do id=&#x27;p&#x27;+(doc.nextId++); while(doc.pending.some(x=&gt;x.id===id)); return id; };
   // While moving a version, every other row in its option becomes a target.
@@ -3486,9 +3769,9 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
 
   // Question header and document settings.
-  const ORGS = Object.fromEntries(SPACES.map(s=&gt;[s.id,s.name]));
+  const orgs = () =&gt; Object.fromEntries(SPACES.map(s=&gt;[s.id,s.name]));
   // One way to say who can see a board, everywhere: the board pill, Share, and the create sheet.
-  const visLabel = (visibility,org) =&gt; visibility===&#x27;private&#x27;||(visibility===&#x27;org&#x27;&amp;&amp;org===&#x27;none&#x27;)?&#x27;Invited only&#x27;:visibility===&#x27;org&#x27;?`Everyone in ${ORGS[org]}`:&#x27;Anyone with the link&#x27;;
+  const visLabel = (visibility,org) =&gt; visibility===&#x27;private&#x27;||(visibility===&#x27;org&#x27;&amp;&amp;org===&#x27;none&#x27;)?&#x27;Invited only&#x27;:visibility===&#x27;org&#x27;?`Everyone in ${spaceOf(org).name}`:&#x27;Anyone with the link&#x27;;
   const visIcon = visibility =&gt; ({private:&#x27;lock&#x27;,org:&#x27;users&#x27;,link:&#x27;globe&#x27;})[visibility]||&#x27;lock&#x27;;
   const posted = iso =&gt; new Date(iso+&#x27;T12:00:00Z&#x27;).toLocaleDateString(&#x27;en-US&#x27;,{month:&#x27;short&#x27;,day:&#x27;numeric&#x27;,year:&#x27;numeric&#x27;,timeZone:&#x27;UTC&#x27;});
   function headMarkup() {
@@ -3496,7 +3779,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     // The breadcrumb already names the space; the pill says who can see the board.
     const initials=q.author.split(/[\s_.]+/).map(w=&gt;w[0]).join(&#x27;&#x27;).slice(0,2).toUpperCase();
     return `&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;ul class=&quot;sm-question-meta&quot; aria-label=&quot;About this question&quot;&gt;`
-      +`&lt;li class=&quot;sm-meta-author&quot;&gt;&lt;span class=&quot;sm-meta-avatar${q.author===ME?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong title=&quot;Posted by ${escape(q.author)}&quot;&gt;${escape(q.author)}&lt;/strong&gt;&lt;/li&gt;`
+      +`&lt;li class=&quot;sm-meta-author&quot;&gt;&lt;span class=&quot;sm-meta-avatar${q.author===ME?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong title=&quot;Posted by ${escape(q.author)}&quot;&gt;${userLink(q.author,escape(q.author))}&lt;/strong&gt;&lt;/li&gt;`
       +`&lt;li class=&quot;sm-meta-date&quot;&gt;${icon(&#x27;calendar&#x27;)}&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;&lt;/li&gt;`
       +`&lt;li class=&quot;sm-meta-vis&quot;&gt;&lt;span class=&quot;sm-meta-pill&quot; title=&quot;Who can see it&quot;&gt;${icon(visIcon(q.visibility))}${escape(visLabel(q.visibility,q.org))}&lt;/span&gt;&lt;/li&gt;`
       +`&lt;li class=&quot;sm-meta-rules&quot;&gt;${rulesChip()}&lt;/li&gt;`
@@ -3535,7 +3818,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   // &quot;How it runs&quot;: the same controls when creating a board and in its Settings.
   // Groups under small tracked headings, rows split by hairlines, the control on the right of each row.
   function rulesMarkup(r,spaceId,scope) {
-    const k=scope+&#x27;-rule&#x27;,mode=modeOf(r),left=(SPACE_AI[spaceId]?.credits||0)-(state.spent[spaceId]||0);
+    const k=scope+&#x27;-rule&#x27;,mode=modeOf(r),left=spaceCredits(spaceId);
     const group=(title,rows,aside=&#x27;&#x27;)=&gt;`&lt;section class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;${title}${aside?`&lt;span&gt;${aside}&lt;/span&gt;`:&#x27;&#x27;}&lt;/h3&gt;${rows}&lt;/section&gt;`;
     const row=(label,control,sub=&#x27;&#x27;,cls=&#x27;&#x27;)=&gt;`&lt;div class=&quot;sm-rrow ${cls}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}${sub?`&lt;small&gt;${sub}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${control}&lt;/span&gt;&lt;/div&gt;`;
     const sel=(rule,opts)=&gt;`&lt;select class=&quot;sm-rselect&quot; data-rule=&quot;${rule}&quot; data-key=&quot;${k}-${rule}&quot; aria-label=&quot;${rule===&#x27;publish&#x27;?&#x27;New arguments&#x27;:&#x27;Reorganizing&#x27;}&quot;&gt;${Object.entries(opts).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${r[rule]===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
@@ -3604,7 +3887,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   function settingsMarkup() {
     const q=doc.question;
     return `&lt;div class=&quot;sm-field&quot;&gt;&lt;label for=&quot;sm-question&quot;&gt;Question&lt;/label&gt;&lt;textarea id=&quot;sm-question&quot; data-key=&quot;q-text&quot; maxlength=&quot;200&quot; rows=&quot;2&quot; aria-describedby=&quot;sm-question-hint&quot;&gt;${escape(q.text)}&lt;/textarea&gt;&lt;p class=&quot;sm-field-hint&quot; id=&quot;sm-question-hint&quot;&gt;Ask it neutrally, so each option can make its strongest case.&lt;/p&gt;&lt;/div&gt;`
-      +select(&#x27;org&#x27;,ORGS,q.org,&#x27;Space&#x27;)
+      +select(&#x27;org&#x27;,orgs(),q.org,&#x27;Space&#x27;)
       +`&lt;section class=&quot;sm-drawer-section&quot; aria-label=&quot;How it runs&quot;&gt;${rulesMarkup(q.rules,q.org,&#x27;board&#x27;)}&lt;/section&gt;`
       +weighedInMarkup()
       +`&lt;div class=&quot;sm-field&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-text-button cursor-interaction&quot; data-action=&quot;open-share&quot; data-key=&quot;open-share&quot;&gt;${icon(&#x27;user-plus&#x27;)}Sharing and access →&lt;/button&gt;&lt;/div&gt;`
@@ -3640,7 +3923,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       others&amp;&amp;can(&#x27;edit&#x27;)?linkButton(&#x27;comment-hide-open&#x27;,c.id,&#x27;Hide&#x27;):&#x27;&#x27;
     ].join(&#x27;&#x27;);
     const flags=can(&#x27;edit&#x27;)&amp;&amp;c.reports?.length&amp;&amp;!c.hidden?`&lt;span class=&quot;sm-comment-flag&quot; data-tooltip=&quot;${escape(reasonsOf(c.reports))}&quot;&gt;${icon(&#x27;flag&#x27;)}${c.reports.length}&lt;/span&gt;`:&#x27;&#x27;;
-    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${escape(who)}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
+    return `&lt;article class=&quot;sm-comment ${isReply?&#x27;sm-reply&#x27;:&#x27;&#x27;}&quot; aria-label=&quot;${c.deleted?&#x27;Deleted comment&#x27;:&#x27;Comment by &#x27;+escape(who)}&quot;&gt;&lt;header&gt;&lt;span class=&quot;sm-avatar${c.by===&#x27;you&#x27;?&#x27; sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${escape(initials)}&lt;/span&gt;&lt;strong&gt;${c.deleted?escape(who):userLink(c.by,escape(who))}&lt;/strong&gt;&lt;time datetime=&quot;${c.at}&quot; title=&quot;${fullDate(c.at)}&quot;&gt;${ago(c.at)}&lt;/time&gt;${flags}&lt;/header&gt;${c.deleted?&#x27;&lt;p class=&quot;sm-comment-deleted&quot;&gt;Comment deleted.&lt;/p&gt;&#x27;:c.hidden?`&lt;p class=&quot;sm-comment-deleted&quot;&gt;Removed by a moderator · ${REASONS[c.hidden.reason]}&lt;/p&gt;${can(&#x27;edit&#x27;)?`&lt;p class=&quot;sm-removed-claim&quot;&gt;${escape(c.text)}&lt;/p&gt;`:&#x27;&#x27;}`:`&lt;p&gt;${escape(c.text)}&lt;/p&gt;`}${actions?`&lt;div class=&quot;sm-comment-actions&quot;&gt;${actions}&lt;/div&gt;`:&#x27;&#x27;}&lt;/article&gt;`;
   }
   function thread(c) {
     const replying=state.replyTo===c.id;
@@ -3716,7 +3999,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(missing.length) return {missing};
     let id=sourceId;
     if(id) Object.assign(sources[id],clean);
-    else {id=&#x27;s&#x27;+(doc.nextId++);sources[id]={...clean,by:&#x27;you&#x27;};cards[cardId].sources.push(id);}
+    else {id=&#x27;s&#x27;+(doc.nextId++);sources[id]={...clean,by:&#x27;you&#x27;,at:new Date().toISOString()};cards[cardId].sources.push(id);}
     markEvidenceChanged(cardId);
     state.openSources[cardId+&#x27;/&#x27;+id]=true;
     state.sourceForm=null;state.sourceDraft={};
@@ -3989,7 +4272,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const here=b.f.here.length+(b.f.more||0);
     const faces=here?`&lt;span&gt;&lt;span class=&quot;sm-faces&quot;&gt;${b.f.here.slice(0,3).map(u=&gt;`&lt;span title=&quot;${escape(u)}&quot;&gt;${escape(userInitials(u))}&lt;/span&gt;`).join(&#x27;&#x27;)}&lt;/span&gt;${here} here now&lt;/span&gt;`:&#x27;&#x27;;
     return `&lt;li class=&quot;sm-post&quot; data-board=&quot;${b.id}&quot;&gt;&lt;div class=&quot;sm-post-vote&quot;&gt;${vote}&lt;/div&gt;&lt;div class=&quot;sm-post-body&quot;&gt;`
-      +`&lt;div class=&quot;sm-post-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${b.space.id}&quot; data-key=&quot;post-space-${b.id}&quot;&gt;${escape(b.space.name)}&lt;/button&gt;&lt;span&gt;${escape(q.author)}&lt;/span&gt;&lt;span class=&quot;sm-dot&quot;&gt;&lt;/span&gt;&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;${closedOf(b.d)?`&lt;span class=&quot;sm-post-closed&quot;&gt;${icon(&#x27;lock&#x27;)}${q.closed?.decision?&#x27;Decided: &#x27;+escape(b.d.options.find(o=&gt;o.id===q.closed.decision.option)?.name||&#x27;&#x27;):&#x27;Closed&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-post-meta&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${b.space.id}&quot; data-key=&quot;post-space-${b.id}&quot;&gt;${escape(b.space.name)}&lt;/button&gt;&lt;span&gt;${userLink(q.author,escape(q.author))}&lt;/span&gt;&lt;span class=&quot;sm-dot&quot;&gt;&lt;/span&gt;&lt;time datetime=&quot;${q.posted}&quot; title=&quot;${fullDate(q.posted+&#x27;T12:00:00Z&#x27;)}&quot;&gt;${ago(q.posted+&#x27;T09:00:00Z&#x27;)}&lt;/time&gt;${closedOf(b.d)?`&lt;span class=&quot;sm-post-closed&quot;&gt;${icon(&#x27;lock&#x27;)}${q.closed?.decision?&#x27;Decided: &#x27;+escape(b.d.options.find(o=&gt;o.id===q.closed.decision.option)?.name||&#x27;&#x27;):&#x27;Closed&#x27;}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`
       +`&lt;h2&gt;&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;open-board&quot; data-id=&quot;${b.id}&quot; data-key=&quot;open-${b.id}&quot;&gt;${escape(q.text)}&lt;/button&gt;&lt;/h2&gt;`
       +`&lt;ul class=&quot;sm-post-options&quot; aria-label=&quot;Options and how many arguments each has&quot;&gt;${options}&lt;/ul&gt;`
       +`&lt;div class=&quot;sm-post-foot&quot;&gt;&lt;span&gt;${icon(&#x27;message-square&#x27;)}${b.comments}&lt;/span&gt;${faces}&lt;/div&gt;`
@@ -3997,19 +4280,24 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   function sidebar() {
     const count=id=&gt;Object.values(docs).filter(d=&gt;d.question.org===id).length;
-    const link=(id,label,n=&#x27;&#x27;)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-side-link cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${id}&quot; data-key=&quot;side-${id}&quot; aria-current=&quot;${state.space===id}&quot;&gt;${label}${n!==&#x27;&#x27;?`&lt;span class=&quot;sm-side-count&quot;&gt;${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;`;
+    const link=(id,label,n=&#x27;&#x27;)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-side-link cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${id}&quot; data-key=&quot;side-${id}&quot; aria-current=&quot;${!state.profile&amp;&amp;state.spaceEdit!==&#x27;new&#x27;&amp;&amp;state.space===id}&quot;&gt;${label}${n!==&#x27;&#x27;?`&lt;span class=&quot;sm-side-count&quot;&gt;${n}&lt;/span&gt;`:&#x27;&#x27;}&lt;/button&gt;`;
     const group=(title,list)=&gt;list.length?`&lt;h2&gt;${title}&lt;/h2&gt;&lt;div class=&quot;sm-side-box&quot;&gt;${list.map(s=&gt;link(s.id,swatch(s)+spaceTag(s),count(s.id))).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;;
     return `&lt;nav class=&quot;sm-side&quot; id=&quot;sm-side&quot; aria-label=&quot;Spaces&quot;&gt;&lt;div class=&quot;sm-side-box&quot;&gt;${link(&#x27;all&#x27;,icon(&#x27;house&#x27;)+&#x27;&lt;span&gt;Home&lt;/span&gt;&#x27;)}&lt;/div&gt;`
       +group(&#x27;Your spaces&#x27;,SPACES.filter(s=&gt;s.kind===&#x27;private&#x27;))
       +group(&#x27;Communities&#x27;,SPACES.filter(s=&gt;s.kind===&#x27;public&#x27;&amp;&amp;state.joined[s.id]))
-      +`&lt;/nav&gt;`;
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-side-link sm-side-new cursor-interaction&quot; data-action=&quot;space-new&quot; data-key=&quot;space-new&quot; aria-current=&quot;${state.view===&#x27;home&#x27;&amp;&amp;!state.profile&amp;&amp;state.spaceEdit===&#x27;new&#x27;}&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New space&lt;/span&gt;&lt;/button&gt;&lt;/nav&gt;`;
   }
   // A space as a card: a strip of its canvas, its name, what it is, and Join for public communities.
   // It sits in the right rail on wide screens and atop the list otherwise (keyed so focus survives either way).
   function spaceCard(s,where) {
-    const pub=s.kind===&#x27;public&#x27;;
-    const join=pub?`&lt;button type=&quot;button&quot; class=&quot;sm-join cursor-interaction&quot; data-action=&quot;join&quot; data-id=&quot;${s.id}&quot; data-key=&quot;join-${s.id}-${where}&quot; aria-pressed=&quot;${!!state.joined[s.id]}&quot;&gt;${state.joined[s.id]?&#x27;Joined&#x27;:&#x27;Join&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-rail-card sm-space-card&quot; aria-label=&quot;About ${escape(s.name)}&quot;&gt;&lt;div class=&quot;sm-space-banner&quot; data-canvas=&quot;${s.canvas}&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-space-body&quot;&gt;&lt;h1&gt;${escape(s.name)}&lt;/h1&gt;&lt;p&gt;${escape(s.about)}&lt;/p&gt;&lt;ul class=&quot;sm-space-facts&quot;&gt;&lt;li&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}${pub?&#x27;Public community&#x27;:s.id===&#x27;none&#x27;?&#x27;Only you&#x27;:&#x27;Private space&#x27;}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${s.members.toLocaleString(&#x27;en-US&#x27;)} ${s.members===1?&#x27;member&#x27;:&#x27;members&#x27;}&lt;/li&gt;&lt;/ul&gt;${join}&lt;/div&gt;&lt;/section&gt;`;
+    const pub=s.kind===&#x27;public&#x27;,rules=(SPACE_META.rules[s.id]||[]).map(r=&gt;r.trim()).filter(Boolean);
+    const mods=s.id===&#x27;none&#x27;?[]:Object.entries(SPACE_META.roles[s.id]||{}).filter(([,r])=&gt;r!==&#x27;member&#x27;).sort((a,b)=&gt;a[1].localeCompare(b[1])).map(([u])=&gt;u);
+    const extra=(rules.length?`&lt;div class=&quot;sm-space-sub&quot;&gt;&lt;h2&gt;Rules&lt;/h2&gt;&lt;ol class=&quot;sm-space-rules&quot;&gt;${rules.map(r=&gt;`&lt;li&gt;${escape(r)}&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;&lt;/div&gt;`:&#x27;&#x27;)
+      +(mods.length?`&lt;div class=&quot;sm-space-sub&quot;&gt;&lt;h2&gt;Moderators&lt;/h2&gt;&lt;p class=&quot;sm-space-mods&quot;&gt;${mods.map(u=&gt;userLink(u,u===ME?&#x27;you&#x27;:escape(u))).join(&#x27;, &#x27;)}&lt;/p&gt;&lt;/div&gt;`:&#x27;&#x27;);
+    const settings=isSpaceAdmin(s.id)?`&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;space-settings&quot; data-id=&quot;${s.id}&quot; data-key=&quot;space-settings-${s.id}-${where}&quot;&gt;${icon(&#x27;settings&#x27;)}Settings&lt;/button&gt;`:&#x27;&#x27;;
+    // An admin runs the space, so there&#x27;s no Join or Leave for them.
+    const join=pub&amp;&amp;roleIn(s.id,ME)!==&#x27;admin&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-join cursor-interaction&quot; data-action=&quot;join&quot; data-id=&quot;${s.id}&quot; data-key=&quot;join-${s.id}-${where}&quot; aria-pressed=&quot;${!!state.joined[s.id]}&quot;&gt;${state.joined[s.id]?&#x27;Joined&#x27;:&#x27;Join&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
+    return `&lt;section class=&quot;sm-rail-card sm-space-card&quot; aria-label=&quot;About ${escape(s.name)}&quot;&gt;&lt;div class=&quot;sm-space-banner&quot; data-canvas=&quot;${s.canvas}&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-space-body&quot;&gt;&lt;h1&gt;${escape(s.name)}&lt;/h1&gt;${s.about?`&lt;p&gt;${escape(s.about)}&lt;/p&gt;`:&#x27;&#x27;}&lt;ul class=&quot;sm-space-facts&quot;&gt;&lt;li&gt;${icon(pub?&#x27;globe&#x27;:&#x27;lock&#x27;)}${pub?&#x27;Public community&#x27;:s.id===&#x27;none&#x27;?&#x27;Only you&#x27;:&#x27;Private space&#x27;}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${s.members.toLocaleString(&#x27;en-US&#x27;)} ${s.members===1?&#x27;member&#x27;:&#x27;members&#x27;}&lt;/li&gt;&lt;/ul&gt;${extra}${join||settings?`&lt;div class=&quot;sm-space-actions&quot;&gt;${join}${settings}&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/section&gt;`;
   }
   function feedHead() { return state.space===&#x27;all&#x27;?&#x27;&#x27;:spaceCard(spaceOf(state.space),&#x27;feed&#x27;); }
   // Boards in scope (Home: your spaces and joined communities; a space: its own) where an option has fewer than two arguments.
@@ -4024,7 +4312,430 @@ html&gt;body{padding:0}&lt;/style&gt;
     const drafts=all.filter(b=&gt;b.space.id===&#x27;none&#x27;);
     return `&lt;aside class=&quot;sm-rail&quot; aria-label=&quot;Suggestions&quot;&gt;${helpCard}&lt;section class=&quot;sm-rail-card&quot; aria-labelledby=&quot;sm-rail-drafts&quot;&gt;&lt;h2 id=&quot;sm-rail-drafts&quot;&gt;Your drafts&lt;/h2&gt;${railList(drafts,&#x27;Steelmen you start in Personal stay here until you share them.&#x27;)}&lt;/section&gt;&lt;/aside&gt;`;
   }
+  // ── Profiles: who someone is, the points they&#x27;ve earned, and what they&#x27;ve added. Yours adds your credits and account. ──
+  // Spending on AI is logged by space; repeats on the same board within an hour join one line.
+  function logUsage(space,board,kind,n) {
+    const now=new Date().toISOString(),last=state.usage[0];
+    if(last&amp;&amp;last.space===space&amp;&amp;last.board===board&amp;&amp;last.kind===kind&amp;&amp;Date.parse(now)-Date.parse(last.at)&lt;36e5){last.n+=n;last.at=now;}
+    else state.usage.unshift({at:now,space,board,kind,n});
+    state.usage.length=Math.min(state.usage.length,50);
+  }
+  const whoIs = by =&gt; by===&#x27;you&#x27;?ME:by;
+  const fmt = n =&gt; n.toLocaleString(&#x27;en-US&#x27;);
+  const userLink = (by,label) =&gt; by&amp;&amp;by!==&#x27;ai&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-user-link cursor-interaction&quot; data-action=&quot;profile&quot; data-id=&quot;${escape(whoIs(by))}&quot;&gt;${label}&lt;/button&gt;`:label;
+  // What a person wrote across every board, and what each piece earned:
+  // an argument in its side&#x27;s top three (of four or more), a wording that leads a row with others in it, an editor&#x27;s acceptance,
+  // and a source cited by a wording that more assessments find supported than not.
+  function contributionsOf(user) {
+    const list={args:[],words:[],sources:[]},count={top:0,lead:0,accepted:0,source:0};
+    for(const [board,d] of Object.entries(docs)) {
+      const shown=id=&gt;d.cards[id]&amp;&amp;!d.cards[id].hidden,posted=d.question.posted+&#x27;T09:00:00Z&#x27;;
+      // The top three is a real cut only on a side with at least four arguments.
+      const top=new Set(d.options.flatMap(o=&gt;{const rows=d.ideas.filter(i=&gt;i.option===o.id&amp;&amp;i.versions.some(shown));return rows.length&lt;4?[]:rows.sort((a,b)=&gt;sharedImportance(b)-sharedImportance(a)).slice(0,3).map(i=&gt;i.id);}));
+      for(const idea of d.ideas) {
+        const lead=idea.versions.length&gt;1?idea.versions.filter(shown).sort((a,b)=&gt;d.cards[b].pref-d.cards[a].pref)[0]:null;
+        idea.versions.forEach((id,k)=&gt;{
+          const c=d.cards[id];if(whoIs(c.by)!==user||!shown(id))return;
+          const earned=[...(k===0&amp;&amp;top.has(idea.id)?[&#x27;top&#x27;]:[]),...(id===lead?[&#x27;lead&#x27;]:[]),...(c.accepted?[&#x27;accepted&#x27;]:[])];
+          earned.forEach(e=&gt;count[e]++);
+          list[k===0?&#x27;args&#x27;:&#x27;words&#x27;].push({board,card:id,text:c.claim,at:c.at||posted,earned});
+        });
+      }
+      for(const [sid,src] of Object.entries(d.sources)) {
+        if(whoIs(src.by)!==user) continue;
+        const citing=Object.keys(d.cards).filter(id=&gt;shown(id)&amp;&amp;d.cards[id].sources.includes(sid));
+        if(!citing.length) continue;
+        const supported=citing.some(id=&gt;(d.cards[id].yes||0)&gt;(d.cards[id].no||0));
+        if(supported) count.source++;
+        list.sources.push({board,card:citing[0],text:src.name,at:src.at||posted,earned:supported?[&#x27;source&#x27;]:[]});
+      }
+    }
+    for(const k of Object.keys(list)) list[k].sort((a,b)=&gt;Date.parse(b.at)-Date.parse(a.at));
+    return {list,count};
+  }
+  function pointsOf(user,count) {
+    const prior=EARLIER[user]||{};
+    const rows=Object.entries(POINTS).map(([k,[each,label,glyph]])=&gt;{const n=count[k]+(prior[k]||0);return {k,n,each,label,glyph,pts:n*each};});
+    return {rows,total:rows.reduce((t,r)=&gt;t+r.pts,0)};
+  }
+  // Your spaces are the ones in your sidebar; anyone else&#x27;s are where they&#x27;re a member, an admin, or have posted.
+  function spacesOf(user) {
+    if(user===ME) return SPACES.filter(s=&gt;s.kind===&#x27;private&#x27;||state.joined[s.id]);
+    return SPACES.filter(s=&gt;s.id!==&#x27;none&#x27;&amp;&amp;((PEOPLE[s.id]||[]).includes(user)||roleIn(s.id,user)===&#x27;admin&#x27;||Object.values(docs).some(d=&gt;d.question.org===s.id&amp;&amp;d.question.author===user)));
+  }
+  const CONTRIB = {args:[&#x27;Arguments&#x27;,&#x27;No arguments yet.&#x27;],words:[&#x27;Wordings&#x27;,&#x27;No other wordings yet.&#x27;],sources:[&#x27;Sources&#x27;,&#x27;No sources yet.&#x27;]};
+  const creditPools = () =&gt; [&#x27;none&#x27;,...SPACES.filter(s=&gt;s.id!==&#x27;none&#x27;&amp;&amp;roleIn(s.id,ME)===&#x27;admin&#x27;).map(s=&gt;s.id)];
+  function profileMarkup() {
+    const user=state.profile,self=user===ME&amp;&amp;state.persona!==&#x27;out&#x27;,admin=s=&gt;roleIn(s.id,user)===&#x27;admin&#x27;;
+    const {list,count}=contributionsOf(user),pts=pointsOf(user,count);
+    const from=state.profileFrom&amp;&amp;docs[state.profileFrom]?docs[state.profileFrom].question.text:&#x27;Home&#x27;;
+    const back=`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-profile-back cursor-interaction&quot; data-action=&quot;profile-back&quot; data-key=&quot;profile-back&quot;&gt;${icon(&#x27;arrow-left&#x27;)}&lt;span&gt;${escape(from.length&gt;56?from.slice(0,54)+&#x27;…&#x27;:from)}&lt;/span&gt;&lt;/button&gt;`;
+    const head=`&lt;header class=&quot;sm-profile-head&quot;&gt;&lt;span class=&quot;sm-profile-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(user))}&lt;/span&gt;`
+      +`&lt;div class=&quot;sm-profile-who&quot;&gt;&lt;h1&gt;${escape(user)}${user===ME?&#x27;&lt;small&gt;you&lt;/small&gt;&#x27;:&#x27;&#x27;}&lt;/h1&gt;`
+      +`&lt;ul class=&quot;sm-profile-spaces&quot; aria-label=&quot;Spaces&quot;&gt;${spacesOf(user).map(s=&gt;`&lt;li&gt;&lt;button type=&quot;button&quot; class=&quot;sm-tag cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;${s.id}&quot; data-key=&quot;profile-space-${s.id}&quot;${admin(s)?&#x27; data-tooltip=&quot;Admin&quot;&#x27;:&#x27;&#x27;} aria-label=&quot;${escape(s.name)}${admin(s)?&#x27;, admin&#x27;:&#x27;&#x27;}&quot;&gt;${escape(s.name)}&lt;/button&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ul&gt;&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-profile-points&quot; role=&quot;img&quot; aria-label=&quot;${fmt(pts.total)} points&quot;&gt;&lt;b&gt;${fmt(pts.total)}&lt;/b&gt;&lt;span&gt;${icon(&#x27;hexagon&#x27;)}Points&lt;/span&gt;&lt;/div&gt;&lt;/header&gt;`;
+    const earn=`&lt;section class=&quot;sm-rail-card&quot; aria-labelledby=&quot;sm-points-title&quot;&gt;&lt;h2 id=&quot;sm-points-title&quot;&gt;Points&lt;/h2&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`
+      +pts.rows.map(r=&gt;`&lt;div class=&quot;sm-rrow sm-earn&quot;${r.n?&#x27;&#x27;:&#x27; data-zero&#x27;}&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${icon(r.glyph)}&lt;span&gt;${r.label}&lt;/span&gt;&lt;small&gt;${r.n} × ${r.each}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${fmt(r.pts)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)+`&lt;/div&gt;&lt;/section&gt;`;
+    const tab=state.contribTab,why=e=&gt;e.map(k=&gt;POINTS[k][1]).join(&#x27; · &#x27;);
+    const tabs=`&lt;div class=&quot;sm-sort sm-contrib-tabs&quot; role=&quot;group&quot; aria-label=&quot;Show&quot;&gt;${Object.entries(CONTRIB).map(([k,[l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;profile-tab&quot; data-id=&quot;${k}&quot; data-key=&quot;profile-tab-${k}&quot; aria-pressed=&quot;${tab===k}&quot;&gt;${l}&lt;b&gt;${list[k].length}&lt;/b&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const rows=list[tab].length?`&lt;ul class=&quot;sm-contrib-list&quot;&gt;${list[tab].map(it=&gt;{
+      const d=docs[it.board],p=it.earned.reduce((t,k)=&gt;t+POINTS[k][0],0);
+      return `&lt;li&gt;&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;profile-card&quot; data-id=&quot;${it.board}|${it.card}&quot; data-key=&quot;contrib-${it.board}-${it.card}&quot;&gt;&lt;strong&gt;${escape(it.text)}&lt;/strong&gt;`
+        +`&lt;small&gt;${swatch(spaceOf(d.question.org))}&lt;span class=&quot;sm-contrib-q&quot;&gt;${escape(d.question.text)}&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;time datetime=&quot;${it.at}&quot; title=&quot;${fullDate(it.at)}&quot;&gt;${ago(it.at)}&lt;/time&gt;&lt;/small&gt;`
+        +(p?`&lt;span class=&quot;sm-contrib-pts&quot; data-tooltip=&quot;${escape(why(it.earned))}&quot; aria-label=&quot;${p} points: ${escape(why(it.earned))}&quot;&gt;+${p}&lt;/span&gt;`:&#x27;&#x27;)+`&lt;/button&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;)}&lt;/ul&gt;`
+      :`&lt;p class=&quot;sm-contrib-empty&quot;&gt;${CONTRIB[tab][1]}&lt;/p&gt;`;
+    const contrib=`&lt;section class=&quot;sm-rail-card&quot; aria-labelledby=&quot;sm-contrib-title&quot;&gt;&lt;h2 id=&quot;sm-contrib-title&quot;&gt;Contributions&lt;/h2&gt;${tabs}${rows}&lt;/section&gt;`;
+    let side=&#x27;&#x27;;
+    if(self) {
+      const pools=creditPools(),left=spaceCredits;
+      const usage=[...state.usage,...USAGE_SEED].filter(u=&gt;pools.includes(u.space)&amp;&amp;docs[u.board]).slice(0,6);
+      const credits=`&lt;section class=&quot;sm-rail-card&quot; aria-labelledby=&quot;sm-credits-title&quot;&gt;&lt;h2 id=&quot;sm-credits-title&quot;&gt;Credits&lt;/h2&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`
+        +pools.map(id=&gt;`&lt;div class=&quot;sm-rrow sm-pool&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;&lt;span&gt;${swatch(spaceOf(id))}${spaceTag(spaceOf(id))}&lt;/span&gt;&lt;small&gt;${id===&#x27;none&#x27;?&#x27;Yours&#x27;:&#x27;Space you admin&#x27;}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;${fmt(left(id))}&lt;small&gt;credits&lt;/small&gt;&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)+`&lt;/div&gt;`
+        +(usage.length?`&lt;div class=&quot;sm-rgroup sm-usage&quot;&gt;&lt;h3&gt;Recent usage&lt;/h3&gt;${usage.map((u,i)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-rrow sm-rrow-button cursor-interaction&quot; data-action=&quot;profile-board&quot; data-id=&quot;${u.board}&quot; data-key=&quot;usage-${i}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;span&gt;${u.kind===&#x27;draft&#x27;?&#x27;Draft arguments&#x27;:u.n===1?&#x27;Evidence check&#x27;:`Evidence checks · ${u.n}`}&lt;/span&gt;&lt;small&gt;${escape(docs[u.board].question.text)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;&lt;b&gt;−${u.n}&lt;/b&gt;&lt;time datetime=&quot;${u.at}&quot; title=&quot;${fullDate(u.at)}&quot;&gt;${ago(u.at)}&lt;/time&gt;&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;)
+        +`&lt;/section&gt;`;
+      const row=(label,value)=&gt;`&lt;div class=&quot;sm-rrow&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}&lt;/span&gt;${value}&lt;/div&gt;`;
+      const pw=state.pwOpen?`&lt;div class=&quot;sm-pw-form&quot; role=&quot;group&quot; aria-label=&quot;Change password&quot;&gt;&lt;label&gt;Current password&lt;input id=&quot;sm-pw-current&quot; type=&quot;password&quot; autocomplete=&quot;current-password&quot; data-key=&quot;pw-current&quot;&gt;&lt;/label&gt;&lt;label&gt;New password&lt;input id=&quot;sm-pw-new&quot; type=&quot;password&quot; autocomplete=&quot;new-password&quot; data-key=&quot;pw-new&quot;&gt;&lt;/label&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: nothing is saved or sent.&lt;/p&gt;&lt;div&gt;${button(&#x27;profile-pw-cancel&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;pw-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;profile-pw-save&quot; data-key=&quot;pw-save&quot;&gt;Change password&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;;
+      const account=`&lt;section class=&quot;sm-rail-card sm-account&quot; aria-labelledby=&quot;sm-account-title&quot;&gt;&lt;h2 id=&quot;sm-account-title&quot;&gt;Account&lt;/h2&gt;&lt;div class=&quot;sm-rgroup&quot;&gt;`
+        +row(&#x27;Username&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(ME)}&lt;/span&gt;`)+row(&#x27;Email&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${escape(MY_EMAIL)}&lt;/span&gt;`)
+        +row(&#x27;Password&#x27;,state.pwOpen?&#x27;&#x27;:`&lt;span class=&quot;sm-rrow-control&quot;&gt;&lt;span class=&quot;sm-rrow-value sm-mask&quot; aria-label=&quot;Hidden&quot;&gt;••••••••&lt;/span&gt;${button(&#x27;profile-pw&#x27;,&#x27;Change&#x27;,&#x27;data-key=&quot;pw-open&quot;&#x27;)}&lt;/span&gt;`)+pw+row(&#x27;Tour&lt;small&gt;The three votes, on a board&lt;/small&gt;&#x27;,`&lt;span class=&quot;sm-rrow-control&quot;&gt;${button(&#x27;tour-start&#x27;,&#x27;Take it&#x27;,&#x27;data-key=&quot;tour-start&quot;&#x27;)}&lt;/span&gt;`)+`&lt;/div&gt;`
+        +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-signout cursor-interaction&quot; data-action=&quot;sign-out&quot; data-key=&quot;sign-out&quot;&gt;${icon(&#x27;log-out&#x27;)}Sign out&lt;/button&gt;&lt;/section&gt;`;
+      side=`&lt;aside class=&quot;sm-profile-side&quot; aria-label=&quot;Your credits and account&quot;&gt;${credits}${account}&lt;/aside&gt;`;
+    }
+    return `&lt;main class=&quot;sm-profile&quot; id=&quot;sm-profile&quot; ${self?&#x27;data-self&#x27;:&#x27;&#x27;} aria-label=&quot;${self?&#x27;Your profile&#x27;:&#x27;Profile: &#x27;+escape(user)}&quot;&gt;${back}${head}&lt;div class=&quot;sm-profile-main&quot;&gt;${earn}${contrib}&lt;/div&gt;${side}&lt;/main&gt;`;
+  }
+  // ── First visit: the invite landing, then a short tour of the three votes on the board itself. ──
+  // A shared link (#s=&lt;board&gt;&amp;by=&lt;who&gt;&amp;as=&lt;role&gt;) opens the landing; Share&#x27;s Preview opens it too.
+  const ROLE_GLYPH = {view:&#x27;eye&#x27;,vote:&#x27;arrow-up-down&#x27;,contribute:&#x27;pencil&#x27;,edit:&#x27;user-check&#x27;,owner:&#x27;crown&#x27;};
+  const hostWindow = () =&gt; { try { return window.parent!==window&amp;&amp;window.parent.location.href?window.parent:window; } catch { return window; } };
+  function inviteUrl() {
+    let base=&#x27;https://steelman.example/&#x27;;try{base=hostWindow().location.href.split(&#x27;#&#x27;)[0];}catch{}
+    const q=doc.question;return `${base}#s=${encodeURIComponent(state.boardId)}&amp;by=${encodeURIComponent(ME)}&amp;as=${q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole}`;
+  }
+  function openInvite(boardId,by,role,preview=false) {
+    if(!docs[boardId]) return false;
+    if(state.view===&#x27;board&#x27;) leaveBoard();
+    const d=docs[boardId];
+    Object.assign(state,{view:&#x27;home&#x27;,profile:null,profileFrom:null,spaceEdit:null,inbox:false,share:false,creating:false,persona:&#x27;out&#x27;,
+      invite:{board:boardId,by:by||d.question.author,role:[&#x27;view&#x27;,&#x27;vote&#x27;,&#x27;contribute&#x27;,&#x27;edit&#x27;].includes(role)?role:d.question.accessRole||&#x27;contribute&#x27;,tab:&#x27;up&#x27;,error:&#x27;&#x27;,preview}});
+    renderView(&#x27;auth-0&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${state.invite.by} invited you to “${d.question.text}”.`);return true;
+  }
+  function readInviteLink() {
+    try { const h=new URLSearchParams(hostWindow().location.hash.slice(1)); return h.get(&#x27;s&#x27;)?openInvite(h.get(&#x27;s&#x27;),h.get(&#x27;by&#x27;),h.get(&#x27;as&#x27;)):false; } catch { return false; }
+  }
+  function clearInviteLink() { try { const w=hostWindow(); if(w.location.hash) w.history.replaceState(null,&#x27;&#x27;,w.location.href.split(&#x27;#&#x27;)[0]); } catch {} }
+  function landingMarkup() {
+    const v=state.invite,d=docs[v.board],q=d.question,s=spaceOf(q.org),f=FEED[v.board]||{people:1};
+    const options=d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;);
+    const up=v.tab===&#x27;up&#x27;,field=(i,label,type,auto)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${i}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${i}&quot; ${v.error&amp;&amp;!v.filled?.[i]?&#x27;aria-invalid=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;`;
+    const fields=up?field(0,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;)+field(2,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;new-password&#x27;):field(0,&#x27;Username or email&#x27;,&#x27;text&#x27;,&#x27;username&#x27;)+field(1,&#x27;Password&#x27;,&#x27;password&#x27;,&#x27;current-password&#x27;);
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;Invitation&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;`
+      +`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`
+      +`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`
+      +`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`
+      +`&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;${up?&#x27;Sign up&#x27;:&#x27;Sign in&#x27;}&quot;&gt;&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Account&quot;&gt;${[[&#x27;up&#x27;,&#x27;Sign up&#x27;],[&#x27;in&#x27;,&#x27;Sign in&#x27;]].map(([k,l])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;invite-tab&quot; data-id=&quot;${k}&quot; data-key=&quot;invite-tab-${k}&quot; aria-pressed=&quot;${v.tab===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
+      +fields+(v.error?`&lt;p class=&quot;sm-field-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;)
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;invite-auth&quot; data-key=&quot;invite-auth&quot;&gt;${up?&#x27;Create account&#x27;:&#x27;Sign in&#x27;}&lt;/button&gt;&lt;p class=&quot;sm-field-hint&quot;&gt;Simulated: you continue as ${escape(ME)}.&lt;/p&gt;&lt;/section&gt;`
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;Look around first&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;`;
+  }
+  // Signing in opens the board with the invited role (Preview as follows it), then the tour on a first visit.
+  function enterInvited(persona,withTour) {
+    // A real link tours only a first visit; Share&#x27;s Preview always shows the whole first visit.
+    const b=state.invite.board,preview=state.invite.preview;state.invite=null;clearInviteLink();state.persona=persona;
+    openBoardAt(b);
+    if(withTour&amp;&amp;(!state.toured||preview)) setTimeout(startTour,250);
+  }
+  function inviteAction(action,id) {
+    const v=state.invite;if(!v) return;
+    if(action===&#x27;invite-tab&#x27;) {v.tab=id;v.error=&#x27;&#x27;;renderHome();root.querySelector(`[data-key=&quot;invite-tab-${id}&quot;]`)?.focus();return;}
+    if(action===&#x27;invite-look&#x27;) {enterInvited(&#x27;out&#x27;,false);announce(&#x27;Signed out: you can read. Sign in from the top bar to take part.&#x27;);return;}
+    if(action===&#x27;invite-auth&#x27;) {
+      const inputs=[...root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;)],empty=inputs.findIndex(i=&gt;!i.value.trim());
+      if(empty&gt;=0){v.error=&#x27;Fill in every field.&#x27;;v.filled=inputs.map(i=&gt;!!i.value.trim());const vals=inputs.map(i=&gt;i.value);renderHome();root.querySelectorAll(&#x27;[id^=&quot;sm-auth-&quot;]&#x27;).forEach((i,k)=&gt;{i.value=vals[k];});root.querySelector(`#sm-auth-${empty}`)?.focus();announce(v.error);return;}
+      announce(v.tab===&#x27;up&#x27;?&#x27;Account created (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.role,true);
+    }
+  }
+  // The tour picks its examples from the board: its top argument, the argument with the most wordings, and the
+  // wording with the most evidence assessments. Votes the board has switched off are skipped.
+  const tourEl=root.querySelector(&#x27;.sm-tour&#x27;);
+  function tourSteps() {
+    const j=doc.question.rules.judgments,shown=i=&gt;!isHidden(i.option)&amp;&amp;i.versions.some(v=&gt;!cards[v].hidden);
+    const rows=doc.options.flatMap(o=&gt;rowsOf(o.id).filter(shown).slice(0,ROW_LIMIT)),steps=[];
+    const top=doc.options.map(o=&gt;rowsOf(o.id).filter(shown)[0]).find(Boolean);
+    if(j.importance&amp;&amp;top) steps.push({kind:&#x27;importance&#x27;,idea:top.id,card:ordered(top)[0]});
+    const multi=[...rows].sort((a,b)=&gt;b.versions.length-a.versions.length)[0];
+    if(j.articulation&amp;&amp;multi?.versions.length&gt;1) steps.push({kind:&#x27;articulation&#x27;,idea:multi.id,card:ordered(multi)[0],next:ordered(multi)[1]});
+    const assessed=rows.map(i=&gt;ordered(i)[0]).sort((a,b)=&gt;stats(b).n-stats(a).n)[0];
+    if(j.evidence&amp;&amp;assessed) steps.push({kind:&#x27;evidence&#x27;,idea:cards[assessed].idea,card:assessed});
+    return steps;
+  }
+  function startTour() {
+    if(state.view!==&#x27;board&#x27;) return;
+    const steps=tourSteps();if(!steps.length){state.toured=true;return;}
+    Object.assign(state,{zoom:&#x27;read&#x27;,menu:null,drawer:null,share:false,inbox:false});
+    state.tour={i:0,steps,wasOpen:state.open};showTourStep();announce(&#x27;Tour: the three votes.&#x27;);
+  }
+  function showTourStep() {
+    const s=state.tour.steps[state.tour.i],want=s.kind===&#x27;articulation&#x27;?s.idea:null;
+    state.open=want;state.expanded=null;render();renderSite();
+    requestAnimationFrame(()=&gt;positionTour(true));
+    // Unfolding a row animates; measure again once it settles.
+    setTimeout(()=&gt;{if(state.tour)positionTour(&#x27;settle&#x27;);},motion(&#x27;slow&#x27;)+80);
+  }
+  function tourTargets(s) {
+    const q=sel=&gt;board.querySelector(sel),card=id=&gt;q(`.sm-card[data-card=&quot;${id}&quot;]`);
+    if(s.kind===&#x27;importance&#x27;) return [q(`[data-node=&quot;${s.idea}&quot;] &gt; .sm-vote`),card(s.card)];
+    // On phones an unfolded row shows one wording at a time, so the tour frames just the leader and its vote.
+    if(s.kind===&#x27;articulation&#x27;) return root.offsetWidth&lt;640?[q(`[data-vote-for=&quot;${s.card}&quot;]`),card(s.card)]:[q(`[data-node=&quot;${s.idea}&quot;] .sm-axis[data-axis]`),q(`[data-vote-for=&quot;${s.card}&quot;]`),card(s.card),q(`[data-vote-for=&quot;${s.next}&quot;]`),card(s.next)];
+    return [q(`.sm-card[data-card=&quot;${s.card}&quot;] .sm-cred-group`),card(s.card)];
+  }
+  function tourNote(s) {
+    const n=state.tour.steps.length,k=state.tour.i;
+    const head={importance:[&#x27;arrow-up-down&#x27;,&#x27;Importance&#x27;],articulation:[&#x27;arrow-left-right&#x27;,&#x27;Articulation&#x27;],evidence:[&#x27;file-check&#x27;,&#x27;Evidence&#x27;]}[s.kind];
+    const idea=ideaOf(s.idea),st=stats(s.card);
+    const line={importance:`How much it matters, if true. This one ranks first in &lt;strong&gt;${escape(optionName(idea.option))}&lt;/strong&gt;.`,
+      articulation:`Which wording puts it best. &lt;strong&gt;${idea.versions.length} wordings&lt;/strong&gt; of this argument; the best-put leads.`,
+      evidence:st.n?`Whether its sources back it. &lt;strong&gt;${st.pct}% of ${st.n}&lt;/strong&gt; assessments find this wording supported.`:&#x27;Whether its sources back it. No one has assessed this wording yet.&#x27;}[s.kind];
+    return `&lt;div class=&quot;sm-tour-catch&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-tour-hole&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;`
+      +`&lt;div class=&quot;sm-tour-tip&quot; role=&quot;dialog&quot; aria-labelledby=&quot;sm-tour-title&quot; aria-describedby=&quot;sm-tour-line&quot;&gt;&lt;div class=&quot;sm-tour-dots&quot; aria-label=&quot;Step ${k+1} of ${n}&quot;&gt;${state.tour.steps.map((_,i)=&gt;`&lt;span ${i===k?&#x27;aria-current=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/span&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
+      +`&lt;h2 id=&quot;sm-tour-title&quot;&gt;${icon(head[0])}${head[1]}&lt;/h2&gt;&lt;p id=&quot;sm-tour-line&quot;&gt;${line}&lt;/p&gt;`
+      +`&lt;footer&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;tour-skip&quot; data-key=&quot;tour-skip&quot;&gt;Skip tour&lt;/button&gt;${k?button(&#x27;tour-back&#x27;,&#x27;Back&#x27;,&#x27;data-key=&quot;tour-back&quot;&#x27;):&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;tour-next&quot; data-key=&quot;tour-next&quot;&gt;${k===n-1?&#x27;Done&#x27;:&#x27;Next&#x27;}&lt;/button&gt;&lt;/footer&gt;&lt;/div&gt;`;
+  }
+  function positionTour(scroll) {
+    const t=state.tour;if(!t){tourEl.hidden=true;tourEl.innerHTML=&#x27;&#x27;;return;}
+    const s=t.steps[t.i],els=tourTargets(s).filter(Boolean);if(!els.length){endTour(false);return;}
+    if(!tourEl.querySelector(`.sm-tour-tip[data-step=&quot;${t.i}&quot;]`)){tourEl.innerHTML=tourNote(s);tourEl.querySelector(&#x27;.sm-tour-tip&#x27;).dataset.step=t.i;if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}
+    tourEl.hidden=false;
+    if(scroll===true) (board.querySelector(`.sm-card[data-card=&quot;${s.card}&quot;]`)||els[0]).scrollIntoView({block:&#x27;center&#x27;,inline:&#x27;nearest&#x27;});
+    const rb=root.getBoundingClientRect(),rs=els.map(e=&gt;e.getBoundingClientRect()),pad=8;
+    const box={l:Math.max(4,Math.min(...rs.map(r=&gt;r.left))-rb.left-pad),t:Math.min(...rs.map(r=&gt;r.top))-rb.top-pad,r:Math.min(rb.width-4,Math.max(...rs.map(r=&gt;r.right))-rb.left+pad),b:Math.max(...rs.map(r=&gt;r.bottom))-rb.top+pad};
+    const hole=tourEl.querySelector(&#x27;.sm-tour-hole&#x27;),tip=tourEl.querySelector(&#x27;.sm-tour-tip&#x27;);
+    Object.assign(hole.style,{left:box.l+&#x27;px&#x27;,top:box.t+&#x27;px&#x27;,width:(box.r-box.l)+&#x27;px&#x27;,height:(box.b-box.t)+&#x27;px&#x27;});
+    const tw=tip.offsetWidth,th=tip.offsetHeight,below=box.b+12+th&lt;=root.offsetHeight;
+    tip.style.left=Math.min(Math.max(12,box.l),rb.width-tw-12)+&#x27;px&#x27;;
+    tip.style.top=(below||box.t-th-12&lt;0?box.b+12:box.t-th-12)+&#x27;px&#x27;;
+    if(scroll){tip.scrollIntoView({block:&#x27;nearest&#x27;});tip.querySelector(&#x27;[data-key=&quot;tour-next&quot;]&#x27;)?.focus({preventScroll:true});}
+  }
+  function endTour(finished) {
+    const t=state.tour;if(!t) return;
+    state.tour=null;state.toured=true;state.open=t.wasOpen;tourEl.hidden=true;tourEl.innerHTML=&#x27;&#x27;;
+    render();renderSite();save();announce(finished?&#x27;Tour done. Vote on any card.&#x27;:&#x27;Tour skipped. Take it again from your profile.&#x27;);
+  }
+  function tourAction(action) {
+    const t=state.tour;
+    if(action===&#x27;tour-start&#x27;) {
+      const b=[state.profileFrom,state.boardId,&#x27;openweights&#x27;].find(x=&gt;x&amp;&amp;docs[x]);
+      Object.assign(state,{profile:null,profileFrom:null,spaceEdit:null});openBoardAt(b);setTimeout(startTour,250);return;
+    }
+    if(!t) return;
+    if(action===&#x27;tour-skip&#x27;) {endTour(false);return;}
+    if(action===&#x27;tour-next&#x27;) {if(t.i&gt;=t.steps.length-1){endTour(true);return;}t.i++;showTourStep();return;}
+    if(action===&#x27;tour-back&#x27;&amp;&amp;t.i&gt;0) {t.i--;showTourStep();}
+  }
+  window.addEventListener(&#x27;resize&#x27;,()=&gt;{if(state.tour)positionTour(false);});
+  // ── Notifications: what needs you, across every board and space. ──
+  // Three sources: events seeded for the example (each linking to its place), items worked out from the boards as they
+  // stand (things to review or moderate, boards closing within a day, decisions, join requests), and events from this visit.
+  const NOTES_SEED = [
+    {id:&#x27;n-reply&#x27;,kind:&#x27;reply&#x27;,at:&#x27;2026-11-09T07:45:00Z&#x27;,by:&#x27;lin.zhao&#x27;,board:&#x27;openweights&#x27;,comment:&#x27;c-y2&#x27;,target:&#x27;card:control&#x27;},
+    {id:&#x27;n-declined&#x27;,kind:&#x27;declined&#x27;,at:&#x27;2026-11-08T18:30:00Z&#x27;,by:&#x27;maya.chen&#x27;,board:&#x27;capstone&#x27;,held:&#x27;p3&#x27;},
+    {id:&#x27;n-invite&#x27;,kind:&#x27;invite&#x27;,at:&#x27;2026-11-08T08:10:00Z&#x27;,by:&#x27;maya.chen&#x27;,board:&#x27;capstone&#x27;},
+    {id:&#x27;n-accepted&#x27;,kind:&#x27;accepted&#x27;,at:&#x27;2026-11-01T10:00:00Z&#x27;,by:&#x27;rtorres&#x27;,board:&#x27;bikelane&#x27;,card:&#x27;bikelane-0-1v&#x27;}];
+  const NOTES_READ = {&#x27;n-invite&#x27;:true,&#x27;n-accepted&#x27;:true};
+  const boardRole = d =&gt; { const q=d.question; return q.author===ME?&#x27;owner&#x27;:(q.people||[]).find(p=&gt;p.user===ME)?.role||(q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole||&#x27;contribute&#x27;); };
+  const tookPart = d =&gt; d.question.author===ME||Object.values(d.cards).some(c=&gt;c.by===&#x27;you&#x27;)||(d.question.voted||[]).includes(ME)||(d.comments||[]).some(c=&gt;c.by===&#x27;you&#x27;);
+  const inScope = d =&gt; { const s=spaceOf(d.question.org); return s.kind===&#x27;private&#x27;||!!state.joined[s.id]||tookPart(d); };
+  function addNote(n) { state.notes.unshift({id:&#x27;live&#x27;+Date.now().toString(36)+state.notes.length,at:new Date().toISOString(),...n}); state.notes.length=Math.min(state.notes.length,30); }
+  function notesList() {
+    const list=[...state.notes,...NOTES_SEED].filter(n=&gt;docs[n.board]);
+    for(const [board,d] of Object.entries(docs)) {
+      const editor=RANK[boardRole(d)]&gt;=RANK.edit,closed=closedOf(d);
+      if(editor&amp;&amp;!closed) {
+        const held=(d.pending||[]).filter(p=&gt;p.status!==&#x27;declined&#x27;);
+        if(held.length) list.push({id:`review:${board}:${held.length}`,kind:&#x27;review&#x27;,n:held.length,board,at:held.map(p=&gt;p.at).sort().pop()});
+        const flagged=[...Object.values(d.cards),...(d.comments||[])].filter(x=&gt;x.reports?.length&amp;&amp;!x.hidden&amp;&amp;!x.deleted);
+        if(flagged.length) list.push({id:`moderate:${board}:${flagged.length}`,kind:&#x27;moderate&#x27;,n:flagged.length,board,at:flagged.flatMap(x=&gt;x.reports.map(r=&gt;r.at)).sort().pop()});
+      }
+      const closes=d.question.rules?.closes,days=closes&amp;&amp;Math.round((Date.parse(closes+&#x27;T00:00:00Z&#x27;)-Date.parse(TODAY+&#x27;T00:00:00Z&#x27;))/864e5);
+      if(!closed&amp;&amp;closes&amp;&amp;days&gt;=0&amp;&amp;days&lt;=1&amp;&amp;inScope(d)) list.push({id:`closing:${board}:${closes}`,kind:&#x27;closing&#x27;,days,board,at:new Date(NOW).toISOString()});
+      const dec=d.question.closed?.decision;
+      if(dec&amp;&amp;dec.by!==&#x27;you&#x27;&amp;&amp;tookPart(d)) list.push({id:`decision:${board}:${dec.at}`,kind:&#x27;decision&#x27;,by:dec.by,board,at:dec.at});
+    }
+    for(const s of SPACES) if(roleIn(s.id,ME)===&#x27;admin&#x27;&amp;&amp;s.kind===&#x27;private&#x27;) for(const r of SPACE_META.requests[s.id]||[]) list.push({id:`join:${s.id}:${r.user}`,kind:&#x27;join&#x27;,by:r.user,space:s.id,at:r.at});
+    return list.sort((a,b)=&gt;Date.parse(b.at)-Date.parse(a.at));
+  }
+  const isRead = n =&gt; n.id in state.notesRead ? state.notesRead[n.id] : !!NOTES_READ[n.id];
+  const unreadCount = () =&gt; state.persona===&#x27;out&#x27;?0:notesList().filter(n=&gt;!isRead(n)).length;
+  function noteMarkup(n) {
+    const d=docs[n.board],who=u=&gt;`&lt;strong&gt;${escape(u)}&lt;/strong&gt;`;
+    const pend=n.held&amp;&amp;(d?.pending||[]).find(p=&gt;p.id===n.held),card=n.card&amp;&amp;d?.cards[n.card],comment=n.comment&amp;&amp;(d?.comments||[]).find(c=&gt;c.id===n.comment);
+    const what=x=&gt;x===&#x27;idea&#x27;?&#x27;argument&#x27;:&#x27;wording&#x27;;
+    const icons={review:&#x27;inbox&#x27;,moderate:&#x27;flag&#x27;,closing:&#x27;clock&#x27;,accepted:&#x27;check&#x27;,declined:&#x27;x&#x27;};
+    const face=n.by?`&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(n.by))}&lt;/span&gt;`:`&lt;span class=&quot;sm-note-icon&quot; aria-hidden=&quot;true&quot;&gt;${icon(icons[n.kind]||&#x27;bell&#x27;)}&lt;/span&gt;`;
+    const quote=t=&gt;t?`&lt;span class=&quot;sm-note-quote&quot;&gt;${escape(t)}&lt;/span&gt;`:&#x27;&#x27;;
+    let text=&#x27;&#x27;,extra=&#x27;&#x27;;
+    if(n.kind===&#x27;reply&#x27;) {text=`${who(n.by)} replied to your comment`;extra=quote(comment?.text);}
+    if(n.kind===&#x27;declined&#x27;) {const kind=what(pend?.kind||n.what);text=n.by?`${who(n.by)} declined your ${kind}`:`Your ${kind} was declined`;extra=quote(pend?.claim||n.quote)+((pend?.reason||n.reason)?`&lt;span class=&quot;sm-history-reason&quot;&gt;${escape(pend?.reason||n.reason)}&lt;/span&gt;`:&#x27;&#x27;);}
+    if(n.kind===&#x27;accepted&#x27;) {const kind=card&amp;&amp;d.ideas.find(i=&gt;i.id===card.idea)?.versions[0]===n.card?&#x27;argument&#x27;:&#x27;wording&#x27;;text=n.by?`${who(n.by)} accepted your ${kind}`:`Your ${kind} was accepted`;extra=quote(card?.claim||n.quote);}
+    if(n.kind===&#x27;invite&#x27;) text=`${who(n.by)} invited you to edit`;
+    if(n.kind===&#x27;review&#x27;) text=`${who(n.n===1?&#x27;1 contribution&#x27;:n.n+&#x27; contributions&#x27;)} waiting for your review`;
+    if(n.kind===&#x27;moderate&#x27;) text=`${who(n.n===1?&#x27;1 report&#x27;:n.n+&#x27; reports&#x27;)} to look at`;
+    if(n.kind===&#x27;closing&#x27;) text=`Closes ${who(n.days?&#x27;tomorrow&#x27;:&#x27;today&#x27;)}`;
+    if(n.kind===&#x27;decision&#x27;) {const o=d.options.find(x=&gt;x.id===d.question.closed.decision.option);text=`${who(n.by)} recorded the decision: ${who(o?.name||&#x27;&#x27;)}`;}
+    if(n.kind===&#x27;join&#x27;) text=`${who(n.by)} asked to join ${who(spaceOf(n.space).name)}`;
+    const place=n.space?`${swatch(spaceOf(n.space))}&lt;span&gt;Requests to join&lt;/span&gt;`:`${swatch(spaceOf(d.question.org))}&lt;span&gt;${escape(d.question.text)}&lt;/span&gt;`;
+    const read=isRead(n);
+    return `&lt;li class=&quot;sm-note&quot; ${read?&#x27;&#x27;:&#x27;data-unread&#x27;}&gt;&lt;button type=&quot;button&quot; class=&quot;sm-note-main cursor-interaction&quot; data-action=&quot;note-open&quot; data-id=&quot;${escape(n.id)}&quot; data-key=&quot;note-${escape(n.id)}&quot;&gt;${face}&lt;span class=&quot;sm-note-body&quot;&gt;&lt;span class=&quot;sm-note-text&quot;&gt;${text}&lt;/span&gt;${extra}&lt;small&gt;${place}&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;time datetime=&quot;${n.at}&quot; title=&quot;${fullDate(n.at)}&quot;&gt;${n.kind===&#x27;closing&#x27;?shortDate(d.question.rules.closes):ago(n.at)}&lt;/time&gt;&lt;/small&gt;&lt;/span&gt;&lt;/button&gt;`
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-note-dot cursor-interaction&quot; data-action=&quot;note-read&quot; data-id=&quot;${escape(n.id)}&quot; data-key=&quot;note-read-${escape(n.id)}&quot; aria-pressed=&quot;${read}&quot; aria-label=&quot;${read?&#x27;Mark as unread&#x27;:&#x27;Mark as read&#x27;}&quot; data-tooltip=&quot;${read?&#x27;Mark as unread&#x27;:&#x27;Mark as read&#x27;}&quot;&gt;&lt;/button&gt;&lt;/li&gt;`;
+  }
+  const inboxEl=root.querySelector(&#x27;.sm-inbox&#x27;);
+  function renderInbox() {
+    const open=state.inbox&amp;&amp;state.persona!==&#x27;out&#x27;;inboxEl.hidden=!open;
+    if(!open){inboxEl.innerHTML=&#x27;&#x27;;return;}
+    const list=notesList(),unread=list.filter(n=&gt;!isRead(n)).length;
+    inboxEl.innerHTML=`&lt;header&gt;&lt;h2 id=&quot;sm-inbox-title&quot;&gt;Notifications${unread?`&lt;small&gt;${unread} new&lt;/small&gt;`:&#x27;&#x27;}&lt;/h2&gt;${unread?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;notes-read-all&quot; data-key=&quot;notes-read-all&quot;&gt;Mark all read&lt;/button&gt;`:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox-close&quot; aria-label=&quot;Close notifications&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
+      +(list.length?`&lt;ul class=&quot;sm-inbox-list&quot;&gt;${list.map(noteMarkup).join(&#x27;&#x27;)}&lt;/ul&gt;`:`&lt;p class=&quot;sm-inbox-empty&quot;&gt;Nothing yet.&lt;/p&gt;`);
+    inboxEl.style.top=(siteEl.offsetHeight+8)+&#x27;px&#x27;;
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  const bellMarkup = () =&gt; { if(state.persona===&#x27;out&#x27;) return &#x27;&#x27;; const n=unreadCount(); return `&lt;button type=&quot;button&quot; class=&quot;sm-bell cursor-interaction&quot; data-action=&quot;inbox&quot; data-key=&quot;inbox&quot; aria-expanded=&quot;${!!state.inbox}&quot; aria-controls=&quot;sm-inbox-title&quot; aria-label=&quot;Notifications${n?`, ${n} unread`:&#x27;&#x27;}&quot; data-tooltip=&quot;Notifications&quot;&gt;${icon(&#x27;bell&#x27;)}${n?`&lt;b aria-hidden=&quot;true&quot;&gt;${n&gt;9?&#x27;9+&#x27;:n}&lt;/b&gt;`:&#x27;&#x27;}&lt;/button&gt;`; };
+  // Opening a notification marks it read and goes to its place: the card, the held item, the comment thread,
+  // the next item to review, the decision, or the space&#x27;s members.
+  function goToNote(n) {
+    state.inbox=false;state.notesRead[n.id]=true;state.profile=null;state.profileFrom=null;
+    if(n.space) {state.spaceEdit=null;if(state.view===&#x27;board&#x27;){leaveBoard();state.view=&#x27;home&#x27;;}spaceAction(&#x27;space-settings&#x27;,n.space);root.querySelector(`[data-key=&quot;space-approve-${n.by}&quot;]`)?.focus();return;}
+    state.spaceEdit=null;openBoardAt(n.board,n.card);
+    const ring=el=&gt;{if(!el)return;el.scrollIntoView({block:&#x27;center&#x27;});el.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-arrived&#x27;),1400);};
+    if(n.held) {const el=root.querySelector(`[data-held=&quot;${n.held}&quot;]`);ring(el);el?.querySelector(&#x27;button&#x27;)?.focus({preventScroll:true});}
+    if(n.comment) root.querySelector(`[data-action=&quot;comments&quot;][data-id=&quot;${n.target}&quot;]`)?.click();
+    if(n.kind===&#x27;review&#x27;||n.kind===&#x27;moderate&#x27;) root.querySelector(&#x27;[data-key=&quot;review-next&quot;]&#x27;)?.click();
+    if(n.kind===&#x27;decision&#x27;) {const el=root.querySelector(&#x27;.sm-decision&#x27;);el?.scrollIntoView({block:&#x27;center&#x27;});}
+  }
+  function noteAction(action,id) {
+    const list=notesList(),n=list.find(x=&gt;x.id===id);
+    if(action===&#x27;inbox&#x27;) {state.inbox=!state.inbox;renderSite();renderInbox();root.querySelector(state.inbox?&#x27;.sm-inbox .sm-note-main, [data-key=&quot;inbox-close&quot;]&#x27;:&#x27;[data-key=&quot;inbox&quot;]&#x27;)?.focus();announce(state.inbox?`Notifications. ${unreadCount()} unread.`:&#x27;Notifications closed.&#x27;);return;}
+    if(action===&#x27;notes-read-all&#x27;) {list.forEach(x=&gt;state.notesRead[x.id]=true);renderSite();renderInbox();root.querySelector(&#x27;[data-key=&quot;inbox-close&quot;]&#x27;)?.focus();announce(&#x27;All marked read.&#x27;);return;}
+    if(!n) return;
+    if(action===&#x27;note-read&#x27;) {state.notesRead[n.id]=!isRead(n);renderSite();renderInbox();root.querySelector(`[data-key=&quot;note-read-${id}&quot;]`)?.focus();announce(isRead(n)?&#x27;Marked as read.&#x27;:&#x27;Marked as unread.&#x27;);return;}
+    if(action===&#x27;note-open&#x27;) goToNote(n);
+  }
+  // ── Spaces: New space, and Settings for a space&#x27;s admins. Changes apply as you make them. ──
+  const CANVASES = {stone:&#x27;Warm stone&#x27;,cool:&#x27;Cool gray&#x27;,sand:&#x27;Sand&#x27;,slate:&#x27;Slate&#x27;,sage:&#x27;Sage&#x27;,lilac:&#x27;Lilac&#x27;};
+  const BUDGETS = [0,100,250,500,1000,2500,5000];
+  // A space&#x27;s members: you (if you belong), then admins, moderators, and members, each alphabetical.
+  function membersOf(id) {
+    const s=spaceOf(id),mine=s.kind===&#x27;private&#x27;||state.joined[id]||SPACE_META.roles[id]?.[ME];
+    const order={admin:0,moderator:1,member:2};
+    return [...new Set([...(mine?[ME]:[]),...Object.keys(SPACE_META.roles[id]||{}),...(PEOPLE[id]||[])])]
+      .sort((a,b)=&gt;(a===ME?-1:b===ME?1:0)||order[roleIn(id,a)]-order[roleIn(id,b)]||a.localeCompare(b));
+  }
+  const usageRow = (u,key) =&gt; `&lt;button type=&quot;button&quot; class=&quot;sm-rrow sm-rrow-button cursor-interaction&quot; data-action=&quot;profile-board&quot; data-id=&quot;${u.board}&quot; data-key=&quot;${key}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${icon(&#x27;bot&#x27;)}&lt;span&gt;${u.kind===&#x27;draft&#x27;?&#x27;Draft arguments&#x27;:u.n===1?&#x27;Evidence check&#x27;:`Evidence checks · ${u.n}`}&lt;/span&gt;&lt;small&gt;${escape(docs[u.board].question.text)}&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;sm-rrow-value&quot;&gt;&lt;b&gt;−${u.n}&lt;/b&gt;&lt;time datetime=&quot;${u.at}&quot; title=&quot;${fullDate(u.at)}&quot;&gt;${ago(u.at)}&lt;/time&gt;&lt;/span&gt;&lt;/button&gt;`;
+  const usageOf = ids =&gt; [...state.usage,...USAGE_SEED].filter(u=&gt;ids.includes(u.space)&amp;&amp;docs[u.board]);
+  const spaceFacts = s =&gt; `&lt;ul class=&quot;sm-space-facts&quot;&gt;&lt;li&gt;${icon(s.kind===&#x27;public&#x27;?&#x27;globe&#x27;:&#x27;lock&#x27;)}${s.kind===&#x27;public&#x27;?&#x27;Public community&#x27;:s.id===&#x27;none&#x27;?&#x27;Only you&#x27;:&#x27;Private space&#x27;}&lt;/li&gt;${s.id===&#x27;none&#x27;?&#x27;&#x27;:`&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(s.members||1)} ${(s.members||1)===1?&#x27;member&#x27;:&#x27;members&#x27;}&lt;/li&gt;`}&lt;/ul&gt;`;
+  function spaceSettingsMarkup() {
+    const isNew=state.spaceEdit===&#x27;new&#x27;,d=isNew?state.spaceDraft:spaceOf(state.spaceEdit),id=isNew?&#x27;&#x27;:d.id,personal=id===&#x27;none&#x27;;
+    const group=(title,body,aside=&#x27;&#x27;)=&gt;`&lt;section class=&quot;sm-rgroup&quot;&gt;&lt;h3&gt;${title}${aside?`&lt;span&gt;${aside}&lt;/span&gt;`:&#x27;&#x27;}&lt;/h3&gt;${body}&lt;/section&gt;`;
+    const row=(label,control,sub=&#x27;&#x27;,cls=&#x27;&#x27;)=&gt;`&lt;div class=&quot;sm-rrow ${cls}&quot;&gt;&lt;span class=&quot;sm-rrow-label&quot;&gt;${label}${sub?`&lt;small&gt;${sub}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;&lt;span class=&quot;sm-rrow-control&quot;&gt;${control}&lt;/span&gt;&lt;/div&gt;`;
+    const card=(key,title,body,aside=&#x27;&#x27;)=&gt;`&lt;section class=&quot;sm-rail-card&quot; aria-labelledby=&quot;sm-${key}-title&quot;&gt;&lt;h2 id=&quot;sm-${key}-title&quot;&gt;${title}${aside?`&lt;span&gt;${aside}&lt;/span&gt;`:&#x27;&#x27;}&lt;/h2&gt;${body}&lt;/section&gt;`;
+    const backTo=isNew?(state.space===&#x27;all&#x27;?&#x27;Home&#x27;:spaceOf(state.space).name):d.name;
+    const back=`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-profile-back cursor-interaction&quot; data-action=&quot;space-back&quot; data-key=&quot;space-back&quot;&gt;${icon(&#x27;arrow-left&#x27;)}&lt;span&gt;${escape(backTo)}&lt;/span&gt;&lt;/button&gt;`;
+    const name=(d.name||&#x27;&#x27;).trim();
+    const hero=`&lt;header class=&quot;sm-space-hero&quot;&gt;&lt;div class=&quot;sm-space-banner&quot; data-canvas=&quot;${d.canvas}&quot;&gt;&lt;/div&gt;&lt;div class=&quot;sm-space-hero-body&quot;&gt;&lt;span class=&quot;sm-space-hero-label&quot;&gt;${isNew?&#x27;New space&#x27;:&#x27;Space settings&#x27;}&lt;/span&gt;&lt;h1 id=&quot;sm-space-hero-name&quot; ${name?&#x27;&#x27;:&#x27;data-empty&#x27;}&gt;${escape(name||&#x27;Untitled space&#x27;)}&lt;/h1&gt;${spaceFacts(isNew?{...d,id:&#x27;new&#x27;,members:1}:d)}&lt;/div&gt;&lt;/header&gt;`;
+    const canvases=`&lt;div class=&quot;sm-canvases&quot; role=&quot;radiogroup&quot; aria-label=&quot;Canvas&quot;&gt;${Object.entries(CANVASES).map(([c,l])=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-canvas-pick cursor-interaction&quot; data-action=&quot;space-canvas&quot; data-id=&quot;${c}&quot; data-key=&quot;space-canvas-${c}&quot; data-canvas=&quot;${c}&quot; aria-checked=&quot;${d.canvas===c}&quot; aria-label=&quot;${l}&quot; data-tooltip=&quot;${l}&quot;&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const kinds=`&lt;div class=&quot;sm-modes sm-kinds&quot; role=&quot;radiogroup&quot; aria-label=&quot;Who can join&quot;&gt;${[[&#x27;private&#x27;,&#x27;lock&#x27;,&#x27;Private space&#x27;],[&#x27;public&#x27;,&#x27;globe&#x27;,&#x27;Public community&#x27;]].map(([v,g,l])=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-mode cursor-interaction&quot; data-action=&quot;space-kind&quot; data-id=&quot;${v}&quot; data-key=&quot;space-kind-${v}&quot; aria-checked=&quot;${d.kind===v}&quot;&gt;${icon(g)}&lt;span&gt;${l}&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`;
+    const basics=card(&#x27;basics&#x27;,&#x27;Basics&#x27;,
+      `&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;Name&lt;/span&gt;&lt;input id=&quot;sm-space-name&quot; type=&quot;text&quot; maxlength=&quot;40&quot; data-key=&quot;space-name&quot; value=&quot;${escape(d.name||&#x27;&#x27;)}&quot; autocomplete=&quot;off&quot; ${state.spaceError?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-space-error&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/label&gt;`
+      +(state.spaceError?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-space-error&quot;&gt;${escape(state.spaceError)}&lt;/p&gt;`:&#x27;&#x27;)
+      +`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;About&lt;/span&gt;&lt;textarea id=&quot;sm-space-about&quot; rows=&quot;2&quot; maxlength=&quot;120&quot; data-key=&quot;space-about&quot;&gt;${escape(d.about||&#x27;&#x27;)}&lt;/textarea&gt;&lt;/label&gt;`
+      +group(&#x27;Canvas&#x27;,canvases)+(personal?&#x27;&#x27;:group(&#x27;Who can join&#x27;,kinds))
+      +(isNew?`&lt;div class=&quot;sm-space-foot&quot;&gt;${button(&#x27;space-back&#x27;,&#x27;Cancel&#x27;,&#x27;data-key=&quot;space-cancel&quot;&#x27;)}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;space-create&quot; data-key=&quot;space-create&quot;&gt;Create space&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;));
+    if(isNew) return `&lt;main class=&quot;sm-profile sm-space-edit&quot; aria-label=&quot;New space&quot;&gt;${back}${hero}&lt;div class=&quot;sm-profile-main&quot;&gt;${basics}&lt;/div&gt;&lt;/main&gt;`;
+    // Members: requests first (they wait on you), then invite, then everyone with their role.
+    const members=membersOf(id),invites=SPACE_META.invites[id]||[],requests=d.kind===&#x27;private&#x27;?(SPACE_META.requests[id]||[]):[];
+    const admins=members.filter(u=&gt;roleIn(id,u)===&#x27;admin&#x27;).length;
+    const person=(u,right,{pending=false,sub=&#x27;&#x27;}={})=&gt;`&lt;li class=&quot;sm-person&quot;&gt;&lt;span class=&quot;sm-avatar ${pending?&#x27;sm-pending&#x27;:&#x27;&#x27;} ${u===ME?&#x27;sm-you&#x27;:&#x27;&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;${pending&amp;&amp;u.includes(&#x27;@&#x27;)?icon(&#x27;mail&#x27;):escape(userInitials(u))}&lt;/span&gt;&lt;span&gt;${pending?escape(u):userLink(u,escape(u))}${u===ME?&#x27; &lt;small&gt;(you)&lt;/small&gt;&#x27;:&#x27;&#x27;}${sub?` &lt;small&gt;· ${sub}&lt;/small&gt;`:&#x27;&#x27;}&lt;/span&gt;${right}&lt;/li&gt;`;
+    const remove=(action,u,label,tip)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-person-remove cursor-interaction&quot; data-action=&quot;${action}&quot; data-id=&quot;${escape(u)}&quot; data-key=&quot;${action}-${escape(u)}&quot; aria-label=&quot;${escape(label)}&quot; data-tooltip=&quot;${tip}&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;`;
+    const roleSel=u=&gt;{const lastAdmin=roleIn(id,u)===&#x27;admin&#x27;&amp;&amp;admins&lt;2;return `&lt;select class=&quot;sm-rselect&quot; data-space-role=&quot;${escape(u)}&quot; data-key=&quot;space-role-${escape(u)}&quot; aria-label=&quot;Role for ${escape(u)}&quot; ${lastAdmin?&#x27;disabled data-tooltip=&quot;A space needs an admin&quot;&#x27;:&#x27;&#x27;}&gt;${Object.entries(SPACE_ROLES).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${roleIn(id,u)===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;};
+    const reqs=requests.length?group(&#x27;Requests to join&#x27;,`&lt;ul class=&quot;sm-people&quot;&gt;${requests.map(r=&gt;person(r.user,`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;space-decline&quot; data-id=&quot;${escape(r.user)}&quot; data-key=&quot;space-decline-${escape(r.user)}&quot;&gt;Decline&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;space-approve&quot; data-id=&quot;${escape(r.user)}&quot; data-key=&quot;space-approve-${escape(r.user)}&quot;&gt;Approve&lt;/button&gt;`,{sub:ago(r.at)})).join(&#x27;&#x27;)}&lt;/ul&gt;`,String(requests.length)):&#x27;&#x27;;
+    const invite=`&lt;div class=&quot;sm-share-invite sm-space-invite&quot;&gt;&lt;div class=&quot;sm-share-field&quot;&gt;&lt;input id=&quot;sm-space-invite&quot; type=&quot;text&quot; data-key=&quot;space-invite&quot; autocomplete=&quot;off&quot; placeholder=&quot;Username or email&quot; aria-label=&quot;Invite by username or email&quot; value=&quot;${escape(state.spaceInvite)}&quot; ${state.spaceInviteError?&#x27;aria-invalid=&quot;true&quot;&#x27;:&#x27;&#x27;}&gt;&lt;select id=&quot;sm-space-invite-role&quot; data-key=&quot;space-invite-role&quot; aria-label=&quot;Role&quot;&gt;${Object.entries(SPACE_ROLES).reverse().map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${state.spaceInviteRole===v?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;space-invite&quot; data-key=&quot;space-invite-send&quot;&gt;Invite&lt;/button&gt;&lt;/div&gt;`
+      +(state.spaceInviteError?`&lt;p class=&quot;sm-field-error&quot;&gt;${escape(state.spaceInviteError)}&lt;/p&gt;`:&#x27;&#x27;);
+    const people=`&lt;ul class=&quot;sm-people&quot;&gt;${members.map(u=&gt;person(u,roleSel(u)+(u===ME?&#x27;&lt;span class=&quot;sm-person-remove&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&#x27;:remove(&#x27;space-remove&#x27;,u,`Remove ${u}`,&#x27;Remove&#x27;)))).join(&#x27;&#x27;)}${invites.map(v=&gt;person(v.who,`&lt;span class=&quot;sm-person-role&quot;&gt;${SPACE_ROLES[v.role]}&lt;/span&gt;`+remove(&#x27;space-invite-cancel&#x27;,v.who,`Cancel the invite to ${v.who}`,&#x27;Cancel invite&#x27;),{pending:true,sub:&#x27;invited&#x27;})).join(&#x27;&#x27;)}&lt;/ul&gt;`;
+    const membersCard=personal?&#x27;&#x27;:card(&#x27;members&#x27;,&#x27;Members&#x27;,reqs+invite+people,`${fmt(d.members||members.length)}`);
+    const rules=SPACE_META.rules[id]||[];
+    const rulesCard=personal?&#x27;&#x27;:card(&#x27;rules&#x27;,&#x27;Rules&#x27;,(rules.length?`&lt;ol class=&quot;sm-rule-list&quot;&gt;${rules.map((r,i)=&gt;`&lt;li&gt;&lt;input type=&quot;text&quot; data-space-rule=&quot;${i}&quot; data-key=&quot;space-rule-${i}&quot; maxlength=&quot;90&quot; value=&quot;${escape(r)}&quot; placeholder=&quot;Write a rule&quot; aria-label=&quot;Rule ${i+1}&quot;&gt;${remove(&#x27;space-rule-remove&#x27;,String(i),`Remove rule ${i+1}`,&#x27;Remove&#x27;)}&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&#x27;)
+      +(rules.length&lt;5?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-add-rule cursor-interaction&quot; data-action=&quot;space-rule-add&quot; data-key=&quot;space-rule-add&quot;&gt;${icon(&#x27;plus&#x27;)}Add a rule&lt;/button&gt;`:&#x27;&#x27;));
+    // AI: what boards here may use, and the monthly budget they spend from.
+    const a=SPACE_AI[id]||{budget:0,used:0,allow:[]},used=(a.used||0)+(state.spent[id]||0),pct=a.budget?Math.min(100,Math.round(used/a.budget*100)):0;
+    const feats=Object.entries(AI_FEATURES).map(([f,[l,cost]])=&gt;row(`${icon(&#x27;bot&#x27;)}${l}`,`&lt;button type=&quot;button&quot; role=&quot;switch&quot; class=&quot;sm-switch cursor-interaction&quot; data-action=&quot;space-ai&quot; data-id=&quot;${f}&quot; data-key=&quot;space-ai-${f}&quot; aria-checked=&quot;${a.allow.includes(f)}&quot; aria-label=&quot;${l}&quot;&gt;&lt;/button&gt;`,cost,&#x27;sm-rrow-ai&#x27;)).join(&#x27;&#x27;);
+    const budget=`&lt;select class=&quot;sm-rselect&quot; id=&quot;sm-space-budget&quot; data-key=&quot;space-budget&quot; aria-label=&quot;Monthly budget&quot;&gt;${[...new Set([...BUDGETS,a.budget])].sort((x,y)=&gt;x-y).map(b=&gt;`&lt;option value=&quot;${b}&quot; ${b===a.budget?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${fmt(b)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
+    const recent=usageOf([id]).slice(0,4);
+    const aiCard=card(&#x27;ai&#x27;,&#x27;AI&#x27;,group(&#x27;Boards here may use&#x27;,feats)
+      +group(&#x27;Credits&#x27;,row(&#x27;Monthly budget&#x27;,budget)+row(&#x27;Used this month&#x27;,`&lt;span class=&quot;sm-rrow-value&quot;&gt;${fmt(used)}&lt;/span&gt;`)+`&lt;div class=&quot;sm-budget-bar&quot; role=&quot;img&quot; aria-label=&quot;${pct}% of the budget used&quot;&gt;&lt;span style=&quot;width:${pct}%&quot;&gt;&lt;/span&gt;&lt;/div&gt;`,`${fmt(spaceCredits(id))} left`)
+      +(recent.length?`&lt;div class=&quot;sm-rgroup sm-usage&quot;&gt;&lt;h3&gt;Recent usage&lt;/h3&gt;${recent.map((u,i)=&gt;usageRow(u,&#x27;space-usage-&#x27;+i)).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;));
+    const mode=SPACE_META.defaults[id]||(d.kind===&#x27;public&#x27;?&#x27;public&#x27;:&#x27;team&#x27;);
+    const modeCard=card(&#x27;mode&#x27;,&#x27;New steelmen start as&#x27;,`&lt;div class=&quot;sm-modes&quot; role=&quot;radiogroup&quot; aria-label=&quot;New steelmen start as&quot;&gt;${Object.entries(MODES).map(([m,x])=&gt;`&lt;button type=&quot;button&quot; role=&quot;radio&quot; class=&quot;sm-mode cursor-interaction&quot; data-action=&quot;space-mode&quot; data-id=&quot;${m}&quot; data-key=&quot;space-mode-${m}&quot; aria-checked=&quot;${mode===m}&quot;&gt;${icon(x.glyph)}&lt;span&gt;${x.label}&lt;/span&gt;&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`);
+    return `&lt;main class=&quot;sm-profile sm-space-edit&quot; data-self aria-label=&quot;Settings for ${escape(d.name)}&quot;&gt;${back}${hero}&lt;div class=&quot;sm-profile-main&quot;&gt;${basics}${membersCard}${rulesCard}&lt;/div&gt;&lt;aside class=&quot;sm-profile-side&quot; aria-label=&quot;AI and defaults&quot;&gt;${aiCard}${modeCard}&lt;/aside&gt;&lt;/main&gt;`;
+  }
+  function spaceAction(action,id) {
+    const focusOn=k=&gt;root.querySelector(`[data-key=&quot;${k}&quot;]`)?.focus({preventScroll:true});
+    const sid=state.spaceEdit,s=sid&amp;&amp;sid!==&#x27;new&#x27;?spaceOf(sid):null,draft=sid===&#x27;new&#x27;?state.spaceDraft:s;
+    const redo=(k,msg)=&gt;{renderHome();if(k)focusOn(k);if(msg)announce(msg);};
+    const tidy=()=&gt;{if(s)SPACE_META.rules[s.id]=(SPACE_META.rules[s.id]||[]).map(r=&gt;r.trim()).filter(Boolean);};
+    if(action===&#x27;space-new&#x27;) {
+      if(state.view===&#x27;board&#x27;){leaveBoard();state.view=&#x27;home&#x27;;}
+      Object.assign(state,{profile:null,profileFrom:null,spaceEdit:&#x27;new&#x27;,spaceDraft:{name:&#x27;&#x27;,about:&#x27;&#x27;,canvas:&#x27;stone&#x27;,kind:&#x27;private&#x27;},spaceError:&#x27;&#x27;,creating:false});
+      renderView(&#x27;space-name&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(&#x27;New space.&#x27;);return;
+    }
+    if(action===&#x27;space-settings&#x27;) {
+      Object.assign(state,{profile:null,profileFrom:null,spaceEdit:id,space:id,spaceError:&#x27;&#x27;,spaceInvite:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;});
+      renderView(&#x27;space-back&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`${spaceOf(id).name} settings.`);return;
+    }
+    if(action===&#x27;space-back&#x27;) {
+      tidy();const was=sid;Object.assign(state,{spaceEdit:null,spaceDraft:null,spaceError:&#x27;&#x27;,spaceInviteError:&#x27;&#x27;});
+      renderView(was&amp;&amp;was!==&#x27;new&#x27;?&#x27;side-&#x27;+was:&#x27;space-new&#x27;);announce(was&amp;&amp;was!==&#x27;new&#x27;?`${spaceOf(was).name}.`:&#x27;Closed.&#x27;);return;
+    }
+    if(!draft) return;
+    if(action===&#x27;space-canvas&#x27;) {draft.canvas=id;redo(&#x27;space-canvas-&#x27;+id,`Canvas: ${CANVASES[id]}.`);return;}
+    if(action===&#x27;space-kind&#x27;) {
+      draft.kind=id;if(s&amp;&amp;id===&#x27;public&#x27;)state.joined[s.id]=true;
+      redo(&#x27;space-kind-&#x27;+id,id===&#x27;public&#x27;?&#x27;Public community.&#x27;:&#x27;Private space.&#x27;);return;
+    }
+    if(action===&#x27;space-create&#x27;) {
+      const name=(draft.name||&#x27;&#x27;).replace(/\s+/g,&#x27; &#x27;).trim();
+      const problem=!name?&#x27;Name the space.&#x27;:SPACES.some(x=&gt;x.name.toLowerCase()===name.toLowerCase())?&#x27;There’s already a space with that name.&#x27;:&#x27;&#x27;;
+      if(problem){state.spaceError=problem;redo(&#x27;space-name&#x27;,problem);return;}
+      const nid=&#x27;sp&#x27;+Date.now().toString(36);
+      SPACES.push({id:nid,name,kind:draft.kind,canvas:draft.canvas,members:1,about:(draft.about||&#x27;&#x27;).trim()});
+      SPACE_AI[nid]={budget:100,used:0,allow:[&#x27;check&#x27;]};PEOPLE[nid]=[];SPACE_META.roles[nid]={[ME]:&#x27;admin&#x27;};SPACE_META.rules[nid]=[];
+      if(draft.kind===&#x27;public&#x27;) state.joined[nid]=true;
+      Object.assign(state,{space:nid,spaceEdit:nid,spaceDraft:null,spaceError:&#x27;&#x27;});
+      renderView(&#x27;space-invite&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(`Created ${name}. Invite people next.`);return;
+    }
+    if(!s) return;
+    if(action===&#x27;space-invite&#x27;) {
+      const who=(state.spaceInvite||&#x27;&#x27;).trim().replace(/^@/,&#x27;&#x27;),role=state.spaceInviteRole||&#x27;member&#x27;;
+      const email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(who),known=who===ME||Object.values(PEOPLE).flat().includes(who)||Object.values(SPACE_META.roles).some(r=&gt;who in r);
+      const problem=!who?&#x27;Enter a username or email.&#x27;:!email&amp;&amp;!known?`No one is called ${who}. Try their email.`:membersOf(s.id).includes(who)?`${who} is already a member.`:(SPACE_META.invites[s.id]||[]).some(v=&gt;v.who===who)?`${who} is already invited.`:&#x27;&#x27;;
+      if(problem){state.spaceInviteError=problem;redo(&#x27;space-invite&#x27;,problem);return;}
+      (SPACE_META.invites[s.id]||=[]).push({who,role,at:new Date().toISOString()});state.spaceInvite=&#x27;&#x27;;state.spaceInviteError=&#x27;&#x27;;
+      redo(&#x27;space-invite&#x27;,`Invited ${who} as ${SPACE_ROLES[role].toLowerCase()} (simulated: nothing is sent).`);return;
+    }
+    if(action===&#x27;space-invite-cancel&#x27;) {SPACE_META.invites[s.id]=(SPACE_META.invites[s.id]||[]).filter(v=&gt;v.who!==id);redo(&#x27;space-invite&#x27;,`Invite to ${id} cancelled.`);return;}
+    if(action===&#x27;space-remove&#x27;) {PEOPLE[s.id]=(PEOPLE[s.id]||[]).filter(u=&gt;u!==id);if(SPACE_META.roles[s.id])delete SPACE_META.roles[s.id][id];s.members=Math.max(1,(s.members||1)-1);redo(&#x27;space-invite&#x27;,`Removed ${id}.`);return;}
+    if(action===&#x27;space-approve&#x27;||action===&#x27;space-decline&#x27;) {
+      SPACE_META.requests[s.id]=(SPACE_META.requests[s.id]||[]).filter(r=&gt;r.user!==id);
+      if(action===&#x27;space-approve&#x27;){PEOPLE[s.id]||=[];if(!PEOPLE[s.id].includes(id))PEOPLE[s.id].push(id);s.members=(s.members||1)+1;}
+      const next=SPACE_META.requests[s.id][0];redo(next?&#x27;space-approve-&#x27;+next.user:&#x27;space-invite&#x27;,action===&#x27;space-approve&#x27;?`${id} joined ${s.name}.`:`Declined ${id}’s request.`);return;
+    }
+    if(action===&#x27;space-rule-add&#x27;) {const r=(SPACE_META.rules[s.id]||=[]);if(r.length&lt;5)r.push(&#x27;&#x27;);redo(&#x27;space-rule-&#x27;+(r.length-1));return;}
+    if(action===&#x27;space-rule-remove&#x27;) {const r=SPACE_META.rules[s.id]||[];r.splice(Number(id),1);redo(r.length?&#x27;space-rule-&#x27;+Math.min(Number(id),r.length-1):&#x27;space-rule-add&#x27;,&#x27;Rule removed.&#x27;);return;}
+    if(action===&#x27;space-ai&#x27;) {const a=SPACE_AI[s.id]||(SPACE_AI[s.id]={budget:0,used:0,allow:[]});a.allow=a.allow.includes(id)?a.allow.filter(f=&gt;f!==id):[...a.allow,id];redo(&#x27;space-ai-&#x27;+id,`${AI_FEATURES[id][0]}: ${a.allow.includes(id)?&#x27;on&#x27;:&#x27;off&#x27;} for boards in ${s.name}.`);return;}
+    if(action===&#x27;space-mode&#x27;) {SPACE_META.defaults[s.id]=id;redo(&#x27;space-mode-&#x27;+id,`New steelmen in ${s.name} start as ${MODES[id].label}.`);}
+  }
   function renderHome() {
+    if(state.invite) {homeEl.innerHTML=landingMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
+    if(state.spaceEdit&amp;&amp;(state.spaceEdit===&#x27;new&#x27;?state.persona===&#x27;out&#x27;||!state.spaceDraft:!SPACES.some(x=&gt;x.id===state.spaceEdit)||!isSpaceAdmin(state.spaceEdit))) state.spaceEdit=null;
+    if(!state.profile&amp;&amp;state.spaceEdit) {homeEl.innerHTML=sidebar()+spaceSettingsMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
+    if(state.profile) {homeEl.innerHTML=sidebar()+profileMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     const list=visibleBoards();
     const empty=state.query.trim()?&#x27;No steelmen match that search.&#x27;:state.sort===&#x27;help&#x27;?&#x27;Every option here has at least two arguments.&#x27;:&#x27;Nothing here yet.&#x27;;
     homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
@@ -4033,7 +4744,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   function renderSite() {
     const persona=`&lt;label class=&quot;sm-persona&quot; data-tooltip=&quot;Prototype tool: try the board with another role&quot;&gt;&lt;span&gt;Preview as&lt;/span&gt;&lt;select id=&quot;sm-persona&quot; data-key=&quot;persona&quot; aria-label=&quot;Preview as (prototype tool)&quot;&gt;${Object.entries(PERSONAS).map(([v,l])=&gt;`&lt;option value=&quot;${v}&quot; ${v===state.persona?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${l}${v===&#x27;you&#x27;&amp;&amp;state.view===&#x27;board&#x27;?` (${realRole()===&#x27;owner&#x27;?&#x27;owner&#x27;:ROLES[realRole()]})`:&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/label&gt;`;
-    const me=persona+(state.persona===&#x27;out&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;sign-in&quot; data-key=&quot;sign-in&quot;&gt;Sign in&lt;/button&gt;`:`&lt;span class=&quot;sm-me&quot; title=&quot;kieran_lamee (you)&quot;&gt;KL&lt;/span&gt;`);
+    const me=state.view===&#x27;home&#x27;&amp;&amp;state.invite?&#x27;&#x27;:persona+bellMarkup()+(state.persona===&#x27;out&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;sign-in&quot; data-key=&quot;sign-in&quot;&gt;Sign in&lt;/button&gt;`:`&lt;button type=&quot;button&quot; class=&quot;sm-me cursor-interaction&quot; data-action=&quot;profile&quot; data-id=&quot;${ME}&quot; data-key=&quot;me&quot; aria-label=&quot;Your profile&quot; data-tooltip=&quot;Your profile&quot; aria-current=&quot;${state.view===&#x27;home&#x27;&amp;&amp;state.profile===ME}&quot;&gt;${escape(userInitials(ME))}&lt;/button&gt;`);
     let middle=&#x27;&#x27;,tools=&#x27;&#x27;,menu=&#x27;&#x27;;
     if(state.view===&#x27;board&#x27;) {
       const s=spaceOf(doc.question.org);
@@ -4049,8 +4760,10 @@ html&gt;body{padding:0}&lt;/style&gt;
       menu=`&lt;button type=&quot;button&quot; class=&quot;sm-nav-toggle cursor-interaction&quot; data-action=&quot;nav-toggle&quot; data-key=&quot;nav-toggle&quot; aria-expanded=&quot;${state.navOpen}&quot; aria-controls=&quot;sm-side&quot; aria-label=&quot;Spaces menu&quot;&gt;${icon(state.navOpen?&#x27;x&#x27;:&#x27;menu&#x27;)}&lt;/button&gt;`;
       tools=`&lt;button type=&quot;button&quot; class=&quot;sm-share-button cursor-interaction&quot; data-action=&quot;create-open&quot; data-key=&quot;create-open&quot; aria-haspopup=&quot;dialog&quot;&gt;${icon(&#x27;plus&#x27;)}&lt;span&gt;New steelman&lt;/span&gt;&lt;/button&gt;&lt;label class=&quot;sm-search&quot;&gt;${icon(&#x27;search&#x27;)}&lt;input id=&quot;sm-search&quot; type=&quot;search&quot; data-key=&quot;search&quot; placeholder=&quot;Search steelmen&quot; aria-label=&quot;Search steelmen&quot; value=&quot;${escape(state.query)}&quot;&gt;&lt;/label&gt;`;
     }
+    if(state.view===&#x27;home&#x27;&amp;&amp;state.invite){tools=&#x27;&#x27;;menu=&#x27;&#x27;;}
     root.toggleAttribute(&#x27;data-nav-open&#x27;,state.view===&#x27;home&#x27;&amp;&amp;state.navOpen);
     siteEl.innerHTML=`${menu}&lt;button type=&quot;button&quot; class=&quot;sm-wordmark cursor-interaction&quot; data-action=&quot;space&quot; data-id=&quot;all&quot; data-key=&quot;wordmark&quot; aria-label=&quot;Steelman home&quot;&gt;${LOGO}&lt;span class=&quot;sm-wordmark-text&quot;&gt;steelman.&lt;/span&gt;&lt;/button&gt;${middle}&lt;div class=&quot;sm-site-tools&quot;&gt;${tools}${me}&lt;/div&gt;`;
+    renderInbox();
   }
   // ── New steelman: a question, two to four options, and the space it lives in ──
   // The space sets who can find it; Share refines that once it exists.
@@ -4100,7 +4813,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     nd.question.people=rules.editors.map(user=&gt;({user,role:&#x27;edit&#x27;}));rules.editors=[];
     if(rules.ai.draft&amp;&amp;aiAllowed(d.space,&#x27;draft&#x27;)) {
       nd.options.forEach((o,oi)=&gt;{const idea=`${id}-ai${oi}`,card=idea+&#x27;v&#x27;;nd.ideas.push({id:idea,option:o.id,score:0,versions:[card]});nd.cards[card]={at:new Date(NOW).toISOString(),by:&#x27;ai&#x27;,idea,claim:`AI draft: the strongest reason for “${o.name}”.`,yes:0,no:0,pref:0,sources:[],explanation:&#x27;&#x27;,ai:{basis:&#x27;Drafted from the question and this option.&#x27;,limits:&#x27;Simulated: no model ran.&#x27;},...(rules.ai.check&amp;&amp;aiAllowed(d.space,&#x27;check&#x27;)?{aiCheck:{verdict:&#x27;none&#x27;,summary:&#x27;&#x27;}}:{})};});
-      state.spent[d.space]=(state.spent[d.space]||0)+20;
+      state.spent[d.space]=(state.spent[d.space]||0)+20;logUsage(d.space,id,&#x27;draft&#x27;,20);
     }
     const tv=createEl.getBoundingClientRect();
     state.creating=false;state.createError=&#x27;&#x27;;state.createDraft={q:&#x27;&#x27;,options:[&#x27;&#x27;,&#x27;&#x27;],space:null};
@@ -4140,12 +4853,12 @@ html&gt;body{padding:0}&lt;/style&gt;
     const accessHint=q.visibility===&#x27;private&#x27;?&#x27;Only the people above can open it.&#x27;:`${visLabel(q.visibility,q.org)} can ${ROLE_HINTS[q.accessRole]}.`;
     const generalSelect=`&lt;select id=&quot;sm-share-general&quot; data-key=&quot;share-general&quot; aria-label=&quot;General access&quot; ${owner?&#x27;&#x27;:&#x27;disabled&#x27;}&gt;${Object.entries(general).map(([v,[,l]])=&gt;`&lt;option value=&quot;${v}&quot; ${v===q.visibility?&#x27;selected&#x27;:&#x27;&#x27;} ${v===&#x27;org&#x27;&amp;&amp;personal?&#x27;disabled&#x27;:&#x27;&#x27;}&gt;${escape(l)}${v===&#x27;org&#x27;&amp;&amp;personal?&#x27; (choose a space first)&#x27;:&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;`;
     const ownerNote=owner?&#x27;&#x27;:`&lt;p class=&quot;sm-access-hint&quot;&gt;Only ${escape(q.author)} can change access. You can still invite people and copy the link.&lt;/p&gt;`;
-    const link=`steelman.example/s/${state.boardId}`;
+    const link=inviteUrl();
     return `&lt;header&gt;&lt;h2 id=&quot;sm-share-title&quot;&gt;Share&lt;/h2&gt;&lt;button type=&quot;button&quot; class=&quot;sm-icon-button cursor-interaction&quot; data-action=&quot;share&quot; data-key=&quot;share-close&quot; aria-label=&quot;Close sharing&quot; data-tooltip=&quot;Close&quot;&gt;${icon(&#x27;x&#x27;)}&lt;/button&gt;&lt;/header&gt;`
       +`&lt;div class=&quot;sm-share-body&quot;&gt;&lt;div class=&quot;sm-share-invite&quot;&gt;&lt;div class=&quot;sm-share-field&quot;&gt;&lt;input id=&quot;sm-share-q&quot; type=&quot;text&quot; data-key=&quot;share-q&quot; autocomplete=&quot;off&quot; placeholder=&quot;Username or email&quot; aria-label=&quot;Invite by username or email&quot; aria-controls=&quot;sm-share-suggest&quot; value=&quot;${escape(state.shareQuery)}&quot;&gt;${roleSelect(&#x27;new&#x27;,RANK[state.shareRole]&gt;RANK[myRole()]?myRole():state.shareRole,&#x27;id=&quot;sm-share-role&quot; data-key=&quot;share-role&quot;&#x27;,false,myRole())}&lt;ul class=&quot;sm-share-suggest&quot; id=&quot;sm-share-suggest&quot;&gt;${shareSuggestions()}&lt;/ul&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;share-invite&quot; data-key=&quot;share-invite&quot;&gt;Invite&lt;/button&gt;&lt;/div&gt;`
       +`&lt;section aria-labelledby=&quot;sm-people-title&quot;&gt;&lt;h3 id=&quot;sm-people-title&quot;&gt;People with access&lt;/h3&gt;&lt;ul class=&quot;sm-people&quot;&gt;${people}&lt;/ul&gt;&lt;/section&gt;`
       +`&lt;section aria-labelledby=&quot;sm-general-title&quot;&gt;&lt;h3 id=&quot;sm-general-title&quot;&gt;General access&lt;/h3&gt;&lt;div class=&quot;sm-person&quot;&gt;&lt;span class=&quot;sm-avatar sm-access&quot; aria-hidden=&quot;true&quot;&gt;${icon(accessIcon)}&lt;/span&gt;&lt;span&gt;${generalSelect}&lt;/span&gt;${q.visibility===&#x27;private&#x27;?&#x27;&#x27;:roleSelect(&#x27;general&#x27;,q.accessRole,&#x27;id=&quot;sm-share-access-role&quot; data-key=&quot;share-access-role&quot;&#x27;,!owner)}&lt;/div&gt;&lt;p class=&quot;sm-access-hint&quot;&gt;${escape(accessHint)}&lt;/p&gt;${ownerNote}&lt;/section&gt;&lt;/div&gt;`
-      +`&lt;footer&gt;&lt;input type=&quot;text&quot; readonly value=&quot;${link}&quot; aria-label=&quot;Link to this steelman&quot; data-key=&quot;share-link&quot;&gt;${button(&#x27;share-copy&#x27;,icon(state.copied===&#x27;yes&#x27;?&#x27;check&#x27;:&#x27;link&#x27;)+(state.copied===&#x27;yes&#x27;?&#x27; Copied&#x27;:&#x27; Copy link&#x27;),&#x27;data-key=&quot;share-copy&quot;&#x27;)}&lt;/footer&gt;`;
+      +`&lt;footer&gt;&lt;input type=&quot;text&quot; readonly value=&quot;${escape(link)}&quot; aria-label=&quot;Link to this steelman&quot; data-key=&quot;share-link&quot;&gt;${button(&#x27;invite-preview&#x27;,icon(&#x27;eye&#x27;)+&#x27; Preview&#x27;,&#x27;data-key=&quot;invite-preview&quot; data-tooltip=&quot;What they’ll see&quot;&#x27;)}${button(&#x27;share-copy&#x27;,icon(state.copied===&#x27;yes&#x27;?&#x27;check&#x27;:&#x27;link&#x27;)+(state.copied===&#x27;yes&#x27;?&#x27; Copied&#x27;:&#x27; Copy link&#x27;),&#x27;data-key=&quot;share-copy&quot;&#x27;)}&lt;/footer&gt;`;
   }
   function renderShare() {
     shareEl.hidden=!(state.view===&#x27;board&#x27;&amp;&amp;state.share);
@@ -4213,6 +4926,7 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   // Leaving a board closes whatever was open on it; votes stay, keyed by card.
   function leaveBoard() {
+    if(state.tour){state.tour=null;const t=root.querySelector(&#x27;.sm-tour&#x27;);t.hidden=true;t.innerHTML=&#x27;&#x27;;}
     Object.assign(state,{zoom:&#x27;read&#x27;,step:{},shownRows:{},shownVersions:{},share:false,shareQuery:&#x27;&#x27;,copied:&#x27;&#x27;,open:null,expanded:null,drawer:null,menu:null,editing:null,composing:false,composingIdea:null,moving:null,sourceForm:null,sourceDraft:{},undo:null,renamingOption:null,newOption:null,commentTarget:null,replyTo:null,confirmReset:false});
   }
   function renderView(focusKey) {
@@ -4223,7 +4937,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     else render();
     if(focusKey) root.querySelector(`[data-key=&quot;${focusKey}&quot;]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set([&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
+  const HOME_ACTIONS=new Set([&#x27;space-new&#x27;,&#x27;space-settings&#x27;,&#x27;space-back&#x27;,&#x27;space-create&#x27;,&#x27;space-canvas&#x27;,&#x27;space-kind&#x27;,&#x27;space-invite&#x27;,&#x27;space-invite-cancel&#x27;,&#x27;space-remove&#x27;,&#x27;space-approve&#x27;,&#x27;space-decline&#x27;,&#x27;space-rule-add&#x27;,&#x27;space-rule-remove&#x27;,&#x27;space-ai&#x27;,&#x27;space-mode&#x27;,&#x27;profile&#x27;,&#x27;profile-back&#x27;,&#x27;profile-tab&#x27;,&#x27;profile-card&#x27;,&#x27;profile-board&#x27;,&#x27;profile-pw&#x27;,&#x27;profile-pw-cancel&#x27;,&#x27;profile-pw-save&#x27;,&#x27;sign-out&#x27;,&#x27;space&#x27;,&#x27;sort&#x27;,&#x27;join&#x27;,&#x27;open-board&#x27;,&#x27;browse&#x27;,&#x27;nav-toggle&#x27;,&#x27;create-open&#x27;,&#x27;create-close&#x27;,&#x27;create-add-option&#x27;,&#x27;create-remove-option&#x27;,&#x27;create-rules&#x27;,&#x27;create-submit&#x27;]);
   function homeAction(action,id,trigger) {
     if(action===&#x27;browse&#x27;) {announce(&#x27;Browsing public communities is coming soon.&#x27;);return;}
     if(action===&#x27;create-open&#x27;) {
@@ -4238,6 +4952,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;create-submit&#x27;) {createSubmit();return;}
     if(action===&#x27;nav-toggle&#x27;) {state.navOpen=!state.navOpen;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(state.navOpen?&#x27;.sm-side-link[aria-current=&quot;true&quot;]&#x27;:&#x27;[data-key=&quot;nav-toggle&quot;]&#x27;)?.focus();return;}
     state.navOpen=false;
+    if(action.startsWith(&#x27;profile&#x27;)||action===&#x27;sign-out&#x27;) {state.spaceEdit=null;profileAction(action,id);return;}
+    if(action.startsWith(&#x27;space-&#x27;)) {spaceAction(action,id);return;}
     if(action===&#x27;open-board&#x27;) {
       const thumb=root.querySelector(`.sm-post[data-board=&quot;${id}&quot;] .sm-thumb`),tv=thumb&amp;&amp;thumb.getBoundingClientRect();
       surfaceEl.getAnimations().forEach(x=&gt;x.cancel());surfaceEl.removeAttribute(&#x27;style&#x27;);
@@ -4246,7 +4962,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       announce(`Opened “${doc.question.text}”.`);return;
     }
     if(action===&#x27;space&#x27;) {
-      const from=state.view,F=from===&#x27;board&#x27;&amp;&amp;relBox(surfaceEl),left=state.boardId;leaveBoard();state.view=&#x27;home&#x27;;state.space=id;
+      const from=state.view,F=from===&#x27;board&#x27;&amp;&amp;relBox(surfaceEl),left=state.boardId;leaveBoard();state.view=&#x27;home&#x27;;state.space=id;state.profile=null;state.profileFrom=null;state.spaceEdit=null;state.invite=null;
       renderView(from===&#x27;board&#x27;||trigger.dataset.key.startsWith(&#x27;post-space&#x27;)?&#x27;side-&#x27;+id:trigger.dataset.key);
       if(F) shrinkInto(F,left); else root.scrollIntoView({block:&#x27;start&#x27;});
       announce(id===&#x27;all&#x27;?&#x27;Home: steelmen from your spaces and communities.&#x27;:`${spaceOf(id).name}.`);return;
@@ -4256,6 +4972,39 @@ html&gt;body{padding:0}&lt;/style&gt;
     root.querySelector(`[data-key=&quot;${trigger.dataset.key}&quot;]`)?.focus({preventScroll:true});
   }
 
+  // Profiles open from the avatar or any username; back returns to the board you came from, or the list.
+  function openBoardAt(boardId,cardId) {
+    leaveBoard();state.view=&#x27;board&#x27;;state.boardId=boardId;useDoc(docs[boardId]);
+    if(cardId&amp;&amp;cards[cardId]){const idea=cards[cardId].idea;if(ordered(ideaOf(idea))[0]!==cardId)state.open=idea;}
+    renderView(cardId?&#x27;claim-&#x27;+cardId:&#x27;zoom-read&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});
+    const el=cardId&amp;&amp;root.querySelector(`.sm-card[data-card=&quot;${cardId}&quot;]`);
+    if(el){el.scrollIntoView({block:&#x27;center&#x27;});el.classList.add(&#x27;sm-arrived&#x27;);setTimeout(()=&gt;el.classList.remove(&#x27;sm-arrived&#x27;),1400);}
+    announce(`Opened “${doc.question.text}”.`);
+  }
+  function profileAction(action,id) {
+    const focusOn=k=&gt;root.querySelector(`[data-key=&quot;${k}&quot;]`)?.focus({preventScroll:true});
+    if(action===&#x27;profile&#x27;) {
+      const from=state.view===&#x27;board&#x27;?state.boardId:null;
+      if(from){leaveBoard();state.view=&#x27;home&#x27;;state.profileFrom=from;} else if(!state.profile) state.profileFrom=null;
+      Object.assign(state,{profile:id,contribTab:&#x27;args&#x27;,pwOpen:false,creating:false});
+      renderView(&#x27;profile-back&#x27;);root.scrollIntoView({block:&#x27;start&#x27;});announce(id===ME?&#x27;Your profile.&#x27;:`${id}’s profile.`);return;
+    }
+    if(action===&#x27;profile-back&#x27;) {
+      const b=state.profileFrom;state.profile=null;state.profileFrom=null;
+      if(b&amp;&amp;docs[b]) openBoardAt(b); else {renderView(&#x27;side-&#x27;+state.space);announce(&#x27;Back to the list.&#x27;);}
+      return;
+    }
+    if(action===&#x27;profile-card&#x27;||action===&#x27;profile-board&#x27;) {const [b,card]=id.split(&#x27;|&#x27;);state.profile=null;state.profileFrom=null;if(docs[b])openBoardAt(b,card);return;}
+    if(action===&#x27;profile-tab&#x27;) {state.contribTab=id;renderHome();focusOn(&#x27;profile-tab-&#x27;+id);return;}
+    if(action===&#x27;profile-pw&#x27;) {state.pwOpen=true;renderHome();focusOn(&#x27;pw-current&#x27;);return;}
+    if(action===&#x27;profile-pw-cancel&#x27;) {state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);return;}
+    if(action===&#x27;profile-pw-save&#x27;) {
+      const next=root.querySelector(&#x27;#sm-pw-new&#x27;);
+      if(!next?.value){next?.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);next?.focus();announce(&#x27;Enter a new password.&#x27;);return;}
+      state.pwOpen=false;renderHome();focusOn(&#x27;pw-open&#x27;);announce(&#x27;Password changed (simulated).&#x27;);return;
+    }
+    if(action===&#x27;sign-out&#x27;) {state.profile=null;state.profileFrom=null;setPersona(&#x27;out&#x27;);focusOn(&#x27;sign-in&#x27;);announce(&#x27;Signed out (simulated). Preview as is now Signed out.&#x27;);}
+  }
   // After anything renders, controls your role can&#x27;t use are marked unavailable, with the reason as their tooltip.
   function applyAccess() {
     root.dataset.role=myRole();
@@ -4370,13 +5119,28 @@ html&gt;body{padding:0}&lt;/style&gt;
     state.expanded=null;state.sourceForm=null;state.sourceDraft={}; render(focus||&#x27;expand-&#x27;+id); announce(&#x27;Card collapsed.&#x27;);save();
   }
   root.addEventListener(&#x27;input&#x27;,event=&gt;{
+    // Space settings save as you type; the banner and sidebar follow the name.
+    if(state.spaceEdit&amp;&amp;[&#x27;sm-space-name&#x27;,&#x27;sm-space-about&#x27;,&#x27;sm-space-invite&#x27;].includes(event.target.id)||event.target.dataset?.spaceRule!==undefined&amp;&amp;state.spaceEdit) {
+      const el=event.target,isNew=state.spaceEdit===&#x27;new&#x27;,sp=isNew?state.spaceDraft:spaceOf(state.spaceEdit);
+      if(el.id===&#x27;sm-space-name&#x27;) {
+        const name=el.value.replace(/\s+/g,&#x27; &#x27;).trim();
+        if(state.spaceError){state.spaceError=&#x27;&#x27;;el.removeAttribute(&#x27;aria-invalid&#x27;);root.querySelector(&#x27;#sm-space-error&#x27;)?.remove();}
+        if(isNew) sp.name=el.value; else if(name) sp.name=name;
+        const h=root.querySelector(&#x27;#sm-space-hero-name&#x27;);if(h){h.textContent=name||(isNew?&#x27;Untitled space&#x27;:sp.name);h.toggleAttribute(&#x27;data-empty&#x27;,!name&amp;&amp;isNew);}
+        if(!isNew&amp;&amp;name){const back=root.querySelector(&#x27;[data-key=&quot;space-back&quot;] span&#x27;);if(back)back.textContent=name;const side=homeEl.querySelector(&#x27;.sm-side&#x27;);if(side){side.outerHTML=sidebar();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});}}
+      }
+      if(el.id===&#x27;sm-space-about&#x27;) sp.about=el.value;
+      if(el.id===&#x27;sm-space-invite&#x27;) {state.spaceInvite=el.value;if(state.spaceInviteError){state.spaceInviteError=&#x27;&#x27;;el.removeAttribute(&#x27;aria-invalid&#x27;);el.closest(&#x27;.sm-rail-card&#x27;)?.querySelector(&#x27;.sm-field-error&#x27;)?.remove();}return;}
+      if(el.dataset.spaceRule!==undefined) (SPACE_META.rules[sp.id]||=[])[Number(el.dataset.spaceRule)]=el.value;
+      save();return;
+    }
     if(event.target.id===&#x27;sm-question&#x27;) {
       const text=event.target.value.replace(/\s+/g,&#x27; &#x27;).trim();
       if(!text){event.target.setAttribute(&#x27;aria-invalid&#x27;,&#x27;true&#x27;);announce(&#x27;A question is required.&#x27;);return;}
       event.target.removeAttribute(&#x27;aria-invalid&#x27;);
       doc.question.text=text;headEl.querySelector(&#x27;h1&#x27;).textContent=text;animateWires();save();
     }
-    if(event.target.id===&#x27;sm-search&#x27;) {state.query=event.target.value;renderHome();return;}
+    if(event.target.id===&#x27;sm-search&#x27;) {state.query=event.target.value;state.profile=null;state.profileFrom=null;state.spaceEdit=null;renderHome();return;}
     if(event.target.id===&#x27;sm-create-q&#x27;||event.target.classList?.contains(&#x27;sm-create-opt&#x27;)) {
       const d=state.createDraft;if(event.target.id===&#x27;sm-create-q&#x27;)d.q=event.target.value;else d.options[Number(event.target.dataset.index)]=event.target.value;
       event.target.closest(&#x27;[data-invalid]&#x27;)?.removeAttribute(&#x27;data-invalid&#x27;);
@@ -4402,6 +5166,14 @@ html&gt;body{padding:0}&lt;/style&gt;
   root.addEventListener(&#x27;change&#x27;,event=&gt;{
     const el=event.target,q=doc.question;
     if(el.id===&#x27;sm-share-role&#x27;) {state.shareRole=el.value;return;}
+    if(el.id===&#x27;sm-space-invite-role&#x27;) {state.spaceInviteRole=el.value;return;}
+    if(el.id===&#x27;sm-space-budget&#x27;&amp;&amp;isSpaceAdmin(state.spaceEdit)) {const a=SPACE_AI[state.spaceEdit];a.budget=Number(el.value);renderHome();root.querySelector(&#x27;#sm-space-budget&#x27;)?.focus();announce(`Monthly budget: ${fmt(a.budget)} credits. ${fmt(spaceCredits(state.spaceEdit))} left.`);save();return;}
+    if(el.dataset.spaceRole&amp;&amp;isSpaceAdmin(state.spaceEdit)) {
+      const sp=spaceOf(state.spaceEdit),u=el.dataset.spaceRole,roles=(SPACE_META.roles[sp.id]||={});
+      if(el.value===&#x27;member&#x27;) delete roles[u]; else roles[u]=el.value;
+      if(u===ME&amp;&amp;el.value!==&#x27;admin&#x27;){state.spaceEdit=null;renderView(&#x27;side-&#x27;+sp.id);announce(`You’re now ${el.value===&#x27;moderator&#x27;?&#x27;a moderator&#x27;:&#x27;a member&#x27;} of ${sp.name}.`);save();return;}
+      renderHome();root.querySelector(`[data-key=&quot;space-role-${u}&quot;]`)?.focus();announce(`${u}: ${SPACE_ROLES[el.value]}.`);save();return;
+    }
     if(el.id===&#x27;sm-persona&#x27;) {setPersona(el.value);root.querySelector(&#x27;#sm-persona&#x27;)?.focus();return;}
     if(el.id===&#x27;sm-create-space&#x27;) {const d=state.createDraft;d.space=el.value;if(!d.rulesTouched)d.rules=defaultRules(el.value);else d.rules.editors=d.rules.editors.filter(u=&gt;(PEOPLE[el.value]||[]).includes(u));renderCreate(&#x27;create-space&#x27;);return;}
     if(el.dataset.rule) {applyRule(&#x27;rule-set&#x27;,el.dataset.rule,el.value,el.dataset.key);return;}
@@ -4441,6 +5213,10 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(trigger.dataset.blocked){announce(trigger.dataset.blocked);return;}
     if(action.startsWith(&#x27;rule-&#x27;)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.dataset.tooltip||&#x27;Not available.&#x27;);return;}applyRule(action,id,null,key);return;}
     if(action===&#x27;sign-in&#x27;){setPersona(&#x27;you&#x27;);announce(&#x27;Signed in (simulated).&#x27;);return;}
+    if(action===&#x27;inbox&#x27;||action.startsWith(&#x27;note&#x27;)){noteAction(action,id);save();return;}
+    if(action===&#x27;invite-preview&#x27;){const q=doc.question;openInvite(state.boardId,ME,q.visibility===&#x27;private&#x27;?&#x27;view&#x27;:q.accessRole,true);save();return;}
+    if(action.startsWith(&#x27;invite-&#x27;)){inviteAction(action,id);save();return;}
+    if(action.startsWith(&#x27;tour-&#x27;)){tourAction(action);save();return;}
     if(action===&#x27;request-access&#x27;){state.requested[state.boardId]=true;renderHead();save();root.querySelector(&#x27;[data-key=&quot;settings&quot;]&#x27;)?.focus();announce(`Request sent to ${doc.question.author} (simulated: nothing is sent).`);return;}
     if(HOME_ACTIONS.has(action)){if(trigger.getAttribute(&#x27;aria-disabled&#x27;)!==&#x27;true&#x27;||action===&#x27;browse&#x27;)homeAction(action,id,trigger);save();return;}
     if(trigger.getAttribute(&#x27;aria-disabled&#x27;)===&#x27;true&#x27;){announce(trigger.querySelector(&#x27;small&#x27;)?.textContent||&#x27;Not available.&#x27;);return;}
@@ -4595,7 +5371,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       const link=root.querySelector(&#x27;[data-key=&quot;share-link&quot;]&#x27;);
       const done=()=&gt;{state.copied=&#x27;yes&#x27;;renderShare();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(&#x27;[data-key=&quot;share-copy&quot;]&#x27;)?.focus();announce(&#x27;Link copied.&#x27;);};
       const fail=()=&gt;{link.select();announce(&#x27;Copying isn’t allowed here. The link is selected so you can copy it.&#x27;);};
-      if(navigator.clipboard?.writeText) navigator.clipboard.writeText(&#x27;https://&#x27;+link.value).then(done,fail); else fail();
+      if(navigator.clipboard?.writeText) navigator.clipboard.writeText(link.value).then(done,fail); else fail();
       return;
     }
     if(action.startsWith(&#x27;decision-&#x27;)) {
@@ -4664,7 +5440,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;show-resolved&#x27;) {state.showResolved=!state.showResolved;}
     if(action===&#x27;reset&#x27;) {
       if(!state.confirmReset){state.confirmReset=true;focus=&#x27;reset&#x27;;announce(&#x27;Click again to reset the board, your votes, and your edits to the original example.&#x27;);}
-      else {const keep=state.boardId;state=freshState();docs=seedDocs();state.view=&#x27;board&#x27;;state.boardId=keep;useDoc(docs[keep]);state.drawer=&#x27;settings&#x27;;focus=&#x27;reset&#x27;;announce(&#x27;The example boards were reset.&#x27;);}
+      else {const keep=state.boardId;state=freshState();docs=seedDocs();resetSpaces();state.view=&#x27;board&#x27;;state.boardId=keep;useDoc(docs[keep]);state.drawer=&#x27;settings&#x27;;focus=&#x27;reset&#x27;;announce(&#x27;The example boards were reset.&#x27;);}
     }
     let toast=null;
     if(action===&#x27;importance&#x27;) {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)&gt;0?&#x27;up&#x27;:&#x27;down&#x27;,text:state.importance[id]?(Number(vote)&gt;0?&#x27;Important.&#x27;:&#x27;Less important.&#x27;):&#x27;Vote withdrawn.&#x27;};announce(state.importance[id]?&#x27;Importance vote saved. The shared order stays in place.&#x27;:&#x27;Importance vote withdrawn.&#x27;);}
@@ -4710,12 +5486,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       const p=doc.pending.find(x=&gt;x.id===id),drop=()=&gt;{doc.pending=doc.pending.filter(x=&gt;x.id!==id);};
       if(action===&#x27;held-accept&#x27;&amp;&amp;p) {
         const card=p.kind===&#x27;idea&#x27;?addIdea(p.option,p.claim,p.reason):addVersion(p.idea,p.claim,p.reason);
-        if(card){Object.assign(cards[card],{by:p.by,at:p.at});const i=ideaOf(cards[card].idea);if(p.kind===&#x27;idea&#x27;){i.by=p.by;i.at=p.at;}queueCheck(card);}
+        if(card){Object.assign(cards[card],{by:p.by,at:p.at,accepted:{by:&#x27;you&#x27;,at:new Date().toISOString()}});const i=ideaOf(cards[card].idea);if(p.kind===&#x27;idea&#x27;){i.by=p.by;i.at=p.at;}queueCheck(card);}
+        if(p.by===&#x27;you&#x27;&amp;&amp;card) addNote({kind:&#x27;accepted&#x27;,board:state.boardId,card,quote:p.claim});
         logEvent(&#x27;accepted&#x27;,p.claim);drop();focus=card?&#x27;claim-&#x27;+card:&#x27;review-next&#x27;;announce(&#x27;Accepted.&#x27;);
       }
       if(action===&#x27;held-decline&#x27;) {state.declining=id;state.declineDraft=&#x27;&#x27;;focus=&#x27;decline-reason&#x27;;}
       if(action===&#x27;held-decline-cancel&#x27;) {state.declining=null;focus=&#x27;held-decline-&#x27;+id;}
-      if(action===&#x27;held-decline-confirm&#x27;&amp;&amp;p) {p.status=&#x27;declined&#x27;;p.reason=(state.declineDraft||&#x27;&#x27;).trim();logEvent(&#x27;declined&#x27;,p.claim,p.reason);state.declining=null;focus=&#x27;review-next&#x27;;announce(&#x27;Declined.&#x27;);}
+      if(action===&#x27;held-decline-confirm&#x27;&amp;&amp;p) {p.status=&#x27;declined&#x27;;p.reason=(state.declineDraft||&#x27;&#x27;).trim();logEvent(&#x27;declined&#x27;,p.claim,p.reason);if(p.by===&#x27;you&#x27;)addNote({kind:&#x27;declined&#x27;,board:state.boardId,held:p.id,what:p.kind,quote:p.claim,reason:p.reason});state.declining=null;focus=&#x27;review-next&#x27;;announce(&#x27;Declined.&#x27;);}
       if(action===&#x27;held-withdraw&#x27;||action===&#x27;held-dismiss&#x27;) {drop();focus=p?.kind===&#x27;idea&#x27;?&#x27;compose-idea-&#x27;+p.option:&#x27;&#x27;;announce(action===&#x27;held-withdraw&#x27;?&#x27;Withdrawn.&#x27;:&#x27;Dismissed.&#x27;);}
       // Step to the next item waiting for review: open its row&#x27;s fold if needed and move focus to Accept.
       if(action===&#x27;review-next&#x27;) {
@@ -4759,6 +5536,13 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(event.key===&#x27;Tab&#x27;){closeMenu();return;}
     }
     if(event.key===&#x27;Escape&#x27;&amp;&amp;state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector(&#x27;[data-key=&quot;nav-toggle&quot;]&#x27;)?.focus();return;}
+    if(state.tour&amp;&amp;[&#x27;Escape&#x27;,&#x27;ArrowRight&#x27;,&#x27;ArrowLeft&#x27;].includes(event.key)&amp;&amp;!event.target.closest?.(&#x27;input,textarea,select&#x27;)){event.preventDefault();tourAction(event.key===&#x27;Escape&#x27;?&#x27;tour-skip&#x27;:event.key===&#x27;ArrowRight&#x27;?&#x27;tour-next&#x27;:&#x27;tour-back&#x27;);save();return;}
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id?.startsWith(&#x27;sm-auth-&#x27;)){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;invite-auth&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;state.inbox){event.preventDefault();state.inbox=false;renderSite();root.querySelector(&#x27;[data-key=&quot;inbox&quot;]&#x27;)?.focus();announce(&#x27;Notifications closed.&#x27;);save();return;}
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-invite&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-invite-send&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Enter&#x27;&amp;&amp;event.target.id===&#x27;sm-space-name&#x27;&amp;&amp;state.spaceEdit===&#x27;new&#x27;){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-create&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.spaceEdit&amp;&amp;!state.profile&amp;&amp;!state.creating){event.preventDefault();root.querySelector(&#x27;[data-key=&quot;space-back&quot;]&#x27;)?.click();return;}
+    if(event.key===&#x27;Escape&#x27;&amp;&amp;!busy&amp;&amp;state.view===&#x27;home&#x27;&amp;&amp;state.profile){event.preventDefault();root.querySelector(`[data-key=&quot;${state.pwOpen?&#x27;pw-cancel&#x27;:&#x27;profile-back&#x27;}&quot;]`)?.click();return;}
     if(event.key!==&#x27;Escape&#x27;||busy||state.view!==&#x27;board&#x27;)return;
     if(state.share){event.preventDefault();state.share=false;state.shareQuery=&#x27;&#x27;;render(&#x27;share&#x27;);announce(&#x27;Sharing closed.&#x27;);return;}
     if(state.menu){event.preventDefault();const id=state.menu;closeMenu();root.querySelector(`[data-key=&quot;menu-${id}&quot;]`)?.focus();return;}
@@ -4797,6 +5581,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(state.view!==&#x27;board&#x27;||!state.drawer||event.target.closest(&#x27;.sm-drawer,[data-action=&quot;comments&quot;],[data-action=&quot;settings&quot;],[data-action=&quot;open-share&quot;],.sm-menu&#x27;))return;
     // Close now, but let the click still reach what it was aimed at; redraw right after.
     closeDrawer();setTimeout(()=&gt;{render();save();});
+  },true);
+  // A click outside the inbox closes it (the bell toggles it itself).
+  root.addEventListener(&#x27;click&#x27;,event=&gt;{
+    if(!state.inbox||event.target.closest(&#x27;.sm-inbox,[data-key=&quot;inbox&quot;]&#x27;))return;
+    state.inbox=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
   },true);
   // A click outside the share panel closes it (the Share button toggles it itself).
   root.addEventListener(&#x27;click&#x27;,event=&gt;{
@@ -4850,7 +5639,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   });
   root.addEventListener(&#x27;dragend&#x27;,endDrag);
   restore(window.openai?.widgetState);
-  renderView();
+  if(!readInviteLink()) renderView();
+  try { hostWindow().addEventListener(&#x27;hashchange&#x27;,()=&gt;{if(readInviteLink())save();}); } catch {}
   window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const incoming=event.detail?.globals?.widgetState;if(incoming&amp;&amp;JSON.stringify(incoming.privateContent)!==lastSavedSnapshot){restore(incoming);renderView();}});
   new ResizeObserver(()=&gt;animateWires()).observe(scene);
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=&gt;render()});tweak.addSelect(design,&#x27;type&#x27;,{label:&#x27;Argument typography&#x27;,options:[{label:&#x27;Graphics sans&#x27;,value:&#x27;sans&#x27;},{label:&#x27;Editorial serif&#x27;,value:&#x27;serif&#x27;}]});tweak.addSelect(design,&#x27;density&#x27;,{label:&#x27;Card density&#x27;,options:[{label:&#x27;Comfortable&#x27;,value:&#x27;comfortable&#x27;},{label:&#x27;Compact&#x27;,value:&#x27;compact&#x27;}]});}
