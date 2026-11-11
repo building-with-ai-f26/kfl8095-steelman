@@ -866,6 +866,24 @@ The independent audit of the architecture documents, by a second agent session (
 | `git diff --check` | Clean |
 | Not checked | Cloud SQL's price: Google's pricing page didn't render; $9.37 a month for the smallest instance with 10 GB is Google's worked example as quoted by a search result. The 25-connection limit on the smallest instance comes from a third-party article. Stopped-instance billing comes from Google's support forum. No code exists yet, so none of the tests described in §8 has run |
 
+## November 11 — Open-question interview (A-06, C-03, L-01, L-04)
+
+Decisions the builder made in an interview after the architecture review. Documents only; the prototype is unchanged, so three of these open small design gaps recorded in `features.csv`.
+
+| Question | Decision |
+| --- | --- |
+| Who merges agents' pull requests (Q18) | The builder merges M0's. From M1 a pull request merges itself when every check is green and nothing protected is touched; production always needs the builder. The course needs no pod sign-off |
+| Email sign-in (Q21; L-01, L-04) | A 6-digit code typed into the page, not a link. The prototype shows the link flow; the code-entry screen isn't designed, so L-01 and L-04 go from readiness 4 to 3 |
+| "Edited" after votes (Q22; A-06) | The "edited" mark shows, on hover or tap, the importance and articulation votes the wording had before the edit. Not yet in the prototype |
+| Editing a shared source (Q10; C-03) | Resets the versions citing it only when the evidence changed (link, finding, backs up, limits), not for its name. The prototype resets on any edit |
+| Joining a board in the trial (Q7) | A link that carries a role; no owner approval step |
+| Staging's database (Q16) | Cloud SQL, started by each deploy and stopped nightly |
+| Domain (Q13) | The builder is choosing one. M1 is built and tested without it but isn't shown to classmates until it exists |
+| Public communities (Q3) | Timing unknown; they stay a sketch |
+| `python3 scripts/build-feature-audit.py` | Rebuilt the workbook |
+| `git diff --check` | Clean |
+| Not checked | Nothing here is built or designed in the prototype yet |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

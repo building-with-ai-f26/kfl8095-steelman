@@ -7,6 +7,7 @@
 - **Each milestone ships something people can use.**
 - **Agents build it, one backlog item at a time, mostly unattended** (architecture.md §8). A milestone's **backlog** is its ordered list of items, each one pull request. An item in a backlog is approved to build; anything else needs the builder first. M0's backlog is below. Each later milestone's backlog is written when the one before it finishes, as its own pull request for the builder to approve, because by then the code will say more than a guess made today.
 - **"Done when" has two parts.** *Machine:* tests that run on every pull request, so an agent knows by itself whether it's finished. *Person:* the few checks only a human can make, batched at the end of the milestone.
+- **Who merges** (Q18): the builder merges M0's pull requests. From M1, a pull request merges itself when every check is green and it touches nothing protected; production releases always wait for the builder.
 - **Sized by scope, not hours** (Q2). Size is a rough count of pull requests, each small enough to explain (AGENTS.md rule 2).
 - **Running cost** is per month, for hosting only. AI is paid by users through credits (Q1). Figures marked *unverified* in architecture.md are estimates.
 - **Order inside the MVP:** the riskiest part first (M0), then the core loop for one group (M1), then what launch needs (M2). T3 follows in three independent parts.
@@ -58,15 +59,15 @@
 **Features:** A-01, A-02, A-03, A-04, A-05, A-12, B-01, B-02, B-03, B-04, B-05, C-01, E-01, F-01, H-02, L-01, M-01, M-02, M-05, M-06. Plus, **brought forward from T2** because classmates' accounts are real data from day one: the privacy page rewrite, Download your data, and Delete account (M-07), and the analytics notice on the new app (M-08).
 
 **Builds, beyond M0:**
-- **Sign-in:** Better Auth with Google and email links (Continue page), usernames, sessions. Test it with a classmate's school account early (step 1 risk).
+- **Sign-in:** Better Auth with Google and 6-digit codes by email (Q21), usernames, sessions. The code-entry screen is designed in the prototype first, since the prototype shows a link. Test it with a classmate's school account early (step 1 risk).
 - **Access:** link sharing with a role; the `can()` policy and its matrix test for the roles M1 uses (Owner, and the link roles Voter and Contributor).
 - **The rest of the board:** add arguments and wordings, sources (resetting credibility), Strongest case, New steelman, links for boards and versions.
 - **Infrastructure:** two GCP projects in Terraform; Cloud Run with domain mapping; Cloud SQL with backups and point-in-time recovery; Secret Manager; GitHub Actions with Workload Identity Federation, deploy to staging on merge, and approved releases; the scheduled calls (daily maintenance, weekly export, staging's nightly stop); budget alerts; the uptime check; the monthly restore-test workflow.
 - **Stand-ins:** the fake sign-in provider and the in-memory email, so every sign-in path is tested without Google or Resend.
 
-**The builder's part, before agents start M1** (architecture.md §8): buy the domain; open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules and the protected production environment in GitHub; answer Q18 (who merges).
+**The builder's part, before agents start M1** (architecture.md §8): choose and buy the domain (under way); open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules (required checks, auto-merge) and the protected production environment in GitHub. Agents can build and test all of M1 before the domain exists, but **M1 isn't shown to classmates until it does** (Q13), so it launches with both sign-in methods.
 
-**Done when (machine):** browser tests sign in by email link (through the Continue page) and by the fake Google, and the two reach the same account when the email matches. A link opened twice works once. The role matrix passes for Owner, Voter, Contributor, signed out, and non-member. Deleting an account passes every row of the deletion table in architecture.md §2. The staging smoke test is green after a merge. The restore-test workflow has run once and passed.
+**Done when (machine):** browser tests sign in by emailed code and by the fake Google, and the two reach the same account when the email matches. A code works once, stops working ten minutes later on the test clock, and is cancelled by five wrong tries. The role matrix passes for Owner, Voter, Contributor, signed out, and non-member. Deleting an account passes every row of the deletion table in architecture.md §2. The staging smoke test is green after a merge. The restore-test workflow has run once and passed.
 
 **Done when (person):** three classmates on their own devices build one board together, from creating it to Strongest case. Two of them sign in with different methods, one with a school Google account.
 
@@ -78,7 +79,7 @@
 
 **Ships:** a version you can open to other pods and classes.
 
-**Features:** A-06 (edit and delete your own wording, with "edited" and the earlier wording), E-03 (the list), H-03 (every role enforced, including Editor and Viewer, the full matrix), J-01 and J-02 (report; hide and restore with a reason, recorded in the change log), L-02 (tour), L-04 (account card: email change, Google connect, sign out), M-03 (phones), M-04 (accessibility: rerun axe on every screen), M-07 (finished: retention jobs, PostHog deletion), M-08 (server events).
+**Features:** A-06 (edit and delete your own wording, with "edited", the earlier wording, and on hover or tap the vote counts it had before the edit, Q22), E-03 (the list), H-03 (every role enforced, including Editor and Viewer, the full matrix), J-01 and J-02 (report; hide and restore with a reason, recorded in the change log), L-02 (tour), L-04 (account card: email change, Google connect, sign out), M-03 (phones), M-04 (accessibility: rerun axe on every screen), M-07 (finished: retention jobs, PostHog deletion), M-08 (server events).
 
 **Done when (machine):** every action in the role matrix passes for all seven personas; a report → hide → restore cycle shows in the change log with its reason; the accessibility scan reports no violations on the screens checked on Nov 11; the core loop passes as a browser test at 375 px; the simulation includes hide, restore, and edit by an editor.
 

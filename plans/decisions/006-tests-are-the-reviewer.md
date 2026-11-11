@@ -1,6 +1,6 @@
 # 006. Unattended agent work, gated by automated tests
 
-**Status:** accepted (proposed by an independent review; approved by the builder, except who merges, which is open as Q18) · **Date:** 2026-11-11 · **Details:** [architecture.md §8](../architecture.md#8-testing-and-unattended-work)
+**Status:** accepted (proposed by an independent review; approved by the builder, who settled who merges on Nov 11) · **Date:** 2026-11-11 · **Details:** [architecture.md §8](../architecture.md#8-testing-and-unattended-work)
 
 ## Context
 The builder isn't on this project full time or part time. Agents build it one backlog item at a time, mostly with nobody watching. The first draft relied on the builder reviewing every pull request, and several of its "done when" checks needed a person at a browser. Votes are the product, and the worst failures are silent (counts that disagree, a vote on the wrong wording), so "it looked fine" was never a good enough check anyway.
@@ -17,7 +17,7 @@ The builder isn't on this project full time or part time. Agents build it one ba
 2. **Layers:** types and lint; unit tests on the pure rules; one database test per invariant; API tests (role matrix, stale-write table, every write sent twice); a **seeded random simulation** of many readers that checks counts and that all readers converge; browser tests of the recorded scenarios with an accessibility scan and screenshot comparison. After merge, a smoke test on staging. Nightly: a soak run, mutation testing, a dependency audit; monthly, a restore test.
 3. **Guards against weakened tests:** acceptance tests are written and seen failing first; edits to existing tests, screenshots, the policy table, merged migrations, CI workflows, and `plans/` need the builder; no retries or skips; nightly mutation testing; a second agent reviews each pull request.
 4. **The backlog in `plans/build-plan.md` is the approved plan.** An agent takes the next item, builds it, and moves on. A fixed list of situations makes it stop and ask instead.
-5. **Who merges** is the builder's choice (Q18). Recommended after M0: a pull request merges itself when every gate is green and nothing protected is touched. Production releases always need the builder.
+5. **Who merges** (Q18): the builder merges M0's pull requests, while the tests are being built. From M1 a pull request merges itself when every gate is green and nothing protected is touched. Production releases always need the builder.
 
 ## Why
 It moves the builder's attention from every change to the few that need judgment, and it tests the riskiest problem harder than review could. The simulation works because the design is checkable: counts can be recounted, and any reader who catches up must match a fresh one.

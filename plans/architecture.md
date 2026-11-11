@@ -1,6 +1,6 @@
 # Steelman architecture
 
-**Status:** draft, written one step at a time. Steps 1–7 were approved on Nov 11. An independent review the same day then revised them and added step 8; the builder approved the revisions that day (Q19). Who merges agents' pull requests is still open (Q18). What the review changed: live updates read stamped rows instead of a log of every vote (§2, §3); writes are safe to repeat by their shape (§2); the delivery pipeline no longer touches staging from a pull request (§6); and testing and unattended agent work have their own section (§8). The phased build plan is in `plans/build-plan.md`.
+**Status:** draft, written one step at a time. Steps 1–7 were approved on Nov 11. An independent review the same day then revised them and added step 8; the builder approved the revisions that day (Q19). An interview with the builder that evening settled the questions still open: who merges (Q18), email sign-in by code instead of link (Q21), the "edited" mark (Q22), shared-source edits (Q10), joining by link (Q7), staging's database (Q16), and the domain (Q13). What the review changed: live updates read stamped rows instead of a log of every vote (§2, §3); writes are safe to repeat by their shape (§2); the delivery pipeline no longer touches staging from a pull request (§6); and testing and unattended agent work have their own section (§8). The phased build plan is in `plans/build-plan.md`.
 
 This document describes the real product that replaces the browser-local prototype. The prototype (`docs/prototype/source/steelman-refined.html`) is the design spec; `plans/features.csv` is the feature record. **MVP = T1 Core + T2 Launch: 31 features.**
 
@@ -20,7 +20,7 @@ Grouped by the jobs the MVP has to do. Feature IDs are from `plans/features.csv`
 | F4 | **Sources.** Add, edit, and remove sources on a version. Any edit to the wording, and any change to its sources, starts that version's credibility assessments over. Importance and articulation votes stay. | C-01, B-03 |
 | F5 | **Shared order, held still.** The server computes one shared order from votes. A reader's order is fixed when the board loads. Others' votes update counts in place; new arguments and wordings join the end; deletions and edits show in place, marked; "N changes · Update" applies the rest. Drafts follow their argument. Your own actions queue while offline and send when you reconnect, for as long as the tab stays open (step 3). | B-05, M-02 |
 | F6 | **Strongest case.** Each option's top three arguments, each in its best-articulated wording. Derived, never stored by hand. | E-01 |
-| F7 | **Accounts without passwords.** Sign in with Google or a one-time email link; both confirm the email. First sign-in picks a unique username. Change email (confirmed by a link to the new address), connect or disconnect Google, sign out. | L-01, L-04 |
+| F7 | **Accounts without passwords.** Sign in with Google or a 6-digit code sent by email; both confirm the email. First sign-in picks a unique username. Change email (confirmed by a code sent to the new address), connect or disconnect Google, sign out. | L-01, L-04 |
 | F8 | **Access and roles, enforced on the server.** General access: only invited people, or anyone with the link (with a role). Roles Viewer → Voter → Contributor → Editor → Owner, as in `plans/permissions.md`. A link-shared board requires a confirmed email. Every write is checked on the server, not just hidden in the UI. | H-02, H-03 |
 | F9 | **Moderation.** Report a version or comment (with a reason). Editors and moderators hide with a reason and restore. Every moderation action is recorded (who, what, when, why) in an append-only audit trail from day one, even though the History panel that shows it is T3. | J-01, J-02 |
 | F10 | **Find your boards.** A list of the steelmen you can see, newest first. | E-03 |
@@ -90,9 +90,9 @@ Sign-in, the list, moderation, and the rest are built only after this slice pass
 
 **Runner-up risks, and what the design does about them:**
 
-- **Sign-in links eaten by email scanners.** School and work mail systems often open every link in an incoming email to check it for malware. A one-time link opened by a scanner is used up before the person clicks it, and they see "That link has expired". So the link opens a page with one **Continue** button, and only pressing it uses up the link. The class trial is at a school, so this is likely, not hypothetical.
-- **Google sign-in blocked by a school's Google Workspace.** Workspace admins can block sign-in to apps they haven't approved. The email link is always available as the fallback (it already is in the prototype), and the first real test should be a classmate's school account.
-- **Edits used to game the judgments.** Because any edit keeps importance and articulation votes, an author could collect votes on a strong wording and then change what it says. Because any edit also resets credibility, an author could wipe unfavourable assessments with a trivial edit. Neither changes the decided rules, but the data model keeps every earlier wording *and* the assessments it received, so the product can show "edited after 40 votes" and "before this edit: 3 of 17 found it supported". Whether to show those is a design question for A-06, not an architecture one.
+- **Email sign-in that breaks in a classroom.** A one-time link has two problems at a school. Mail systems often open every link in an incoming email to check it for malware, which uses the link up before the person clicks it. And a link signs in the device that opened it: a classmate reading email on a phone ends up signed in on the phone, not the laptop they're working on. So the email carries a **6-digit code** to type into the page that's already open (Q21). There is nothing to click, so nothing for a scanner to use up, and it signs in the right device.
+- **Google sign-in blocked by a school's Google Workspace.** Workspace admins can block sign-in to apps they haven't approved. The email code is always available as the fallback (the prototype has this fallback, as a link), and the first real test should be a classmate's school account.
+- **Edits used to game the judgments.** Because any edit keeps importance and articulation votes, an author could collect votes on a strong wording and then change what it says. Because any edit also resets credibility, an author could wipe unfavourable assessments with a trivial edit. Neither changes the decided rules, but the data model keeps every earlier wording *and* the assessments it received, so the product can show "edited after 40 votes" and "before this edit: 3 of 17 found it supported". Decided (Q22): the "edited" mark explains itself on hover, or on tap on a phone, including how many importance and articulation votes the wording had before the edit. Each revision stores those two counts for that purpose.
 
 ---
 
@@ -109,13 +109,13 @@ Names follow the product, not the prototype: the prototype's `idea` is an **argu
 | Entity | What it is | Key fields | Prototype origin |
 |---|---|---|---|
 | **account** | A person | `id`, `username` (unique, case-insensitive), `email` (unique; null once deleted), `email_confirmed_at`, `analytics_choice`, `tour_seen_at`, `deleted_at` | `state.me`, `state.myEmail` |
-| **sign_in_method** | Google or email link, linked to an account | `account_id`, `provider`, `provider_subject` | `state.google` |
+| **sign_in_method** | Google or email code, linked to an account | `account_id`, `provider`, `provider_subject` | `state.google` |
 | **board** | One steelman: a question | `id` (unguessable; see Links), `question`, `created_by`, `general_access` (invited / link), `link_role`, `rules` (mode, which votes are on, AI switches), `closed_at`, `decision`, `last_seq` | `doc.question` |
 | **board_member** | A person's role on a board | `board_id`, `account_id`, `role` (viewer … owner), `joined_via` (link / invite) | `question.people` |
 | **option** | A side | `id`, `board_id`, `name`, `position`, `deleted_at` | `doc.options` |
 | **argument** | A reason within an option, grouping its wordings. Carries **importance** | `id`, `board_id`, `option_id`, `created_by`, `merged_into` (null unless combined away), `status` (published / held / declined), `deleted_at`, `importance` (derived count) | `doc.ideas` |
 | **version** | One wording of an argument. Carries **articulation** and **credibility** | `id` (**never changes**), `board_id`, `argument_id` (changes on combine / separate), `author_id`, `current_rev`, `status`, `hidden` (by, reason, at), `deleted_at`, `articulation`, `yes`, `no` (derived counts) | `doc.cards` |
-| **version_revision** | Every wording a version has had | `version_id`, `rev` (1, 2, 3…), `wording`, `context`, `why` (created / edited / sources changed / a cited source changed), `by`, `at` | `card.prev` |
+| **version_revision** | Every wording a version has had | `version_id`, `rev` (1, 2, 3…), `wording`, `context`, `why` (created / edited / sources changed / a cited source changed), `counts_before` (the importance and articulation counts just before this revision replaced the last, shown on the "edited" mark), `by`, `at` | `card.prev` |
 | **revision_source** | Which sources a revision cites | **key** (`version_id`, `rev`, `source_id`) | `card.sources` |
 | **source** | A piece of evidence, shared on the board; one source can be cited by several versions | `id`, `board_id`, `name`, `locator` (URL or citation), `finding`, `backs_up`, `limits`, `added_by`, `unavailable` (reported by, at) | `doc.sources` |
 | **importance_vote** | ±1 on an argument | **key** (`argument_id`, `account_id`), `board_id`, `value`, `at` | `idea.score`, `my` |
@@ -134,7 +134,7 @@ Sources are text and links only. Uploading files isn't in the MVP; if it comes, 
 ### Invariants: the rules the database enforces
 
 1. **One judgment per person per target.** Each vote table's primary key is (target, person), so a second vote can only *replace* the first. Changing a vote is an update; withdrawing it deletes the row. No code path can create a duplicate.
-2. **Credibility belongs to a revision.** An assessment is keyed to the version *and the revision it judged*. Editing the wording, or changing its sources, creates revision *n+1*; only assessments of the current revision count. Old assessments aren't deleted: they stay as history (PRD §4: "previous results remain in history"), but they stop counting. Importance and articulation votes don't mention revisions, so edits don't touch them. That is the whole reset rule, done by structure rather than by a cleanup job.
+2. **Credibility belongs to a revision.** An assessment is keyed to the version *and the revision it judged*. Editing the wording, or changing its sources, creates revision *n+1*. Editing a source that several versions cite does the same to each of them, but only when the evidence itself changed (its link, its finding, what it backs up, or its limits); fixing just the source's name resets nothing (Q10). In every case only assessments of the current revision count. Old assessments aren't deleted: they stay as history (PRD §4: "previous results remain in history"), but they stop counting. Importance and articulation votes don't mention revisions, so edits don't touch them. That is the whole reset rule, done by structure rather than by a cleanup job.
 3. **Writes name what they were made against.** A request to assess carries the revision the person read. If it's no longer current, the server refuses it and returns the current version, and the client says "This wording changed; take another look." The same pattern catches votes on deleted or merged items (step 3 covers offline replay).
 4. **A version's ID never changes.** Combining and separating move a version to another argument by changing its `argument_id`; the version, its revisions, its articulation votes, its assessments, its comments, and its link all stay attached. An argument combined away keeps its row with `merged_into` set, so its old links redirect to where its wordings went.
 5. **Supported needs evidence.** "Yes" requires at least one cited source that isn't marked unavailable (PRD §4). Checked by the server.
@@ -330,7 +330,7 @@ flowchart LR
   end
 
   Google["Google sign-in<br/>(OpenID Connect)"]
-  Mail["Email API<br/>sign-in links"]
+  Mail["Email API<br/>sign-in codes"]
   PH["PostHog, US<br/>analytics + replays"]
   Pages["GitHub Pages<br/>Product Page, prototype"]
   Model["AI model provider"]
@@ -340,7 +340,7 @@ flowchart LR
   Service -- "SQL" --> DB
   App -- "sign in" --> Google
   Google -- "verified email" --> Service
-  Service -- "one-time links" --> Mail
+  Service -- "one-time codes" --> Mail
   App -- "events, only with consent" --> PH
   Service -- "server events, only with consent" --> PH
   Daily -- "maintenance call" --> Service
@@ -357,11 +357,11 @@ flowchart LR
 | **Web app** | **React + TypeScript, built with Vite** into static files the service serves | The real app needs routing, data fetching, an offline queue, and many screens; a framework keeps that organized. React is the most documented choice, which matters for a builder reviewing an AI's code | Keep the prototype's vanilla JS split into modules (no new concepts, but its 470 KB single file shows where hand-managed re-rendering ends up). Next.js (server rendering we don't need: boards are behind sign-in; adds a second runtime model). Svelte (smaller, less documented). ADR 005 |
 | **API** | **The same service: Node.js + TypeScript, Fastify**, JSON over HTTPS. SQL through **Kysely** (a typed query builder, not an ORM), inputs checked with **Zod** | The only place rules are enforced: roles, one vote per person, revisions, stale writes. TypeScript on both sides lets the browser and server share the ordering code, the `staleCount()` logic, and the input rules, so they can't disagree | Python + FastAPI (the repo's scripts are Python, but then the ordering logic would exist twice, in two languages). An ORM like Prisma (hides the SQL that carries our invariants) |
 | **Hosting the app** | **Served by the same service**, at one address (e.g. `app.<domain>`) | One origin means simple cookies, no cross-origin setup, one deployment | A separate static host or CDN (one more thing to configure, for no gain at this scale) |
-| **Sign-in** | **Better Auth** (an open-source TypeScript library), with its tables in **our** Postgres: Google sign-in, email links, sessions in secure cookies | Accounts live in one database, so data export and account deletion touch one place. Standard OpenID Connect for Google, so it's portable. A library handles sessions, CSRF protection, and account linking, which are risky to hand-write. Our one change: the email link opens a **Continue** page, so mail scanners can't use it up (step 1) | **Managed identity** (Google Identity Platform, AWS Cognito): a second user store to keep in sync for export and deletion, and lock-in. Cognito's passwordless sign-in uses one-time *codes*; its page doesn't mention links. **Hand-written sessions** (following the Lucia guide): most explainable, but security-sensitive code we'd own. ADR 004 |
+| **Sign-in** | **Better Auth** (an open-source TypeScript library), with its tables in **our** Postgres: Google sign-in, one-time codes by email, sessions in secure cookies | Accounts live in one database, so data export and account deletion touch one place. Standard OpenID Connect for Google, so it's portable. A library handles sessions, CSRF protection, and account linking, which are risky to hand-write. Email sign-in is a 6-digit code, not a link, so it works across devices and mail scanners can't use it up (step 1, Q21) | **Managed identity** (Google Identity Platform, AWS Cognito): a second user store to keep in sync for export and deletion, and lock-in. Cognito's passwordless sign-in also uses one-time codes, so that isn't what separates them. **Hand-written sessions** (following the Lucia guide): most explainable, but security-sensitive code we'd own. ADR 004 |
 | **Database** | **Managed Postgres** (the cloud's own service, step 5) | Holds everything (step 2). Its constraints enforce the invariants; its `LISTEN/NOTIFY` is the later push channel (step 3) | A second store for realtime or caching (step 3 rejected it). ADR 002 |
 | **Live updates** | **Polling the service**, server-sent events later (step 3) | No new component | ADR 003 |
-| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (expired sign-in links and sessions, usernames due for release). The scheduler also makes two calls that never reach our code: the weekly database export and staging's nightly stop, both straight to Cloud SQL's own API (step 6). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised when the build plan was written: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
-| **Email** | **Resend** for sign-in and email-change links, sent from our own domain (SPF, DKIM, DMARC set up) | Sign-in by email link needs a sender with good delivery to school inboxes | Postmark (strong delivery reputation, but its free plan's 100 a month is too tight). Amazon SES (cheapest, but needs approval to leave its sandbox and more setup). All three take the same kind of API call, so switching is small |
+| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (expired sign-in codes and sessions, usernames due for release). The scheduler also makes two calls that never reach our code: the weekly database export and staging's nightly stop, both straight to Cloud SQL's own API (step 6). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised when the build plan was written: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
+| **Email** | **Resend** for sign-in and email-change codes, sent from our own domain (SPF, DKIM, DMARC set up) | Sign-in by emailed code needs a sender with good delivery to school inboxes | Postmark (strong delivery reputation, but its free plan's 100 a month is too tight). Amazon SES (cheapest, but needs approval to leave its sandbox and more setup). All three take the same kind of API call, so switching is small |
 | **Sources** | **Text and links only.** The server accepts only `http`/`https` links, stores them, and never fetches them in the MVP. Links open with `rel="noopener noreferrer nofollow ugc"` | Nothing to host. "Can't open it?" is a person's report (C-02) | File uploads to object storage (not needed; add if users ask). At T3, the AI check *does* fetch sources, through a guarded fetcher: public addresses only, size and time limits |
 | **Analytics** | **PostHog (US)**, as today, in the browser. Plus **server events** for the actions that matter (vote, assess, write, Update), sent by the service | Already decided. Server events are reliable where the browser's aren't (ad blockers) | — |
 | **AI (T3)** | The evidence check runs as a **job**: the service checks the space's credits, a worker calls the model provider, the result is saved against the version **revision** | Never in a request path, so a slow model never slows the board. Tied to a revision, so an edit makes the old check stale, like assessments | Calling the model during the request (slow, no retry) |
@@ -463,7 +463,7 @@ For this design, **not by enough to matter.** The realistic alternatives:
 | **Where** | The builder's laptop | GCP project `steelman-staging` | GCP project `steelman-prod` |
 | **App** | `npm run dev`: the service and the web app with live reload | Cloud Run service, deployed on every merge to `main` | Cloud Run service |
 | **Database** | Postgres 17 in Docker (one `docker compose` file, nothing else in it). Tests start their own (§8) | Smallest Cloud SQL instance, **started by the deploy workflow and stopped every night** by a scheduled call to Cloud SQL's API. A stopped instance bills for storage only, about $2 a month for 10 GB (from Google's support forum, not its pricing page) | Smallest Cloud SQL instance, upgraded when needed |
-| **Sign-in** | Email links **printed to the terminal**, not sent. Google sign-in with a test OAuth client for `localhost` | Real email (Resend) and Google, test OAuth client | Real email and Google, production OAuth client |
+| **Sign-in** | Email codes **printed to the terminal**, not sent. Google sign-in with a test OAuth client for `localhost` | Real email (Resend) and Google, test OAuth client | Real email and Google, production OAuth client |
 | **Data** | Seed script: the prototype's example boards and a few test accounts | Seed data plus whatever testers create; can be wiped | Real users' data |
 | **Secrets** | `.env` (git-ignored); names in `.env.example` | Secret Manager | Secret Manager |
 | **Address** | `http://localhost:…` | `staging.<domain>` | `app.<domain>` |
@@ -548,9 +548,9 @@ The prototype already has the rule book: a map from every action to the least ro
 
 - **Sessions** are random tokens in a cookie marked `HttpOnly`, `Secure`, and `SameSite=Lax`, stored hashed in the database. They last 30 days, and signing out deletes them. Deleting an account deletes all its sessions.
 - **Cross-site request forgery:** `SameSite` cookies plus a check that every write's `Origin` header is our own.
-- **Email links** are random, stored hashed, used once, and expire in 15 minutes. Opening one shows **Continue**; only pressing it signs you in (so mail scanners can't use it up, step 1).
-- **Google sign-in** accepts only a Google-verified email. A Google account and an email-link account with the same verified email are the same person.
-- **Changing your email** needs a link to the new address, and also sends a notice to the old one, so a hijacked session can't quietly take over the account.
+- **Email codes** are 6 random digits, stored hashed, used once, and expire in 10 minutes. Five wrong tries cancel the code, which leaves a guesser 5 chances in a million; asking for a new code cancels the old one. The code is typed into the page that asked for it, so it signs in the device in use, and a mail scanner has nothing to open (step 1).
+- **Google sign-in** accepts only a Google-verified email. A Google account and an email-code account with the same verified email are the same person.
+- **Changing your email** needs a code sent to the new address, and also sends a notice to the old one, so a hijacked session can't quietly take over the account.
 
 ### Inputs and outputs
 
@@ -581,7 +581,7 @@ The prototype already has the rule book: a map from every action to the least ro
 
 | Data | Kept |
 |---|---|
-| Unused or expired sign-in links | Deleted daily |
+| Unused or expired sign-in codes | Deleted daily |
 | Sessions | 30 days, or until sign-out |
 | Server logs | 30 days (Cloud Logging's default retention, *unverified*) |
 | The change log (structural and moderation actions only; it holds no votes) | For the life of the board (it's the audit trail and the undo history) |
@@ -625,7 +625,7 @@ Agents build this product one piece at a time, mostly with nobody watching (step
 
 | Outside thing | In tests |
 |---|---|
-| Email (Resend) | Messages are kept in memory; the test reads the sign-in link out of them |
+| Email (Resend) | Messages are kept in memory; the test reads the sign-in code out of them |
 | Google sign-in | A small fake sign-in provider running inside the test, speaking the same standard protocol |
 | PostHog | A recorder. Tests assert what was sent, and that nothing is sent without consent |
 | **The clock** | Passed in, never read from the system. The 60-second tick, 15-minute links, 30-day sessions, and the ten-second Undo are tested by moving the clock forward, never by waiting |
@@ -693,7 +693,7 @@ The **backlog** is the ordered list of items in `plans/build-plan.md`. Each is s
 3. Build it. Run `npm run check` as often as needed.
 4. Open a pull request using the repository's template, including what wasn't checked.
 5. CI and the second reader run. Fix what they find.
-6. Merge, by whoever Q18 says. The merge deploys to staging and runs the smoke test.
+6. Merge. Through M0 the builder merges, because M0 is where the tests that make self-merging safe are built. From M1 a pull request merges itself when every required check is green, the second reader has nothing open, and it touches nothing protected and nothing on the stop-and-ask list (Q18). The merge deploys to staging and runs the smoke test.
 7. Mark the item done in the build plan and update `plans/features.csv`, in the same pull request. Then go to 1.
 
 The next session, which remembers nothing, reads the build plan and the last few pull requests and knows where things stand. No separate handoff file.
@@ -714,7 +714,7 @@ The next session, which remembers nothing, reads the build plan and the last few
 
 | When | What | Why an agent can't |
 |---|---|---|
-| **Once, before M1** | Buy the domain. Open the GCP billing account and the two projects. Set up Google's sign-in consent screen and client IDs. Open the Resend account and add its DNS records. Turn on branch rules for `main` and the protected production environment in GitHub | Each one is a payment, an identity, or an agreement in the builder's name |
+| **Once, before M1** | Choose and buy the domain (under way; M1 is built and tested without it, but isn't shown to classmates until it exists, Q13). Open the GCP billing account and the two projects. Set up Google's sign-in consent screen and client IDs. Open the Resend account and add its DNS records. Turn on branch rules for `main` (required checks, and auto-merge once M0 is done) and the protected production environment in GitHub | Each one is a payment, an identity, or an agreement in the builder's name |
 | **Each release** | Approve the production release | It reaches real people |
 | **Each milestone** | The checks only a person can make: a real phone, a real screen reader, a classmate's school Google account, and whether people understand what they see | Agent testing isn't user research (AGENTS.md) |
 | **Before M3c** | The Stripe account, the model provider's key and its spend limit | Money |
@@ -734,21 +734,23 @@ Running list. **Bold** ones change the design and are asked now; the rest have a
 |---|---|---|---|
 | Q1 | Monthly running-cost ceiling | Builder pays hosting and database (keep cheap). AI is off by default and paid by users through credit purchases | **Answered** Nov 11 |
 | Q2 | Builder time and schedule | Not a constraint: Claude builds it. Plan by scope, not hours | **Answered** Nov 11 |
-| Q3 | When do public communities arrive: within the course or after it? | After; designed for now, not built | Assumed |
+| Q3 | When do public communities arrive: within the course or after it? | Not known yet. They stay a sketch: designed for, not built or budgeted. Revisit once classmates have used the trial | **Answered** Nov 11 |
 | Q4 | How often the shared order recalculates | A per-board tick, 60 s for the class trial; counts stay live; recalculated lazily on the next request (step 3) | **Answered** Nov 11 |
 | Q5 | `permissions.md` P6 keeps assessments on a "minor fix"; the decision is that any edit resets them | The decision wins; P6 is updated when it's built | Noted |
 | Q6 | Data retention periods | The retention table in step 7 | **Answered** Nov 11 |
-| Q7 | Access in T1 without invites (H-01 is T3): a private group joins by link with a role, each person recorded as a member on first open | Assumed | Assumed |
+| Q7 | Access in T1 without invites (H-01 is T3): a private group joins by link with a role, each person recorded as a member on first open | Yes: a link that carries a role. No owner approval step, and invites stay T3 | **Answered** Nov 11 |
 | Q8 | When a wording is combined into or separated from an argument, do its articulation votes travel with it? (The prototype says yes; PRD §5 said a separated wording's preference resets) | Yes, they travel. Supersedes PRD §5 on this point | **Answered** Nov 11 |
 | Q9 | The AI evidence check (K-02) is T3, but credit purchases (K-04) were T4; AI has to be paid by users | K-04 moves to T3 with K-02. Applied to `features.csv` with M-01 at the end of this session | **Answered** Nov 11 |
-| Q10 | Editing a *shared* source changes the evidence for every version that cites it | Every citing version gets a new revision, so all their assessments start over | Assumed |
+| Q10 | Editing a *shared* source changes the evidence for every version that cites it | Only when the evidence changed. A change to the source's link, finding, what it backs up, or its limits gives every citing version a new revision, so their assessments start over. Fixing just its name resets nothing (invariant 2). The prototype resets on any edit | **Answered** Nov 11 |
 | Q11 | When someone deletes their account, what happens to a board nobody else can open? | Deleted with the account. Boards with other members pass to the longest-standing editor, else contributor | **Answered** Nov 11 |
 | Q12 | Are individual votes private? | Yes, like Reddit: everyone sees counts; "Who's weighed in" shows only *that* someone voted. The log records no voter. Showing supporters (B-08, T5) would be opt-in | **Answered** Nov 11 |
-| Q13 | A domain name for the app and its email (sign-in links must come from a domain we control, with SPF/DKIM set) | Buy one (about $10–20 a year); the app lives at `app.<domain>`. GitHub Pages can move to the same domain later | Assumed |
+| Q13 | A domain name for the app and its email (sign-in links must come from a domain we control, with SPF/DKIM set) | The builder is choosing one (steelman.com isn't available). Agents build and test M1 without it, using the stand-ins; M1 isn't shown to classmates until the domain exists, so it launches with both sign-in methods. The app will live at `app.<domain>` | **Answered** Nov 11; the purchase is with the builder |
 | Q14 | Better Auth's stewardship: it took over Auth.js in Sept 2025, and Vercel announced on July 7, 2026 that it is acquiring the company (Vercel's own blog, checked Nov 11). The library stays MIT-licensed | Still the pick: it's open source and its data sits in our database, so leaving it means rewriting the sign-in code, not migrating users | Noted |
 | Q15 | Which company is the builder targeting: Google or Amazon? | Google, so GCP (step 5) | **Answered** Nov 11 |
-| Q16 | Staging's database: a stopped Cloud SQL instance vs. a free Neon database | Cloud SQL, started by the deploy workflow and stopped nightly (step 6). Staging exists to rehearse production's deploy, and the part most likely to go wrong is Cloud Run's connection to Cloud SQL and its database roles, which a Neon database wouldn't exercise. Neon's free plan (1 GB, 100 compute-hours a month) would save about $2 a month | Assumed |
+| Q16 | Staging's database: a stopped Cloud SQL instance vs. a free Neon database | Cloud SQL, started by the deploy workflow and stopped nightly (step 6). Staging exists to rehearse production's deploy, and the part most likely to go wrong is Cloud Run's connection to Cloud SQL and its database roles, which a Neon database wouldn't exercise. Neon's free plan (1 GB, 100 compute-hours a month) would save about $2 a month | **Answered** Nov 11 |
 | Q17 | Minimum age | 13 and over (COPPA) | **Answered** Nov 11 |
-| **Q18** | **Who merges a pull request an agent opened?** The builder isn't available to review each one | Until the builder says otherwise: the builder merges. Recommended: after M0, let a pull request merge itself when every gate in §8 is green and it touches nothing on the stop-and-ask list. `main` only ever deploys to staging; a production release still needs the builder's approval. Check first whether the course needs a pod reviewer's sign-off on each pull request | **Open** |
+| **Q18** | **Who merges a pull request an agent opened?** The builder isn't available to review each one | The builder merges M0's pull requests. From M1, a pull request merges itself when every gate in §8 is green and it touches nothing protected or on the stop-and-ask list. `main` only ever deploys to staging; a production release always needs the builder's approval. The course doesn't require a pod reviewer's sign-off | **Answered** Nov 11 |
 | Q19 | The review's revisions (row stamps instead of logging votes; writes safe to repeat by shape; no previews; §8) | Approved by the builder | **Answered** Nov 11 |
 | Q20 | Does the offline queue survive a closed tab? | Not in the MVP: it lives in memory while the tab is open, with the browser's leave warning and an event that counts actions lost. Saved to the browser's storage later if that event shows a need (step 3) | **Answered** Nov 11 |
+| Q21 | Email sign-in: a link or a code? Classmates often read email on a phone while working on a laptop | A 6-digit code typed into the page that asked for it. It replaces the link and its Continue page (step 7). The prototype still shows the link flow; the code-entry screen needs designing before M1 builds it | **Answered** Nov 11 |
+| Q22 | Should the board show that a wording was edited after it collected votes? | Yes. The "edited" mark explains itself on hover (tap on a phone), with the number of importance and articulation votes the wording had before the edit. Built with editing in M2 | **Answered** Nov 11 |
