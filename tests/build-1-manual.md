@@ -835,6 +835,18 @@ axe-core 4.10.2 was loaded into the prototype frame and run on each screen; cont
 | Console | No errors |
 | Not checked | A real screen reader, a keyboard-only user, Windows high-contrast mode |
 
+## November 11 — Architecture (B-05, K-04, M-01, M-02)
+
+A design session, not a prototype change. `plans/architecture.md` (requirements, data model, live updates, components, cloud, delivery, security and privacy), `plans/build-plan.md`, and five decision records in `plans/decisions/` describe the real product. Decisions: one Postgres database with a per-board change log (M-01); polling for changes after the reader's change number, with the shared order recalculated lazily on a 60-second tick (B-05, M-02); GCP; K-04 moves from T4 to T3, because AI costs pass to users through credit purchases.
+
+| Check | Observed result |
+| --- | --- |
+| MVP coverage | Every T1 and T2 ID appears in build-plan milestones M0–M2; every T3 ID plus K-04 appears in M3 (checked against `features.csv`) |
+| Prices and limits | Taken from the providers' own pages on Nov 11; figures from pages that didn't render are marked *unverified* in the documents |
+| Diagram | Mermaid in architecture.md §4; not render-checked here (an online renderer was blocked) |
+| `git diff --check` | Clean |
+| Not checked | No code exists yet: nothing here is tested in a browser. An independent audit of the documents is pending |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
