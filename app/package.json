@@ -18,7 +18,8 @@
     "dev": "node scripts/dev.mjs",
     "db:migrate": "npm run db:migrate --workspace @steelman/server",
     "db:seed": "npm run db:seed --workspace @steelman/server",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:soak": "tsx server/test/soak/run.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
