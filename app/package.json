@@ -11,15 +11,20 @@
     "web"
   ],
   "scripts": {
-    "check": "npm run typecheck && npm run lint && npm run test",
-    "typecheck": "tsc -p . && tsc -p shared && tsc -p server && tsc -p web",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run test:browser",
+    "typecheck": "tsc -p . && tsc -p shared && tsc -p server && tsc -p web && tsc -p e2e",
     "lint": "eslint .",
     "test": "vitest run",
     "dev": "node scripts/dev.mjs",
-    "db:migrate": "npm run db:migrate --workspace @steelman/server"
+    "db:migrate": "npm run db:migrate --workspace @steelman/server",
+    "db:seed": "npm run db:seed --workspace @steelman/server",
+    "test:browser": "playwright test",
+    "test:soak": "tsx server/test/soak/run.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

@@ -2,7 +2,8 @@
 // plans/architecture.md that would otherwise depend on everyone remembering:
 //
 // 1. Nothing reads the system's clock or random numbers except
-//    server/src/system.ts. Everything else is handed a clock and an ID source
+//    server/src/system.ts (and, for the IDs the browser makes,
+//    web/src/system.ts). Everything else is handed a clock and an ID source
 //    (§8), which is what lets tests move time instead of waiting.
 // 2. Each part touches only what it is allowed to (§4): shared/ touches
 //    nothing, web/ only the API, server/ not the web app.
@@ -35,7 +36,7 @@ export default tseslint.config(
   },
   {
     files: ["*/src/**"],
-    ignores: ["server/src/system.ts"],
+    ignores: ["server/src/system.ts", "web/src/system.ts"],
     rules: { "no-restricted-syntax": ["error", ...readsTheSystem] },
   },
   {
