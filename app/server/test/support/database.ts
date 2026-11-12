@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { basename } from "node:path";
 import pg from "pg";
 import { afterAll, beforeAll, expect, inject } from "vitest";
+import { applyMigrations } from "./migrations.ts";
 
 export interface TestDatabase {
   /** The database's name: the test file's name plus a random ending. */
@@ -18,9 +19,10 @@ export interface TestDatabase {
 
 /**
  * Call once at the top of a test file. The database exists from before the
- * file's first test until after its last.
+ * file's first test until after its last. It starts empty, or with every
+ * migration applied if you ask for `migrated`.
  */
-export function useTestDatabase(): TestDatabase {
+export function useTestDatabase(options: { migrated?: boolean } = {}): TestDatabase {
   let current: TestDatabase | undefined;
 
   beforeAll(async () => {
@@ -31,6 +33,7 @@ export function useTestDatabase(): TestDatabase {
     url.pathname = `/${name}`;
     const client = new pg.Client({ connectionString: url.href });
     await client.connect();
+    if (options.migrated) await applyMigrations(client);
     current = { name, url: url.href, client };
   });
 
