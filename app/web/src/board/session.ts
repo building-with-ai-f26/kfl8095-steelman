@@ -65,13 +65,17 @@ export class BoardSession {
   }
 
   // ── Starting and stopping ──
+  // Whether the service can be reached is learnt by asking it: a request that
+  // fails means offline, one that answers means back. The browser's
+  // "offline" event is a hint that comes sooner. Its navigator.onLine flag is
+  // not used: it says false on a machine whose only network is the loopback
+  // one, even though a service on localhost answers.
   async start(): Promise<void> {
     this.stopped = false;
     window.addEventListener("online", this.cameOnline);
     window.addEventListener("offline", this.wentOffline);
     window.addEventListener("beforeunload", this.beforeUnload);
     document.addEventListener("visibilitychange", this.visibilityChanged);
-    if (!navigator.onLine) this.set({ offline: true });
     try {
       const snapshot = await readBoard(this.board);
       if (this.stopped) return;
@@ -178,7 +182,7 @@ export class BoardSession {
   }
 
   private readonly cameOnline = () => {
-    if (!this.state.offline || !navigator.onLine) return;
+    if (!this.state.offline) return;
     const waiting = this.queue.length;
     this.set({ offline: false });
     void this.flush().then(() => {
