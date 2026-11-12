@@ -884,9 +884,9 @@ Decisions the builder made in an interview after the architecture review. Docume
 | `git diff --check` | Clean |
 | Not checked | Nothing here is built or designed in the prototype yet |
 
-## November 12 — App: database, reading a board, votes (M-01, B-01, B-02, B-03, B-05, M-02)
+## November 12 — App: database, reading a board, votes, writing (M-01, A-03, A-05, A-06, B-01, B-02, B-03, B-05, M-02)
 
-The first working code, in `app/` (pull requests #21–#24). Votes, assessments, and the shared order are saved in Postgres and served by the API; there is no board screen yet (M0-6), so every check here is an automated test, not a browser check. `npm run check` runs them all.
+The first working code, in `app/` (pull requests #21–#25). Votes, assessments, and the shared order are saved in Postgres and served by the API; there is no board screen yet (M0-6), so every check here is an automated test, not a browser check. `npm run check` runs them all.
 
 | Check | Observed result |
 | --- | --- |
@@ -895,7 +895,9 @@ The first working code, in `app/` (pull requests #21–#24). Votes, assessments,
 | Reading | `app/server/test/api/reading.test.ts`: snapshot; "changes after S" returns only rows stamped after S, one per item however many votes |
 | Order tick | `app/server/test/api/order-tick.test.ts`: the order recalculates only once the test clock passes 60 s, and only if it changed |
 | Test-user switch | `app/server/test/api/test-user.test.ts`: refused in production mode |
-| Not checked | Anything in a browser. Adding, editing, and deleting wordings come in M0-4b |
+| Writing | `app/server/test/api/writing.test.ts`: add an argument or a wording, edit (a new revision; credibility starts over, votes stay, sources carry over), delete (text erased, row kept; last wording takes its argument); each sent twice equals once; only the author edits or deletes |
+| Stale writes | `app/server/test/api/stale-writes.test.ts`: one test per row of the architecture's stale-write table that deleting and editing can reach, plus a closed board refusing every write |
+| Not checked | Anything in a browser (M0-6). Stale rows from hiding, combining, separating, and changing sources wait for those features |
 
 ## Limits
 

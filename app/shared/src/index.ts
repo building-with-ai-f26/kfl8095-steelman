@@ -27,7 +27,7 @@ export {
 export type { SourceInput } from "./inputs.ts";
 export { POLICY, can } from "./policy.ts";
 export type { Action, Refusal } from "./policy.ts";
-export { assessmentInput, changesQuery, voteInput } from "./api.ts";
+export { assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "./api.ts";
 export type {
   ArgumentRow,
   BoardChanges,

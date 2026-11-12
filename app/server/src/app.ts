@@ -1,11 +1,12 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { assessmentInput, changesQuery, voteInput } from "@steelman/shared";
+import { assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, RefusalReason } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
+import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
 import type { WriteResult } from "./write-path.ts";
 
 /**
@@ -39,6 +40,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   version_deleted: 409,
   revision_changed: 409,
   needs_evidence: 409,
+  id_taken: 409,
 };
 
 declare module "fastify" {
@@ -110,6 +112,28 @@ export function buildApp({ clock, database, mode = "production" }: AppDependenci
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data));
   });
+
+  app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", async (request, reply) => {
+    const body = newArgumentInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addArgument(services, request.params.board, request.person, body.data));
+  });
+
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/versions", async (request, reply) => {
+    const body = newWordingInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addWording(services, request.params.board, request.person, request.params.id, body.data));
+  });
+
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) => {
+    const body = editInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await editWording(services, request.params.board, request.person, request.params.id, body.data));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) =>
+    answer(reply, await deleteWording(services, request.params.board, request.person, request.params.id)),
+  );
 
   return app;
 }

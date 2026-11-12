@@ -3,6 +3,7 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
+import { contextInput, itemIdInput, wordingInput } from "./inputs.ts";
 import type { BoardOrder } from "./order.ts";
 
 /** A vote: +1, -1, or null to withdraw it. */
@@ -10,6 +11,21 @@ export const voteInput = z.strictObject({ value: z.union([z.literal(1), z.litera
 
 /** An assessment names the revision the person read; null withdraws it. */
 export const assessmentInput = z.strictObject({ rev: z.number().int().min(1), supported: z.boolean().nullable() });
+
+/** A new argument arrives with its first wording, each with the ID the browser made for it. */
+export const newArgumentInput = z.strictObject({
+  id: itemIdInput,
+  optionId: itemIdInput,
+  versionId: itemIdInput,
+  wording: wordingInput,
+  context: contextInput,
+});
+
+/** A new wording of an existing argument. */
+export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
+
+/** An edit names the revision it started from. */
+export const editInput = z.strictObject({ baseRev: z.number().int().min(1), wording: wordingInput, context: contextInput });
 
 /** "Changes after S": S is a change number the reader holds. */
 export const changesQuery = z.strictObject({ after: z.string().regex(/^\d+$/).transform(Number) });
@@ -116,7 +132,9 @@ export type RefusalReason =
   | "argument_deleted"
   | "version_deleted"
   | "revision_changed"
-  | "needs_evidence";
+  | "needs_evidence"
+  /** A new item's ID is already used by something else. */
+  | "id_taken";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }
