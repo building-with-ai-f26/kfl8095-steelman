@@ -1,0 +1,81 @@
+# Runs `npm run check` on every pull request: the one command a change must
+# pass (plans/architecture.md §8). It runs twice, because the command has to
+# work in two kinds of place:
+#
+# - docker:           the test database runs in Docker, as on most laptops.
+# - embedded-offline: Docker is stopped and the network is cut off after
+#                     `npm ci`, as in a cloud sandbox. This is the proof that
+#                     the check needs nothing but `npm install`.
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: npm run check (${{ matrix.database }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [docker, embedded-offline]
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      # The browser the browser tests drive. npm can't install it, so this is
+      # the one download besides `npm ci`; it comes before the network is cut.
+      - run: npx playwright install --with-deps chromium
+
+      - name: Check (test database in Docker)
+        if: matrix.database == 'docker'
+        run: npm run check
+        env:
+          TEST_DATABASE: docker
+
+      - name: The local development database starts
+        if: matrix.database == 'docker'
+        run: |
+          docker compose up --detach --wait db
+          docker compose exec db psql --username steelman --dbname steelman --command "select version()"
+          docker compose down --volumes
+
+      - name: Check (Docker stopped, no network)
+        if: matrix.database == 'embedded-offline'
+        run: |
+          sudo systemctl stop docker.socket docker.service
+          # A new network namespace has only its own loopback, so nothing in
+          # it can reach the internet. Postgres won't run as root, so step
+          # back down to the normal user inside it.
+          sudo unshare --net sh -c "ip link set lo up && exec sudo --user=$USER env PATH=\"$PATH\" sh scripts/ci-check-offline.sh"
+
+      # What the browser tests leave: traces of failures, and any saved
+      # screenshot this system didn't have yet (e2e/screenshots), to review
+      # and commit.
+      - name: Keep the browser tests' results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-tests-${{ matrix.database }}
+          path: |
+            app/e2e/results/
+            app/e2e/report/
+            app/e2e/screenshots/
+          if-no-files-found: ignore

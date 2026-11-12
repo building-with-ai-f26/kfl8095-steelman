@@ -1,0 +1,54 @@
+# Every night (plans/architecture.md §6 and §8, layer 8): the soak run, 30
+# scripted voters for five minutes against a running service, then a
+# recount; and a dependency audit. A failure opens an issue, which the next
+# agent session picks up first. Scheduled runs use the default branch.
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 07:00 UTC, the middle of the night in the US
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  nightly:
+    name: soak run and dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+
+      - name: Soak run (30 voters, 5 minutes, then a recount)
+        run: npm run test:soak
+        env:
+          TEST_DATABASE: docker
+
+      - name: Dependency audit
+        if: always()
+        run: npm audit --audit-level=high
+
+      - name: Open an issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Nightly run failed"
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $RUN"
+          else
+            gh issue create --title "$title" --body "The nightly soak run or dependency audit failed: $RUN. The log says which, and for the soak, the seed."
+          fi
