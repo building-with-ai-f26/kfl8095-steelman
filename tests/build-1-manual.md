@@ -899,6 +899,53 @@ The first working code, in `app/` (pull requests #21–#25). Votes, assessments,
 | Stale writes | `app/server/test/api/stale-writes.test.ts`: one test per row of the architecture's stale-write table that deleting and editing can reach, plus a closed board refusing every write |
 | Not checked | Anything in a browser (M0-6). Stale rows from hiding, combining, separating, and changing sources wait for those features |
 
+## November 12 — Simulation (B-05, M-02)
+
+The browser's sync rules now exist as pure functions in `app/shared/src/sync.ts` (open a board, merge changes, Update, the pill) and `queue.ts` (what the offline queue keeps). `app/server/test/simulation/` runs them together with the real write path and a real database: three readers, random sequences of votes, assessments, new arguments and wordings, edits, deletions, minutes passing, polling, Update, and going offline and back. The nine "always true" checks of architecture §8 run after every step.
+
+| Check | Observed result |
+| --- | --- |
+| 300 sequences | All nine checks held. One run: 5,604 steps, 2,193 writes done, 625 repeats answered "already done", 174 stale writes refused (128 needing evidence, 23 deleted wordings, 18 changed revisions, 5 deleted arguments), 469 actions queued offline, 394 Update comparisons with a fresh reader, 287 orders published |
+| Planted: skipped stamp | Caught on the 2nd sequence. Shrunk to one step: an importance vote. Postgres refused it: "must be stamped with change number 5, not 1" |
+| Planted: old revision's assessments counted | Caught on the 48th sequence (fixed seed 2026). Shrunk to five steps ending in an edit and an assessment. Failed check: "Every count equals a recount of the current votes and assessments" |
+| Not checked | Hiding, combining, separating, and changing sources (not built). With a random seed, 300 sequences find the old-revision bug in most runs but not all (found after 2 to 675 across five seeds), so the planted test uses a fixed seed and allows up to 1,000 |
+
+## November 12 — Board screen (A-01, A-03, A-05, A-06, B-01, B-02, B-05, M-02, M-03, M-04)
+
+The app's board screen (`app/web/`), in the prototype's own markup and CSS: the question, option columns, rows with their importance vote, unfolded rows with articulation votes, writing a new argument or wording, the pill and Update, polling every 3 s, and the offline queue in memory with the leave prompt. `app/e2e/` runs the November 11 *Live changes* rows and the *Live changes, structure* Edit row in Chromium, each with two people, against the real service and a real database. Every test also fails if any page logs an error.
+
+| Check | Observed result |
+| --- | --- |
+| Votes | Another person's vote in their browser plus two through the API: "Families…" shows 4 in place, rows don't move, no pill until the next shared order; then "1 change · Update" |
+| New argument | Written in the other browser: joins the end of No; Yes and earlier No rows unchanged |
+| New wording | Reader's unfolded single-wording row goes from 1 to 2 wordings, the new one last |
+| Update | Rows take the shared order; pill gone; status "Board updated." |
+| Delete open card | Unfolded row shows "Deleted by omar_h" in place; pill "1 change"; gone after Update and after reload |
+| Draft on a vanished argument | Draft "My sharper wording" in a row whose only wording is deleted: kept in place with the pill; after Update, in the New argument form of the same column, focused; status "That argument was deleted. Your draft is now a new argument." |
+| Offline | "Offline · 1 waiting to send"; others' votes don't arrive while offline; back → "Back online · 1 sent", counts catch up, then "1 change · Update" |
+| Edit (structure) | The author's edit shows in place; byline "omar_h · edited"; clicking "edited" shows the earlier wording struck through |
+| Leave prompt | Closing with a vote waiting brings up the browser's leave prompt; with nothing waiting, none |
+| Phone width (375 px) | Pill centred, 16 px above the bottom of the screen; no horizontal overflow |
+| Accessibility | axe finds nothing at 1280 and 375 px, folded and with a row unfolded |
+| Screenshots | Saved at 1280 and 375 px on macOS (`app/e2e/screenshots/*-darwin.png`) and compared on every run |
+| Preview (`npm run dev`) | Five votes through the API: counts changed in place, pill after the 60 s tick, Update moved the row to the top of No. Articulation vote, new argument, phone pager: as expected. No console errors |
+| Fixed on the way | The prototype's entrance animation undid the pill's centring while it played (it slid in from the right); `app/web/src/app.css` keeps it centred |
+| Fixed after CI | In CI's no-network job every browser test failed: with only the loopback network, Chromium's `navigator.onLine` is false although the service on localhost answers, and the board started out "Offline", queuing every vote. The board now learns it is offline only from requests that fail (and the browser's offline event). New test: a browser that says it is offline still sends |
+| Not checked | Strongest case (not built in the app). Screenshots on Linux (CI writes its own set the first time). Hidden tabs slowing to 30 s and stopping after ten minutes. A real screen reader or keyboard-only use. Real phones |
+
+## November 12 — Soak run and the guards (B-01, B-02, M-02)
+
+`npm run test:soak` (`app/server/test/soak/`) runs scripted voters against the real service over HTTP, in real time, each also a reader that polls for changes as the browser does. Afterwards each catches up, presses Update, and is compared with a fresh reader, and the stored counts are recounted from the vote tables. `npm run check` runs a short version (6 voters, 25 actions each, no pauses). Two guards: the protected-files check on every pull request (`.github/workflows/guards.yml`) and the feature-to-test check in `npm run check`.
+
+| Check | Observed result |
+| --- | --- |
+| Soak, 30 voters, 5 minutes (seed 1598295344, Docker) | 8,499 requests, 4,866 writes, 166 refused as needing evidence; 0 errors, 0 rows drifted, 0 readers disagreeing with a fresh one |
+| Recount can fail | A count raised by one in a stamped write is reported as drifted |
+| Protected files, throwaway repository | Flagged: an existing test edited, deleted, or moved; `test.skip` in a new file; a saved screenshot replaced; the policy table; a merged migration; a workflow; a plan, including a build-plan edit beyond marking an item done. Not flagged: code, new tests, new screenshots, new migrations, marking an item done, `plans/features.csv` |
+| Protected files, this repository | Against `m0-5-simulation`, the M0-6 branch is flagged for `.github/workflows/check.yml` only |
+| Feature-to-test | M0's features (B-01, B-02, B-03, B-05, M-02, M-01) each have a test named with the ID; a feature without one is reported |
+| Not checked | The guards and nightly workflows on GitHub (they run once merged: the nightly needs the default branch, and the `builder-approved` label doesn't exist yet). Mutation testing (architecture §8, nightly; not in M0) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
