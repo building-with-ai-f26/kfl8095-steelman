@@ -878,7 +878,7 @@ Decisions the builder made in an interview after the architecture review. Docume
 | Editing a shared source (Q10; C-03) | Resets the versions citing it only when the evidence changed (link, finding, backs up, limits), not for its name. The prototype resets on any edit |
 | Joining a board in the trial (Q7) | A link that carries a role; no owner approval step |
 | Staging's database (Q16) | Cloud SQL, started by each deploy and stopped nightly |
-| Domain (Q13) | The builder is choosing one. M1 is built and tested without it but isn't shown to classmates until it exists |
+| Domain (Q13) | `steelman-argument.com`, bought by the builder on Nov 11 (the product keeps the name Steelman). Its DNS records for Cloud Run and Resend are still to add. M1 is built and tested without them but isn't shown to classmates until email sign-in works from the domain |
 | Public communities (Q3) | Timing unknown; they stay a sketch |
 | `python3 scripts/build-feature-audit.py` | Rebuilt the workbook |
 | `git diff --check` | Clean |

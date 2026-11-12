@@ -17,7 +17,7 @@
 | Milestone | Ships | Features | Size | Hosting cost |
 |---|---|---|---|---|
 | **M0. The risky slice** (Build 2) | Two browsers on one laptop voting on the same board; held-still order, the pill, Update, offline queue; the test suite everything later depends on | B-01, B-02, B-03, B-05, M-02; first part of M-01 | 7 PRs | $0 (local) |
-| **M1. One group, for real** | Pod 6 builds a steelman together at `app.<domain>` | All of T1, plus the privacy parts of M-07 and M-08 | ~12 PRs | ~$15–20 |
+| **M1. One group, for real** | Pod 6 builds a steelman together at `app.steelman-argument.com` | All of T1, plus the privacy parts of M-07 and M-08 | ~12 PRs | ~$15–20 |
 | **M2. Ready to launch** | Other pods and classes can join; moderation, phones, accessibility, the list | The rest of T2 | ~10 PRs | ~$15–20 |
 | **M3a. Structure and history** | Combine, separate, undo, history | A-07, A-10, C-02, C-03, J-03, J-04, J-05 | ~8 PRs | unchanged |
 | **M3b. Conversation and sharing** | Comments, invites, closing a board, email notices | B-06, D-01, F-02, H-01, H-05, I-01, I-05, L-07 | ~10 PRs | +~$0–2 |
@@ -65,7 +65,7 @@
 - **Infrastructure:** two GCP projects in Terraform; Cloud Run with domain mapping; Cloud SQL with backups and point-in-time recovery; Secret Manager; GitHub Actions with Workload Identity Federation, deploy to staging on merge, and approved releases; the scheduled calls (daily maintenance, weekly export, staging's nightly stop); budget alerts; the uptime check; the monthly restore-test workflow.
 - **Stand-ins:** the fake sign-in provider and the in-memory email, so every sign-in path is tested without Google or Resend.
 
-**The builder's part, before agents start M1** (architecture.md §8): choose and buy the domain (under way); open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules (required checks, auto-merge) and the protected production environment in GitHub. Agents can build and test all of M1 before the domain exists, but **M1 isn't shown to classmates until it does** (Q13), so it launches with both sign-in methods.
+**The builder's part, before agents start M1** (architecture.md §8): add the DNS records for `steelman-argument.com` (bought Nov 11) for Cloud Run and for Resend; open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules (required checks, auto-merge) and the protected production environment in GitHub. Agents can build and test all of M1 before those records exist, but **M1 isn't shown to classmates until email sign-in works from the domain** (Q13), so it launches with both sign-in methods.
 
 **Done when (machine):** browser tests sign in by emailed code and by the fake Google, and the two reach the same account when the email matches. A code works once, stops working ten minutes later on the test clock, and is cancelled by five wrong tries. The role matrix passes for Owner, Voter, Contributor, signed out, and non-member. Deleting an account passes every row of the deletion table in architecture.md §2. The staging smoke test is green after a merge. The restore-test workflow has run once and passed.
 
