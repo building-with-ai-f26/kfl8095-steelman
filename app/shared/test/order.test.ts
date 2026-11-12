@@ -2,10 +2,10 @@ import { describe, expect, test } from "vitest";
 import { nextBoardOrder, nextOrder } from "@steelman/shared";
 import type { Ranked } from "@steelman/shared";
 
-// The shared order, from PRD §7: "Assessed items sort by their respective net
-// scores. Ties preserve the existing order. Items with no active assessments
-// remain at the end until assessed." And plans/architecture.md §3: unvoted
-// items stay at the end "in the order they were added".
+// The shared order (plans/architecture.md §3): items sort by score, and ties
+// keep the previous order. An item nobody has voted on counts as zero: it sits
+// above anything voted down (the builder's decision, Nov 12, Q23) and after
+// anything else at zero, in the order it was added.
 
 /** `voters` is how many people have a vote on the item; `score` is the sum of their votes. */
 const item = (id: string, score: number, voters: number): Ranked => ({ id, score, voters });
@@ -38,25 +38,32 @@ describe("the shared order of one list", () => {
     expect(nextOrder(previous, afterVotesForD)).toEqual(["d", "a", "b", "c"]);
   });
 
-  test("B-05: unvoted items stay last, in the order they were added", () => {
+  test("B-05: unvoted items sit below anything voted up, in the order they were added", () => {
     const items = [item("first", 0, 0), item("voted", 1, 1), item("second", 0, 0)];
 
     expect(nextOrder([], items)).toEqual(["voted", "first", "second"]);
   });
 
-  test("B-05: an unvoted item stays below one voted down", () => {
-    const items = [item("unvoted", 0, 0), item("down", -3, 3)];
+  test("B-05: an unvoted item sits above one voted down (Q23)", () => {
+    const items = [item("down", -3, 3), item("unvoted", 0, 0)];
 
-    expect(nextOrder([], items)).toEqual(["down", "unvoted"]);
+    expect(nextOrder([], items)).toEqual(["unvoted", "down"]);
   });
 
-  test("B-05: votes that cancel out are still votes: the item sorts at zero, above the unvoted", () => {
+  test("B-05: votes that cancel out sort at zero, just above the unvoted", () => {
     const items = [item("unvoted", 0, 0), item("down", -1, 1), item("split", 0, 2), item("up", 1, 1)];
 
-    expect(nextOrder([], items)).toEqual(["up", "split", "down", "unvoted"]);
+    expect(nextOrder([], items)).toEqual(["up", "split", "unvoted", "down"]);
   });
 
-  test("B-05: an item whose votes were all withdrawn goes back to the end, in the order it was added", () => {
+  test("B-05: at zero, a voted item stays above the unvoted even if it was below them before", () => {
+    const previous = ["unvoted", "split"];
+    const items = [item("unvoted", 0, 0), item("split", 0, 2)];
+
+    expect(nextOrder(previous, items)).toEqual(["split", "unvoted"]);
+  });
+
+  test("B-05: an item whose votes were all withdrawn rejoins the unvoted, in the order it was added", () => {
     const previous = ["b", "a", "c"]; // b was on top while it had votes
     const items = [item("a", 0, 0), item("b", 0, 0), item("c", 1, 1)];
 
