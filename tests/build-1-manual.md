@@ -835,6 +835,117 @@ axe-core 4.10.2 was loaded into the prototype frame and run on each screen; cont
 | Console | No errors |
 | Not checked | A real screen reader, a keyboard-only user, Windows high-contrast mode |
 
+## November 11 — Architecture (B-05, K-04, M-01, M-02)
+
+A design session, not a prototype change. `plans/architecture.md` (requirements, data model, live updates, components, cloud, delivery, security and privacy), `plans/build-plan.md`, and five decision records in `plans/decisions/` describe the real product. Decisions: one Postgres database with a per-board change log (M-01); polling for changes after the reader's change number, with the shared order recalculated lazily on a 60-second tick (B-05, M-02); GCP; K-04 moves from T4 to T3, because AI costs pass to users through credit purchases.
+
+| Check | Observed result |
+| --- | --- |
+| MVP coverage | Every T1 and T2 ID appears in build-plan milestones M0–M2; every T3 ID plus K-04 appears in M3 (checked against `features.csv`) |
+| Prices and limits | Taken from the providers' own pages on Nov 11; figures from pages that didn't render are marked *unverified* in the documents |
+| Diagram | Mermaid in architecture.md §4; not render-checked here (an online renderer was blocked) |
+| `git diff --check` | Clean |
+| Not checked | No code exists yet: nothing here is tested in a browser. An independent audit of the documents is pending |
+
+## November 11 — Architecture review (B-05, M-01, M-02)
+
+The independent audit of the architecture documents, by a second agent session (Claude Fable 5.2). Documents only; no code and no feature row changed. The builder approved its revisions the same day (architecture.md, Q19) and chose to keep the offline queue in memory while the tab is open rather than save it across a closed tab (Q20). What it changed: live updates read rows stamped with the board's change number, and votes are no longer logged (M-01, M-02); every write is safe to send twice by its shape, replacing `client_op_id`; a pull request never touches staging, and per-pull-request previews are dropped; a new section on automated testing and unattended agent work (architecture.md §8, decision record 006); M0 has an ordered backlog with machine-checkable acceptance tests.
+
+| Check | Observed result |
+| --- | --- |
+| Contradiction found | The first draft ran each pull request's migrations against staging, while AGENTS.md rule 7 forbids editing a migration that has run in staging: a migration would have been frozen at its first push. Fixed in §6 |
+| Contradiction found | Staging's database was "stopped when not in use", but previews and merge deploys needed it running, with nothing to start it. Now started by the deploy workflow and stopped nightly |
+| Hidden timers | "No background jobs" sat beside three things that needed one: erasing text ten seconds after a delete (now held in the browser), the weekly export and staging's stop (now scheduled calls to Cloud SQL's own API) |
+| Better Auth and Vercel | Confirmed from Vercel's blog: acquisition announced July 7, 2026; the library stays MIT-licensed |
+| Cloud Run domain mapping | Confirmed on Google's page: preview, "not production-ready"; `us-central1` is among the ten regions |
+| Firebase Hosting as a cheaper custom domain | Ruled out: Firebase's page says only the `__session` cookie reaches Cloud Run |
+| Point-in-time recovery | Confirmed in Google's docs: 1–7 days on the Enterprise edition, default 7 |
+| Cloud Run to Cloud SQL | Confirmed on Google's page: built-in connection over a socket, no VPC connector; 100 connections per Cloud Run instance |
+| `embedded-postgres` | PostgreSQL 17.x builds are published on npm (seen in search results, not installed) |
+| MVP coverage | All 49 T1, T2, and T3 IDs in `features.csv` still appear in `plans/build-plan.md` (checked by script) |
+| `git diff --check` | Clean |
+| Not checked | Cloud SQL's price: Google's pricing page didn't render; $9.37 a month for the smallest instance with 10 GB is Google's worked example as quoted by a search result. The 25-connection limit on the smallest instance comes from a third-party article. Stopped-instance billing comes from Google's support forum. No code exists yet, so none of the tests described in §8 has run |
+
+## November 11 — Open-question interview (A-06, C-03, L-01, L-04)
+
+Decisions the builder made in an interview after the architecture review. Documents only; the prototype is unchanged, so three of these open small design gaps recorded in `features.csv`.
+
+| Question | Decision |
+| --- | --- |
+| Who merges agents' pull requests (Q18) | The builder merges M0's. From M1 a pull request merges itself when every check is green and nothing protected is touched; production always needs the builder. The course needs no pod sign-off |
+| Email sign-in (Q21; L-01, L-04) | A 6-digit code typed into the page, not a link. The prototype shows the link flow; the code-entry screen isn't designed, so L-01 and L-04 go from readiness 4 to 3 |
+| "Edited" after votes (Q22; A-06) | The "edited" mark shows, on hover or tap, the importance and articulation votes the wording had before the edit. Not yet in the prototype |
+| Editing a shared source (Q10; C-03) | Resets the versions citing it only when the evidence changed (link, finding, backs up, limits), not for its name. The prototype resets on any edit |
+| Joining a board in the trial (Q7) | A link that carries a role; no owner approval step |
+| Staging's database (Q16) | Cloud SQL, started by each deploy and stopped nightly |
+| Domain (Q13) | `steelman-argument.com`, bought by the builder on Nov 11 (the product keeps the name Steelman). Its DNS records for Cloud Run and Resend are still to add. M1 is built and tested without them but isn't shown to classmates until email sign-in works from the domain |
+| Public communities (Q3) | Timing unknown; they stay a sketch |
+| `python3 scripts/build-feature-audit.py` | Rebuilt the workbook |
+| `git diff --check` | Clean |
+| Not checked | Nothing here is built or designed in the prototype yet |
+
+## November 12 — App: database, reading a board, votes, writing (M-01, A-03, A-05, A-06, B-01, B-02, B-03, B-05, M-02)
+
+The first working code, in `app/` (pull requests #21–#25). Votes, assessments, and the shared order are saved in Postgres and served by the API; there is no board screen yet (M0-6), so every check here is an automated test, not a browser check. `npm run check` runs them all.
+
+| Check | Observed result |
+| --- | --- |
+| Database invariants | `app/server/test/database/`: each invariant in architecture §2 is tried with raw SQL and refused; removing any of the 23 rules the schema keeps fails a test |
+| Votes and assessments | `app/server/test/api/votes.test.ts`, `assessments.test.ts`: set, change, withdraw; sent twice equals once and takes no second change number; old-revision assessments and "yes" without an available source refused |
+| Reading | `app/server/test/api/reading.test.ts`: snapshot; "changes after S" returns only rows stamped after S, one per item however many votes |
+| Order tick | `app/server/test/api/order-tick.test.ts`: the order recalculates only once the test clock passes 60 s, and only if it changed |
+| Test-user switch | `app/server/test/api/test-user.test.ts`: refused in production mode |
+| Writing | `app/server/test/api/writing.test.ts`: add an argument or a wording, edit (a new revision; credibility starts over, votes stay, sources carry over), delete (text erased, row kept; last wording takes its argument); each sent twice equals once; only the author edits or deletes |
+| Stale writes | `app/server/test/api/stale-writes.test.ts`: one test per row of the architecture's stale-write table that deleting and editing can reach, plus a closed board refusing every write |
+| Not checked | Anything in a browser (M0-6). Stale rows from hiding, combining, separating, and changing sources wait for those features |
+
+## November 12 — Simulation (B-05, M-02)
+
+The browser's sync rules now exist as pure functions in `app/shared/src/sync.ts` (open a board, merge changes, Update, the pill) and `queue.ts` (what the offline queue keeps). `app/server/test/simulation/` runs them together with the real write path and a real database: three readers, random sequences of votes, assessments, new arguments and wordings, edits, deletions, minutes passing, polling, Update, and going offline and back. The nine "always true" checks of architecture §8 run after every step.
+
+| Check | Observed result |
+| --- | --- |
+| 300 sequences | All nine checks held. One run: 5,604 steps, 2,193 writes done, 625 repeats answered "already done", 174 stale writes refused (128 needing evidence, 23 deleted wordings, 18 changed revisions, 5 deleted arguments), 469 actions queued offline, 394 Update comparisons with a fresh reader, 287 orders published |
+| Planted: skipped stamp | Caught on the 2nd sequence. Shrunk to one step: an importance vote. Postgres refused it: "must be stamped with change number 5, not 1" |
+| Planted: old revision's assessments counted | Caught on the 48th sequence (fixed seed 2026). Shrunk to five steps ending in an edit and an assessment. Failed check: "Every count equals a recount of the current votes and assessments" |
+| Not checked | Hiding, combining, separating, and changing sources (not built). With a random seed, 300 sequences find the old-revision bug in most runs but not all (found after 2 to 675 across five seeds), so the planted test uses a fixed seed and allows up to 1,000 |
+
+## November 12 — Board screen (A-01, A-03, A-05, A-06, B-01, B-02, B-05, M-02, M-03, M-04)
+
+The app's board screen (`app/web/`), in the prototype's own markup and CSS: the question, option columns, rows with their importance vote, unfolded rows with articulation votes, writing a new argument or wording, the pill and Update, polling every 3 s, and the offline queue in memory with the leave prompt. `app/e2e/` runs the November 11 *Live changes* rows and the *Live changes, structure* Edit row in Chromium, each with two people, against the real service and a real database. Every test also fails if any page logs an error.
+
+| Check | Observed result |
+| --- | --- |
+| Votes | Another person's vote in their browser plus two through the API: "Families…" shows 4 in place, rows don't move, no pill until the next shared order; then "1 change · Update" |
+| New argument | Written in the other browser: joins the end of No; Yes and earlier No rows unchanged |
+| New wording | Reader's unfolded single-wording row goes from 1 to 2 wordings, the new one last |
+| Update | Rows take the shared order; pill gone; status "Board updated." |
+| Delete open card | Unfolded row shows "Deleted by omar_h" in place; pill "1 change"; gone after Update and after reload |
+| Draft on a vanished argument | Draft "My sharper wording" in a row whose only wording is deleted: kept in place with the pill; after Update, in the New argument form of the same column, focused; status "That argument was deleted. Your draft is now a new argument." |
+| Offline | "Offline · 1 waiting to send"; others' votes don't arrive while offline; back → "Back online · 1 sent", counts catch up, then "1 change · Update" |
+| Edit (structure) | The author's edit shows in place; byline "omar_h · edited"; clicking "edited" shows the earlier wording struck through |
+| Leave prompt | Closing with a vote waiting brings up the browser's leave prompt; with nothing waiting, none |
+| Phone width (375 px) | Pill centred, 16 px above the bottom of the screen; no horizontal overflow |
+| Accessibility | axe finds nothing at 1280 and 375 px, folded and with a row unfolded |
+| Screenshots | Saved at 1280 and 375 px on macOS (`app/e2e/screenshots/*-darwin.png`) and compared on every run |
+| Preview (`npm run dev`) | Five votes through the API: counts changed in place, pill after the 60 s tick, Update moved the row to the top of No. Articulation vote, new argument, phone pager: as expected. No console errors |
+| Fixed on the way | The prototype's entrance animation undid the pill's centring while it played (it slid in from the right); `app/web/src/app.css` keeps it centred |
+| Fixed after CI | In CI's no-network job every browser test failed: with only the loopback network, Chromium's `navigator.onLine` is false although the service on localhost answers, and the board started out "Offline", queuing every vote. The board now learns it is offline only from requests that fail (and the browser's offline event). New test: a browser that says it is offline still sends |
+| Not checked | Strongest case (not built in the app). Screenshots on Linux (CI writes its own set the first time). Hidden tabs slowing to 30 s and stopping after ten minutes. A real screen reader or keyboard-only use. Real phones |
+
+## November 12 — Soak run and the guards (B-01, B-02, M-02)
+
+`npm run test:soak` (`app/server/test/soak/`) runs scripted voters against the real service over HTTP, in real time, each also a reader that polls for changes as the browser does. Afterwards each catches up, presses Update, and is compared with a fresh reader, and the stored counts are recounted from the vote tables. `npm run check` runs a short version (6 voters, 25 actions each, no pauses). Two guards: the protected-files check on every pull request (`.github/workflows/guards.yml`) and the feature-to-test check in `npm run check`.
+
+| Check | Observed result |
+| --- | --- |
+| Soak, 30 voters, 5 minutes (seed 1598295344, Docker) | 8,499 requests, 4,866 writes, 166 refused as needing evidence; 0 errors, 0 rows drifted, 0 readers disagreeing with a fresh one |
+| Recount can fail | A count raised by one in a stamped write is reported as drifted |
+| Protected files, throwaway repository | Flagged: an existing test edited, deleted, or moved; `test.skip` in a new file; a saved screenshot replaced; the policy table; a merged migration; a workflow; a plan, including a build-plan edit beyond marking an item done. Not flagged: code, new tests, new screenshots, new migrations, marking an item done, `plans/features.csv` |
+| Protected files, this repository | Against `m0-5-simulation`, the M0-6 branch is flagged for `.github/workflows/check.yml` only |
+| Feature-to-test | M0's features (B-01, B-02, B-03, B-05, M-02, M-01) each have a test named with the ID; a feature without one is reported |
+| Not checked | The guards and nightly workflows on GitHub (they run once merged: the nightly needs the default branch, and the `builder-approved` label doesn't exist yet). Mutation testing (architecture §8, nightly; not in M0) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

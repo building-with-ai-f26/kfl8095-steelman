@@ -1,0 +1,2 @@
+# Copies of server/src with a deliberate bug, made and removed by planted-bugs.test.ts
+server/test/simulation/.planted/

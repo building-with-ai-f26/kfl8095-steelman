@@ -43,6 +43,7 @@ The claims, sources, and aggregate votes are illustrative. The export saves vote
 | `scripts/sync-prototype.py` | Copies source changes into the standalone prototype export |
 | `docs/assets/` | Actual browser screenshots for the Product Page |
 | `docs/reference/steelman-prd-v0.4.md` | Original detailed PRD, unchanged; background vision rather than class scope |
+| `app/` | The real product, from Build 2: its commands and layout are in `app/README.md` |
 | `tests/build-1-manual.md` | Browser checks, results, and limits |
 | `journal/build-01-intent.md` | Build notes and remaining submission tasks |
 | `AGENTS.md` | Project context, run commands, and engineering rules |
