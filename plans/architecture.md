@@ -154,7 +154,7 @@ Sources are text and links only. Uploading files isn't in the MVP; if it comes, 
 | Importance, articulation, yes/no counts | **Derived, cached on the row** | Updated in the same transaction as the vote, so they can't drift; can always be recomputed from the vote tables (a check in tests) |
 | Credibility meter | Derived on read | yes ÷ (yes + no) for the current revision; "few" under 5 |
 | "Edited" | Derived | `current_rev > 1` and the latest revision's `why` is an edit |
-| **Shared order** | **Derived, but saved** | Sort by score; **ties keep the previous order**, and unassessed items stay at the end (PRD §7). Because ties depend on the *previous* order, the order isn't a pure function of the votes: each recalculation is saved with the change number it was computed at. Only the newest is kept (one row per board, replaced each time): no reader ever needs an older one. Cadence is step 3 |
+| **Shared order** | **Derived, but saved** | Sort by score; **ties keep the previous order**; an unvoted item counts as zero, after anything else at zero (Q23). Because ties depend on the *previous* order, the order isn't a pure function of the votes: each recalculation is saved with the change number it was computed at. Only the newest is kept (one row per board, replaced each time): no reader ever needs an older one. Cadence is step 3 |
 | Strongest case | Derived on read | The shared order's top three per option, each in its best-articulated current wording |
 | List entries, "who's weighed in", activity score | Derived on read | Queries over the tables above |
 | Points (T5) | Derived later | A job reading the change log and the vote tables |
@@ -259,7 +259,7 @@ Because the answer is the rows' current state, not a list of events, the browser
 
 ### The shared order and how often it recalculates
 
-The **shared order** is per option: arguments by importance, and within each argument, wordings by articulation. Ties keep the previous order; arguments and wordings nobody has voted on stay at the end in the order they were added (PRD §7).
+The **shared order** is per option: arguments by importance, and within each argument, wordings by articulation. Ties keep the previous order. Arguments and wordings nobody has voted on count as zero: above anything voted down, after anything else at zero, in the order they were added (Q23; this supersedes PRD §7, which put them last).
 
 The server saves it as numbered **published orders**. A new one is made only when **both** are true:
 
@@ -642,7 +642,7 @@ Each layer catches what the one before it can't. Layers 1–6 are `npm run check
 | # | Layer | What it proves | How |
 |---|---|---|---|
 | 1 | **Types and lint** | The code fits together | TypeScript in strict mode; the API's input schemas are the types the browser uses, so the two can't disagree |
-| 2 | **The rules** (`shared/`) | The order (ties keep the previous order, unvoted items stay last), `staleCount()`, the meter, the policy table, the input limits | Plain unit tests on pure functions: milliseconds each. Cases come from the PRD and from the checks already recorded in `tests/build-1-manual.md` |
+| 2 | **The rules** (`shared/`) | The order (ties keep the previous order, unvoted items count as zero), `staleCount()`, the meter, the policy table, the input limits | Plain unit tests on pure functions: milliseconds each. Cases come from the PRD and from the checks already recorded in `tests/build-1-manual.md` |
 | 3 | **The database** | Each invariant in step 2 holds even against buggy code | One test per invariant that tries to break it with raw SQL: a second vote by one person, an update to the change log as the app's database user, an argument pointing at another board's option. Migrations are tested as upgrades (step 6) |
 | 4 | **The API** | Every route enforces the rules | The **role matrix**: every action × every persona (step 7). The **stale-write table**: one test per row of the table in step 3. **Twice is once**: every write is sent twice and must leave the same result as sending it once. Plus rate limits, and export and deletion (delete an account, then check each row of the deletion table in step 2) |
 | 5 | **The simulation** | The riskiest problem (step 1): no sequence of actions breaks the counts or leaves two readers disagreeing | Below |
@@ -754,3 +754,4 @@ Running list. **Bold** ones change the design and are asked now; the rest have a
 | Q20 | Does the offline queue survive a closed tab? | Not in the MVP: it lives in memory while the tab is open, with the browser's leave warning and an event that counts actions lost. Saved to the browser's storage later if that event shows a need (step 3) | **Answered** Nov 11 |
 | Q21 | Email sign-in: a link or a code? Classmates often read email on a phone while working on a laptop | A 6-digit code typed into the page that asked for it. It replaces the link and its Continue page (step 7). The prototype still shows the link flow; the code-entry screen needs designing before M1 builds it | **Answered** Nov 11 |
 | Q22 | Should the board show that a wording was edited after it collected votes? | Yes. The "edited" mark explains itself on hover (tap on a phone), with the number of importance and articulation votes the wording had before the edit. Built with editing in M2 | **Answered** Nov 11 |
+| Q23 | Where do arguments and wordings nobody has voted on sit in the shared order? PRD §7 put them last, below anything voted down | They count as zero: above anything voted down, after anything else at zero, in the order they were added. Supersedes PRD §7 on this point | **Answered** Nov 12 |

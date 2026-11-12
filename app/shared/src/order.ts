@@ -1,9 +1,10 @@
 // The shared order: the one order of arguments and wordings that everybody's
-// votes produce (B-05). From PRD §7 and plans/architecture.md §3:
+// votes produce (B-05, plans/architecture.md §3):
 //
-//   "Assessed items sort by their respective net scores. Ties preserve the
-//    existing order. Items with no active assessments remain at the end",
-//   in the order they were added.
+//   * Items sort by score, highest first. Ties keep the previous order.
+//   * An item nobody has voted on counts as zero. It sits above anything voted
+//     down, and after anything else at zero, in the order it was added. (The
+//     builder's decision on Nov 12, Q23. PRD §7 had unvoted items last.)
 //
 // Because ties keep the previous order, the order is not a pure function of
 // the votes alone: it also needs the order before it. That is why the server
@@ -31,14 +32,23 @@ export function nextOrder(previous: readonly string[], items: readonly Ranked[])
   const place = new Map(previous.map((id, index) => [id, index]));
   const placeOf = (item: Ranked) => place.get(item.id) ?? Number.POSITIVE_INFINITY;
 
-  const voted = items.filter((item) => item.voters > 0);
-  const unvoted = items.filter((item) => item.voters === 0);
+  const unvoted = (item: Ranked) => (item.voters === 0 ? 1 : 0);
 
-  // Array.sort is stable, so items that tie on score and on previous place
-  // (two that are new since the last order) keep the order they were added.
-  voted.sort((a, b) => b.score - a.score || comparePlaces(placeOf(a), placeOf(b)));
+  // Array.sort is stable, so items still tied after these rules (two unvoted,
+  // or two that are new since the last order) keep the order they were added.
+  return [...items]
+    .sort(
+      (a, b) =>
+        scoreOf(b) - scoreOf(a) ||
+        unvoted(a) - unvoted(b) ||
+        (unvoted(a) ? 0 : comparePlaces(placeOf(a), placeOf(b))),
+    )
+    .map((item) => item.id);
+}
 
-  return [...voted, ...unvoted].map((item) => item.id);
+/** An unvoted item's score is zero by definition, whatever a caller says. */
+function scoreOf(item: Ranked): number {
+  return item.voters === 0 ? 0 : item.score;
 }
 
 function comparePlaces(a: number, b: number): number {
