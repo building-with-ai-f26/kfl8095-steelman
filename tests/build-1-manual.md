@@ -884,6 +884,19 @@ Decisions the builder made in an interview after the architecture review. Docume
 | `git diff --check` | Clean |
 | Not checked | Nothing here is built or designed in the prototype yet |
 
+## November 12 — App: database, reading a board, votes (M-01, B-01, B-02, B-03, B-05, M-02)
+
+The first working code, in `app/` (pull requests #21–#24). Votes, assessments, and the shared order are saved in Postgres and served by the API; there is no board screen yet (M0-6), so every check here is an automated test, not a browser check. `npm run check` runs them all.
+
+| Check | Observed result |
+| --- | --- |
+| Database invariants | `app/server/test/database/`: each invariant in architecture §2 is tried with raw SQL and refused; removing any of the 23 rules the schema keeps fails a test |
+| Votes and assessments | `app/server/test/api/votes.test.ts`, `assessments.test.ts`: set, change, withdraw; sent twice equals once and takes no second change number; old-revision assessments and "yes" without an available source refused |
+| Reading | `app/server/test/api/reading.test.ts`: snapshot; "changes after S" returns only rows stamped after S, one per item however many votes |
+| Order tick | `app/server/test/api/order-tick.test.ts`: the order recalculates only once the test clock passes 60 s, and only if it changed |
+| Test-user switch | `app/server/test/api/test-user.test.ts`: refused in production mode |
+| Not checked | Anything in a browser. Adding, editing, and deleting wordings come in M0-4b |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
