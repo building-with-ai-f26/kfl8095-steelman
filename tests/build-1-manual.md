@@ -933,6 +933,19 @@ The app's board screen (`app/web/`), in the prototype's own markup and CSS: the 
 | Fixed after CI | In CI's no-network job every browser test failed: with only the loopback network, Chromium's `navigator.onLine` is false although the service on localhost answers, and the board started out "Offline", queuing every vote. The board now learns it is offline only from requests that fail (and the browser's offline event). New test: a browser that says it is offline still sends |
 | Not checked | Strongest case (not built in the app). Screenshots on Linux (CI writes its own set the first time). Hidden tabs slowing to 30 s and stopping after ten minutes. A real screen reader or keyboard-only use. Real phones |
 
+## November 12 — Soak run and the guards (B-01, B-02, M-02)
+
+`npm run test:soak` (`app/server/test/soak/`) runs scripted voters against the real service over HTTP, in real time, each also a reader that polls for changes as the browser does. Afterwards each catches up, presses Update, and is compared with a fresh reader, and the stored counts are recounted from the vote tables. `npm run check` runs a short version (6 voters, 25 actions each, no pauses). Two guards: the protected-files check on every pull request (`.github/workflows/guards.yml`) and the feature-to-test check in `npm run check`.
+
+| Check | Observed result |
+| --- | --- |
+| Soak, 30 voters, 5 minutes (seed 1598295344, Docker) | 8,499 requests, 4,866 writes, 166 refused as needing evidence; 0 errors, 0 rows drifted, 0 readers disagreeing with a fresh one |
+| Recount can fail | A count raised by one in a stamped write is reported as drifted |
+| Protected files, throwaway repository | Flagged: an existing test edited, deleted, or moved; `test.skip` in a new file; a saved screenshot replaced; the policy table; a merged migration; a workflow; a plan, including a build-plan edit beyond marking an item done. Not flagged: code, new tests, new screenshots, new migrations, marking an item done, `plans/features.csv` |
+| Protected files, this repository | Against `m0-5-simulation`, the M0-6 branch is flagged for `.github/workflows/check.yml` only |
+| Feature-to-test | M0's features (B-01, B-02, B-03, B-05, M-02, M-01) each have a test named with the ID; a feature without one is reported |
+| Not checked | The guards and nightly workflows on GitHub (they run once merged: the nightly needs the default branch, and the `builder-approved` label doesn't exist yet). Mutation testing (architecture §8, nightly; not in M0) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
