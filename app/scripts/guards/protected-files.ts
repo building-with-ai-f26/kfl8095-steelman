@@ -21,7 +21,8 @@ export interface Finding {
 }
 
 const TEST_FILE = /\.(test|spec)\.(ts|tsx|js|mjs)$/;
-const SKIP = /\b(test|it|describe)\.(skip|fixme|todo|skipIf)\b|\bxit\(|\bxdescribe\(/;
+/** A test marked skipped. Not one quoted as text, as a test of this check writes it: a real skip never follows a quote mark. */
+const SKIP = /(?<!['"`])\b(test|it|describe)\.(skip|fixme|todo|skipIf)\b|(?<!['"`])\bx(it|describe)\(/;
 const DONE_MARK = /^\| (M\d+[a-z]?-\d+[a-z]?) \|/;
 
 /** What the pull request (HEAD) changes since it branched from `base` that needs the builder. */
