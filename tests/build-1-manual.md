@@ -930,6 +930,7 @@ The app's board screen (`app/web/`), in the prototype's own markup and CSS: the 
 | Screenshots | Saved at 1280 and 375 px on macOS (`app/e2e/screenshots/*-darwin.png`) and compared on every run |
 | Preview (`npm run dev`) | Five votes through the API: counts changed in place, pill after the 60 s tick, Update moved the row to the top of No. Articulation vote, new argument, phone pager: as expected. No console errors |
 | Fixed on the way | The prototype's entrance animation undid the pill's centring while it played (it slid in from the right); `app/web/src/app.css` keeps it centred |
+| Fixed after CI | In CI's no-network job every browser test failed: with only the loopback network, Chromium's `navigator.onLine` is false although the service on localhost answers, and the board started out "Offline", queuing every vote. The board now learns it is offline only from requests that fail (and the browser's offline event). New test: a browser that says it is offline still sends |
 | Not checked | Strongest case (not built in the app). Screenshots on Linux (CI writes its own set the first time). Hidden tabs slowing to 30 s and stopping after ten minutes. A real screen reader or keyboard-only use. Real phones |
 
 ## Limits

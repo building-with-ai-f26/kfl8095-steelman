@@ -32,11 +32,17 @@ export interface TestBoard {
   /** IDs for things a test writes through the API. */
   ids: IdSource;
   /** A new browser session acting as this person, with the board open. */
-  open(person: DemoPerson, options?: { width?: number }): Promise<Page>;
+  open(person: DemoPerson, options?: OpenOptions): Promise<Page>;
   /** Calls the API as this person, the way the second person's browser would. */
   api(person: DemoPerson): Caller;
   /** Every console error and uncaught exception in any page so far. */
   errors: string[];
+}
+
+export interface OpenOptions {
+  width?: number;
+  /** Makes the browser's navigator.onLine say false, as it does on a machine with only the loopback network. */
+  onLine?: false;
 }
 
 export interface Caller {
@@ -105,10 +111,11 @@ export const test = base.extend<{ board: TestBoard }>({
 export { expect };
 
 /** Opens the board in a new browser session, as the given test user. */
-async function openAs(browser: Browser, origin: string, demo: DemoBoard, person: DemoPerson, errors: string[], options: { width?: number } = {}): Promise<Page> {
+async function openAs(browser: Browser, origin: string, demo: DemoBoard, person: DemoPerson, errors: string[], options: OpenOptions = {}): Promise<Page> {
   const context = await browser.newContext({ baseURL: origin, viewport: { width: options.width ?? 1280, height: 900 } });
   // The switch keeps the choice per tab, in sessionStorage (web/src/testUser.ts).
   await context.addInitScript((id) => sessionStorage.setItem("steelman.testUser", id), demo.people[person]);
+  if (options.onLine === false) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, "onLine", { get: () => false }));
   const page = await context.newPage();
   page.on("console", (message) => {
     if (message.type() === "error" && !isExpectedOfflineError(message.text())) errors.push(`${person}: ${message.text()}`);
