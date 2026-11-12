@@ -899,6 +899,17 @@ The first working code, in `app/` (pull requests #21–#25). Votes, assessments,
 | Stale writes | `app/server/test/api/stale-writes.test.ts`: one test per row of the architecture's stale-write table that deleting and editing can reach, plus a closed board refusing every write |
 | Not checked | Anything in a browser (M0-6). Stale rows from hiding, combining, separating, and changing sources wait for those features |
 
+## November 12 — Simulation (B-05, M-02)
+
+The browser's sync rules now exist as pure functions in `app/shared/src/sync.ts` (open a board, merge changes, Update, the pill) and `queue.ts` (what the offline queue keeps). `app/server/test/simulation/` runs them together with the real write path and a real database: three readers, random sequences of votes, assessments, new arguments and wordings, edits, deletions, minutes passing, polling, Update, and going offline and back. The nine "always true" checks of architecture §8 run after every step.
+
+| Check | Observed result |
+| --- | --- |
+| 300 sequences | All nine checks held. One run: 5,604 steps, 2,193 writes done, 625 repeats answered "already done", 174 stale writes refused (128 needing evidence, 23 deleted wordings, 18 changed revisions, 5 deleted arguments), 469 actions queued offline, 394 Update comparisons with a fresh reader, 287 orders published |
+| Planted: skipped stamp | Caught on the 2nd sequence. Shrunk to one step: an importance vote. Postgres refused it: "must be stamped with change number 5, not 1" |
+| Planted: old revision's assessments counted | Caught on the 48th sequence (fixed seed 2026). Shrunk to five steps ending in an edit and an assessment. Failed check: "Every count equals a recount of the current votes and assessments" |
+| Not checked | Hiding, combining, separating, and changing sources (not built). With a random seed, 300 sequences find the old-revision bug in most runs but not all (found after 2 to 675 across five seeds), so the planted test uses a fixed seed and allows up to 1,000 |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
