@@ -9,22 +9,20 @@
 
 create table board (
   -- Unguessable: for "anyone with the link" boards, the link is the permission.
-  id           text primary key check (id ~ '^[A-Za-z0-9_-]{12}$'),
-  question     text not null check (char_length(question) between 1 and 200),
+  id           text primary key,
+  question     text not null,
   created_by   text not null references account (id),
   created_at   timestamptz not null,
   closed_at    timestamptz,
   -- How long a shared order stands before votes may produce a new one.
-  tick_seconds integer not null default 60 check (tick_seconds >= 0),
+  tick_seconds integer not null default 60,
   -- The board's change number: how many writes it has had.
-  last_seq     bigint not null default 0 check (last_seq >= 0)
+  last_seq     bigint not null default 0
 );
 
-create function board_rules() returns trigger language plpgsql as $$
+-- The counter only ever moves up by one, through take_change_number().
+create function board_counter_rules() returns trigger language plpgsql as $$
 begin
-  if new.id <> old.id then
-    raise exception 'A board''s ID never changes' using errcode = 'check_violation';
-  end if;
   if new.last_seq <> old.last_seq and new.last_seq <> old.last_seq + 1 then
     raise exception 'A board''s change number only goes up, one at a time (% to %)', old.last_seq, new.last_seq
       using errcode = 'check_violation';
@@ -32,8 +30,8 @@ begin
   return new;
 end $$;
 
-create trigger board_rules before update on board
-  for each row execute function board_rules();
+create trigger board_counter_rules before update on board
+  for each row execute function board_counter_rules();
 
 -- Takes the board's next change number for the current transaction, and
 -- remembers it until the transaction ends so the triggers below can check
@@ -75,19 +73,6 @@ begin
   if new.changed_seq is distinct from taken then
     raise exception 'A row of "%" written now must be stamped with change number %, not %', tg_table_name, taken, new.changed_seq
       using errcode = 'check_violation';
-  end if;
-  return new;
-end $$;
-
--- For tables that carry created_seq: it is the change number the row was
--- added at, and never changes. "The order they were added" is this number.
-create function created_seq_rules() returns trigger language plpgsql as $$
-begin
-  if tg_op = 'INSERT' and new.created_seq <> new.changed_seq then
-    raise exception 'A new row of "%" was added at the change number it is stamped with', tg_table_name using errcode = 'check_violation';
-  end if;
-  if tg_op = 'UPDATE' and new.created_seq <> old.created_seq then
-    raise exception 'The change number a row of "%" was added at never changes', tg_table_name using errcode = 'check_violation';
   end if;
   return new;
 end $$;

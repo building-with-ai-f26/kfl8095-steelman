@@ -36,22 +36,6 @@ describe("invariant 1: one judgment per person per target", () => {
     await expect(write(db.client, b.board, () => db.client.query(assess, [b.version, b.ana, b.board, NOON]))).rejects.toThrow(/duplicate key/);
   });
 
-  test("B-01: a vote is +1 or −1, nothing else", async () => {
-    const vote = (value: number) =>
-      write(db.client, b.board, () =>
-        db.client.query("insert into importance_vote (argument_id, account_id, board_id, value, voted_at) values ($1, $2, $3, $4, $5)", [
-          b.otherArgument,
-          b.ben,
-          b.board,
-          value,
-          NOON,
-        ]),
-      );
-
-    await expect(vote(2)).rejects.toThrow(/check constraint/);
-    await expect(vote(0)).rejects.toThrow(/check constraint/);
-  });
-
   test("B-01, B-02: two different people may vote on the same thing", async () => {
     await write(db.client, b.board, () =>
       db.client.query("insert into importance_vote (argument_id, account_id, board_id, value, voted_at) values ($1, $2, $3, -1, $4)", [b.argument, b.ben, b.board, NOON]),

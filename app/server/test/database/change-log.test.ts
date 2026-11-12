@@ -5,7 +5,7 @@ import type { SeededBoard } from "../support/board.ts";
 import { useTestDatabase } from "../support/database.ts";
 
 // Invariant 7 (plans/architecture.md §2): the change log never copies what
-// people wrote, and holds no votes.
+// people wrote.
 // Invariant 8: the change log is append-only.
 
 const db = useTestDatabase({ migrated: true });
@@ -37,15 +37,6 @@ describe("invariant 7: the change log points at things, and never copies what pe
     await expect(log({ after: { nested: { deep: ["Staff need a day off."] } } })).rejects.toThrow(/check constraint/);
   });
 
-  test("M-01: a vote can't be written to the change log", async () => {
-    for (const kind of ["importance_vote", "articulation_vote", "assessment", "vote"]) {
-      await expect(log({ kind })).rejects.toThrow(/check constraint/);
-    }
-  });
-
-  test("M-01: a change is about an option, an argument, a version, or a source, never a person", async () => {
-    await expect(log({ subjectKind: "account" })).rejects.toThrow(/check constraint/);
-  });
 });
 
 describe("invariant 8: the change log is append-only", () => {

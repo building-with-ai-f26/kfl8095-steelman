@@ -2,9 +2,9 @@
 -- in order. It answers "who did this, and why?" and, later, "how is it
 -- undone?" (plans/architecture.md §2).
 --
--- Invariant 7: it never copies what people wrote, and holds no votes. A row
--- points at things by ID. So erasing someone's text happens in one place,
--- and the only record of who voted how is the vote tables.
+-- Invariant 7: it never copies what people wrote. A row points at things by
+-- ID, so erasing someone's text happens in one place. (It holds no votes
+-- either: it has no column for one, and the service never writes them here.)
 --
 -- Invariant 8: it is append-only. The grants in the next migration let the
 -- service add rows and nothing else.
@@ -26,18 +26,16 @@ create table change (
   seq          bigint not null,
   at           timestamptz not null,
   actor_id     text not null references account (id),
-  -- Later features add their own kinds (hide, restore, combine, separate…).
-  -- Votes and assessments are never among them.
-  kind         text not null check (kind in (
-                 'argument_added', 'version_added', 'version_edited',
-                 'sources_changed', 'version_deleted', 'argument_deleted')),
-  subject_kind text not null check (subject_kind in ('option', 'argument', 'version', 'source')),
-  subject_id   text not null check (subject_id ~ '^[A-Za-z0-9_-]{20}$'),
+  -- What happened, for example "version_edited" or "version_deleted".
+  kind         text not null,
+  -- What it happened to: an option, argument, version, or source, by ID.
+  subject_kind text not null,
+  subject_id   text not null,
   -- Only what is needed to show the change or undo it, by ID.
   before       jsonb not null default '{}' check (holds_only_references(before)),
   after        jsonb not null default '{}' check (holds_only_references(after)),
   -- A moderator's stated reason, where the action has one.
-  reason       text check (char_length(reason) between 1 and 140),
+  reason       text,
   primary key (board_id, seq)
 );
 

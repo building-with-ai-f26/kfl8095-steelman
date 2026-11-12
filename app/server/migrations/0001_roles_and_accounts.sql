@@ -10,6 +10,12 @@
 --
 -- Roles belong to the whole database server, not one database, so they may
 -- already be there (tests make many databases on one server).
+--
+-- What the database checks, and what it leaves to the service (Q24): the
+-- schema holds the invariants of architecture §2 and the keys that make them
+-- hold. Lengths, allowed values, and rules of behaviour are checked by the
+-- service (shared/src/inputs.ts and the write path), so changing one never
+-- needs a migration.
 do $$
 begin
   create role steelman_app nologin;
@@ -31,7 +37,7 @@ end $$;
 -- service supplies every time, so tests control it (architecture §8).
 create table account (
   id         text primary key,
-  username   text not null check (char_length(username) between 1 and 20),
+  username   text not null,
   created_at timestamptz not null,
   deleted_at timestamptz
 );

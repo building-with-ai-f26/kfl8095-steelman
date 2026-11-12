@@ -156,16 +156,6 @@ describe("invariant 9: every write takes the board's next change number and stam
     await expect(wrong).rejects.toThrow(/must be numbered/);
   });
 
-  test("A-03: a new row records the change number it was added at, for good", async () => {
-    const added = await db.client.query("select created_seq, changed_seq from argument where id = $1", [b.argument]);
-    expect(added.rows[0].created_seq).toBe(added.rows[0].changed_seq);
-
-    const backdate = (table: string, id: string) =>
-      write(db.client, b.board, (seq) => db.client.query(`update ${table} set created_seq = 0, changed_seq = $2 where id = $1`, [id, seq]));
-    await expect(backdate("argument", b.argument)).rejects.toThrow(/added at/);
-    await expect(backdate("version", b.version)).rejects.toThrow(/added at/);
-  });
-
   test("M-02: taking a number for a board that doesn't exist is refused", async () => {
     await expect(takeChangeNumber(db.client, "nosuchboard1")).rejects.toThrow(/No such board/);
   });
