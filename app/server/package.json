@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --env-file-if-exists=../.env src/main.ts",
-    "db:migrate": "tsx --env-file-if-exists=../.env src/db/migrate-cli.ts"
+    "db:migrate": "tsx --env-file-if-exists=../.env src/db/migrate-cli.ts",
+    "db:seed": "tsx --env-file-if-exists=../.env src/db/seed-cli.ts"
   },
   "dependencies": {
     "@steelman/shared": "*",

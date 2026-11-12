@@ -7,18 +7,11 @@
 // recounted from the vote table in the same transaction, so they can't drift.
 
 import { sql } from "kysely";
-import type { Clock } from "@steelman/shared";
-import type { Db } from "./db/database.ts";
 import { versionRows } from "./read.ts";
 import { writeToBoard } from "./write-path.ts";
-import type { WriteResult } from "./write-path.ts";
+import type { Services, WriteResult } from "./write-path.ts";
 
 type Vote = 1 | -1 | null;
-
-export interface Services {
-  db: Db;
-  clock: Clock;
-}
 
 export function setImportance({ db, clock }: Services, boardId: string, person: string | null, argumentId: string, value: Vote): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {

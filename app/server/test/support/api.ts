@@ -27,6 +27,7 @@ export interface TestApi {
   get(url: string, call?: Call): Promise<{ status: number; body: Body }>;
   post(url: string, call?: Call): Promise<{ status: number; body: Body }>;
   put(url: string, call?: Call): Promise<{ status: number; body: Body }>;
+  delete(url: string, call?: Call): Promise<{ status: number; body: Body }>;
 }
 
 /** Call once at the top of a test file, after `useTestDatabase`. */
@@ -42,7 +43,7 @@ export function useApi(db: TestDatabase, options: { mode?: Mode; seed?: number }
     await app?.close();
   });
 
-  const call = (method: "GET" | "POST" | "PUT") => async (url: string, { as, body }: Call = {}) => {
+  const call = (method: "GET" | "POST" | "PUT" | "DELETE") => async (url: string, { as, body }: Call = {}) => {
     if (!app) throw new Error("The app exists only while the file's tests are running");
     const response = await app.inject({
       method,
@@ -62,5 +63,6 @@ export function useApi(db: TestDatabase, options: { mode?: Mode; seed?: number }
     get: call("GET"),
     post: call("POST"),
     put: call("PUT"),
+    delete: call("DELETE"),
   };
 }

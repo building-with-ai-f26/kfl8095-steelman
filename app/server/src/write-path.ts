@@ -16,10 +16,16 @@
 import { sql } from "kysely";
 import type { Transaction } from "kysely";
 import { can } from "@steelman/shared";
-import type { Action, RefusalReason, VersionRow, WriteAnswer } from "@steelman/shared";
+import type { Action, Clock, RefusalReason, VersionRow, WriteAnswer } from "@steelman/shared";
 import type { Database, Db } from "./db/database.ts";
 
 export type Trx = Transaction<Database>;
+
+/** What every kind of write is handed. */
+export interface Services {
+  db: Db;
+  clock: Clock;
+}
 
 /** What a write's own steps can conclude. */
 export type Outcome = "done" | "already_done" | { refused: RefusalReason; current?: VersionRow };
