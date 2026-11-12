@@ -15,7 +15,8 @@
     "typecheck": "tsc -p . && tsc -p shared && tsc -p server && tsc -p web",
     "lint": "eslint .",
     "test": "vitest run",
-    "dev": "node scripts/dev.mjs"
+    "dev": "node scripts/dev.mjs",
+    "db:migrate": "npm run db:migrate --workspace @steelman/server"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -26,7 +27,6 @@
     "@vitejs/plugin-react": "^6.3.0",
     "embedded-postgres": "^17.11.0-beta.19",
     "eslint": "^10.14.0",
-    "pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
