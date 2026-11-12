@@ -1,0 +1,24 @@
+# The local development database, and nothing else: `docker compose up -d db`.
+# The tests don't use it; they start their own (server/test/support).
+#
+# It takes no password. That is safe only because it listens on this machine
+# alone (127.0.0.1) and holds nothing but local test data.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: steelman
+      POSTGRES_DB: steelman
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "--username", "steelman", "--dbname", "steelman"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+volumes:
+  db-data:

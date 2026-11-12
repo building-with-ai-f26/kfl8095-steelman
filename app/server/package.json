@@ -1,0 +1,12 @@
+{
+  "name": "@steelman/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../.env src/main.ts"
+  },
+  "dependencies": {
+    "@steelman/shared": "*",
+    "fastify": "^5.12.8"
+  }
+}
