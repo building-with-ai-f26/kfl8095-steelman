@@ -40,6 +40,9 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - run: npm ci
+      # The browser the browser tests drive. npm can't install it, so this is
+      # the one download besides `npm ci`; it comes before the network is cut.
+      - run: npx playwright install --with-deps chromium
 
       - name: Check (test database in Docker)
         if: matrix.database == 'docker'
@@ -62,3 +65,17 @@ jobs:
           # it can reach the internet. Postgres won't run as root, so step
           # back down to the normal user inside it.
           sudo unshare --net sh -c "ip link set lo up && exec sudo --user=$USER env PATH=\"$PATH\" sh scripts/ci-check-offline.sh"
+
+      # What the browser tests leave: traces of failures, and any saved
+      # screenshot this system didn't have yet (e2e/screenshots), to review
+      # and commit.
+      - name: Keep the browser tests' results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-tests-${{ matrix.database }}
+          path: |
+            app/e2e/results/
+            app/e2e/report/
+            app/e2e/screenshots/
+          if-no-files-found: ignore

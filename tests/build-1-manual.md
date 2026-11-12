@@ -910,6 +910,28 @@ The browser's sync rules now exist as pure functions in `app/shared/src/sync.ts`
 | Planted: old revision's assessments counted | Caught on the 48th sequence (fixed seed 2026). Shrunk to five steps ending in an edit and an assessment. Failed check: "Every count equals a recount of the current votes and assessments" |
 | Not checked | Hiding, combining, separating, and changing sources (not built). With a random seed, 300 sequences find the old-revision bug in most runs but not all (found after 2 to 675 across five seeds), so the planted test uses a fixed seed and allows up to 1,000 |
 
+## November 12 — Board screen (A-01, A-03, A-05, A-06, B-01, B-02, B-05, M-02, M-03, M-04)
+
+The app's board screen (`app/web/`), in the prototype's own markup and CSS: the question, option columns, rows with their importance vote, unfolded rows with articulation votes, writing a new argument or wording, the pill and Update, polling every 3 s, and the offline queue in memory with the leave prompt. `app/e2e/` runs the November 11 *Live changes* rows and the *Live changes, structure* Edit row in Chromium, each with two people, against the real service and a real database. Every test also fails if any page logs an error.
+
+| Check | Observed result |
+| --- | --- |
+| Votes | Another person's vote in their browser plus two through the API: "Families…" shows 4 in place, rows don't move, no pill until the next shared order; then "1 change · Update" |
+| New argument | Written in the other browser: joins the end of No; Yes and earlier No rows unchanged |
+| New wording | Reader's unfolded single-wording row goes from 1 to 2 wordings, the new one last |
+| Update | Rows take the shared order; pill gone; status "Board updated." |
+| Delete open card | Unfolded row shows "Deleted by omar_h" in place; pill "1 change"; gone after Update and after reload |
+| Draft on a vanished argument | Draft "My sharper wording" in a row whose only wording is deleted: kept in place with the pill; after Update, in the New argument form of the same column, focused; status "That argument was deleted. Your draft is now a new argument." |
+| Offline | "Offline · 1 waiting to send"; others' votes don't arrive while offline; back → "Back online · 1 sent", counts catch up, then "1 change · Update" |
+| Edit (structure) | The author's edit shows in place; byline "omar_h · edited"; clicking "edited" shows the earlier wording struck through |
+| Leave prompt | Closing with a vote waiting brings up the browser's leave prompt; with nothing waiting, none |
+| Phone width (375 px) | Pill centred, 16 px above the bottom of the screen; no horizontal overflow |
+| Accessibility | axe finds nothing at 1280 and 375 px, folded and with a row unfolded |
+| Screenshots | Saved at 1280 and 375 px on macOS (`app/e2e/screenshots/*-darwin.png`) and compared on every run |
+| Preview (`npm run dev`) | Five votes through the API: counts changed in place, pill after the 60 s tick, Update moved the row to the top of No. Articulation vote, new argument, phone pager: as expected. No console errors |
+| Fixed on the way | The prototype's entrance animation undid the pill's centring while it played (it slid in from the right); `app/web/src/app.css` keeps it centred |
+| Not checked | Strongest case (not built in the app). Screenshots on Linux (CI writes its own set the first time). Hidden tabs slowing to 30 s and stopping after ten minutes. A real screen reader or keyboard-only use. Real phones |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
