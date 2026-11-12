@@ -1,0 +1,46 @@
+# The protected-files check (plans/architecture.md §8, "Tests an agent can't
+# quietly weaken"). Fails when a pull request edits, moves, deletes, or skips
+# an existing test, replaces a saved screenshot, or changes the policy table,
+# a merged migration, a CI workflow, or a plan, and lists what it found.
+#
+# Such a pull request needs the builder: the builder adds the
+# `builder-approved` label after reading the list, and the check passes.
+# Agents never add that label (AGENTS.md rule 9).
+name: guards
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  protected-files:
+    name: protected files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The whole history, to find where the pull request branched.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+      # Node runs the TypeScript directly, and the script needs no packages.
+      - name: List protected changes
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'builder-approved') }}
+        run: |
+          if node scripts/guards/protected-files-cli.ts "origin/$BASE"; then exit 0; fi
+          if [ "$APPROVED" = "true" ]; then
+            echo "The builder approved these changes (label builder-approved)."
+            exit 0
+          fi
+          echo "Ask the builder to read the list above and add the builder-approved label."
+          exit 1
