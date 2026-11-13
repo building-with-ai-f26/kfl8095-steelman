@@ -2,6 +2,9 @@
 # scripted voters for five minutes against a running service, then a
 # recount; and a dependency audit. A failure opens an issue, which the next
 # agent session picks up first. Scheduled runs use the default branch.
+#
+# Also mutation testing (guard 4), as its own job: breaks the tests missed
+# go into one open issue, kept current each night.
 name: nightly
 
 on:
@@ -51,4 +54,75 @@ jobs:
             gh issue comment "$existing" --body "Failed again: $RUN"
           else
             gh issue create --title "$title" --body "The nightly soak run or dependency audit failed: $RUN. The log says which, and for the soak, the seed."
+          fi
+
+  # Mutation testing (§8, guard 4): Stryker makes small deliberate breaks in
+  # shared/ and the write path and runs the tests against each. A break no
+  # test notices is a hole in the tests, listed in one open issue.
+  mutation:
+    name: mutation testing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+
+      - name: Mutation run
+        run: npm run test:mutation
+        env:
+          TEST_DATABASE: docker
+
+      - name: Score and missed breaks
+        id: report
+        run: |
+          set +e
+          npx tsx scripts/mutation/survivors-cli.ts reports/mutation/mutation.json > survivors.md
+          echo "missed=$?" >> "$GITHUB_OUTPUT"
+          cat survivors.md | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the full report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: app/reports/mutation/
+          if-no-files-found: ignore
+
+      - name: Open or update the issue
+        if: steps.report.outputs.missed == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Mutation testing: breaks the tests missed"
+          body="$(cat survivors.md)
+
+          From $RUN (the full report is attached to the run)."
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
+
+      - name: Open an issue if the run itself failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Nightly mutation run failed"
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $RUN"
+          else
+            gh issue create --title "$title" --body "The nightly mutation run didn't finish: $RUN."
           fi

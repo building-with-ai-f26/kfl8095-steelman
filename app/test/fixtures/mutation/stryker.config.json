@@ -1,0 +1,11 @@
+{
+  "testRunner": "vitest",
+  "vitest": { "configFile": "vitest.config.ts" },
+  "coverageAnalysis": "perTest",
+  "mutate": ["planted.ts"],
+  "reporters": ["json"],
+  "jsonReporter": { "fileName": "reports/mutation.json" },
+  "concurrency": 2,
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": "always"
+}

@@ -13,6 +13,7 @@ Run these in `app/`. You need Node 22.
 | `npm run check` | Everything a pull request must pass: types, lint, every test, and the browser tests. After the two installs above, needs no network, no accounts, and no Docker |
 | `npm run test:browser` | Only the browser tests (`e2e/`) |
 | `npm run test:soak` | The nightly soak run: 30 voters for 5 minutes against a running service, then a recount (`server/test/soak/`). `SOAK_VOTERS`, `SOAK_SECONDS`, `SOAK_SEED` change it |
+| `npm run test:mutation` | The nightly mutation run (Stryker): small deliberate breaks in `shared/src/` and the write path, each run against the tests. Prints the score and every break no test noticed; the full report is in `reports/mutation/`. `npx tsx scripts/mutation/survivors-cli.ts` summarizes it. It starts one Postgres for the whole run (`scripts/mutation/run.ts`). About 10 minutes |
 | `npm run dev` | Runs the service (port 3000) and the web app (http://localhost:5173) |
 | `docker compose up -d db` | Starts the local development database. Tests don't use it; they start their own |
 | `npm run db:migrate`, then `npm run db:seed` | Brings the development database up to date, then adds the demo board at http://localhost:5173/b/demo-board-1 |
@@ -54,4 +55,4 @@ Two checks keep the tests honest (architecture §8, "Tests an agent can't quietl
 - **Protected files** (`scripts/guards/protected-files.ts`, run on every pull request by `.github/workflows/guards.yml`). It fails when a pull request edits, moves, deletes, or skips an existing test, replaces a saved screenshot, or changes the policy table, a merged migration, a CI workflow, or a plan. Marking a backlog item done and keeping `plans/features.csv` current don't count. The builder reads the list and adds the `builder-approved` label to let it pass; agents never add it. To see the list locally: `node scripts/guards/protected-files-cli.ts origin/main`.
 - **Every feature points at its tests** (`scripts/guards/feature-tests.ts`, run by `test/feature-tests.test.ts` in `npm run check`). Every feature of a milestone that has started, as the build plan's overview lists them, needs at least one test whose name carries its ID.
 
-The soak run (`npm run test:soak`) and a dependency audit run every night (`.github/workflows/nightly.yml`); a failure opens an issue.
+The soak run (`npm run test:soak`), a dependency audit, and the mutation run (`npm run test:mutation`) run every night (`.github/workflows/nightly.yml`); a failure opens an issue, and so does a break the tests missed. A `// Stryker disable` comment, or a change to what `stryker.config.json` mutates, is a protected change, like skipping a test.

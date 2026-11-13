@@ -946,6 +946,22 @@ The app's board screen (`app/web/`), in the prototype's own markup and CSS: the 
 | Feature-to-test | M0's features (B-01, B-02, B-03, B-05, M-02, M-01) each have a test named with the ID; a feature without one is reported |
 | Not checked | The guards and nightly workflows on GitHub (they run once merged: the nightly needs the default branch, and the `builder-approved` label doesn't exist yet). Mutation testing (architecture §8, nightly; not in M0) |
 
+## November 13 — Mutation testing (M1-1)
+
+`npm run test:mutation` (Stryker 10.1) makes small deliberate breaks in `app/shared/src/` and the server's write path (`write-path.ts`, `votes.ts`, `writing.ts`, `order.ts`) and runs the tests against each. A break no test notices is a hole in the tests. It runs every night as its own job in `.github/workflows/nightly.yml`, and the breaks it finds go into one open issue, kept current. `scripts/mutation/survivors.ts` turns Stryker's report into the score and that list.
+
+| Check | Observed result |
+| --- | --- |
+| A planted break the tests miss is reported | `app/test/mutation-run.test.ts` runs Stryker on a tiny planted project (`test/fixtures/mutation/`) whose test never tries the boundary: `age >= 18` → `age > 18` is listed as missed. Runs in `npm run check` (a few seconds) |
+| The report | Score counts killed and timed-out breaks out of those that ran; breaks that don't compile don't count; an empty report has no score. Each missed break shows its file, line, and change |
+| Full run on this branch (embedded Postgres, 4 runners) | 1,032 breaks in 9 min 47 s. Score **87.6%**: 904 caught, 97 ran past the tests, 31 in code no test reaches. Per file: `policy.ts` 81%, `sync.ts` 77%, `ids.ts` 71%, `writing.ts` 87%, `order.ts` (server) 85%; the rest 89–98% |
+| Fixed on the way: shared code wasn't mutated for the server's tests | Stryker works in a copy whose `node_modules` links back to the original, so `@steelman/shared` loaded the unchanged code: `policy.ts` and `api.ts` scored 0%. `vitest.mutation.config.ts` points it at the copy; `api.ts` went to 93–100% |
+| Fixed on the way: leaked databases | Stryker kills a runner whose tests hang on a break, which skipped its database cleanup. After about 40 such kills, macOS had no shared memory left and Postgres couldn't start, so half the breaks errored. The run now starts one Postgres for the whole run (`scripts/mutation/run.ts`) and every runner connects to it. Afterwards: no leftover shared memory or temp folders |
+| Left out: the simulation and soak tests | With them a run took 15 h 23 min (each break re-ran 300 random sequences). They are random, so their catches vary night to night; 57 breaks are caught only by them. They still run in `npm run check` |
+| Guards | The protected-files check flags a new `// Stryker disable` comment (in code or a new file) and a change to what `stryker.config.json` mutates; not the words quoted in a test, nor `Stryker restore`. The feature-to-test check now requires what the plan says is built: a finished milestone's features, and the features named in done items, so M1's list isn't required from its first item |
+| `SIMULATION_RUNS=50` | The simulation's own coverage checks fail at 50 runs (some refusals never come up), so the nightly leaves it at 300 |
+| Not checked | The nightly job on GitHub until it runs. Docker locally: Docker Desktop stopped responding during this work (`docker ps` hung), so local runs used the embedded Postgres. The 128 missed breaks are not yet fixed: the first nightly run lists them in an issue |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

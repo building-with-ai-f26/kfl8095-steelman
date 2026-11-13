@@ -3,5 +3,6 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["vitest.config.ts", "test"]
+  "include": ["vitest.config.ts", "vitest.mutation.config.ts", "test", "scripts"],
+  "exclude": ["**/.stryker-tmp", "**/reports"]
 }
