@@ -10,6 +10,7 @@
 
 import { createServer } from "node:net";
 import { test as base, expect } from "@playwright/test";
+import pg from "pg";
 import type { Page } from "@playwright/test";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import { buildApp } from "../../server/src/app.ts";
@@ -35,6 +36,8 @@ export interface SignInSite {
   codeFor(email: string): string;
   /** How many sign-in emails an address has been sent. */
   sentTo(email: string): number;
+  /** Ages every code waiting to be typed past its ten minutes. (Better Auth checks expiry on the real clock.) */
+  expireCodes(): Promise<void>;
   /** A new browser session, signed out, at this width. */
   browse(options?: { width?: number }): Promise<Page>;
   /** Every unexpected console error and uncaught exception so far. */
@@ -84,6 +87,15 @@ export const test = base.extend<{ site: SignInSite }>({
         return sent.code;
       },
       sentTo: (email) => outbox.filter((message) => message.to === email.toLowerCase()).length,
+      async expireCodes() {
+        const client = new pg.Client({ connectionString: databaseUrl.href });
+        await client.connect();
+        try {
+          await client.query("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%'");
+        } finally {
+          await client.end();
+        }
+      },
       async browse({ width = 1280 } = {}) {
         const context = await browser.newContext({ baseURL: origin, viewport: { width, height: 900 } });
         const page = await context.newPage();
@@ -108,12 +120,13 @@ export const test = base.extend<{ site: SignInSite }>({
 export { expect };
 
 /**
- * The browser logs every refused request, such as a wrong code (400) or one
- * email too many (429). Those are answers the sign-in screens expect, not
- * faults, so they aren't counted as errors.
+ * The browser logs every refused request, such as a wrong code (400), one
+ * email too many (429), or the service being down (503, as a test makes it).
+ * Those are answers the sign-in screens expect, not faults, so they aren't
+ * counted as errors.
  */
 function isRefusedSignIn(text: string, url: string): boolean {
-  return /Failed to load resource: the server responded with a status of 4\d\d/.test(text) && url.includes("/api/auth/");
+  return /Failed to load resource: the server responded with a status of [45]\d\d/.test(text) && url.includes("/api/auth/");
 }
 
 async function freePort(): Promise<number> {

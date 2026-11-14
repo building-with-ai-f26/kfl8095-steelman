@@ -29,12 +29,18 @@ const wrong = (code: string) => String((Number(code) + 1) % 1_000_000).padStart(
 
 test("L-01 Signed out, opening a board asks you to sign in first, and shows nothing of the board", async ({ site }) => {
   const page = await site.browse();
+  const asked: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname.startsWith("/api/boards")) asked.push(request.url());
+  });
   await page.goto(site.boardPath);
 
   await expect(heading(page)).toHaveText("Sign in");
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByText(QUESTION)).toHaveCount(0);
   await expect(page.getByText(WORDING)).toHaveCount(0);
+  // Nor did the page ask for it. (The API's own rule on who may read a board comes with roles, M1-5.)
+  expect(asked).toEqual([]);
 });
 
 test("L-01 By email: a code, then a username suggested from the email, then the board, where a vote counts", async ({ site }) => {
@@ -88,28 +94,63 @@ test("L-01 A wrong code says so, the fifth wrong try cancels it, and a new code 
   await expect(heading(page)).toHaveText("Choose a username");
 });
 
-test("L-01 Asking for a new code cancels the old one", async ({ site }) => {
+test("L-01 Asking for a new code cancels the old one, and the cursor stays in the code", async ({ site }) => {
   const page = await site.browse();
   await page.goto(site.boardPath);
   await askForCode(page, "kai@school.example.edu");
+  await expect(page.getByLabel("Code")).toBeFocused();
+  await expect(page.getByLabel("Code")).toHaveAccessibleDescription("We sent a code to kai@school.example.edu.");
   const old = site.codeFor("kai@school.example.edu");
   await page.getByRole("button", { name: "Send a new code" }).click();
   await expect(page.getByText("We sent a new code to kai@school.example.edu.")).toBeVisible();
+  await expect(page.getByLabel("Code")).toBeFocused();
 
   await typeCode(page, old);
   await expect(error(page)).toHaveText("That code isn’t right.");
 });
 
-test("L-01 An expired code says so", async ({ site }) => {
+test("L-01 An expired code says so, and keeps saying so until a new code is sent", async ({ site }) => {
   const page = await site.browse();
   await page.goto(site.boardPath);
   await askForCode(page, "ava@school.example.edu");
-  // Codes expire on Better Auth's clock, which is the real one (support/sign-in.ts), so this test answers for the
-  // service with the error it gives ten minutes on (server/test/api/sign-in.test.ts checks the service does).
-  await page.route("**/api/auth/sign-in/email-otp", (route) => route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ code: "OTP_EXPIRED", message: "OTP expired" }) }));
+  const code = site.codeFor("ava@school.example.edu");
+  await site.expireCodes();
 
-  await typeCode(page, site.codeFor("ava@school.example.edu"));
+  await typeCode(page, code);
   await expect(error(page)).toHaveText("That code has expired. Send a new code.");
+  // The service has now deleted it, so it would only say the code isn't right; the screen keeps saying why.
+  await typeCode(page, code);
+  await expect(error(page)).toHaveText("That code has expired. Send a new code.");
+
+  await page.getByRole("button", { name: "Send a new code" }).click();
+  await expect(page.getByText("We sent a new code to ava@school.example.edu.")).toBeVisible();
+  await typeCode(page, site.codeFor("ava@school.example.edu"));
+  await expect(heading(page)).toHaveText("Choose a username");
+});
+
+test("L-01 A code pasted with a space in it still signs in", async ({ site }) => {
+  const page = await site.browse();
+  await page.goto(site.boardPath);
+  await askForCode(page, "paste@school.example.edu");
+  const code = site.codeFor("paste@school.example.edu");
+
+  // Inserted in one go, as a paste is, so the field's own limits apply as they do to a paste.
+  await page.getByLabel("Code").focus();
+  await page.keyboard.insertText(`${code.slice(0, 3)} ${code.slice(3)}`);
+  await expect(page.getByLabel("Code")).toHaveValue(code);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(heading(page)).toHaveText("Choose a username");
+});
+
+test("L-01 If Steelman can't say who is signed in, the page says so instead of asking to sign in again", async ({ site }) => {
+  const page = await site.browse();
+  await page.route("**/api/auth/get-session", (route) => route.fulfill({ status: 503, body: "" }));
+  await page.goto(site.boardPath);
+  await expect(heading(page)).toHaveText("Couldn’t reach Steelman");
+
+  await page.unroute("**/api/auth/get-session");
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(heading(page)).toHaveText("Sign in");
 });
 
 test("L-01 Use a different email goes back, keeping what was typed", async ({ site }) => {
@@ -170,6 +211,28 @@ test("L-01 When Google refuses (an email it hasn't verified), you're back at Sig
   await expect(page.getByText("Google couldn’t confirm your email. Use a code instead.")).toBeVisible();
   await expect(page.getByLabel("Email")).toBeFocused();
   expect(new URL(page.url()).search).toBe("");
+});
+
+test("L-01 Cancelling at Google comes back to Sign in with no message", async ({ site }) => {
+  site.google.cancelNextSignIn();
+  const page = await site.browse();
+  await page.goto(site.boardPath);
+
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page).toHaveURL(`${site.origin}${site.boardPath}`);
+  await expect(heading(page)).toHaveText("Sign in");
+  await expect(page.locator(".sm-field-error")).toHaveCount(0);
+});
+
+test("L-01 When Google sign-in isn't available, it says so and points to the code", async ({ site }) => {
+  const page = await site.browse();
+  await page.goto(site.boardPath);
+  // As the service answers when it has no Google client (server/src/main.ts without GOOGLE_CLIENT_ID).
+  await page.route("**/api/auth/sign-in/social", (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ code: "PROVIDER_NOT_FOUND" }) }));
+
+  await page.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(page.getByText("Google sign-in isn’t available. Use a code instead.")).toBeVisible();
+  await expect(page.getByLabel("Email")).toBeFocused();
 });
 
 test("L-01 A username that's the wrong shape, reserved, or taken is refused; capitals become lower case", async ({ site }) => {

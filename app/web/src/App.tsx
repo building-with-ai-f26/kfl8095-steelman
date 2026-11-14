@@ -3,6 +3,7 @@ import { Board } from "./board/Board.tsx";
 import { Logo } from "./icons.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
 import type { Me } from "./signIn/account.ts";
+import { AuthCard } from "./signIn/AuthCard.tsx";
 import { ChooseUsername } from "./signIn/ChooseUsername.tsx";
 import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
@@ -37,7 +38,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
   );
 }
 
-type Who = { kind: "asking" } | { kind: "test user" } | { kind: "signed out" } | { kind: "signed in"; me: Me };
+type Who = { kind: "asking" } | { kind: "test user" } | { kind: "signed out" } | { kind: "signed in"; me: Me } | { kind: "unreachable" };
 
 /**
  * Draws the board only for someone signed in with a username (L-01). Signed
@@ -48,13 +49,23 @@ type Who = { kind: "asking" } | { kind: "test user" } | { kind: "signed out" } |
 function SignedIn({ children }: { children: React.ReactNode }) {
   const [who, setWho] = useState<Who>(() => (chosenTestUser() !== null ? { kind: "test user" } : { kind: "asking" }));
   const ask = useCallback(() => {
-    void whoIsSignedIn().then((me) => setWho(me ? { kind: "signed in", me } : { kind: "signed out" }));
+    void whoIsSignedIn().then((me) => setWho(me === "unreachable" ? { kind: "unreachable" } : me ? { kind: "signed in", me } : { kind: "signed out" }));
   }, []);
   useEffect(() => {
     if (who.kind === "asking") ask();
   }, [who.kind, ask]);
 
   if (who.kind === "asking") return null;
+  if (who.kind === "unreachable") {
+    return (
+      <AuthCard>
+        <h1 className="sm-auth-title sm-auth-signin">Couldn’t reach Steelman</h1>
+        <button type="button" className="sm-button sm-solid cursor-interaction" onClick={() => setWho({ kind: "asking" })}>
+          Try again
+        </button>
+      </AuthCard>
+    );
+  }
   if (who.kind === "signed out") return <SignIn onSignedIn={ask} />;
   if (who.kind === "signed in" && who.me.username === null) return <ChooseUsername email={who.me.email} onChosen={ask} />;
   return children;

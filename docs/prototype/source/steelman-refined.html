@@ -2860,7 +2860,7 @@
     const link=(action,label,key)=>`<button type="button" class="sm-link-button cursor-interaction" data-action="${action}" data-key="${key}">${label}</button>`;
     let body='';
     if(v.step==='code') body=`<h1 class="sm-auth-title sm-auth-signin">Check your email</h1><p class="sm-auth-text">${v.resent?'We sent a new code to':'We sent a code to'} <strong>${escape(v.email)}</strong>.</p>`
-      +`<label class="sm-field"><span>Code</span><span class="sm-code">${codeBoxes(v.typed)}<input id="sm-auth-code" class="sm-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" spellcheck="false" data-key="auth-code" value="${escape(v.typed||'')}" ${v.error?'aria-invalid="true" aria-describedby="sm-auth-error"':''}></span></label>${err}`
+      +`<label class="sm-field"><span>Code</span><span class="sm-code">${codeBoxes(v.typed)}<input id="sm-auth-code" class="sm-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" data-key="auth-code" value="${escape(v.typed||'')}" ${v.error?'aria-invalid="true" aria-describedby="sm-auth-error"':''}></span></label>${err}`
       +`<button type="button" class="sm-button sm-solid cursor-interaction" data-action="auth-code" data-key="auth-code-go" data-primary>Sign in</button>`
       +`<div class="sm-auth-links">${link('auth-resend','Send a new code','auth-resend')}${link('auth-restart','Use a different email','auth-restart')}</div>`
       +sim(`<span class="sm-auth-sim-note">The code is <b class="sm-code-shown">${v.code}</b>.</span>`,link('auth-expire','Wait 10 minutes','auth-expire'));

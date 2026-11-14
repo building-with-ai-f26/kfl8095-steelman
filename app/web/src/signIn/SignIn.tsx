@@ -38,7 +38,12 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   const [googleError, setGoogleError] = useState(() => googleErrorIn(window.location.search));
   const [resent, setResent] = useState(false);
   const [wrongTries, setWrongTries] = useState(0);
+  // Once a code has expired or been cancelled by wrong tries, the service deletes it and only says a code is wrong.
+  // The screen keeps saying why until a new code is sent.
+  const [codeGone, setCodeGone] = useState<"" | "expired" | "tooManyTries">("");
   const [busy, setBusy] = useState(false);
+  // Moves the cursor back to the field after something that changes neither the step nor the error (a new code).
+  const [refocus, setRefocus] = useState(0);
   const field = useRef<HTMLInputElement>(null);
 
   // Google's ?error=… has been read; the address goes back to the board's own.
@@ -53,7 +58,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   // Each step, and each error, puts the cursor where it's needed.
   useEffect(() => {
     field.current?.focus();
-  }, [step, error, googleError]);
+  }, [step, error, googleError, refocus]);
 
   const fail = (message: string) => {
     setError(message);
@@ -69,8 +74,10 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     setResent(again);
     setCode("");
     setWrongTries(0);
+    setCodeGone("");
     setError("");
     setBusy(false);
+    setRefocus((n) => n + 1);
   }
 
   function submitEmail(event: FormEvent) {
@@ -89,14 +96,17 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     setBusy(true);
     const answer = await signInWithCode(email, code);
     if (answer === "signed_in") return onSignedIn();
-    if (answer === "wrong") {
-      const tries = wrongTries + 1;
-      setWrongTries(tries);
-      return fail(tries >= WRONG_TRIES_ALLOWED ? MESSAGES.tooManyTries : MESSAGES.wrongCode);
+    if (answer === "failed") return fail(MESSAGES.unreachable);
+    const gone = answer === "expired" ? "expired" : answer === "too_many_tries" ? "tooManyTries" : codeGone;
+    if (gone) {
+      setCodeGone(gone);
+      return fail(MESSAGES[gone]);
     }
-    if (answer === "too_many_tries") return fail(MESSAGES.tooManyTries);
-    if (answer === "expired") return fail(MESSAGES.expired);
-    fail(MESSAGES.unreachable);
+    const tries = wrongTries + 1;
+    setWrongTries(tries);
+    if (tries < WRONG_TRIES_ALLOWED) return fail(MESSAGES.wrongCode);
+    setCodeGone("tooManyTries");
+    fail(MESSAGES.tooManyTries);
   }
 
   async function continueWithGoogle() {
@@ -118,7 +128,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
       <AuthCard>
         <form className="sm-auth-form" onSubmit={(event) => void submitCode(event)} noValidate>
           <h1 className="sm-auth-title sm-auth-signin">Check your email</h1>
-          <p className="sm-auth-text">
+          <p className="sm-auth-text" id="sm-auth-sent">
             {resent ? "We sent a new code to" : "We sent a code to"} <strong>{email.toLowerCase()}</strong>.
           </p>
           <label className="sm-field">
@@ -135,15 +145,14 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
                 type="text"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={6}
-                pattern="[0-9]{6}"
                 spellCheck={false}
                 value={code}
                 onChange={(event) => {
                   setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
                   setError("");
                 }}
-                {...invalid}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? "sm-auth-sent sm-auth-error" : "sm-auth-sent"}
               />
             </span>
           </label>
@@ -158,6 +167,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
             <button
               type="button"
               className="sm-link-button cursor-interaction"
+              disabled={busy}
               onClick={() => {
                 setStep("start");
                 setError("");

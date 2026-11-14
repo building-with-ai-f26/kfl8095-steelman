@@ -25,15 +25,20 @@ async function post(path: string, body: unknown): Promise<Reply | null> {
   }
 }
 
-/** Who this browser's session cookie signs in, or null. */
-export async function whoIsSignedIn(): Promise<Me | null> {
+/**
+ * Who this browser's session cookie signs in: null when no one is (or sign-in
+ * is off, which the service answers with 404), or "unreachable" when the
+ * service couldn't say, so a signed-in person isn't shown Sign in by mistake.
+ */
+export async function whoIsSignedIn(): Promise<Me | null | "unreachable"> {
   try {
     const response = await fetch("/api/auth/get-session");
-    if (!response.ok) return null;
+    if (response.status === 404) return null;
+    if (!response.ok) return "unreachable";
     const user = ((await response.json()) as { user?: { id: string; email: string; username?: string | null } } | null)?.user;
     return user ? { id: user.id, email: user.email, username: user.username ?? null } : null;
   } catch {
-    return null;
+    return "unreachable";
   }
 }
 
