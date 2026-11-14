@@ -17,7 +17,7 @@ import type * as ReadModule from "../../src/read.ts";
 import type * as VotesModule from "../../src/votes.ts";
 import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
-import { NOON, addAccount, seedBoard } from "../support/board.ts";
+import { NOON, addAccount, addMember, seedBoard } from "../support/board.ts";
 
 /** The server code under test. Normally the real modules; a planted-bug test hands in altered copies. */
 export interface ServerCode {
@@ -117,7 +117,9 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
   const clock: FakeClock = createFakeClock(new Date(NOON));
   const services = { db, clock };
   const b = await seedBoard(client, ids);
-  const people = [b.ana, b.ben, await addAccount(client, ids, "cy")];
+  const cy = await addAccount(client, ids, "cy");
+  await addMember(client, b.board, cy, "contributor");
+  const people = [b.ana, b.ben, cy];
   const options = [b.yes, b.no];
 
   const snapshot = async (person: string) => {

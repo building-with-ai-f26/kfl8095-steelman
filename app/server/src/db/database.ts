@@ -38,7 +38,13 @@ export interface Database {
     closed_at: Date | null;
     tick_seconds: Generated<number>;
     last_seq: ColumnType<string, never, never>;
+    /** "invited" or "link" (migration 0008). */
+    general_access: Generated<string>;
+    /** The role the link gives: "voter" or "contributor". */
+    link_role: Generated<string>;
   };
+  /** A person's role on a board, and whether they came by the link or were added by name (migration 0008). */
+  board_member: { board_id: string; account_id: string; role: string; joined_via: string; joined_at: Date };
   option: { id: string; board_id: string; name: string; position: number; created_at: Date; deleted_at: Date | null; changed_seq: BigIntColumn };
   argument: {
     id: string;

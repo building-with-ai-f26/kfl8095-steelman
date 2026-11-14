@@ -18,7 +18,7 @@ describe("the shape of the schema", () => {
   test("M-01: every table the plan lists exists", async () => {
     const tables = await db.client.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
 
-    expect(tables.rows.map((row) => row.tablename)).toEqual(["account", "board", ...BOARD_TABLES].sort());
+    expect(tables.rows.map((row) => row.tablename)).toEqual(["account", "board", "board_member", ...BOARD_TABLES].sort());
   });
 
   test("M-01: every table that belongs to a board carries board_id, tied to the board", async () => {

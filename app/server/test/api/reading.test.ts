@@ -16,8 +16,8 @@ beforeEach(async () => {
   b = await seedBoard(db.client, ids);
 });
 
-const snapshot = (as?: string) => api.get(`/api/boards/${b.board}`, { as });
-const changes = (after: number, as?: string) => api.get(`/api/boards/${b.board}/changes?after=${after}`, { as });
+const snapshot = (as: string = b.ana) => api.get(`/api/boards/${b.board}`, { as });
+const changes = (after: number, as: string = b.ana) => api.get(`/api/boards/${b.board}/changes?after=${after}`, { as });
 const vote = (who: string, value: 1 | -1) => api.put(`/api/boards/${b.board}/arguments/${b.argument}/importance`, { as: who, body: { value } });
 
 describe("the snapshot", () => {

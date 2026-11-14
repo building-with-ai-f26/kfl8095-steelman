@@ -9,7 +9,11 @@ export const NOON = "2026-11-16T12:00:00Z";
 
 export interface SeededBoard {
   board: string;
-  /** Two people. Ana wrote everything on the board. */
+  /**
+   * Two people. Ana wrote everything on the board and owns it; Ben was
+   * invited to contribute. The board is also open to anyone with the link,
+   * as a contributor, so anyone signed in with a confirmed email gets in.
+   */
   ana: string;
   ben: string;
   /** Two options, each with one argument, each with one wording at revision 1. */
@@ -49,11 +53,32 @@ export async function takeChangeNumber(client: pg.Client, board: string): Promis
   return result.rows[0].seq;
 }
 
-export async function addAccount(client: pg.Client, ids: IdSource, name: string): Promise<string> {
+/** An account. With `confirmed`, it has an email it has confirmed, as everyone who signs in does. */
+export async function addAccount(client: pg.Client, ids: IdSource, name: string, { confirmed = false } = {}): Promise<string> {
   const id = ids.itemId();
   // Usernames are unique, and one test file seeds many boards, so make each distinct.
-  await client.query("insert into account (id, username, created_at) values ($1, $2, $3)", [id, `${name}_${id.slice(0, 8)}`, NOON]);
+  const username = `${name}_${id.slice(0, 8)}`;
+  await client.query("insert into account (id, username, email, email_verified, created_at) values ($1, $2, $3, $4, $5)", [
+    id,
+    username,
+    confirmed ? `${username}@example.test` : null,
+    confirmed,
+    NOON,
+  ]);
   return id;
+}
+
+export type MemberRole = "owner" | "contributor" | "voter";
+
+/** Makes someone a member of a board: invited by name, unless `via` says they came by the link. */
+export async function addMember(client: pg.Client, board: string, account: string, role: MemberRole, via: "invite" | "link" = "invite"): Promise<void> {
+  await client.query("insert into board_member (board_id, account_id, role, joined_via, joined_at) values ($1, $2, $3, $4, $5)", [
+    board,
+    account,
+    role,
+    via,
+    NOON,
+  ]);
 }
 
 export async function addArgument(
@@ -85,12 +110,12 @@ export async function seedBoard(client: pg.Client, ids: IdSource): Promise<Seede
   const ana = await addAccount(client, ids, "ana");
   const ben = await addAccount(client, ids, "ben");
   const board = ids.boardId();
-  await client.query("insert into board (id, question, created_by, created_at) values ($1, $2, $3, $4)", [
-    board,
-    "Should our library open on Sundays?",
-    ana,
-    NOON,
-  ]);
+  await client.query(
+    "insert into board (id, question, created_by, created_at, general_access, link_role) values ($1, $2, $3, $4, 'link', 'contributor')",
+    [board, "Should our library open on Sundays?", ana, NOON],
+  );
+  await addMember(client, board, ana, "owner");
+  await addMember(client, board, ben, "contributor");
 
   return write(client, board, async (seq) => {
     const yes = ids.itemId();

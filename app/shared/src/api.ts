@@ -5,6 +5,8 @@
 import { z } from "zod";
 import { contextInput, itemIdInput, wordingInput } from "./inputs.ts";
 import type { BoardOrder } from "./order.ts";
+import { LINK_ROLES } from "./policy.ts";
+import type { Role } from "./policy.ts";
 
 /** A vote: +1, -1, or null to withdraw it. */
 export const voteInput = z.strictObject({ value: z.union([z.literal(1), z.literal(-1), z.null()]) });
@@ -26,6 +28,14 @@ export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordin
 
 /** An edit names the revision it started from. */
 export const editInput = z.strictObject({ baseRev: z.number().int().min(1), wording: wordingInput, context: contextInput });
+
+/**
+ * Who can get in (H-02): only the people named on the board, or also anyone
+ * with the link, as the link's role. Both are always sent, so the link role
+ * is kept while the link is off.
+ */
+export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
+export type Access = z.infer<typeof accessInput>;
 
 /** "Changes after S": S is a change number the reader holds. */
 export const changesQuery = z.strictObject({ after: z.string().regex(/^\d+$/).transform(Number) });
@@ -123,9 +133,23 @@ export interface BoardChanges {
   log: LogRow[];
 }
 
+/**
+ * Sent with the snapshot and with every answer about changes: who can get in
+ * now, and the reader's own role now, since the owner can change either at
+ * any moment.
+ */
+export interface Standing {
+  access: Access;
+  role: Role;
+}
+
 /** Why the server refused a write. */
 export type RefusalReason =
   | "signed_out"
+  /** Signed in, but with no role on this board. */
+  | "no_access"
+  /** Their role on this board doesn't allow it. */
+  | "not_allowed"
   | "board_closed"
   | "not_author"
   | "test_users_off"

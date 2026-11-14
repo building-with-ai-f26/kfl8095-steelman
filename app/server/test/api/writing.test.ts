@@ -19,7 +19,7 @@ beforeEach(async () => {
 });
 
 const boardSeq = async () => Number((await db.client.query("select last_seq from board where id = $1", [b.board])).rows[0].last_seq);
-const snapshot = async (as?: string) => (await api.get(`/api/boards/${b.board}`, { as })).body;
+const snapshot = async (as: string = b.ana) => (await api.get(`/api/boards/${b.board}`, { as })).body;
 const version = async (id: string, as?: string) => (await snapshot(as)).versions.find((v: { id: string }) => v.id === id);
 const argument = async (id: string) => (await snapshot()).arguments.find((a: { id: string }) => a.id === id);
 
@@ -126,7 +126,7 @@ describe("editing your own wording", () => {
   test("A-06: the edit is in the change log, by ID, with no text", async () => {
     const { body } = await edit(b.ana, b.version, { baseRev: 1, wording: "Sharper." });
 
-    const log = (await api.get(`/api/boards/${b.board}/changes?after=${body.seq - 1}`)).body.log;
+    const log = (await api.get(`/api/boards/${b.board}/changes?after=${body.seq - 1}`, { as: b.ana })).body.log;
     expect(log).toEqual([expect.objectContaining({ seq: body.seq, kind: "version_edited", subjectKind: "version", subjectId: b.version })]);
   });
 
@@ -184,7 +184,7 @@ describe("deleting your own wording", () => {
   test("A-06: the deletion is in the change log", async () => {
     const { body } = await remove(b.ana, b.version);
 
-    const log = (await api.get(`/api/boards/${b.board}/changes?after=${body.seq - 1}`)).body.log;
+    const log = (await api.get(`/api/boards/${b.board}/changes?after=${body.seq - 1}`, { as: b.ana })).body.log;
     expect(log).toEqual([expect.objectContaining({ kind: "version_deleted", subjectId: b.version })]);
   });
 

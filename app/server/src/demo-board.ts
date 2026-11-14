@@ -1,7 +1,7 @@
 // A demo board to open with `npm run dev`, and the board the browser tests
-// start from. People, the board, and its options go straight into the
-// database, because nothing in M0 creates them; everything after that goes
-// through the same service functions the API uses.
+// start from. People, the board, its members, and its options go straight
+// into the database, because nothing creates them yet (M1-6); everything
+// after that goes through the same service functions the API uses.
 
 import { sql } from "kysely";
 import type { Clock, IdSource } from "@steelman/shared";
@@ -56,7 +56,23 @@ export async function seedDemoBoard(db: Db, clock: Clock, ids: IdSource): Promis
 
   await db.transaction().execute(async (trx) => {
     await trx.insertInto("account").values(DEMO_PEOPLE.map((name) => ({ id: people[name], username: name, created_at: clock.now() }))).execute();
-    await trx.insertInto("board").values({ id: DEMO_BOARD, question: "Should our library open on Sundays?", created_by: people["maya.chen"], created_at: clock.now() }).execute();
+    // Open to anyone with the link, so anyone who signs in can take part. Maya owns it; the other test people were invited to contribute.
+    await trx
+      .insertInto("board")
+      .values({ id: DEMO_BOARD, question: "Should our library open on Sundays?", created_by: people["maya.chen"], created_at: clock.now(), general_access: "link", link_role: "contributor" })
+      .execute();
+    await trx
+      .insertInto("board_member")
+      .values(
+        DEMO_PEOPLE.map((name) => ({
+          board_id: DEMO_BOARD,
+          account_id: people[name],
+          role: name === "maya.chen" ? "owner" : "contributor",
+          joined_via: "invite",
+          joined_at: clock.now(),
+        })),
+      )
+      .execute();
     const seq = Number((await sql<{ seq: string }>`select take_change_number(${DEMO_BOARD}) as seq`.execute(trx)).rows[0]!.seq);
     await trx
       .insertInto("option")
