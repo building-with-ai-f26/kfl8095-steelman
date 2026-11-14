@@ -66,7 +66,8 @@ describe("changes after S", () => {
     const { status, body } = await changes(seq);
 
     expect(status).toBe(200);
-    expect(body).toEqual({ seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [] });
+    // The board's access and the reader's role come with every answer (M1-5); nothing else does.
+    expect(body).toEqual({ seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [], access: { general: "link", linkRole: "contributor" }, role: "owner" });
   });
 
   test("M-02: after a vote, only the row it changed comes back, as it is now", async () => {

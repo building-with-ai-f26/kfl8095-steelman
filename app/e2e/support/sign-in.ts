@@ -123,10 +123,12 @@ export { expect };
  * The browser logs every refused request, such as a wrong code (400), one
  * email too many (429), or the service being down (503, as a test makes it).
  * Those are answers the sign-in screens expect, not faults, so they aren't
- * counted as errors.
+ * counted as errors. So is a board refusing someone whose access has just
+ * ended (403), which the board screen expects too.
  */
 function isRefusedSignIn(text: string, url: string): boolean {
-  return /Failed to load resource: the server responded with a status of [45]\d\d/.test(text) && url.includes("/api/auth/");
+  const refused = (status: string) => new RegExp(`Failed to load resource: the server responded with a status of ${status}`).test(text);
+  return (refused("[45]\\d\\d") && url.includes("/api/auth/")) || (refused("403") && url.includes("/api/boards/"));
 }
 
 async function freePort(): Promise<number> {

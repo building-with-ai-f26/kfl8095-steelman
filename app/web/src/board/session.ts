@@ -5,9 +5,9 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
-import type { QueuedAction, ReaderView } from "@steelman/shared";
-import { Unreachable, readBoard, readChanges, send } from "../api.ts";
-import type { Answer } from "../api.ts";
+import type { Access, BoardSnapshot, QueuedAction, ReaderView, Role, Standing } from "@steelman/shared";
+import { Unreachable, readBoard, readChanges, send, setAccess } from "../api.ts";
+import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
 export const POLL_MS = 3_000;
@@ -18,7 +18,8 @@ const HIDDEN_POLLS = 20;
 const BACK_ONLINE_MS = 4_000;
 
 export interface SessionState {
-  phase: "loading" | "missing" | "ready";
+  /** Ready, or why the board can't be shown: no such board, no access to it, or signed out. */
+  phase: "loading" | Closed | "ready";
   view: ReaderView | null;
   /** The board's question, as it was when the board opened. */
   question: string;
@@ -31,10 +32,24 @@ export interface SessionState {
   mine: readonly QueuedAction[];
   /** What the board last said, for the live region. */
   status: string;
+  /** Who can get in, and the reader's own role, as the service last said. */
+  access: Access | null;
+  role: Role | null;
 }
 
 export class BoardSession {
-  private state: SessionState = { phase: "loading", view: null, question: "", waiting: 0, offline: false, backOnline: null, mine: [], status: "" };
+  private state: SessionState = {
+    phase: "loading",
+    view: null,
+    question: "",
+    waiting: 0,
+    offline: false,
+    backOnline: null,
+    mine: [],
+    status: "",
+    access: null,
+    role: null,
+  };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
   /** Sent, and waiting for the next answer to "changes after S" to show them. */
@@ -79,14 +94,23 @@ export class BoardSession {
     try {
       const snapshot = await readBoard(this.board);
       if (this.stopped) return;
-      if (!snapshot) return this.set({ phase: "missing" });
-      this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question });
+      if (!this.opened(snapshot)) return;
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
       // Opened while offline: try again on the next poll.
       this.set({ offline: true });
     }
     this.schedulePoll();
+  }
+
+  /** Shows the board just read, or why it can't be. Returns whether it's showing. */
+  private opened(snapshot: (BoardSnapshot & Standing) | Closed): boolean {
+    if (typeof snapshot === "string") {
+      this.set({ phase: snapshot, view: null });
+      return false;
+    }
+    this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question, access: snapshot.access, role: snapshot.role });
+    return true;
   }
 
   stop(): void {
@@ -115,6 +139,25 @@ export class BoardSession {
 
   announce(status: string): void {
     this.set({ status });
+  }
+
+  /** The owner changes who can get in. It shows at once, and goes back if the service refuses or can't be reached. */
+  async share(access: Access): Promise<void> {
+    const before = this.state.access;
+    this.set({ access });
+    const status = access.general === "link" ? `Anyone with the link can ${access.linkRole === "voter" ? "vote" : "contribute"}.` : "Only invited people can open it.";
+    let answer: Answer;
+    try {
+      answer = await setAccess(this.board, access);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return this.set({ access: before, status: "Couldn’t reach Steelman. Try again." });
+    }
+    if (answer.status === "done" || answer.status === "already_done") {
+      this.announce(status);
+      return this.poll();
+    }
+    this.set({ access: before, status: refusalNote(answer) });
   }
 
   pillCount(): number {
@@ -152,7 +195,8 @@ export class BoardSession {
   // ── Polling ──
   private schedulePoll(): void {
     window.clearTimeout(this.pollTimer);
-    if (this.stopped) return;
+    // A board that can't be shown has nothing to ask about.
+    if (this.stopped || (this.state.phase !== "ready" && this.state.phase !== "loading")) return;
     const hidden = document.visibilityState === "hidden";
     if (hidden && ++this.hiddenPolls > HIDDEN_POLLS) return;
     this.pollTimer = window.setTimeout(() => void this.poll(), hidden ? HIDDEN_POLL_MS : POLL_MS);
@@ -163,13 +207,13 @@ export class BoardSession {
     window.clearTimeout(this.pollTimer);
     try {
       if (this.state.phase === "loading") {
-        const snapshot = await readBoard(this.board);
-        if (!snapshot) return this.set({ phase: "missing" });
-        this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question });
+        if (!this.opened(await readBoard(this.board))) return;
       } else if (this.state.view) {
         const changes = await readChanges(this.board, this.state.view.seq);
+        // Access can end while the board is open: the owner turned the link off.
+        if (typeof changes === "string") return this.set({ phase: changes, view: null });
         this.sent = [];
-        this.set({ view: receive(this.state.view, changes) });
+        this.set({ view: receive(this.state.view, changes), access: changes.access, role: changes.role });
         this.mineChanged();
       }
       if (this.state.offline) this.cameOnline();
@@ -225,6 +269,10 @@ function refusalNote(answer: Answer): string {
         return "This wording changed while you were away. Take another look.";
       case "board_closed":
         return "This board closed while you were away.";
+      case "not_allowed":
+        return "Your role on this board doesn’t allow that.";
+      case "no_access":
+        return "You no longer have access to this board.";
       default:
         return "1 action couldn't be sent.";
     }
