@@ -40,6 +40,11 @@ export function chooseDatabase(options: { requested: string | undefined; dockerR
 
 export async function startPostgres(): Promise<RunningPostgres> {
   const requested = process.env.TEST_DATABASE;
+  // One Postgres already started for a whole run (the mutation run,
+  // scripts/mutation/run.ts): use it, and leave stopping it to whoever
+  // started it.
+  const existing = process.env.TEST_DATABASE_URL;
+  if (existing) return { kind: requested === "docker" ? "docker" : "embedded", url: existing, stop: async () => {} };
   const kind = chooseDatabase({ requested, dockerRunning: await isDockerRunning() });
   if (kind === "embedded") return startEmbedded();
   try {
