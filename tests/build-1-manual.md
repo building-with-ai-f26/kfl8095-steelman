@@ -1045,6 +1045,19 @@ M1-6. The home page is now the New steelman sheet, from the prototype's, revised
 | Second reader | A fresh agent reviewed the pull request: nothing blocking. Fixed: the seed now finds test accounts whatever their capitals, and refuses (checking every name before writing) to write as a real account that has one of its usernames; Enter while an input method is composing no longer jumps out of the question (a test dispatching that Enter failed before the fix); the field an error is about is marked invalid and described by the message, which is announced again on each try; an answer the app can't read no longer leaves Create stuck; tests added for a board made Invited only refusing a confirmed stranger, for making a board over a real session (from another site, or before a username, refused), for being offline, and for the seed's two fixes. The builder decided making a board stays not safe to send twice, and `plans/architecture.md` ("Links and IDs") now says so. Left: a seed run that fails partway leaves that board half-made (start from a fresh database); option names aren't compared after Unicode normalization; the "Acting as" switch (development only) makes the top bar scroll sideways at 320 px |
 | Not checked | `npm run db:seed` against the builder's own database (the seed function is tested; the command around it isn't). A screen reader. Not built: question hints (F-02), drafts (F-03), spaces and their canvases in the sheet, collaboration rules. Sending Create twice (a lost answer and a retry) makes two boards |
 
+## November 14 — Product Page: how the app works, and the Build 2 log
+
+Checked by the coding agent in a browser at 1024 px and 375 px, served from `docs/` on `127.0.0.1:8000`. No feature changed.
+
+| Check | Observed result |
+| --- | --- |
+| App screenshot | `docs/assets/app-vote.jpg` is the app from `npm run dev` on `main` (after M1-6), board `example-0001`, acting as the test account `dev_tester`. Pressing "More important if true" on the first argument sent `PUT /api/boards/example-0001/arguments/…/importance` with `{"value":1}`; the service answered 200 `{"status":"done","seq":135}` in 37 ms and the count read 12. The vote was withdrawn afterwards |
+| Architecture diagram | `docs/assets/architecture.svg` loads; it is the drawing from `plans/architecture-diagrams.html` with its styles inside. At 375 px it scrolls sideways inside its frame and the page doesn't; the link opens it at full size |
+| Build log | Build 2 entry (November 7–14) above Build 1's. Its counts come from `git log origin/main --since=2026-11-07T00:00` (89 commits without merges, on seven days), `gh pr list --state merged` (36), and M1-6's `npm run check` (461 tests, 54 browser tests) |
+| Page | No horizontal overflow at either width; no console errors |
+
+Not checked: the published page (this isn't merged yet). The screenshot shows the dev-only "Acting as" switch, not a real sign-in. The build log's hours are an estimate: the builder's 363 typed messages in the local Claude Code session files from November 7 to 14, grouped into sittings with gaps up to 20 minutes, come to 23.7 hours (31.1 with gaps up to 45 minutes). The costs are as the builder reported them.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

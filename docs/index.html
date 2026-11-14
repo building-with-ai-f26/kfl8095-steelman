@@ -80,10 +80,41 @@
           <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>AI acting on its own. AI suggests, clearly labeled; people decide, and can always override it.</p></article>
           <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>Money or incentives beyond simple points, like Reddit karma.</p></article>
         </div>
+
+        <h3 class="label">How the app works</h3>
+        <figure class="shot">
+          <a href="assets/app-vote.jpg"><img src="assets/app-vote.jpg" width="2160" height="1350" loading="lazy" alt="The Steelman app running on a laptop, on the board “Is open-weight AI a smart bet for China?”. The first argument’s importance arrow is pressed and its count reads 12."></a>
+          <figcaption><span>The app on a laptop: one importance vote, saved in Postgres</span><span><code>PUT /api/boards/…/importance</code> → 200 in 37 ms</span></figcaption>
+        </figure>
+        <figure class="shot diagram">
+          <a href="assets/architecture.svg" aria-label="Open the architecture diagram at full size"><img src="assets/architecture.svg" width="1480" height="740" loading="lazy" alt="Architecture: a React web app in the browser sends HTTPS requests to one Fastify service on Cloud Run, which handles sign-in, the board API, and background jobs, and stores everything in Postgres on Cloud SQL. Outside services: Google for sign-in, Resend for email, Stripe for AI credits, PostHog for analytics, and an AI model provider for evidence checks."></a>
+          <figcaption><span>The planned system</span><span>Built so far, on a laptop: web app, service, Postgres, Google sign-in</span></figcaption>
+        </figure>
       </section>
 
       <section class="block" id="build-log" aria-labelledby="log-title">
-        <div class="block-head"><h2 id="log-title">Build log</h2><span>November 5–6, 2026</span></div>
+        <div class="block-head"><h2 id="log-title">Build log</h2><span>Updated November 14, 2026</span></div>
+
+        <h3 class="label">Build 2 · November 7–14 · what was built</h3>
+        <dl class="card log">
+          <div><dt>Nov 7</dt><dd><strong>The prototype becomes editable.</strong> Design tokens and the honeycomb logo. The board saved as one document. Add an argument, comment, edit and delete your own wording with undo, add and remove evidence, move or split a wording, manage options.</dd></div>
+          <div><dt>Nov 9–10</dt><dd><strong>The prototype grows to the whole product.</strong> A list of steelmen, spaces, sharing, presence. Roles, a review queue, moderation, history, closing a board with a decision, and simulated AI evidence checks. Profiles, notifications, onboarding. A new example board. PostHog on this page and the prototype.</dd></div>
+          <div><dt>Nov 11</dt><dd><strong>Design pass, then the plan.</strong> An audit of all 89 features by tier, complexity, and design readiness. The hard cases designed in the prototype: holding the board still while others change it, sign-in, privacy and deletion, links, phones, accessibility. Then the architecture, six decision records, 26 open questions answered, the build plan, and the domain.</dd></div>
+          <div><dt>Nov 11–12</dt><dd><strong>The risky slice of the real app, in 8 pull requests.</strong> One command that runs every check. The voting and ordering rules. The database and what it must never allow. One path for every write. A simulation of random readers and writers. The board screen: two browsers share a board, votes update in place, the order holds still until you press Update, and actions queue while offline. A five-minute run of 30 scripted voters, then a recount.</dd></div>
+          <div><dt>Nov 13–14</dt><dd><strong>Toward one real group, in 6 pull requests.</strong> A nightly check that breaks the code on purpose to see whether the tests notice. Sign-in by emailed code and by Google, and its screens. Roles and link sharing. New steelman. Set up by hand: two Google Cloud projects, Google sign-in, the email sender, and GitHub’s merge rules.</dd></div>
+        </dl>
+
+        <h3 class="label">Build 2 · what it taught</h3>
+        <dl class="card log">
+          <div><dt>Learned</dt><dd>Tests written before the code let agents build unattended, one small pull request at a time. A second agent reading each pull request cold found real bugs every time, such as Enter jumping out of a field while typing Chinese. The simulation caught both bugs planted to test it. The database should hold only what must never break; small rules there make behavior hard to change. A browser can’t be trusted to know it’s offline, so the app learns it from failed requests.</dd></div>
+          <div><dt>Problems</dt><dd>The first break-the-code run took over 15 hours until the random tests were left out of it; it still found 128 breaks the tests missed. Leaked test databases used up the Mac’s shared memory. Docker stopped responding mid-run. Saved screenshots differ between macOS and Linux, so each one is kept twice and was retaken several times.</dd></div>
+          <div><dt>Limits</dt><dd>The app runs on a laptop only. Hosting on Google Cloud, sign-in emails, and analytics in the app are next; the AI evidence check comes later. No classmate has used the app yet.</dd></div>
+          <div><dt>Size</dt><dd>89 commits on seven days and 36 merged pull requests. About 6,100 lines of app code and 7,800 lines of tests: 461 tests and 54 browser tests.</dd></div>
+          <div><dt>Time</dt><dd>About 24 hours on seven days, counted from the timestamps of my 363 messages to the coding agent.</dd></div>
+          <div><dt>Cost</dt><dd>$10 for the domain. Claude’s $20-a-month plan, about half of this week’s allowance. No hosting or API spend yet.</dd></div>
+        </dl>
+
+        <h3 class="label">Build 1 · November 5–6</h3>
         <dl class="card log">
           <div><dt>Built</dt><dd>Working card comparisons, evidence views, voting, and suggested versions.</dd></div>
           <div><dt>Learned</dt><dd>The exported prototype saves changes in the browser, including after a refresh.</dd></div>
