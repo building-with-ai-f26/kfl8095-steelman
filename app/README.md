@@ -44,6 +44,12 @@ Set `TEST_DATABASE=docker` or `TEST_DATABASE=embedded` to choose one yourself.
 
 Saved screenshots are in `e2e/screenshots/`, one set per system (fonts render differently on each). A run never replaces one. To add the set for a new system on purpose: `npx playwright test --update-snapshots=missing`. In CI a missing one is written and kept with the run's results, to review and commit.
 
+## Signing in
+
+`server/src/sign-in.ts` signs people in with a 6-digit code sent by email, through Better Auth, and a username they pick once. Under `npm run dev` the code is printed in the terminal, not sent; set `BETTER_AUTH_SECRET` in `.env` to keep sessions across restarts (see `.env.example`). Until there are sign-in screens (M1-4), the board screen still uses the test-user switch. A deployed service runs without sign-in until it can send email (M1-14).
+
+Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock.
+
 ## The board screen
 
 `web/` reuses the prototype's look as it is: `import "virtual:prototype.css"` (`web/vite.config.ts`) is the stylesheet of `../docs/prototype/source/steelman-refined.html`, with `../docs/design/tokens.css` put in. The few additions are in `web/src/app.css`. What's on screen is decided by the shared rules (`openView`, `receive`, `pressUpdate`, `pillCount`, `enqueue`); `web/src/board/session.ts` only runs them at the right moments: on opening, every 3 s, after each write, and on Update.
