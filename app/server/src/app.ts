@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, RefusalReason, Role } from "@steelman/shared";
-import { accessOf, recordLinkMember, entryTo } from "./access.ts";
+import { accessOf, entryTo, joinByLink } from "./access.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
@@ -147,14 +147,14 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
       return null;
     }
     const entry = await entryTo(db, boardId, person);
-    const refusal = can(person, entry.role, "read", { closed: board.closed_at !== null });
-    if (refusal || !entry.role) {
-      const reason = refusal ?? "no_access";
+    // Someone coming by the link is recorded as they open it, which checks the link again (joinByLink).
+    const role = entry.joiningByLink ? await joinByLink(db, clock, boardId, person!) : entry.role;
+    const reason = can(person, role, "read", { closed: board.closed_at !== null });
+    if (reason) {
       void reply.code(STATUS_FOR[reason]).send({ status: "refused", reason });
       return null;
     }
-    if (entry.joiningByLink) await recordLinkMember(db, clock, boardId, person!, entry.role);
-    return entry.role;
+    return role;
   }
 
   app.get<{ Params: { board: string } }>("/api/boards/:board", async (request, reply) => {

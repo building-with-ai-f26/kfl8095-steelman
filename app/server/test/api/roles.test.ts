@@ -148,11 +148,27 @@ describe("the role matrix", () => {
     }
   }
 
-  test("H-03: a refused reader is sent nothing of the board", async () => {
+  test("H-03: a refused reader is sent nothing of the board, by either way of reading it", async () => {
     for (const persona of ["signed out", "non-member"] as const) {
-      const { body } = await api.get(`/api/boards/${cast.b.board}`, { as: cast.person[persona] });
+      for (const url of [`/api/boards/${cast.b.board}`, `/api/boards/${cast.b.board}/changes?after=0`]) {
+        const { body } = await api.get(url, { as: cast.person[persona] });
 
-      expect(Object.keys(body).sort()).toEqual(["reason", "status"]);
+        expect(Object.keys(body).sort(), `${persona}: ${url}`).toEqual(["reason", "status"]);
+      }
+    }
+  });
+
+  test("H-03: on a closed board, every role may still read, and no one may write, the owner's sharing included", async () => {
+    await db.client.query("update board set closed_at = now() where id = $1", [cast.b.board]);
+
+    for (const persona of ["owner", "contributor", "voter"] as const) {
+      for (const action of ACTIONS) {
+        const { status, body } = await action.run(cast, cast.person[persona], persona);
+        const allowed = !action.write;
+        const least = expected(persona, action.least);
+        if (allowed) expect(status, `${persona}: ${action.name}`).toBe(200);
+        else expect(body.reason, `${persona}: ${action.name}`).toBe(least.status === 200 ? "board_closed" : "not_allowed");
+      }
     }
   });
 
@@ -248,6 +264,46 @@ describe("a board open to anyone with the link", () => {
 
     expect((await members(b.board)).map((m: { account_id: string }) => m.account_id)).not.toContain(visitor);
     expect((await api.get(`/api/boards/${b.board}`, { as: visitor })).status).toBe(200);
+  });
+
+  test("H-02: someone opening it just as the owner turns the link off isn't let in, or recorded, once it's off", async () => {
+    // The owner's change, made but not yet committed, as it is for a moment inside the service.
+    await db.client.query("begin");
+    await db.client.query("update board set general_access = 'invited' where id = $1", [b.board]);
+    await db.client.query("delete from board_member where board_id = $1 and joined_via = 'link'", [b.board]);
+    const opening = api.get(`/api/boards/${b.board}`, { as: visitor });
+    // Long enough for the read to reach the board, which still says "anyone with the link" to everyone else.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await db.client.query("commit");
+
+    const { status, body } = await opening;
+
+    expect(status).toBe(403);
+    expect(body.reason).toBe("no_access");
+    expect((await members(b.board)).map((m: { account_id: string }) => m.account_id)).not.toContain(visitor);
+  });
+
+  test("H-02: a deleted account gets nothing through the link", async () => {
+    await db.client.query("update account set deleted_at = now() where id = $1", [visitor]);
+
+    expect((await api.get(`/api/boards/${b.board}`, { as: visitor })).body.reason).toBe("no_access");
+    expect((await members(b.board)).map((m: { account_id: string }) => m.account_id)).not.toContain(visitor);
+  });
+
+  test("H-02: asking for changes is opening it too: a person who comes by the link is recorded then", async () => {
+    expect((await api.get(`/api/boards/${b.board}/changes?after=0`, { as: visitor })).status).toBe(200);
+
+    expect(await members(b.board)).toContainEqual({ account_id: visitor, role: "contributor", joined_via: "link" });
+  });
+
+  test("H-02: a role the service doesn't know gives no access, whether it's stored on the link or on a member", async () => {
+    await db.client.query("update board set link_role = 'owner' where id = $1", [b.board]);
+    expect((await api.get(`/api/boards/${b.board}`, { as: visitor })).body.reason).toBe("no_access");
+    await db.client.query("update board set link_role = 'editor' where id = $1", [b.board]);
+    expect((await api.get(`/api/boards/${b.board}`, { as: visitor })).body.reason).toBe("no_access");
+    await db.client.query("update board_member set role = 'admin' where board_id = $1 and account_id = $2", [b.board, b.ben]);
+    expect((await voteAs(b.ben)).body.reason).toBe("no_access");
+    expect((await members(b.board)).map((m: { account_id: string }) => m.account_id)).not.toContain(visitor);
   });
 
   test("H-02: changing the link role changes it for everyone who came by the link, and for no one invited", async () => {

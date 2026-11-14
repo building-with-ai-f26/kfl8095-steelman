@@ -52,6 +52,12 @@ Google is reached through standard OpenID Connect: the service reads Google's di
 
 Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock. It also turns off its own origin check when `NODE_ENV` is `test`; `sign-in.ts` turns it back on, so the tests run what's deployed.
 
+## Who can open a board
+
+Each board is open only to the people on it, or also to anyone with its link (`server/src/access.ts`). A person's role is their row in `board_member`: Owner, Contributor, or Voter. Failing that, on a board open to anyone with the link, someone signed in with a confirmed email gets the link's role, and the first time they open the board they're recorded as a member who came by the link. People who came by the link follow it: a new link role becomes theirs, and turning the link off removes them. The policy table in `shared/src/policy.ts` says the least role for each action, and `can()` is asked before every read and write. The owner changes access from the pill under the question (`web/src/board/Sharing.tsx`).
+
+The demo board is open to anyone with the link, as Contributor; `maya.chen` owns it, and the other test accounts are invited Contributors. A demo board made before migration 0008 is open only to its owner after `npm run db:migrate`: act as `maya.chen` and choose "Anyone with the link" under the question, or empty the database and run `npm run db:seed` again.
+
 ## The board screen
 
 `web/` reuses the prototype's look as it is: `import "virtual:prototype.css"` (`web/vite.config.ts`) is the stylesheet of `../docs/prototype/source/steelman-refined.html`, with `../docs/design/tokens.css` put in. The few additions are in `web/src/app.css`. What's on screen is decided by the shared rules (`openView`, `receive`, `pressUpdate`, `pillCount`, `enqueue`); `web/src/board/session.ts` only runs them at the right moments: on opening, every 3 s, after each write, and on Update.

@@ -60,6 +60,12 @@ export class BoardSession {
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
   private stopped = false;
+  /** The owner's access changes: whether one is being sent, the latest not yet sent, and what the service last accepted. */
+  private sharing = false;
+  private wanted: Access | null = null;
+  private accepted: Access | null = null;
+  /** Counts the owner's changes, so a poll that started before one doesn't put the old access back. */
+  private shareCount = 0;
 
   constructor(private readonly board: string) {}
 
@@ -141,23 +147,44 @@ export class BoardSession {
     this.set({ status });
   }
 
-  /** The owner changes who can get in. It shows at once, and goes back if the service refuses or can't be reached. */
+  /**
+   * The owner changes who can get in. It shows at once and is sent one change
+   * at a time, only the latest, so two quick changes can't arrive out of order.
+   * If the service refuses or can't be reached, it goes back to what the
+   * service last accepted.
+   */
   async share(access: Access): Promise<void> {
-    const before = this.state.access;
+    this.shareCount++;
+    if (!this.sharing) this.accepted = this.state.access;
+    this.wanted = access;
     this.set({ access });
-    const status = access.general === "link" ? `Anyone with the link can ${access.linkRole === "voter" ? "vote" : "contribute"}.` : "Only invited people can open it.";
-    let answer: Answer;
+    if (this.sharing) return;
+    this.sharing = true;
     try {
-      answer = await setAccess(this.board, access);
-    } catch (error) {
-      if (!(error instanceof Unreachable)) throw error;
-      return this.set({ access: before, status: "Couldn’t reach Steelman. Try again." });
+      while (this.wanted) {
+        const next = this.wanted;
+        this.wanted = null;
+        let answer: Answer;
+        try {
+          answer = await setAccess(this.board, next);
+        } catch (error) {
+          if (!(error instanceof Unreachable)) throw error;
+          return this.stopSharing("Couldn’t reach Steelman. Try again.");
+        }
+        if (answer.status !== "done" && answer.status !== "already_done") return this.stopSharing(refusalNote(answer));
+        this.accepted = next;
+      }
+    } finally {
+      this.sharing = false;
     }
-    if (answer.status === "done" || answer.status === "already_done") {
-      this.announce(status);
-      return this.poll();
-    }
-    this.set({ access: before, status: refusalNote(answer) });
+    const now = this.accepted!;
+    this.announce(now.general === "link" ? `Anyone with the link can ${now.linkRole === "voter" ? "vote" : "contribute"}.` : "Only invited people can open it.");
+    await this.poll();
+  }
+
+  private stopSharing(status: string): void {
+    this.wanted = null;
+    this.set({ access: this.accepted, status });
   }
 
   pillCount(): number {
@@ -209,11 +236,13 @@ export class BoardSession {
       if (this.state.phase === "loading") {
         if (!this.opened(await readBoard(this.board))) return;
       } else if (this.state.view) {
+        const shares = this.shareCount;
         const changes = await readChanges(this.board, this.state.view.seq);
         // Access can end while the board is open: the owner turned the link off.
         if (typeof changes === "string") return this.set({ phase: changes, view: null });
         this.sent = [];
-        this.set({ view: receive(this.state.view, changes), access: changes.access, role: changes.role });
+        const accessSettled = !this.sharing && shares === this.shareCount;
+        this.set({ view: receive(this.state.view, changes), role: changes.role, ...(accessSettled ? { access: changes.access } : {}) });
         this.mineChanged();
       }
       if (this.state.offline) this.cameOnline();

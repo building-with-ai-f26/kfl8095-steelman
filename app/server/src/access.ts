@@ -10,8 +10,9 @@
 // them. People added by name (the owner, and invited people later) keep
 // their role whatever the link does.
 
+import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { ROLES } from "@steelman/shared";
+import { LINK_ROLES, ROLES } from "@steelman/shared";
 import type { Access, Clock, Role } from "@steelman/shared";
 import type { Database } from "./db/database.ts";
 
@@ -19,7 +20,7 @@ type Reader = Kysely<Database>;
 
 export interface Entry {
   role: Role | null;
-  /** True when the role comes from the link and they aren't recorded as a member yet. */
+  /** True when the role comes from the link and they aren't recorded as a member yet (see joinByLink). */
   joiningByLink: boolean;
 }
 
@@ -50,13 +51,31 @@ export async function entryTo(db: Reader, boardId: string, person: string | null
   return role === "owner" ? NO_ROLE : { role, joiningByLink: role !== null };
 }
 
-/** Records someone who just opened the board by its link as a member. Opening it again changes nothing. */
-export async function recordLinkMember(db: Reader, clock: Clock, boardId: string, person: string, role: Role): Promise<void> {
-  await db
-    .insertInto("board_member")
-    .values({ board_id: boardId, account_id: person, role, joined_via: "link", joined_at: clock.now() })
-    .onConflict((conflict) => conflict.columns(["board_id", "account_id"]).doNothing())
-    .execute();
+/**
+ * Records someone opening the board by its link as a member, and returns
+ * their role, or null if the link no longer lets them in.
+ *
+ * It's one statement that holds the board's row while it checks, so it can't
+ * slip between the owner turning the link off (or changing its role) and the
+ * removal of the link's members that goes with it: if that change is under
+ * way, this waits for it, then checks the board as it is after it.
+ */
+export async function joinByLink(db: Reader, clock: Clock, boardId: string, person: string): Promise<Role | null> {
+  const joined = await sql<{ role: string }>`
+    insert into board_member (board_id, account_id, role, joined_via, joined_at)
+    select b.id, a.id, b.link_role, 'link', ${clock.now()}
+    from board b join account a on a.id = ${person}
+    where b.id = ${boardId}
+      and b.general_access = 'link'
+      and b.link_role = any(${[...LINK_ROLES]})
+      and a.email_verified and a.deleted_at is null
+    for share of b
+    on conflict (board_id, account_id) do nothing
+    returning role`.execute(db);
+  if (joined.rows[0]) return asRole(joined.rows[0].role);
+  // Nothing added: either another tab recorded them at the same moment, or the link no longer lets them in.
+  const member = await db.selectFrom("board_member").select("role").where("board_id", "=", boardId).where("account_id", "=", person).executeTakeFirst();
+  return member ? asRole(member.role) : null;
 }
 
 /** The board's general access and link role, as the API sends them. */

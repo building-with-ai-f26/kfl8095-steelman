@@ -30,8 +30,10 @@ export function Sharing({ access, role, session }: { access: Access; role: Role;
   useEffect(() => {
     if (!open) return;
     panel.current?.querySelector<HTMLElement>("select:not(:disabled), footer button")?.focus();
+    // Only while the cursor is in the panel or on the pill: Escape elsewhere belongs to whatever has the cursor.
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      const here = document.activeElement;
+      if (event.key === "Escape" && (panel.current?.contains(here) || pill.current === here)) close();
     };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
