@@ -60,6 +60,13 @@ describe("signing in with Google", () => {
     expect(await googleMethodsOf(user.id)).toEqual([{ provider: "google", provider_subject: googler.sub }]);
   });
 
+  test("L-01: asks Google only for who the person is and their email", async () => {
+    const signIn = await api.signInWithGoogle(newGoogler());
+    const asked = new URL(signIn.started.body.url as string);
+    expect(asked.origin).toBe(api.google.issuer);
+    expect(asked.searchParams.get("scope")?.split(" ").sort()).toEqual(["email", "openid"]);
+  });
+
   test("L-01: signing in with Google again is the same account", async () => {
     const googler = newGoogler();
     const first = await whoIsSignedIn((await api.signInWithGoogle(googler)).cookie);
@@ -168,6 +175,22 @@ describe("what Google sign-in refuses", () => {
     const signIn = await api.signInWithGoogle(newGoogler(), { callbackURL: "https://evil.example/" });
     expect(signIn.started.status).toBe(403);
     expect(signIn.finished).toBeUndefined();
+  });
+
+  test.each<[string, Record<string, unknown>]>([
+    ["more of the person's Google account", { scopes: ["profile", "https://www.googleapis.com/auth/drive"] }],
+    ["data of its own to keep until Google answers", { additionalData: { note: "x".repeat(10_000) } }],
+    ["something Steelman doesn't send", { loginHint: "someone@school.example.edu" }],
+  ])("L-01: a start that asks for %s", async (_why, extra) => {
+    const sessionsBefore = await sessionCount();
+    const kept = Number((await db.client.query("select count(*) from sign_in.sign_in_code")).rows[0].count);
+
+    const started = await api.request("POST", "/api/auth/sign-in/social", { body: { provider: "google", callbackURL: `${ORIGIN}/`, ...extra } });
+
+    expect(started.status).toBe(400);
+    expect(started.body?.url).toBeUndefined();
+    expect(Number((await db.client.query("select count(*) from sign_in.sign_in_code")).rows[0].count)).toBe(kept);
+    expect(await sessionCount()).toBe(sessionsBefore);
   });
 
   test("L-01: an ID token posted straight to the service, skipping the redirect", async () => {

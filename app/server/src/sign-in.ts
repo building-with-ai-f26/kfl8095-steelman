@@ -54,6 +54,9 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
   "GET /callback/google",
 ]);
 
+/** What a request to start a Google sign-in may carry: which provider, and where to send the browser afterwards. */
+const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackURL", "errorCallbackURL", "newUserCallbackURL"]);
+
 /** Where Google publishes its OpenID Connect endpoints and signing keys. */
 export const GOOGLE_DISCOVERY = "https://accounts.google.com/.well-known/openid-configuration";
 
@@ -142,11 +145,16 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
     onAPIError: { errorURL: `${origin}/` },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        // Better Auth also takes a Google ID token posted by the page itself.
-        // Steelman signs in with Google only through the redirect, whose ID
-        // token is bound to this sign-in by its nonce.
-        if (ctx.path === "/sign-in/social" && (ctx.body as { idToken?: unknown } | undefined)?.idToken !== undefined) {
-          throw new APIError("BAD_REQUEST", { code: "GOOGLE_BY_REDIRECT_ONLY", message: "Sign in with Google through its sign-in page." });
+        // Starting a Google sign-in takes only what Steelman's page sends.
+        // Better Auth would also take a Google ID token posted by the page
+        // (skipping the redirect, whose ID token is bound to this sign-in by
+        // its nonce), more Google scopes, and data of the page's own to keep
+        // in the database until Google answers.
+        if (ctx.path === "/sign-in/social") {
+          const fields = Object.keys((ctx.body as Record<string, unknown> | undefined) ?? {});
+          if (fields.some((field) => !GOOGLE_START_FIELDS.has(field))) {
+            throw new APIError("BAD_REQUEST", { code: "GOOGLE_START_FIELDS", message: "Start a Google sign-in with the provider and where to go afterwards, nothing else." });
+          }
         }
         if (ctx.path !== "/email-otp/send-verification-otp") return;
         const address = String((ctx.body as { email?: unknown } | undefined)?.email ?? "").toLowerCase();
@@ -230,10 +238,13 @@ function googleSignIn({ clientId, clientSecret, discoveryUrl = GOOGLE_DISCOVERY 
         requireIdTokenVerification: true,
         accountSubject: ({ profile }) => String(profile.id),
         async getUserInfo(tokens) {
-          const identity = tokens.idToken ? acceptGoogleIdentity(claimsOf(tokens.idToken)) : null;
+          const claims = tokens.idToken ? claimsOf(tokens.idToken) : {};
+          const identity = acceptGoogleIdentity(claims);
           if (!identity) return null;
           // Steelman keeps no name or picture from Google (architecture §7, "What we collect").
-          return { id: identity.sub, email: identity.email, emailVerified: true, name: "", image: undefined };
+          // emailVerified is Google's own claim, so Better Auth's check before
+          // joining accounts stays a second line behind acceptGoogleIdentity.
+          return { id: identity.sub, email: identity.email, emailVerified: claims.email_verified === true, name: "", image: undefined };
         },
       },
     ],
