@@ -12,7 +12,24 @@ import pg from "pg";
 type BigIntColumn = ColumnType<string, number | string, number | string>;
 
 export interface Database {
-  account: { id: string; username: string; created_at: Date; deleted_at: Date | null };
+  account: {
+    id: string;
+    /** Null until the person picks one, after their first sign-in. */
+    username: string | null;
+    email: ColumnType<string | null, string | null | undefined, string | null>;
+    email_verified: ColumnType<boolean, boolean | undefined, boolean>;
+    name: ColumnType<string, string | undefined, string>;
+    image: ColumnType<string | null, string | null | undefined, string | null>;
+    created_at: Date;
+    updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+    deleted_at: Date | null;
+  };
+  // Sign-in's own tables (migration 0007). Better Auth reads and writes
+  // these; the service's own code uses only sent_email.
+  "sign_in.session": { id: string; account_id: string; token: string; expires_at: Date; created_at: Date; updated_at: Date };
+  "sign_in.sign_in_method": { id: string; account_id: string; provider: string; provider_subject: string; created_at: Date; updated_at: Date };
+  "sign_in.sign_in_code": { id: string; identifier: string; value: string; expires_at: Date; created_at: Date; updated_at: Date };
+  "sign_in.sent_email": { address_hash: string; sent_at: Date };
   board: {
     id: string;
     question: string;

@@ -962,6 +962,25 @@ The app's board screen (`app/web/`), in the prototype's own markup and CSS: the 
 | `SIMULATION_RUNS=50` | The simulation's own coverage checks fail at 50 runs (some refusals never come up), so the nightly leaves it at 300 |
 | Not checked | The nightly job on GitHub until it runs. Docker locally: Docker Desktop stopped responding during this work (`docker ps` hung), so local runs used the embedded Postgres. The 128 missed breaks are not yet fixed: the first nightly run lists them in an issue |
 
+## November 13 — Sign-in by email code (L-01)
+
+The service signs people in with a 6-digit code sent by email, through Better Auth 1.7.14 (`app/server/src/sign-in.ts`): a session cookie, and a username picked once after the first sign-in. Tests keep emails in memory; `npm run dev` prints the code in the terminal; a deployed service runs without sign-in until it can send email (M1-14). No screens yet (M1-4).
+
+| Check | Observed result |
+| --- | --- |
+| A code | Six digits, emailed, signs the person in; works once; at 9 min 59 s it works, at 10 min 1 s it doesn't (test clock); four wrong tries then the right code works, five wrong tries cancel it; asking again cancels the old code; stored hashed |
+| Sign-in emails | Five to one address in an hour are sent; the sixth is refused (429) and not sent; another address isn't affected; an hour later it's allowed again. Counted in Postgres by a hash of the address |
+| Same person | The same address in other capitals signs in to the same account |
+| Session cookie | `HttpOnly`, `Secure` (the site is https), `SameSite=Lax`, 30 days. Unused for 30 days it ends; in use it's extended. Signing out deletes the session and the cookie stops working. No IP address or browser kept |
+| Usernames | None until picked; kept in lower case; taken in other capitals, too short, too long, a space, a symbol, and reserved names (`deleted_account`, `steelman`, `admin`, `moderator`…) are refused; once picked it doesn't change |
+| Writing | A vote is made as the signed-in person. Before picking a username: reading works, writing is refused (`needs_username`). A write with the cookie from another site, from http instead of https, or with no Origin is refused (`wrong_origin`). The test-user switch still works in development and tests, and is still refused in production |
+| Better Auth's other routes | Signing up with a password, deleting an account, changing email, password reset, listing sessions: 404. Only the five routes in `SIGN_IN_ROUTES` answer |
+| Logs | Through a whole sign-in, wrong code and too many emails included, nothing printed holds the address or the code |
+| Database | Sign-in's tables are in schema `sign_in` (session, sign_in_method, sign_in_code, sent_email); the service's role may add and delete their rows; a session needs a real account; one account per email whatever its capitals; an account can exist without a username or email |
+| `npm run dev` wiring (main.ts, development, embedded Postgres) | A code request answers 200 and the code is printed; signing in with it answers 200 and sets the cookie, not `Secure` over http. In production mode the same request answers 404 and the service says sign-in is off |
+| Decided with the builder (architecture Q26) | Better Auth keeps session tokens as they are, not hashed, and reads the system clock; the sign-in tests move Vitest's fake system time with the test clock |
+| Not checked | A real email (no sender until M1-14). Docker locally (Docker Desktop not responding; runs used the embedded Postgres). A real browser: there are no sign-in screens until M1-4 |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
