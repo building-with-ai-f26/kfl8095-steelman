@@ -1,8 +1,9 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
+import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newBoardInput, newWordingInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
+import { createBoard } from "./boards.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
@@ -134,6 +135,14 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
       users: await db.selectFrom("account").select(["id", "username"]).where("deleted_at", "is", null).orderBy("username").execute(),
     }));
   }
+
+  // A new board (F-01). Anyone signed in may make one; they become its Owner.
+  app.post("/api/boards", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = newBoardInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return { status: "done", board: await createBoard(db, clock, ids, request.person, body.data) };
+  });
 
   /**
    * Lets a reader in and returns their role, or answers why not and returns

@@ -16,7 +16,7 @@ Run these in `app/`. You need Node 22.
 | `npm run test:mutation` | The nightly mutation run (Stryker): small deliberate breaks in `shared/src/` and the write path, each run against the tests. Prints the score and every break no test noticed; the full report is in `reports/mutation/`. `npx tsx scripts/mutation/survivors-cli.ts` summarizes it. It starts one Postgres for the whole run (`scripts/mutation/run.ts`). About 10 minutes |
 | `npm run dev` | Runs the service (port 3000) and the web app (http://localhost:5173) |
 | `docker compose up -d db` | Starts the local development database. Tests don't use it; they start their own |
-| `npm run db:migrate`, then `npm run db:seed` | Brings the development database up to date, then adds the demo board at http://localhost:5173/b/demo-board-1 |
+| `npm run db:migrate`, then `npm run db:seed` | Brings the development database up to date, then adds the demo board at http://localhost:5173/b/demo-board-1 and the prototype's seven example boards at /b/example-0001 to /b/example-0007, with their people as test accounts (`server/src/example-boards.ts`). Safe to run again: boards already there are left alone. It refuses to run if you've signed in locally with one of its usernames (such as `maya.chen`) |
 
 ## The three parts
 
@@ -51,6 +51,10 @@ Saved screenshots are in `e2e/screenshots/`, one set per system (fonts render di
 Google is reached through standard OpenID Connect: the service reads Google's discovery document for its addresses and keys. The tests point the same code at a stand-in that runs inside them (`server/test/support/fake-google.ts`), so no test calls Google. A Google account and an email-code account with the same verified email are one account; Steelman keeps who the person is at Google, but not their Google name, picture, or tokens.
 
 Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock. It also turns off its own origin check when `NODE_ENV` is `test`; `sign-in.ts` turns it back on, so the tests run what's deployed.
+
+## New steelman
+
+The home page, http://localhost:5173/, is New steelman (`web/src/NewSteelman.tsx`): M1 has no list of boards, so people come back to a board by its link. A board's top bar has + New steelman. Creating a board (`POST /api/boards`, `server/src/boards.ts`) makes its maker the Owner and, unless they choose otherwise, opens it to anyone with the link as Contributor. The service chooses the board's ID (72 random bits), since the ID is the link.
 
 ## Who can open a board
 

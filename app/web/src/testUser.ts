@@ -9,8 +9,9 @@ export interface TestUser {
   username: string;
 }
 
+/** The test account this tab acts as, or null. Outside a browser (rendering in a test) there's none. */
 export function chosenTestUser(): string | null {
-  return sessionStorage.getItem(KEY);
+  return typeof sessionStorage === "undefined" ? null : sessionStorage.getItem(KEY);
 }
 
 export function chooseTestUser(id: string): void {
