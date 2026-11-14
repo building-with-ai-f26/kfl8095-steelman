@@ -46,9 +46,11 @@ Saved screenshots are in `e2e/screenshots/`, one set per system (fonts render di
 
 ## Signing in
 
-`server/src/sign-in.ts` signs people in with a 6-digit code sent by email, through Better Auth, and a username they pick once. Under `npm run dev` the code is printed in the terminal, not sent; set `BETTER_AUTH_SECRET` in `.env` to keep sessions across restarts (see `.env.example`). Until there are sign-in screens (M1-4), the board screen still uses the test-user switch. A deployed service runs without sign-in until it can send email (M1-14).
+`server/src/sign-in.ts` signs people in through Better Auth, with a 6-digit code sent by email or with Google, and a username they pick once. Under `npm run dev` the code is printed in the terminal, not sent; set `BETTER_AUTH_SECRET` in `.env` to keep sessions across restarts (see `.env.example`). Google sign-in is on when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are both set; locally, use the staging OAuth client. Until there are sign-in screens (M1-4), the board screen still uses the test-user switch. A deployed service runs without sign-in until it can send email (M1-14).
 
-Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock.
+Google is reached through standard OpenID Connect: the service reads Google's discovery document for its addresses and keys. The tests point the same code at a stand-in that runs inside them (`server/test/support/fake-google.ts`), so no test calls Google. A Google account and an email-code account with the same verified email are one account; Steelman keeps who the person is at Google, but not their Google name, picture, or tokens.
+
+Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock. It also turns off its own origin check when `NODE_ENV` is `test`; `sign-in.ts` turns it back on, so the tests run what's deployed.
 
 ## The board screen
 

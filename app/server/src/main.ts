@@ -23,12 +23,23 @@ function signInFor(): AppDependencies["signIn"] {
       origin: process.env.APP_ORIGIN || "http://localhost:5173",
       secret: process.env.BETTER_AUTH_SECRET || throwawaySecret(),
       email: terminalEmail,
+      ...googleFor(),
     };
   }
   console.warn("Sign-in is off: no way to send email yet (M1-14).");
   return undefined;
 }
 const signIn = databaseUrl ? signInFor() : undefined;
+
+// Google sign-in, when both of its settings are there. Locally, the staging
+// OAuth client, which lists http://localhost:5173 (plans/build-plan.md, M1).
+function googleFor(): { google?: NonNullable<AppDependencies["signIn"]>["google"] } {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (clientId && clientSecret) return { google: { clientId, clientSecret } };
+  if (clientId || clientSecret) console.warn("Google sign-in is off: it needs both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.");
+  return {};
+}
 
 const app = buildApp({
   clock: systemClock,

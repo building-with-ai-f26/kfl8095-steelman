@@ -981,6 +981,24 @@ The service signs people in with a 6-digit code sent by email, through Better Au
 | Decided with the builder (architecture Q26) | Better Auth keeps session tokens as they are, not hashed, and reads the system clock; the sign-in tests move Vitest's fake system time with the test clock |
 | Not checked | A real email (no sender until M1-14). Docker locally (Docker Desktop not responding; runs used the embedded Postgres). A real browser: there are no sign-in screens until M1-4 |
 
+## November 14 — Google sign-in (L-01)
+
+The service signs people in with Google through OpenID Connect (`app/server/src/sign-in.ts`, Better Auth's generic OpenID Connect provider), reading Google's addresses and keys from its discovery document. The tests point the same code at a stand-in for Google running inside them (`app/server/test/support/fake-google.ts`): a discovery document, an authorization page, a token endpoint that checks the client secret, the code, the redirect address, and the PKCE proof, and the keys that sign its ID tokens. No screens yet (M1-4).
+
+| Check | Observed result |
+| --- | --- |
+| Signing in | A Google-verified email makes an account (no username yet), signs it in, and goes back to the page that asked; again, it's the same account, with one Google sign-in method |
+| One person | An email-code account, then Google with the same email in other capitals: one account, its username kept, a Google sign-in method added, and codes still work. Google first, then a code: one account |
+| What's kept | Google's ID for the person (`provider_subject`) and the email. Not the Google name or picture (the account's name stays empty, its image null) and none of Google's tokens. Only `openid` and `email` are asked for, and a start that asks for more scopes is refused. Nothing of the sign-in is left in `sign_in_code` afterwards |
+| Refused, with no session | An email Google hasn't verified (no account made; not joined to the account with that email). ID tokens signed by another key, made for another site, from another issuer, from another sign-in (nonce), or expired. Finishing in a browser that didn't start the sign-in (login forgery). Google's answer used a second time. A return address on another site (403 before Google). A start carrying anything but the provider and where to go afterwards: an ID token posted straight to the service, more Google scopes, data to keep until Google answers, a login hint (400, nothing stored). Each refusal lands back on our site with `?error=` |
+| The acceptance rule | Only `email_verified: true` exactly; `false`, missing, or the string `"true"` refuse. A missing, empty, or non-string `sub`, or an email without `@`, refuse |
+| Better Auth's other routes | Linking another provider, unlinking, listing accounts, Google's tokens, and a POST to the Google callback: 404 |
+| No call to Google | Every request the service made during the tests went to the stand-in |
+| Logs | Through Google sign-ins, refused ones included, nothing printed holds the email |
+| Better Auth's origin check | Better Auth turns its own origin and return-address checks off when `NODE_ENV` is `test`; `sign-in.ts` turns them on, so tests run what's deployed. The 27 email-code tests still pass with it on |
+| Second reader | A fresh agent reviewed the pull request against M1-3 and Better Auth's source: nothing blocking. Its findings were fixed here (the start's fields allowed, the scope tested, Google's own `email_verified` passed on) or listed below |
+| Not checked | Real Google: the staging client's secret stays with the builder, and there are no sign-in screens until M1-4. A school Google Workspace account (architecture §8: the builder's check). Whether Google's ID tokens name their issuer as `https://accounts.google.com`, the form its discovery document gives and the only one accepted; if they say `accounts.google.com`, every Google sign-in is refused (safely) until that's allowed. The first real sign-in on staging shows which |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
