@@ -1,7 +1,7 @@
 // Signing in (L-01; plans/architecture.md §7, decision 004), through Better
 // Auth: a 6-digit code emailed to the person and typed into the page that
-// asked for it; a session cookie; and a username picked once, after the first
-// sign-in. Google joins in M1-3.
+// asked for it; Google, through OpenID Connect; a session cookie; and a
+// username picked once, after the first sign-in.
 //
 // Everything Better Auth is told lives here, so what it does is in one file:
 // which of our tables and columns it uses, the code's rules, the cookie, and
@@ -17,7 +17,7 @@
 import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { emailOTP, username } from "better-auth/plugins";
+import { emailOTP, genericOAuth, username } from "better-auth/plugins";
 import type { Kysely } from "kysely";
 import { isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
@@ -30,6 +30,16 @@ export interface SignInDependencies {
   /** Signs the session cookie. From the environment, never from a file (AGENTS.md rule 5). */
   secret: string;
   email: EmailSender;
+  /** Google sign-in, when the service has a Google OAuth client. Without one, only email codes work. */
+  google?: GoogleClient;
+}
+
+export interface GoogleClient {
+  clientId: string;
+  /** From the environment, never from a file (AGENTS.md rule 5). */
+  clientSecret: string;
+  /** Where Google describes itself. Only the tests change it, to point at their stand-in. */
+  discoveryUrl?: string;
 }
 
 /** The Better Auth routes the service passes on, by method and path under /api/auth. */
@@ -39,7 +49,13 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
   "POST /update-user",
   "GET /get-session",
   "POST /sign-out",
+  // Google: the browser asks to start, and Google sends it back here.
+  "POST /sign-in/social",
+  "GET /callback/google",
 ]);
+
+/** Where Google publishes its OpenID Connect endpoints and signing keys. */
+export const GOOGLE_DISCOVERY = "https://accounts.google.com/.well-known/openid-configuration";
 
 /** The rules for codes and sessions (architecture §7). */
 const CODE_DIGITS = 6;
@@ -58,7 +74,7 @@ export interface SignedIn {
   username: string | null;
 }
 
-export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDependencies & { db: Db; clock: Clock; ids: IdSource }) {
+export function createSignIn({ db, clock, ids, origin, secret, email, google }: SignInDependencies & { db: Db; clock: Clock; ids: IdSource }) {
   const auth = betterAuth({
     appName: "Steelman",
     baseURL: origin,
@@ -81,6 +97,11 @@ export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDe
     account: {
       modelName: "sign_in.sign_in_method",
       fields: { userId: "account_id", providerId: "provider", accountId: "provider_subject", ...timestamps },
+      // A Google account joins the account with the same email, when both
+      // emails are verified (architecture §7): Better Auth's defaults, spelled out.
+      accountLinking: { enabled: true, requireLocalEmailVerified: true, updateUserInfoOnLink: false },
+      // Google's tokens aren't kept (see the hooks below), so there's nothing to refresh on each sign-in.
+      updateAccountOnSignIn: false,
     },
     verification: { modelName: "sign_in.sign_in_code", fields: { expiresAt: "expires_at", ...timestamps } },
     advanced: {
@@ -95,6 +116,10 @@ export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDe
       // Not kept: the session table has no place for them (architecture §7, "What we collect").
       ipAddress: { disableIpTracking: true },
       useSecureCookies: origin.startsWith("https://"),
+      // Better Auth's own check that a request, and any address it should send
+      // the browser to afterwards, is from our site. Better Auth turns it off
+      // when NODE_ENV is "test"; on here, so the tests run what's deployed.
+      disableOriginCheck: false,
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
     },
     databaseHooks: {
@@ -105,9 +130,24 @@ export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDe
           before: async (session) => ({ data: { ...session, userAgent: undefined, ipAddress: undefined } }),
         },
       },
+      // Better Auth would keep Google's tokens with the sign-in method. Steelman
+      // only needs to know who the person is at Google, so it keeps none.
+      account: {
+        create: { before: async (method) => ({ data: { ...method, ...NO_TOKENS } }) },
+        update: { before: async (method) => ({ data: { ...method, ...NO_TOKENS } }) },
+      },
     },
+    // Where a Google sign-in that fails sends the browser, with ?error=… added,
+    // unless the sign-in page asked for somewhere else.
+    onAPIError: { errorURL: `${origin}/` },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        // Better Auth also takes a Google ID token posted by the page itself.
+        // Steelman signs in with Google only through the redirect, whose ID
+        // token is bound to this sign-in by its nonce.
+        if (ctx.path === "/sign-in/social" && (ctx.body as { idToken?: unknown } | undefined)?.idToken !== undefined) {
+          throw new APIError("BAD_REQUEST", { code: "GOOGLE_BY_REDIRECT_ONLY", message: "Sign in with Google through its sign-in page." });
+        }
         if (ctx.path !== "/email-otp/send-verification-otp") return;
         const address = String((ctx.body as { email?: unknown } | undefined)?.email ?? "").toLowerCase();
         if (!(await mayEmail(db, clock, address))) {
@@ -136,6 +176,7 @@ export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDe
         displayUsername: false,
         immutableUsername: true,
       }),
+      ...(google ? [googleSignIn(google)] : []),
     ],
   });
 
@@ -154,6 +195,75 @@ export function createSignIn({ db, clock, ids, origin, secret, email }: SignInDe
 }
 
 export type SignIn = ReturnType<typeof createSignIn>;
+
+/** Every token field Better Auth has for a sign-in method, emptied. */
+const NO_TOKENS = {
+  accessToken: undefined,
+  refreshToken: undefined,
+  idToken: undefined,
+  accessTokenExpiresAt: undefined,
+  refreshTokenExpiresAt: undefined,
+  scope: undefined,
+  password: undefined,
+};
+
+/**
+ * Google through standard OpenID Connect: its endpoints and keys come from its
+ * discovery document, so the tests can point the same code at their stand-in.
+ * Better Auth checks the ID token before `getUserInfo` sees it: Google's
+ * signature, issuer, our client ID as its audience, its expiry, and the nonce
+ * that ties it to this sign-in.
+ */
+function googleSignIn({ clientId, clientSecret, discoveryUrl = GOOGLE_DISCOVERY }: GoogleClient) {
+  return genericOAuth({
+    config: [
+      {
+        providerId: "google",
+        name: "Google",
+        discoveryUrl,
+        clientId,
+        clientSecret,
+        // Who the person is and their email; not their Google profile.
+        scopes: ["openid", "email"],
+        pkce: true,
+        // Refuse to start if Google's keys can't be found to check the ID token.
+        requireIdTokenVerification: true,
+        accountSubject: ({ profile }) => String(profile.id),
+        async getUserInfo(tokens) {
+          const identity = tokens.idToken ? acceptGoogleIdentity(claimsOf(tokens.idToken)) : null;
+          if (!identity) return null;
+          // Steelman keeps no name or picture from Google (architecture §7, "What we collect").
+          return { id: identity.sub, email: identity.email, emailVerified: true, name: "", image: undefined };
+        },
+      },
+    ],
+  });
+}
+
+/** The claims in an ID token. Only after Better Auth has checked its signature. */
+function claimsOf(idToken: string): Record<string, unknown> {
+  try {
+    const claims: unknown = JSON.parse(Buffer.from(idToken.split(".")[1] ?? "", "base64url").toString("utf8"));
+    return claims && typeof claims === "object" ? (claims as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Whether Steelman accepts the person Google's ID token describes, and if so
+ * who they are: Google's ID for them (`sub`) and their email. Null refuses the
+ * sign-in, and Better Auth sends the browser back with an error.
+ */
+export function acceptGoogleIdentity(claims: Record<string, unknown>): { sub: string; email: string } | null {
+  const { sub, email, email_verified: verified } = claims;
+  // Only an email Google has verified (architecture §7). Strictly `true`: a
+  // claim that is missing, false, or anything else refuses.
+  if (verified !== true) return null;
+  // `sub` is who the person is at Google, for good; the email can change.
+  if (typeof sub !== "string" || sub === "" || typeof email !== "string" || !email.includes("@")) return null;
+  return { sub, email };
+}
 
 /** Counts this sign-in email against its address's limit, or says the limit is reached. */
 async function mayEmail(db: Db, clock: Clock, address: string): Promise<boolean> {
