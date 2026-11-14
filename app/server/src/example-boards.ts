@@ -11,6 +11,7 @@
 // each option's arguments keep the prototype's order. A wording's articulation
 // is half its score, the same way.
 
+import { sql } from "kysely";
 import type { Clock, IdSource } from "@steelman/shared";
 import { createBoard } from "./boards.ts";
 import type { Db } from "./db/database.ts";
@@ -158,17 +159,29 @@ export const EXAMPLE_PEOPLE: string[] = [
 
 /**
  * Adds the example boards and their people to a migrated database. A board
- * that's already there is left as it is, and an account with the same
+ * that's already there is left as it is, and a test account with the same
  * username is used rather than made again, so running it twice adds nothing.
+ * It stops, before writing anything, if a real account (one with an email)
+ * has one of its usernames. A run that fails partway leaves that board
+ * half-made, and a later run leaves it so: start from a fresh database.
  *
  * @returns The IDs of the boards it added.
  */
 export async function seedExampleBoards(db: Db, clock: Clock, ids: IdSource): Promise<string[]> {
   const person: Record<string, string> = {};
+  // Usernames are unique ignoring capitals, so look them up the same way. A test account has no email; one with
+  // an email is a real person who signed in and chose the name, and the seed never writes as them. All are
+  // checked before anything is written.
+  const found = new Map<string, { id: string; email: string | null }>();
   for (const name of EXAMPLE_PEOPLE) {
-    const found = await db.selectFrom("account").select("id").where("username", "=", name).executeTakeFirst();
-    person[name] = found?.id ?? ids.itemId();
-    if (!found) await db.insertInto("account").values({ id: person[name], username: name, created_at: clock.now() }).execute();
+    const account = await db.selectFrom("account").select(["id", "email"]).where(sql`lower(username)`, "=", name.toLowerCase()).executeTakeFirst();
+    if (account) found.set(name, account);
+  }
+  const taken = [...found].filter(([, account]) => account.email !== null).map(([name]) => name);
+  if (taken.length > 0) throw new Error(`The seed's usernames ${taken.join(", ")} belong to real accounts (with an email) here. Rename them, or use a fresh database.`);
+  for (const name of EXAMPLE_PEOPLE) {
+    person[name] = found.get(name)?.id ?? ids.itemId();
+    if (!found.has(name)) await db.insertInto("account").values({ id: person[name], username: name, created_at: clock.now() }).execute();
   }
 
   const services = { db, clock };

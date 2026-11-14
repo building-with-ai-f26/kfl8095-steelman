@@ -16,7 +16,7 @@ Run these in `app/`. You need Node 22.
 | `npm run test:mutation` | The nightly mutation run (Stryker): small deliberate breaks in `shared/src/` and the write path, each run against the tests. Prints the score and every break no test noticed; the full report is in `reports/mutation/`. `npx tsx scripts/mutation/survivors-cli.ts` summarizes it. It starts one Postgres for the whole run (`scripts/mutation/run.ts`). About 10 minutes |
 | `npm run dev` | Runs the service (port 3000) and the web app (http://localhost:5173) |
 | `docker compose up -d db` | Starts the local development database. Tests don't use it; they start their own |
-| `npm run db:migrate`, then `npm run db:seed` | Brings the development database up to date, then adds the demo board at http://localhost:5173/b/demo-board-1 and the prototype's seven example boards at /b/example-0001 to /b/example-0007, with their people as test accounts (`server/src/example-boards.ts`). Safe to run again: boards already there are left alone |
+| `npm run db:migrate`, then `npm run db:seed` | Brings the development database up to date, then adds the demo board at http://localhost:5173/b/demo-board-1 and the prototype's seven example boards at /b/example-0001 to /b/example-0007, with their people as test accounts (`server/src/example-boards.ts`). Safe to run again: boards already there are left alone. It refuses to run if you've signed in locally with one of its usernames (such as `maya.chen`) |
 
 ## The three parts
 

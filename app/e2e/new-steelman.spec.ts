@@ -49,6 +49,14 @@ test("F-01, H-02: making a board opens it, owned by its maker and open to anyone
   await expect(page.getByRole("combobox", { name: "General access" })).toBeEnabled();
 });
 
+test("F-01: Enter that accepts a word in an input method (Chinese, Japanese…) stays in the question", async ({ board }) => {
+  const page = await home(board);
+
+  await question(page).evaluate((field) => field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", isComposing: true, bubbles: true })));
+
+  await expect(question(page)).toBeFocused();
+});
+
 test("F-01: New steelman in the top bar of a board leads to the sheet", async ({ board }) => {
   const page = await board.open("lin.zhao");
 
@@ -101,6 +109,8 @@ test("F-01: the sheet says what's missing, and puts the cursor there", async ({ 
   await create(page).click();
   await expect(error).toHaveText("Write the question first.");
   await expect(question(page)).toBeFocused();
+  await expect(question(page)).toHaveAttribute("aria-invalid", "true");
+  await expect(question(page)).toHaveAttribute("aria-describedby", "sm-create-error");
 
   await question(page).fill("Should our school start an hour later?");
   await option(page, 1).fill("Start later");
@@ -112,6 +122,8 @@ test("F-01: the sheet says what's missing, and puts the cursor there", async ({ 
   await create(page).click();
   await expect(error).toHaveText("Each option needs a different name.");
   await expect(option(page, 2)).toBeFocused();
+  await expect(option(page, 2)).toHaveAttribute("aria-invalid", "true");
+  await expect(option(page, 1)).not.toHaveAttribute("aria-invalid", "true");
 
   // Typing clears the message; nothing was made.
   await option(page, 2).fill("Keep the time");
@@ -128,3 +140,35 @@ for (const size of SIZES) {
     await expect(page).toHaveScreenshot(`new-steelman-${size.name}.png`);
   });
 }
+
+async function fillIn(page: Page): Promise<void> {
+  await question(page).fill("Should our school start an hour later?");
+  await option(page, 1).fill("Start later");
+  await option(page, 2).fill("Keep the time");
+}
+
+test("F-01: offline, the sheet says so and keeps what was typed; once back, Create works", async ({ board }) => {
+  const page = await home(board);
+  await fillIn(page);
+  await page.route("**/api/boards", (route) => route.abort("internetdisconnected"));
+
+  await create(page).click();
+
+  await expect(page.getByRole("alert")).toHaveText("Couldn’t reach Steelman. Try again.");
+  await expect(create(page)).toBeEnabled();
+  await expect(question(page)).toHaveValue("Should our school start an hour later?");
+  await page.unroute("**/api/boards");
+  await create(page).click();
+  await expect(page).toHaveURL(/\/b\/[A-Za-z0-9_-]{12}$/);
+});
+
+test("F-01: an answer the app can't read doesn't leave Create stuck", async ({ board }) => {
+  const page = await home(board);
+  await fillIn(page);
+  await page.route("**/api/boards", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<html>Gateway</html>" }));
+
+  await create(page).click();
+
+  await expect(page.getByRole("alert")).toHaveText("Steelman couldn’t make that board. Try again.");
+  await expect(create(page)).toBeEnabled();
+});

@@ -59,3 +59,5 @@ body { margin:0; }
 #steelman-study .sm-rrow-icon { flex-direction:row; align-items:center; gap:10px; }
 #steelman-study .sm-rrow-icon svg { width:16px; height:16px; color:var(--sm-muted); flex:none; }
 #steelman-study .sm-later { flex:none; padding:2px 8px; border:1px solid var(--sm-line); border-radius:999px; font-size:11px; color:var(--sm-muted); }
+/* + New steelman is a link to the home page, drawn as the prototype's top-bar button: no link underline. */
+#steelman-study a.sm-share-button { text-decoration:none; }

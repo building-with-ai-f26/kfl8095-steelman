@@ -5,6 +5,7 @@ import { systemIds } from "../../src/system.ts";
 import { addAccount } from "../support/board.ts";
 import { useApi } from "../support/api.ts";
 import { useTestDatabase } from "../support/database.ts";
+import { useSignIn } from "../support/sign-in.ts";
 
 // New steelman (F-01, M1-6): a question and two to four options make a
 // board, its creator is its Owner, and, as the builder decided on Nov 14, a
@@ -63,6 +64,16 @@ describe("creating a board", () => {
     const { body } = await create({ question: QUESTION, options: ["Start later", "Keep the time"] });
     // A test account has no confirmed email, so the link doesn't let it in.
     const stranger = await addAccount(db.client, ids, "sol");
+
+    const { status, body: refused } = await api.get(`/api/boards/${body.board}`, { as: stranger });
+
+    expect(status).toBe(403);
+    expect(refused.reason).toBe("no_access");
+  });
+
+  test("F-01, H-02: a board made Invited only refuses even a signed-in stranger with a confirmed email", async () => {
+    const { body } = await create({ question: QUESTION, options: ["Start later", "Keep the time"], access: { general: "invited", linkRole: "contributor" } });
+    const stranger = await addAccount(db.client, ids, "tam", { confirmed: true });
 
     const { status, body: refused } = await api.get(`/api/boards/${body.board}`, { as: stranger });
 
@@ -149,5 +160,37 @@ describe("a board's ID", () => {
 
     expect(made.size).toBe(1000);
     for (const id of made) expect(id).toMatch(/^[A-Za-z0-9_-]{12}$/);
+  });
+});
+
+describe("making a board while signed in", () => {
+  const signIn = useSignIn(db, { seed: 602 });
+  const make = (cookie: string, origin?: string | null) =>
+    signIn.request("POST", "/api/boards", { cookie, body: { question: QUESTION, options: ["Start later", "Keep the time"] }, ...(origin === undefined ? {} : { origin }) });
+
+  test("F-01, L-01: works with the session cookie, from Steelman's own site", async () => {
+    const cookie = await signIn.signedIn("maker@example.test", "board_maker");
+
+    const { status, body } = await make(cookie);
+
+    expect(status).toBe(200);
+    expect((await signIn.request("GET", `/api/boards/${body.board}`, { cookie })).body.role).toBe("owner");
+  });
+
+  test("F-01, L-01: is refused from another site, or with no Origin (cross-site request forgery)", async () => {
+    const cookie = await signIn.signedIn("forged@example.test", "forged_maker");
+    const before = Number((await db.client.query("select count(*) from board")).rows[0].count);
+
+    for (const origin of ["https://evil.example", null]) expect((await make(cookie, origin)).status, String(origin)).toBe(403);
+    expect(Number((await db.client.query("select count(*) from board")).rows[0].count)).toBe(before);
+  });
+
+  test("F-01, L-01: is refused before a username is chosen", async () => {
+    const cookie = await signIn.signedIn("nameless@example.test");
+
+    const { status, body } = await make(cookie);
+
+    expect(status).toBe(403);
+    expect(body.reason).toBe("needs_username");
   });
 });

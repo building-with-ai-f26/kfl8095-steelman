@@ -33,6 +33,10 @@ export function NewSteelman() {
   const [options, setOptions] = useState(["", ""]);
   const [access, setAccess] = useState<Access>({ general: "link", linkRole: "contributor" });
   const [error, setError] = useState("");
+  /** The field the error is about: "question" or "option-<n>", or null when it's about the whole sheet. */
+  const [badField, setBadField] = useState<string | null>(null);
+  /** Counts tries, so the same message is announced again on the next try. */
+  const [tries, setTries] = useState(0);
   const [busy, setBusy] = useState(false);
   /** Where the cursor goes next: "question" or "option-<n>". */
   const [focus, setFocus] = useState<string | null>("question");
@@ -44,27 +48,41 @@ export function NewSteelman() {
     setFocus(null);
   }, [focus]);
 
+  const clearError = () => {
+    setError("");
+    setBadField(null);
+  };
+  const fail = (message: string, field: string | null) => {
+    setError(message);
+    setBadField(field);
+    setTries((n) => n + 1);
+    if (field) setFocus(field);
+  };
+
   const setOption = (index: number, name: string) => {
     setOptions((all) => all.map((old, i) => (i === index ? name : old)));
-    setError("");
+    clearError();
   };
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     const problem = problemWith(question, options);
-    if (problem) {
-      setError(problem.message);
-      setFocus(problem.field);
-      return;
-    }
+    if (problem) return fail(problem.message, problem.field);
     setBusy(true);
-    const answer = await createBoard({ question: cleanText(question), options: options.map(cleanText).filter(Boolean), access });
+    let answer: Awaited<ReturnType<typeof createBoard>>;
+    try {
+      answer = await createBoard({ question: cleanText(question), options: options.map(cleanText).filter(Boolean), access });
+    } catch {
+      // An answer the app can't read (a proxy's error page, say): never leave the button stuck.
+      answer = { problem: "Steelman couldn’t make that board. Try again." };
+    }
     if (typeof answer === "string") return window.location.assign(`/b/${answer}`);
     setBusy(false);
-    setError(answer.problem);
+    fail(answer.problem, null);
   }
 
-  const invalidQuestion = error && !cleanText(question);
+  /** What a field needs when the error is about it. */
+  const marks = (field: string) => (badField === field ? { "aria-invalid": true, "aria-describedby": "sm-create-error" } : {});
   return (
     <main className="sm-landing sm-create-landing" data-canvas="cool">
       <form ref={sheet} className="sm-create sm-create-page" aria-labelledby="sm-create-title" onSubmit={(event) => void submit(event)} noValidate>
@@ -72,22 +90,23 @@ export function NewSteelman() {
           <div className="sm-create-top">
             <h1 id="sm-create-title">New steelman</h1>
           </div>
-          <div className="sm-create-q" data-invalid={invalidQuestion ? "" : undefined}>
+          <div className="sm-create-q" data-invalid={badField === "question" ? "" : undefined}>
             <textarea
               data-field="question"
               rows={2}
               maxLength={LIMITS.question}
               placeholder="Ask a question with more than one good answer"
               aria-label="Question"
-              aria-invalid={invalidQuestion ? true : undefined}
+              {...marks("question")}
               value={question}
               onChange={(event) => {
                 setQuestion(event.target.value);
-                setError("");
+                clearError();
               }}
               onKeyDown={(event) => {
                 // The question is one line of text: Enter moves on to the options rather than starting a new line.
-                if (event.key === "Enter") {
+                // Not while an input method is composing (Chinese, Japanese…), where Enter accepts what was typed.
+                if (event.key === "Enter" && !event.nativeEvent.isComposing) {
                   event.preventDefault();
                   setFocus("option-0");
                 }
@@ -96,13 +115,14 @@ export function NewSteelman() {
           </div>
           <div className="sm-create-options" role="group" aria-label="Options">
             {options.map((name, i) => (
-              <div key={i} className="sm-create-option" data-invalid={error && !cleanText(name) && i < 2 ? "" : undefined}>
+              <div key={i} className="sm-create-option" data-invalid={badField === `option-${i}` ? "" : undefined}>
                 <input
                   type="text"
                   data-field={`option-${i}`}
                   maxLength={LIMITS.optionName}
                   placeholder={PLACEHOLDERS[i]}
                   aria-label={`Option ${i + 1}`}
+                  {...marks(`option-${i}`)}
                   value={name}
                   onChange={(event) => setOption(i, event.target.value)}
                 />
@@ -166,7 +186,7 @@ export function NewSteelman() {
           </div>
           <div className="sm-create-actions">
             {error ? (
-              <span className="sm-create-error" role="alert">
+              <span key={tries} className="sm-create-error" id="sm-create-error" role="alert">
                 {error}
               </span>
             ) : null}

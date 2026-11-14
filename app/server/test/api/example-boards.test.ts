@@ -102,6 +102,32 @@ describe("the example boards", () => {
     expect(EXAMPLE_PEOPLE).not.toContain("kieran_lamee");
   });
 
+  test("F-01: an existing test account is found whatever its capitals, not made again", async () => {
+    await db.client.query("update account set username = 'Maya.Chen' where username = 'maya.chen'");
+    try {
+      const accounts = Number((await db.client.query("select count(*) from account")).rows[0].count);
+
+      await seedExampleBoards(kysely, clock, ids);
+
+      expect(Number((await db.client.query("select count(*) from account")).rows[0].count)).toBe(accounts);
+    } finally {
+      await db.client.query("update account set username = 'maya.chen' where username = 'Maya.Chen'");
+    }
+  });
+
+  test("F-01: it refuses to write as a real person (an account with an email) who has one of its usernames", async () => {
+    await db.client.query("update account set email = 'riley@example.test' where username = 'riley_park'");
+    try {
+      const accounts = Number((await db.client.query("select count(*) from account")).rows[0].count);
+
+      await expect(seedExampleBoards(kysely, clock, ids)).rejects.toThrow(/riley_park/);
+
+      expect(Number((await db.client.query("select count(*) from account")).rows[0].count)).toBe(accounts);
+    } finally {
+      await db.client.query("update account set email = null where username = 'riley_park'");
+    }
+  });
+
   test("F-01: running it again adds nothing", async () => {
     const before = (await db.client.query("select (select count(*) from board) as boards, (select count(*) from account) as accounts, (select count(*) from version) as versions")).rows[0];
 

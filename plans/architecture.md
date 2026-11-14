@@ -214,6 +214,7 @@ Data export reads the same tables for one account and writes the JSON the protot
   - **Something new** (an argument, wording, source, comment) arrives with its browser-made ID. Sending it again finds that ID already there, by the same author, and answers "already done".
   - **An edit** names the revision it started from. Sending it again finds the next revision already saved, with the same text and by the same author, and answers "already done".
   - **A flag change** (delete, hide, restore, close) sets the flag to a value; setting it twice is the same as once.
+  - **The one exception: making a board** (F-01, M1-6). The service chooses a board's ID, because the ID is the link and must be unguessable whatever the browser does. So sending it twice (an answer lost, then a retry) makes a second, empty board that only its maker has the link to. The builder accepted this on Nov 14; it's worth fixing when boards are listed (E-03), with a key the browser sends alongside.
 - **Usernames** are unique ignoring case, and a few are reserved (`deleted_account`, `steelman`, `admin`, `moderator`, and the like) so nobody can pose as the system.
 - **Link access follows the link.** A person who joined through a link is a member with `joined_via = link`. If the owner turns link access off, those members lose access; people who were invited keep it (the way Google Docs works).
 
