@@ -3,7 +3,7 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
-import { contextInput, itemIdInput, wordingInput } from "./inputs.ts";
+import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, wordingInput } from "./inputs.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
 import type { Role } from "./policy.ts";
@@ -36,6 +36,24 @@ export const editInput = z.strictObject({ baseRev: z.number().int().min(1), word
  */
 export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
+
+/**
+ * A new board (F-01): its question and two to four options, each named
+ * differently, ignoring capitals. The service chooses the board's ID: it is
+ * the board's link, so it must be unguessable.
+ */
+export const newBoardInput = z
+  .strictObject({
+    question: questionInput,
+    options: z.array(optionNameInput).min(OPTIONS_PER_BOARD.min).max(OPTIONS_PER_BOARD.max),
+    /** Who can get in from the start; left out, anyone with the link, as Contributor. */
+    access: accessInput.optional(),
+  })
+  .refine(({ options }) => new Set(options.map((name) => name.toLowerCase())).size === options.length, {
+    message: "Each option needs a different name.",
+    path: ["options"],
+  });
+export type NewBoard = z.infer<typeof newBoardInput>;
 
 /** "Changes after S": S is a change number the reader holds. */
 export const changesQuery = z.strictObject({ after: z.string().regex(/^\d+$/).transform(Number) });

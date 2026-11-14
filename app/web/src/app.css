@@ -36,3 +36,26 @@ body { margin:0; }
   #steelman-study .sm-head .sm-share .sm-person > span:nth-child(2) { flex:0 0 auto; }
   #steelman-study .sm-head .sm-share .sm-person > select { margin-left:32px; }
 }
+
+/* New steelman is the home page in M1, so the prototype's sheet sits on the page instead of over a board: no
+   scrim, no close button, and the page's own heading. */
+#steelman-study .sm-create-page { position:static; transform:none; width:100%; max-width:880px; }
+#steelman-study .sm-create-page h1 { font:600 16px/1.3 var(--sm-serif); }
+/* The builder's revisions (Nov 14): a white sheet, and the options side by side like the board's columns,
+   scrolling sideways when they don't fit (on a phone, about one and a half at a time). The padding keeps each
+   option's focus ring inside the scrolling row. */
+#steelman-study .sm-create-page .sm-create-canvas { background:#fff; }
+#steelman-study .sm-create-page .sm-create-options { display:flex; gap:10px; margin:-4px; padding:4px; overflow-x:auto; scroll-snap-type:x proximity; }
+#steelman-study .sm-create-page .sm-create-option { flex:1 1 0; min-width:150px; scroll-snap-align:start; }
+#steelman-study .sm-create-page .sm-create-add { flex:0 0 auto; padding:0 14px; }
+@media(max-width:520px) {
+  #steelman-study .sm-create-page .sm-create-option { flex:0 0 68%; }
+  #steelman-study .sm-create-page .sm-rrow:not(.sm-rrow-later) { flex-wrap:wrap; }
+}
+/* The page's one column is as wide as the screen, not as wide as the row of options would like. */
+#steelman-study .sm-create-landing { grid-template-columns:minmax(0, 1fr); }
+/* Settings that come later sit where they will be, quiet, with a Later tag. */
+#steelman-study .sm-rrow-later { color:var(--sm-muted); }
+#steelman-study .sm-rrow-icon { flex-direction:row; align-items:center; gap:10px; }
+#steelman-study .sm-rrow-icon svg { width:16px; height:16px; color:var(--sm-muted); flex:none; }
+#steelman-study .sm-later { flex:none; padding:2px 8px; border:1px solid var(--sm-line); border-radius:999px; font-size:11px; color:var(--sm-muted); }

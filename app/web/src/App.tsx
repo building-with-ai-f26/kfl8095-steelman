@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Board } from "./board/Board.tsx";
-import { Logo } from "./icons.tsx";
+import { Icon, Logo } from "./icons.tsx";
+import { NewSteelman } from "./NewSteelman.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
 import type { Me } from "./signIn/account.ts";
 import { AuthCard } from "./signIn/AuthCard.tsx";
@@ -9,30 +10,35 @@ import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
 
-/** Links look like /b/<board ID>. Anything else is the home page, which for now only points to the demo board. */
+/**
+ * Links look like /b/<board ID>. Anything else is the home page, which in M1
+ * is New steelman (F-01): there's no list of boards yet, so people come back
+ * to a board by its link.
+ */
 export function App({ path = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
   const board = /^\/b\/([A-Za-z0-9_-]{12})\/?$/.exec(path)?.[1];
-  if (!board) {
-    return (
-      <main>
-        <h1>Steelman</h1>
-        <p>
-          <a href="/b/demo-board-1">Open the demo board</a>
-        </p>
-      </main>
-    );
-  }
   return (
     <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom="read">
-      <header className="sm-site">
-        <div className="sm-wordmark">
-          <Logo />
-          steelman.
-        </div>
-        <TestUserSwitch />
-      </header>
-      <SignedIn>
-        <Board boardId={board} />
+      <SignedIn
+        header={(signedIn) => (
+          <header className="sm-site">
+            <div className="sm-wordmark">
+              <Logo />
+              steelman.
+            </div>
+            <div className="sm-site-tools">
+              {signedIn && board ? (
+                <a className="sm-share-button cursor-interaction" href="/" aria-label="New steelman">
+                  <Icon name="plus" size={14} />
+                  <span>New steelman</span>
+                </a>
+              ) : null}
+              <TestUserSwitch />
+            </div>
+          </header>
+        )}
+      >
+        {board ? <Board boardId={board} /> : <NewSteelman />}
       </SignedIn>
     </div>
   );
@@ -46,7 +52,7 @@ type Who = { kind: "asking" } | { kind: "test user" } | { kind: "signed out" } |
  * without a username, it asks for one. A tab acting as a test account
  * (development and tests only) skips all of that.
  */
-function SignedIn({ children }: { children: React.ReactNode }) {
+function SignedIn({ header, children }: { header: (signedIn: boolean) => React.ReactNode; children: React.ReactNode }) {
   const [who, setWho] = useState<Who>(() => (chosenTestUser() !== null ? { kind: "test user" } : { kind: "asking" }));
   const ask = useCallback(() => {
     void whoIsSignedIn().then((me) => setWho(me === "unreachable" ? { kind: "unreachable" } : me ? { kind: "signed in", me } : { kind: "signed out" }));
@@ -55,20 +61,30 @@ function SignedIn({ children }: { children: React.ReactNode }) {
     if (who.kind === "asking") ask();
   }, [who.kind, ask]);
 
-  if (who.kind === "asking") return null;
+  const ready = who.kind === "test user" || (who.kind === "signed in" && who.me.username !== null);
+  return (
+    <>
+      {header(ready)}
+      {ready ? children : <NotYet who={who} ask={ask} retry={() => setWho({ kind: "asking" })} />}
+    </>
+  );
+}
+
+/** What stands before the page: nothing while asking, then Sign in, Choose a username, or Couldn't reach Steelman. */
+function NotYet({ who, ask, retry }: { who: Who; ask: () => void; retry: () => void }) {
   if (who.kind === "unreachable") {
     return (
       <AuthCard>
         <h1 className="sm-auth-title sm-auth-signin">Couldn’t reach Steelman</h1>
-        <button type="button" className="sm-button sm-solid cursor-interaction" onClick={() => setWho({ kind: "asking" })}>
+        <button type="button" className="sm-button sm-solid cursor-interaction" onClick={retry}>
           Try again
         </button>
       </AuthCard>
     );
   }
   if (who.kind === "signed out") return <SignIn onSignedIn={ask} />;
-  if (who.kind === "signed in" && who.me.username === null) return <ChooseUsername email={who.me.email} onChosen={ask} />;
-  return children;
+  if (who.kind === "signed in") return <ChooseUsername email={who.me.email} onChosen={ask} />;
+  return null;
 }
 
 /** Each tab can act as a test account instead of signing in (development and tests only). */
