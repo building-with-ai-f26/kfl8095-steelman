@@ -2,7 +2,8 @@
 // quietly weaken"). Lists what a pull request changes that only the builder
 // may agree to: an existing test edited, moved, deleted, or skipped; a saved
 // screenshot replaced; the policy table; a merged migration; a CI workflow;
-// a plan. Adding tests, screenshots, and migrations is free.
+// a plan; code marked to be skipped by mutation testing, or a change to what
+// it covers. Adding tests, screenshots, and migrations is free.
 //
 //   npx tsx scripts/guards/protected-files-cli.ts <base>      (from app/)
 //
@@ -24,6 +25,8 @@ const TEST_FILE = /\.(test|spec)\.(ts|tsx|js|mjs)$/;
 /** A test marked skipped. Not one quoted as text, as a test of this check writes it: a real skip never follows a quote mark. */
 const SKIP = /(?<!['"`])\b(test|it|describe)\.(skip|fixme|todo|skipIf)\b|(?<!['"`])\bx(it|describe)\(/;
 const DONE_MARK = /^\| (M\d+[a-z]?-\d+[a-z]?) \|/;
+/** A comment telling Stryker to leave code alone: at the start of a line, so the words quoted in a test don't count. */
+const MUTATION_OFF = /^\s*(\/\/|\/\*|\*)\s*Stryker\s+disable\b/;
 
 /** What the pull request (HEAD) changes since it branched from `base` that needs the builder. */
 export async function protectedChanges({ repo, base }: { repo: string; base: string }): Promise<Finding[]> {
@@ -44,6 +47,7 @@ export async function protectedChanges({ repo, base }: { repo: string; base: str
     if (path === "app/shared/src/policy.ts") add(path, "changes the policy table");
     if (/^app\/server\/migrations\/.+\.sql$/.test(path) && existed) add(path, "changes a merged migration");
     if (path.startsWith(".github/workflows/") || renamedTo?.startsWith(".github/workflows/")) add(path, "changes a CI workflow");
+    if (path === "app/stryker.config.json" && existed) add(path, "changes what mutation testing covers");
     if (path.startsWith("plans/") && !isRecordKeeping(path) && !(path === "plans/build-plan.md" && (await onlyMarksItemsDone(git, range)))) add(path, "changes a plan");
   }
 
@@ -52,6 +56,8 @@ export async function protectedChanges({ repo, base }: { repo: string; base: str
   for (const line of (await git("diff", "-U0", range)).split("\n")) {
     if (line.startsWith("+++ ")) current = line.slice("+++ b/".length);
     else if (line.startsWith("+") && TEST_FILE.test(current) && SKIP.test(line)) add(current, "skips a test");
+    // Telling mutation testing to skip code is the same kind of decision (guard 4).
+    else if (line.startsWith("+") && MUTATION_OFF.test(line.slice(1))) add(current, "tells mutation testing to skip code");
   }
   return findings;
 }

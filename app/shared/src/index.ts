@@ -14,9 +14,12 @@ export type { Credibility } from "./credibility.ts";
 export {
   LIMITS,
   OPTIONS_PER_BOARD,
+  RESERVED_USERNAMES,
+  USERNAME,
   boardIdInput,
   cleanText,
   contextInput,
+  isAllowedUsername,
   itemIdInput,
   optionNameInput,
   questionInput,

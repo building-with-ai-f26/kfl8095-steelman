@@ -1,2 +1,6 @@
 # Copies of server/src with a deliberate bug, made and removed by planted-bugs.test.ts
 server/test/simulation/.planted/
+
+# Mutation testing: its report and its working copies (npm run test:mutation)
+reports/
+.stryker-tmp/

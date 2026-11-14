@@ -134,7 +134,11 @@ export type RefusalReason =
   | "revision_changed"
   | "needs_evidence"
   /** A new item's ID is already used by something else. */
-  | "id_taken";
+  | "id_taken"
+  /** Signed in, but hasn't picked a username yet, so there is nothing to credit a write to. */
+  | "needs_username"
+  /** A write carrying a session cookie came from another site, or didn't say where from (cross-site request forgery). */
+  | "wrong_origin";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

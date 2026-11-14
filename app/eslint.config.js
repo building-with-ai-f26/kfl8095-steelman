@@ -28,7 +28,7 @@ const serverCode = { group: ["@steelman/server", "@steelman/server/*", "**/serve
 const webCode = { group: ["@steelman/web", "@steelman/web/*", "**/web/**", "react", "react/*", "react-dom", "react-dom/*"], message: "Only web/ may use the web app's code." };
 
 export default tseslint.config(
-  { ignores: ["**/node_modules/**", "**/dist/**", "server/test/simulation/.planted/**"] },
+  { ignores: ["**/node_modules/**", "**/dist/**", "server/test/simulation/.planted/**", "**/.stryker-tmp/**", "**/reports/**"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -195,7 +195,8 @@ async function logRows(db: Reader, boardId: string, after: number): Promise<LogR
   return rows.map((row) => ({
     seq: Number(row.seq),
     at: row.at.toISOString(),
-    actorName: row.username,
+    // Only an account with a username can write (app.ts), so an actor always has one.
+    actorName: row.username ?? "",
     kind: row.kind,
     subjectKind: row.subject_kind,
     subjectId: row.subject_id,

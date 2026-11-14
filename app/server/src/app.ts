@@ -3,6 +3,8 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, RefusalReason } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
+import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
+import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
@@ -26,6 +28,8 @@ export interface AppDependencies {
   /** The database. Without one, only the health route exists. */
   database?: Db;
   mode?: Mode;
+  /** Signing in (M1). Without it, only the test-user switch says who is asking. */
+  signIn?: SignInDependencies;
 }
 
 /** The header the browser uses to say which test account it is acting as, while there is no sign-in (M0). */
@@ -41,7 +45,12 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   revision_changed: 409,
   needs_evidence: 409,
   id_taken: 409,
+  needs_username: 403,
+  wrong_origin: 403,
 };
+
+/** Requests that only read. Anything else is a write, and must come from our own site. */
+const READS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -54,7 +63,7 @@ declare module "fastify" {
  * Builds the Steelman service without starting it, so tests can call its
  * routes directly and main.ts can listen on a port.
  */
-export function buildApp({ clock, database, mode = "production" }: AppDependencies): FastifyInstance {
+export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies }: AppDependencies): FastifyInstance {
   const app = Fastify();
 
   app.get("/api/health", () => ({ status: "ok", time: clock.now().toISOString() }));
@@ -65,15 +74,56 @@ export function buildApp({ clock, database, mode = "production" }: AppDependenci
   const testUsersOn = mode === "development" || mode === "test";
   app.addHook("onClose", () => db.destroy());
 
-  // Who is asking. Until sign-in exists (M1), only the test-user switch can say.
+  const signIn = signInDependencies && createSignIn({ ...signInDependencies, db, clock, ids });
+
+  // Who is asking: the test-user switch (development and tests only), or the
+  // session cookie. Sign-in's own routes answer that for themselves.
   app.decorateRequest("person", null);
   app.addHook("preHandler", async (request, reply) => {
+    if (request.url.startsWith("/api/auth/")) return;
     const named = request.headers[TEST_USER_HEADER];
-    if (named === undefined) return;
-    if (!testUsersOn) return reply.code(403).send({ status: "refused", reason: "test_users_off" });
-    const account = typeof named === "string" ? await db.selectFrom("account").select("id").where("id", "=", named).executeTakeFirst() : undefined;
-    request.person = account?.id ?? null;
+    if (named !== undefined) {
+      if (!testUsersOn) return reply.code(403).send({ status: "refused", reason: "test_users_off" });
+      const account = typeof named === "string" ? await db.selectFrom("account").select("id").where("id", "=", named).executeTakeFirst() : undefined;
+      request.person = account?.id ?? null;
+      return;
+    }
+    if (!signIn) return;
+    const person = await signIn.personFor(headersOf(request.headers));
+    if (!person) return;
+    if (!READS.has(request.method)) {
+      // A browser sends the cookie with a request from any site; only our own site may write with it (architecture §7).
+      if (request.headers.origin !== signInDependencies.origin) return reply.code(403).send({ status: "refused", reason: "wrong_origin" });
+      if (person.username === null) return reply.code(403).send({ status: "refused", reason: "needs_username" });
+    }
+    request.person = person.id;
   });
+
+  if (signIn) {
+    app.route({
+      method: ["GET", "POST"],
+      url: "/api/auth/*",
+      async handler(request, reply) {
+        const url = new URL(request.url, signInDependencies.origin);
+        const route = `${request.method} ${url.pathname.slice("/api/auth".length)}`;
+        if (!SIGN_IN_ROUTES.has(route)) return reply.code(404).send({ reason: "not_found" });
+        const response = await signIn.handle(
+          new Request(url, {
+            method: request.method,
+            headers: headersOf(request.headers),
+            ...(request.method === "GET" ? {} : { body: JSON.stringify(request.body ?? {}) }),
+          }),
+        );
+        reply.code(response.status);
+        response.headers.forEach((value, name) => {
+          if (name !== "set-cookie") reply.header(name, value);
+        });
+        const cookies = response.headers.getSetCookie();
+        if (cookies.length > 0) reply.header("set-cookie", cookies);
+        return reply.send(await response.text());
+      },
+    });
+  }
 
   if (testUsersOn) {
     app.get("/api/test-users", async () => ({
@@ -136,6 +186,16 @@ export function buildApp({ clock, database, mode = "production" }: AppDependenci
   );
 
   return app;
+}
+
+/** A Fastify request's headers, as the web's Headers that Better Auth takes. */
+function headersOf(headers: Record<string, string | string[] | undefined>): Headers {
+  const result = new Headers();
+  for (const [name, value] of Object.entries(headers)) {
+    if (value === undefined) continue;
+    for (const one of Array.isArray(value) ? value : [value]) result.append(name, one);
+  }
+  return result;
 }
 
 /** Sends a write's answer with the matching HTTP status. */

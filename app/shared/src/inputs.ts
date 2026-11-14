@@ -65,3 +65,26 @@ export function webLink(locator: string): string | null {
 // requests, so their shape is checked like any other input.
 export const boardIdInput = z.string().regex(/^[A-Za-z0-9_-]{12}$/);
 export const itemIdInput = z.string().regex(/^[A-Za-z0-9_-]{20}$/);
+
+/** A username: 3 to 30 letters, digits, or underscores (the prototype's rule). Capitals are allowed but don't count: names are kept in lower case. */
+export const USERNAME = { min: 3, max: 30, pattern: /^[A-Za-z0-9_]+$/ } as const;
+
+/** Names nobody may take, so no one can pose as the system (architecture §2, "Links and IDs"). */
+export const RESERVED_USERNAMES: readonly string[] = [
+  "deleted_account",
+  "steelman",
+  "admin",
+  "administrator",
+  "moderator",
+  "mod",
+  "staff",
+  "support",
+  "system",
+  "official",
+  "root",
+];
+
+/** Whether a username may be picked: the right shape, and not reserved. Whether someone already has it is the server's question. */
+export function isAllowedUsername(username: string): boolean {
+  return username.length >= USERNAME.min && username.length <= USERNAME.max && USERNAME.pattern.test(username) && !RESERVED_USERNAMES.includes(username.toLowerCase());
+}
