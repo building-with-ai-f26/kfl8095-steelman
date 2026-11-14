@@ -48,6 +48,8 @@ export interface FakeGoogle {
   signedInAs(account: GoogleAccount): void;
   /** Makes the next ID token wrong in one way. */
   spoilNextIdToken(fault: IdTokenFault): void;
+  /** The person cancels on Google's page next time: Google sends the browser back with error=access_denied. */
+  cancelNextSignIn(): void;
   close(): Promise<void>;
 }
 
@@ -90,6 +92,7 @@ export async function startFakeGoogle({ now }: { now: () => Date }): Promise<Fak
   let codes = 0;
   let account: GoogleAccount | undefined;
   let fault: IdTokenFault | undefined;
+  let cancelNext = false;
   let issuer = "";
 
   const idTokenFor = ({ account: who, nonce }: Pending) => {
@@ -142,6 +145,15 @@ export async function startFakeGoogle({ now }: { now: () => Date }): Promise<Fak
         if (q.get("client_id") !== clientId || q.get("response_type") !== "code" || !redirectUri || !challenge || q.get("code_challenge_method") !== "S256") {
           return send(response, 400, { error: "invalid_request" });
         }
+        if (cancelNext) {
+          cancelNext = false;
+          const back = new URL(redirectUri);
+          back.searchParams.set("error", "access_denied");
+          const state = q.get("state");
+          if (state !== null) back.searchParams.set("state", state);
+          response.writeHead(302, { location: back.toString() });
+          return response.end();
+        }
         if (!account) return send(response, 400, { error: "no one is signed in to the fake Google" });
         const code = `fake-code-${++codes}`;
         pending.set(code, { account, redirectUri, challenge, nonce: q.get("nonce") ?? undefined });
@@ -187,6 +199,9 @@ export async function startFakeGoogle({ now }: { now: () => Date }): Promise<Fak
     },
     spoilNextIdToken(next) {
       fault = next;
+    },
+    cancelNextSignIn() {
+      cancelNext = true;
     },
     close: () => new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
   };

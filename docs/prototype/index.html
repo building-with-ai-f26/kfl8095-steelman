@@ -1907,7 +1907,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* Logo: honeycomb diamond. Solid (strongest) top-left, two outlines, a dashed cell (weakest) bottom-right. */
   #steelman-study .sm-logo { display:block; height:24px; width:auto; color:var(--sm-ink); flex:none; }
   /* The canvas always runs to the bottom of the window, even on a short board. */
-  #steelman-study .sm-surface { display:flex; flex-direction:column; min-height:calc(100vh - 57px); }
+  #steelman-study .sm-surface { display:flex; flex-direction:column; min-height:calc(var(--sm-window-h,100vh) - 57px); }
   #steelman-study .sm-surface &gt; .sm-scene { flex:1; }
   #steelman-study .sm-surface { background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-scene { position:relative; padding:30px 28px 24px; isolation:isolate; }
@@ -2493,7 +2493,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-nav-toggle svg { width:20px; height:20px; }
 
   /* ── Home: communities sidebar and the list of steelmen. ── */
-  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(100vh - 57px); background-color:var(--sm-list-bg); }
+  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(var(--sm-window-h,100vh) - 57px); background-color:var(--sm-list-bg); }
   #steelman-study .sm-home[hidden] { display:none; }
   /* The sidebar hangs from the site header, running the full height, inverted like the board&#x27;s header boxes. */
   #steelman-study .sm-side { display:flex; flex-direction:column; align-content:start; gap:1px; padding:12px 10px 24px; background:var(--sm-ink); color:#fff; }
@@ -2831,12 +2831,20 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-delete-form p { margin:0; font-size:13px; line-height:1.5; }
   #steelman-study .sm-danger { background:#b4434f; border-color:#b4434f; color:#fff; }
   #steelman-study .sm-auth-hint .sm-link-button { font-size:inherit; text-decoration:underline; text-underline-offset:2px; }
+  #steelman-study .sm-auth-terms { line-height:1.5; }
+  #steelman-study .sm-code { position:relative; display:grid; grid-template-columns:repeat(6,minmax(0,52px)); gap:8px; justify-self:start; width:fit-content; max-width:100%; }
+  #steelman-study .sm-code-box { display:grid; place-items:center; height:56px; border:1px solid var(--sm-line); border-radius:8px; background:#fff; font:600 24px/1 var(--sm-sans); font-variant-numeric:tabular-nums; color:var(--sm-ink); }
+  #steelman-study .sm-code:focus-within .sm-code-box[data-next] { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink); }
+  #steelman-study .sm-code:has([aria-invalid=&quot;true&quot;]) .sm-code-box { border-color:#b4434f; }
+  #steelman-study .sm-code:has([aria-invalid=&quot;true&quot;]):focus-within .sm-code-box[data-next] { box-shadow:0 0 0 1px #b4434f; }
+  #steelman-study .sm-landing-auth .sm-field input.sm-code-input, #steelman-study .sm-landing-auth .sm-field input.sm-code-input:is(:focus,:focus-visible,:hover,[aria-invalid=&quot;true&quot;]) { position:absolute; inset:0; width:100%; height:100%; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:transparent; caret-color:transparent; font-size:16px; outline:none; box-shadow:none; }
+  #steelman-study .sm-code-shown { font-weight:600; letter-spacing:.1em; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-signout { justify-self:stretch; height:36px; font-size:13px; }
   #steelman-study .sm-user-link { padding:0; border:0; background:none; font:inherit; color:inherit; text-align:inherit; cursor:pointer; }
   #steelman-study .sm-user-link:hover { text-decoration:underline; text-underline-offset:3px; }
   #steelman-study button.sm-me { border:0; padding:0; cursor:pointer; }
   /* Invite landing: the board&#x27;s canvas, its skeleton (the dark question and option headers), your role, then sign up or sign in. */
-  #steelman-study .sm-landing { grid-column:1 / -1; display:grid; justify-items:center; align-content:start; min-height:calc(100vh - 57px); padding:48px 16px 64px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+  #steelman-study .sm-landing { grid-column:1 / -1; display:grid; justify-items:center; align-content:start; min-height:calc(var(--sm-window-h,100vh) - 57px); padding:48px 16px 64px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-landing-inner { display:grid; gap:18px; width:100%; max-width:560px; min-width:0; }
   #steelman-study .sm-landing-from { display:flex; align-items:center; gap:10px; margin:0; font-size:14px; color:var(--sm-ink); }
   #steelman-study .sm-landing-from .sm-avatar { width:30px; height:30px; background:#fff; box-shadow:var(--sm-shadow-sm); }
@@ -2854,24 +2862,26 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-landing-facts { display:flex; flex-wrap:wrap; gap:6px 16px; margin:0; padding:0; list-style:none; font-size:13px; color:var(--sm-ink); }
   #steelman-study .sm-landing-facts li { display:inline-flex; align-items:center; gap:6px; }
   #steelman-study .sm-landing-facts svg { width:14px; height:14px; }
-  #steelman-study .sm-landing-auth { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; padding:20px; }
+  #steelman-study .sm-landing-auth { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; padding:20px; box-shadow:var(--sm-shadow-hover); }
   #steelman-study .sm-landing-auth .sm-sort { justify-self:start; }
   #steelman-study .sm-landing-auth .sm-field input { height:38px; }
   #steelman-study .sm-landing-auth .sm-solid { height:40px; min-height:40px; font-size:14px; }
   #steelman-study .sm-landing-auth .sm-field-hint { margin-top:-6px; text-align:center; }
-  #steelman-study .sm-auth-head { margin:0; font:700 24px/1.2 var(--sm-serif); letter-spacing:-.3px; }
-  #steelman-study .sm-landing-qt { margin:0; font:600 18px/1.3 var(--sm-serif); overflow-wrap:anywhere; }
   #steelman-study .sm-auth-title { margin:0; font:600 17px/1.3 var(--sm-serif); }
   #steelman-study .sm-auth-text { margin:-6px 0 0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
   #steelman-study .sm-auth-hint { text-align:left !important; margin-top:-8px !important; }
   #steelman-study .sm-google { height:40px; gap:10px; font-size:14px; font-weight:600; }
-  #steelman-study .sm-g { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--sm-line); font:700 12px/1 var(--sm-sans); }
+  #steelman-study .sm-g { width:18px; height:18px; flex:none; }
+  #steelman-study .sm-auth-signin { font-size:22px; letter-spacing:-.2px; }
+  #steelman-study .sm-auth-google-error { margin-top:-6px; }
   #steelman-study .sm-or { display:flex; align-items:center; gap:10px; margin:0; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-or::before, #steelman-study .sm-or::after { content:&quot;&quot;; flex:1; border-top:1px solid var(--sm-line); }
   #steelman-study .sm-auth-sim { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:10px 12px; border:1px dashed var(--sm-line); border-radius:6px; font-size:13px; }
   #steelman-study .sm-auth-sim &gt; span { font-size:11px; color:var(--sm-muted); }
+  #steelman-study .sm-auth-sim &gt; .sm-auth-sim-note { font-size:12px; }
   #steelman-study .sm-auth-links { display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; }
   #steelman-study :is(.sm-auth-sim,.sm-auth-links) .sm-link-button { text-decoration:underline; text-underline-offset:3px; }
+  #steelman-study .sm-landing-sim { width:100%; max-width:560px; margin-top:48px; background:#ffffffb3; }
   #steelman-study .sm-landing-look { justify-self:center; font-size:13px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:3px; }
   @media(max-width:560px) {
     #steelman-study .sm-landing { padding:24px 16px 48px; }
@@ -2901,7 +2911,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-bell:hover, #steelman-study .sm-bell[aria-expanded=&quot;true&quot;] { background:var(--sm-soft); }
   #steelman-study .sm-bell svg { width:18px; height:18px; stroke-width:1.75; }
   #steelman-study .sm-bell b { position:absolute; top:0; right:-2px; min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:var(--sm-ink); color:#fff; font:700 10px/16px var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; box-shadow:0 0 0 2px #fff; }
-  #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(100vh - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  #steelman-study .sm-inbox { position:absolute; top:64px; right:16px; z-index:46; display:grid; grid-template-rows:auto minmax(0,1fr); width:400px; max-width:calc(100% - 32px); max-height:min(600px,calc(var(--sm-window-h,100vh) - 88px)); overflow:hidden; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
   #steelman-study .sm-inbox[hidden] { display:none; }
   #steelman-study .sm-inbox:not([hidden]) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
   #steelman-study .sm-inbox &gt; .sm-inbox-head { display:flex; align-items:center; gap:8px; min-height:52px; padding:8px 10px 8px 18px; border-bottom:1px solid var(--sm-line); }
@@ -3075,6 +3085,14 @@ html&gt;body{padding:0}&lt;/style&gt;
 &lt;script&gt;
 (() =&gt; {
   const root = document.getElementById(&#x27;steelman-study&#x27;);
+  // The page around the prototype makes its frame as tall as its content, so 100vh in here is the frame, not the
+  // window: full-height layouts would chase their own height, and the frame would shrink a step at a time and never
+  // grow back. They use the window&#x27;s height instead (--sm-window-h), read from the page around the frame.
+  (()=&gt;{
+    let outer=window;try{if(window.parent!==window&amp;&amp;window.parent.innerHeight) outer=window.parent;}catch{}
+    const set=()=&gt;document.documentElement.style.setProperty(&#x27;--sm-window-h&#x27;,`${outer.innerHeight}px`);
+    set();outer.addEventListener(&#x27;resize&#x27;,set);
+  })();
   const board = root.querySelector(&#x27;.sm-board&#x27;);
   const status = document.getElementById(&#x27;sm-status&#x27;);
   const icon = name =&gt; `&lt;i data-lucide=&quot;${name}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;`;
@@ -4696,28 +4714,52 @@ html&gt;body{padding:0}&lt;/style&gt;
   // unconfirmed account. A first sign-in picks a username. The same panel serves an invite link and the top bar&#x27;s Sign in.
   const knownEmail = e =&gt; [state.myEmail,ME].includes(String(e).trim().toLowerCase());
   const takenNames = () =&gt; new Set([ME,...Object.values(PEOPLE).flat()]);
+  // Sign-in emails: five an hour to one address (architecture §7). Every send counts: the first, Resend, and a new code.
+  const SIGN_IN_CANVAS=&#x27;cool&#x27;;
+  const TOO_MANY_CODES=&#x27;Too many codes sent to this address. Try again in an hour.&#x27;;
+  function mayEmail(v) {
+    const k=v.email.toLowerCase();v.sends=v.sends||{};
+    if((v.sends[k]||0)&gt;=5) return false;
+    v.sends[k]=(v.sends[k]||0)+1;return true;
+  }
+  // In the prototype the code is shown in the Simulate box instead of emailed.
+  // The code is one real input (so paste, the phone&#x27;s &quot;from Mail&quot; suggestion, and screen readers see one field),
+  // drawn as six boxes behind it. The box for the next digit is marked, and shows the focus ring.
+  const codeBoxes = typed =&gt; Array.from({length:6},(_,i)=&gt;`&lt;span class=&quot;sm-code-box&quot; aria-hidden=&quot;true&quot; ${i===Math.min(String(typed||&#x27;&#x27;).length,5)?&#x27;data-next&#x27;:&#x27;&#x27;}&gt;${escape(String(typed||&#x27;&#x27;)[i]||&#x27;&#x27;)}&lt;/span&gt;`).join(&#x27;&#x27;);
+  const RESERVED_NAMES=new Set([&#x27;deleted_account&#x27;,&#x27;steelman&#x27;,&#x27;admin&#x27;,&#x27;administrator&#x27;,&#x27;moderator&#x27;,&#x27;mod&#x27;,&#x27;staff&#x27;,&#x27;support&#x27;,&#x27;system&#x27;,&#x27;official&#x27;,&#x27;root&#x27;]);
+  const nameProblem = name =&gt; !/^[A-Za-z0-9_]{3,20}$/.test(name)?&#x27;Use 3 to 20 letters, numbers, or underscores.&#x27;
+    :RESERVED_NAMES.has(name.toLowerCase())?`${name} is reserved.`
+    :takenNames().has(name.toLowerCase())?`${name} is taken.`:&#x27;&#x27;;
+  // A starting suggestion: the part of the email before @, if it makes a name that&#x27;s free.
+  const suggestName = email =&gt; {const n=String(email||&#x27;&#x27;).split(&#x27;@&#x27;)[0].toLowerCase().replace(/[^a-z0-9_]/g,&#x27;_&#x27;).replace(/_+/g,&#x27;_&#x27;).replace(/^_|_$/g,&#x27;&#x27;).slice(0,20);return n&amp;&amp;!nameProblem(n)?n:&#x27;&#x27;;};
+  const newCode = () =&gt; ({code:String(Math.floor(100000+Math.random()*900000)),tries:0,expired:false,typed:&#x27;&#x27;});
   function authCard(v) {
     const err=v.error?`&lt;p class=&quot;sm-field-error&quot; id=&quot;sm-auth-error&quot;&gt;${escape(v.error)}&lt;/p&gt;`:&#x27;&#x27;;
     const field=(id,label,type,auto,value,extra=&#x27;&#x27;)=&gt;`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;input id=&quot;sm-auth-${id}&quot; type=&quot;${type}&quot; autocomplete=&quot;${auto}&quot; data-key=&quot;auth-${id}&quot; value=&quot;${escape(value||&#x27;&#x27;)}&quot; ${v.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-auth-error&quot;&#x27;:&#x27;&#x27;} ${extra}&gt;&lt;/label&gt;`;
-    const sim=(...b)=&gt;`&lt;div class=&quot;sm-auth-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;${b.join(&#x27;&#x27;)}&lt;/div&gt;`;
+    // Prototype tools sit at the bottom of the page, apart from the form, so the form looks as it will.
+    let simulate=&#x27;&#x27;;
+    const sim=(...b)=&gt;{simulate=`&lt;div class=&quot;sm-auth-sim sm-landing-sim&quot;&gt;&lt;span&gt;Simulate&lt;/span&gt;${b.join(&#x27;&#x27;)}&lt;/div&gt;`;return &#x27;&#x27;;};
     const link=(action,label,key)=&gt;`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;${action}&quot; data-key=&quot;${key}&quot;&gt;${label}&lt;/button&gt;`;
     let body=&#x27;&#x27;;
-    if(v.step===&#x27;sent&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Check your email&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;We sent a sign-in link to &lt;strong&gt;${escape(v.email)}&lt;/strong&gt;. It works once, for 15 minutes.&lt;/p&gt;`
-      +sim(link(&#x27;auth-open&#x27;,&#x27;Open the link&#x27;,&#x27;auth-open&#x27;),link(&#x27;auth-expired&#x27;,&#x27;Open it too late&#x27;,&#x27;auth-expired&#x27;))
-      +`&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-resend&#x27;,v.resent?&#x27;Sent again&#x27;:&#x27;Resend&#x27;,&#x27;auth-resend&#x27;)}${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
-    else if(v.step===&#x27;expired&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;That link has expired&lt;/h2&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;Links work once, for 15 minutes.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-again&quot; data-key=&quot;auth-again&quot;&gt;Email me a new link&lt;/button&gt;&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`;
-    else if(v.step===&#x27;name&#x27;) body=`&lt;h2 class=&quot;sm-auth-title&quot;&gt;Choose a username&lt;/h2&gt;${field(&#x27;name&#x27;,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;,v.name,&#x27;maxlength=&quot;20&quot; spellcheck=&quot;false&quot;&#x27;)}${err}&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Shown on everything you write.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-name&quot; data-key=&quot;auth-name-go&quot; data-primary&gt;Continue&lt;/button&gt;`;
-    else body=`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-google cursor-interaction&quot; data-action=&quot;auth-google&quot; data-key=&quot;auth-google&quot;&gt;&lt;span class=&quot;sm-g&quot; aria-hidden=&quot;true&quot;&gt;G&lt;/span&gt;Continue with Google&lt;/button&gt;&lt;p class=&quot;sm-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/p&gt;${field(&#x27;email&#x27;,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;,v.email)}${err}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-send&quot; data-key=&quot;auth-send&quot; data-primary&gt;Email me a link&lt;/button&gt;&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Simulated: you continue as ${escape(ME)}. &lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;auth-privacy&quot; data-key=&quot;auth-privacy&quot;&gt;Privacy&lt;/button&gt;&lt;/p&gt;`;
-    return `&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;Sign in&quot;&gt;${body}&lt;/section&gt;`;
+    if(v.step===&#x27;code&#x27;) body=`&lt;h1 class=&quot;sm-auth-title sm-auth-signin&quot;&gt;Check your email&lt;/h1&gt;&lt;p class=&quot;sm-auth-text&quot;&gt;${v.resent?&#x27;We sent a new code to&#x27;:&#x27;We sent a code to&#x27;} &lt;strong&gt;${escape(v.email)}&lt;/strong&gt;.&lt;/p&gt;`
+      +`&lt;label class=&quot;sm-field&quot;&gt;&lt;span&gt;Code&lt;/span&gt;&lt;span class=&quot;sm-code&quot;&gt;${codeBoxes(v.typed)}&lt;input id=&quot;sm-auth-code&quot; class=&quot;sm-code-input&quot; type=&quot;text&quot; inputmode=&quot;numeric&quot; autocomplete=&quot;one-time-code&quot; spellcheck=&quot;false&quot; data-key=&quot;auth-code&quot; value=&quot;${escape(v.typed||&#x27;&#x27;)}&quot; ${v.error?&#x27;aria-invalid=&quot;true&quot; aria-describedby=&quot;sm-auth-error&quot;&#x27;:&#x27;&#x27;}&gt;&lt;/span&gt;&lt;/label&gt;${err}`
+      +`&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-code&quot; data-key=&quot;auth-code-go&quot; data-primary&gt;Sign in&lt;/button&gt;`
+      +`&lt;div class=&quot;sm-auth-links&quot;&gt;${link(&#x27;auth-resend&#x27;,&#x27;Send a new code&#x27;,&#x27;auth-resend&#x27;)}${link(&#x27;auth-restart&#x27;,&#x27;Use a different email&#x27;,&#x27;auth-restart&#x27;)}&lt;/div&gt;`
+      +sim(`&lt;span class=&quot;sm-auth-sim-note&quot;&gt;The code is &lt;b class=&quot;sm-code-shown&quot;&gt;${v.code}&lt;/b&gt;.&lt;/span&gt;`,link(&#x27;auth-expire&#x27;,&#x27;Wait 10 minutes&#x27;,&#x27;auth-expire&#x27;));
+    else if(v.step===&#x27;name&#x27;) body=`&lt;h1 class=&quot;sm-auth-title sm-auth-signin&quot;&gt;Choose a username&lt;/h1&gt;${field(&#x27;name&#x27;,&#x27;Username&#x27;,&#x27;text&#x27;,&#x27;username&#x27;,v.name,&#x27;maxlength=&quot;20&quot; spellcheck=&quot;false&quot; autocapitalize=&quot;none&quot;&#x27;)}${err}&lt;p class=&quot;sm-field-hint sm-auth-hint&quot;&gt;Shown on everything you write. You can’t change it later.&lt;/p&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-name&quot; data-key=&quot;auth-name-go&quot; data-primary&gt;Continue&lt;/button&gt;`;
+    else body=`${v.plain?&#x27;&lt;h1 class=&quot;sm-auth-title sm-auth-signin&quot;&gt;Sign in&lt;/h1&gt;&#x27;:&#x27;&#x27;}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-google cursor-interaction&quot; data-action=&quot;auth-google&quot; data-key=&quot;auth-google&quot;&gt;&lt;svg class=&quot;sm-g&quot; viewBox=&quot;0 0 48 48&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill=&quot;#EA4335&quot; d=&quot;M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z&quot;/&gt;&lt;path fill=&quot;#4285F4&quot; d=&quot;M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z&quot;/&gt;&lt;path fill=&quot;#FBBC05&quot; d=&quot;M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z&quot;/&gt;&lt;path fill=&quot;#34A853&quot; d=&quot;M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z&quot;/&gt;&lt;/svg&gt;Continue with Google&lt;/button&gt;${v.googleError?`&lt;p class=&quot;sm-field-error sm-auth-google-error&quot; id=&quot;sm-auth-google-error&quot; role=&quot;alert&quot;&gt;${escape(v.googleError)}&lt;/p&gt;`:&#x27;&#x27;}&lt;p class=&quot;sm-or&quot;&gt;&lt;span&gt;or&lt;/span&gt;&lt;/p&gt;${field(&#x27;email&#x27;,&#x27;Email&#x27;,&#x27;email&#x27;,&#x27;email&#x27;,v.email)}${err}&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;auth-send&quot; data-key=&quot;auth-send&quot; data-primary&gt;Email me a code&lt;/button&gt;&lt;p class=&quot;sm-field-hint sm-auth-hint sm-auth-terms&quot;&gt;By continuing, you agree to Steelman’s ${link(&#x27;auth-terms&#x27;,&#x27;Terms&#x27;,&#x27;auth-terms&#x27;)} and ${link(&#x27;auth-privacy&#x27;,&#x27;Privacy Policy&#x27;,&#x27;auth-privacy&#x27;)}.&lt;/p&gt;`
+      +sim(link(&#x27;auth-google-refused&#x27;,&#x27;Google refuses&#x27;,&#x27;auth-google-refused&#x27;),`&lt;span class=&quot;sm-auth-sim-note&quot;&gt;You continue as ${escape(ME)}.&lt;/span&gt;`);
+    return {card:`&lt;section class=&quot;sm-rail-card sm-landing-auth&quot; aria-label=&quot;Sign in&quot;&gt;${body}&lt;/section&gt;`,simulate};
   }
   function landingMarkup() {
     const v=state.invite,d=!v.hide&amp;&amp;v.board&amp;&amp;docs[v.board],q=d?.question,s=spaceOf(q?.org||&#x27;none&#x27;),f=FEED[v.board]||{people:1};
     const options=d?d.options.map(o=&gt;{const n=d.ideas.filter(i=&gt;i.option===o.id).length;return `&lt;li&gt;&lt;b&gt;${escape(o.name)}&lt;/b&gt;&lt;span&gt;${n} ${n===1?&#x27;argument&#x27;:&#x27;arguments&#x27;}&lt;/span&gt;&lt;/li&gt;`;}).join(&#x27;&#x27;):&#x27;&#x27;;
-    const head=v.plain?`&lt;h1 class=&quot;sm-auth-head&quot;&gt;${v.hide?&#x27;Sign in to open this steelman&#x27;:&#x27;Sign in to take part&#x27;}&lt;/h1&gt;`:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
-    const board=d?`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}${v.plain?`&lt;p class=&quot;sm-landing-qt&quot;&gt;${escape(q.text)}&lt;/p&gt;`:`&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;`}&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`:&#x27;&#x27;;
+    const head=v.plain?&#x27;&#x27;:`&lt;p class=&quot;sm-landing-from&quot;&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(v.by))}&lt;/span&gt;&lt;span&gt;&lt;strong&gt;${escape(v.by)}&lt;/strong&gt; invited you to weigh in&lt;/span&gt;&lt;/p&gt;`;
+    const board=d&amp;&amp;!v.plain?`&lt;section aria-label=&quot;The steelman&quot;&gt;&lt;div class=&quot;sm-landing-q&quot;&gt;${spaceTag(s)}&lt;h1&gt;${escape(q.text)}&lt;/h1&gt;&lt;/div&gt;&lt;ul class=&quot;sm-landing-options&quot; style=&quot;--n:${d.options.length}&quot;&gt;${options}&lt;/ul&gt;&lt;/section&gt;`:&#x27;&#x27;;
     const facts=v.plain||!d?&#x27;&#x27;:`&lt;ul class=&quot;sm-landing-facts&quot;&gt;&lt;li&gt;${icon(ROLE_GLYPH[v.role])}${escape(YOU_CAN[v.role])}&lt;/li&gt;&lt;li&gt;${icon(&#x27;users&#x27;)}${fmt(f.people||1)} ${f.people===1?&#x27;person&#x27;:&#x27;people&#x27;}&lt;/li&gt;&lt;/ul&gt;`;
+    const auth=authCard(v);
     const back=v.step===&#x27;start&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-landing-look cursor-interaction&quot; data-action=&quot;invite-look&quot; data-key=&quot;invite-look&quot;&gt;${v.plain?&#x27;Not now&#x27;:&#x27;Look around first&#x27;}&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${s.canvas}&quot; aria-label=&quot;${v.plain?&#x27;Sign in&#x27;:&#x27;Invitation&#x27;}&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;${head}${board}${facts}${authCard(v)}${back}&lt;/div&gt;&lt;/main&gt;`;
+    return `&lt;main class=&quot;sm-landing&quot; data-canvas=&quot;${v.plain?SIGN_IN_CANVAS:s.canvas}&quot; aria-label=&quot;${v.plain?&#x27;Sign in&#x27;:&#x27;Invitation&#x27;}&quot;&gt;&lt;div class=&quot;sm-landing-inner&quot;&gt;${head}${board}${facts}${auth.card}${back}&lt;/div&gt;${auth.simulate}&lt;/main&gt;`;
   }
   function openSignIn(opts={}) {
     const b=opts.board||(state.view===&#x27;board&#x27;?state.boardId:null);
@@ -4740,22 +4782,39 @@ html&gt;body{padding:0}&lt;/style&gt;
       if(v.then){state.invite=null;state.persona=&#x27;you&#x27;;openLink(new URLSearchParams(Object.entries(v.then).filter(([,x])=&gt;x)));announce(&#x27;Signed in (simulated).&#x27;);return;}
       announce(v.via===&#x27;google&#x27;?&#x27;Signed in with Google (simulated).&#x27;:&#x27;Signed in (simulated).&#x27;);enterInvited(v.plain?&#x27;you&#x27;:v.role,!v.plain);};
     if(action===&#x27;auth-privacy&#x27;) {openPrivacy();return;}
+    // There are no terms of use yet (plans/features.csv M-11).
+    if(action===&#x27;auth-terms&#x27;) {announce(&#x27;Steelman’s terms aren’t written yet.&#x27;);return;}
     if(action===&#x27;invite-look&#x27;) {enterInvited(&#x27;out&#x27;,false);announce(&#x27;Signed out: you can read. Sign in from the top bar to take part.&#x27;);return;}
-    if(action===&#x27;auth-google&#x27;) {v.via=&#x27;google&#x27;;v.error=&#x27;&#x27;;if(v.plain){done();return;}v.step=&#x27;name&#x27;;v.name=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
+    if(action===&#x27;auth-google-refused&#x27;) {Object.assign(v,{step:&#x27;start&#x27;,error:&#x27;&#x27;,googleError:&#x27;Google couldn’t confirm your email. Use a code instead.&#x27;});show(&#x27;auth-email&#x27;,v.googleError);return;}
+    if(action===&#x27;auth-google&#x27;) {v.via=&#x27;google&#x27;;v.error=&#x27;&#x27;;v.googleError=&#x27;&#x27;;if(v.plain){done();return;}v.step=&#x27;name&#x27;;v.name=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
     if(action===&#x27;auth-send&#x27;) {
       v.email=(root.querySelector(&#x27;#sm-auth-email&#x27;)?.value||&#x27;&#x27;).trim();
       v.error=!v.email?&#x27;Enter your email.&#x27;:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)?&#x27;&#x27;:&#x27;That doesn’t look like an email address.&#x27;;
+      v.googleError=&#x27;&#x27;;
+      if(!v.error&amp;&amp;!mayEmail(v)) v.error=TOO_MANY_CODES;
       if(v.error){show(&#x27;auth-email&#x27;,v.error);return;}
-      Object.assign(v,{via:&#x27;email&#x27;,step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`Link sent to ${v.email}.`);return;
+      Object.assign(v,newCode(),{via:&#x27;email&#x27;,step:&#x27;code&#x27;,resent:false});show(&#x27;auth-code&#x27;,`Code sent to ${v.email}.`);return;
     }
-    if(action===&#x27;auth-open&#x27;) {if(knownEmail(v.email)){done();return;}v.step=&#x27;name&#x27;;v.name=v.email.split(&#x27;@&#x27;)[0].toLowerCase().replace(/[^a-z0-9._]/g,&#x27;&#x27;).slice(0,20);v.error=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;}
-    if(action===&#x27;auth-expired&#x27;) {v.step=&#x27;expired&#x27;;show(&#x27;auth-again&#x27;,&#x27;That link has expired.&#x27;);return;}
-    if(action===&#x27;auth-again&#x27;) {Object.assign(v,{step:&#x27;sent&#x27;,resent:false});show(&#x27;auth-open&#x27;,`New link sent to ${v.email}.`);return;}
-    if(action===&#x27;auth-resend&#x27;) {v.resent=true;show(&#x27;auth-resend&#x27;,`Sent again to ${v.email}.`);return;}
+    // Entering the code (architecture §7): six digits, ten minutes, five wrong tries, and a new code cancels the old.
+    if(action===&#x27;auth-code&#x27;) {
+      v.typed=(root.querySelector(&#x27;#sm-auth-code&#x27;)?.value||&#x27;&#x27;).replace(/\s/g,&#x27;&#x27;);
+      v.error=!/^\d{6}$/.test(v.typed)?&#x27;Enter the 6-digit code.&#x27;
+        :v.expired?&#x27;That code has expired. Send a new code.&#x27;
+        :v.tries&gt;=5?&#x27;Too many wrong tries. Send a new code.&#x27;
+        :v.typed!==v.code?(++v.tries&gt;=5?&#x27;Too many wrong tries. Send a new code.&#x27;:&#x27;That code isn’t right.&#x27;):&#x27;&#x27;;
+      if(v.error){show(&#x27;auth-code&#x27;,v.error);return;}
+      if(knownEmail(v.email)){done();return;}
+      v.step=&#x27;name&#x27;;v.name=suggestName(v.email);v.error=&#x27;&#x27;;show(&#x27;auth-name&#x27;);return;
+    }
+    if(action===&#x27;auth-expire&#x27;) {v.expired=true;announce(&#x27;Ten minutes passed (simulated).&#x27;);return;}
+    if(action===&#x27;auth-resend&#x27;) {
+      if(!mayEmail(v)){v.error=TOO_MANY_CODES;show(&#x27;auth-code&#x27;,v.error);return;}
+      Object.assign(v,newCode(),{resent:true,typed:&#x27;&#x27;,error:&#x27;&#x27;});show(&#x27;auth-code&#x27;,`New code sent to ${v.email}.`);return;
+    }
     if(action===&#x27;auth-restart&#x27;) {Object.assign(v,{step:&#x27;start&#x27;,error:&#x27;&#x27;});show(&#x27;auth-email&#x27;);return;}
     if(action===&#x27;auth-name&#x27;) {
       v.name=(root.querySelector(&#x27;#sm-auth-name&#x27;)?.value||&#x27;&#x27;).trim();
-      v.error=!/^[a-z0-9._]{3,20}$/i.test(v.name)?&#x27;Use 3 to 20 letters, numbers, dots, or underscores.&#x27;:takenNames().has(v.name.toLowerCase())?`${v.name} is taken.`:&#x27;&#x27;;
+      v.error=nameProblem(v.name);
       if(v.error){show(&#x27;auth-name&#x27;,v.error);return;}
       done();return;
     }
@@ -5449,6 +5508,22 @@ html&gt;body{padding:0}&lt;/style&gt;
     state.expanded=null;state.sourceForm=null;state.sourceDraft={}; render(focus||&#x27;expand-&#x27;+id); announce(&#x27;Card collapsed.&#x27;);save();
   }
   root.addEventListener(&#x27;input&#x27;,event=&gt;{
+    // Changing a sign-in field clears its error.
+    if([&#x27;sm-auth-email&#x27;,&#x27;sm-auth-code&#x27;,&#x27;sm-auth-name&#x27;].includes(event.target.id)&amp;&amp;state.invite?.error) {
+      state.invite.error=&#x27;&#x27;;event.target.removeAttribute(&#x27;aria-invalid&#x27;);event.target.removeAttribute(&#x27;aria-describedby&#x27;);root.querySelector(&#x27;#sm-auth-error&#x27;)?.remove();
+    }
+    // Usernames are kept in lower case, so they&#x27;re shown that way as they&#x27;re typed.
+    if(event.target.id===&#x27;sm-auth-name&#x27;) {
+      const el=event.target,at=el.selectionStart;
+      if(el.value!==el.value.toLowerCase()){el.value=el.value.toLowerCase();el.setSelectionRange(at,at);}
+      return;
+    }
+    if(event.target.id===&#x27;sm-auth-code&#x27;) {
+      const el=event.target,digits=el.value.replace(/\D/g,&#x27;&#x27;).slice(0,6);
+      if(el.value!==digits) el.value=digits;
+      el.closest(&#x27;.sm-code&#x27;).querySelectorAll(&#x27;.sm-code-box&#x27;).forEach((box,i)=&gt;{box.textContent=digits[i]||&#x27;&#x27;;box.toggleAttribute(&#x27;data-next&#x27;,i===Math.min(digits.length,5));});
+      return;
+    }
     // Space settings save as you type; the banner and sidebar follow the name.
     if(state.spaceEdit&amp;&amp;[&#x27;sm-space-name&#x27;,&#x27;sm-space-about&#x27;,&#x27;sm-space-invite&#x27;].includes(event.target.id)||event.target.dataset?.spaceRule!==undefined&amp;&amp;state.spaceEdit) {
       const el=event.target,isNew=state.spaceEdit===&#x27;new&#x27;,sp=isNew?state.spaceDraft:spaceOf(state.spaceEdit);

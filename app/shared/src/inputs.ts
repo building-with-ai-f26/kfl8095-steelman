@@ -66,8 +66,8 @@ export function webLink(locator: string): string | null {
 export const boardIdInput = z.string().regex(/^[A-Za-z0-9_-]{12}$/);
 export const itemIdInput = z.string().regex(/^[A-Za-z0-9_-]{20}$/);
 
-/** A username: 3 to 30 letters, digits, or underscores (the prototype's rule). Capitals are allowed but don't count: names are kept in lower case. */
-export const USERNAME = { min: 3, max: 30, pattern: /^[A-Za-z0-9_]+$/ } as const;
+/** A username: 3 to 20 letters, digits, or underscores. Capitals are allowed but don't count: names are kept in lower case. */
+export const USERNAME = { min: 3, max: 20, pattern: /^[A-Za-z0-9_]+$/ } as const;
 
 /** Names nobody may take, so no one can pose as the system (architecture §2, "Links and IDs"). */
 export const RESERVED_USERNAMES: readonly string[] = [
