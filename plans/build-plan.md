@@ -88,6 +88,16 @@
 
 **The builder's part, before agents start M1** (architecture.md §8): add the DNS records for `steelman-argument.com` (bought Nov 11) for Cloud Run and for Resend; open the GCP billing account and both projects; set up Google's consent screen and client IDs; open the Resend account and add its DNS records; turn on branch rules (required checks, auto-merge) and the protected production environment in GitHub. Agents can build and test all of M1 before those records exist, but **M1 isn't shown to classmates until email sign-in works from the domain** (Q13), so it launches with both sign-in methods.
 
+**Done Nov 14.** What the infrastructure (M1-14) and Google sign-in need. None of it is secret: Google's client secrets and Resend's API keys are kept by the builder, and reach the service through Secret Manager.
+
+| | Staging | Production |
+|---|---|---|
+| GCP project (billing linked) | `steelman-staging` (1072423828337) | `steelman-production` (1029089358609) |
+| Google OAuth client ID | `1072423828337-8lva9oad7kqnae9gbsahds99d2m9qr5h.apps.googleusercontent.com`, also used locally | `1029089358609-f0m56dpc56ulpq5vm0l5nct16klg2ope.apps.googleusercontent.com` |
+| Its redirect addresses | `http://localhost:5173/api/auth/callback/google`, `https://staging.steelman-argument.com/api/auth/callback/google` | `https://app.steelman-argument.com/api/auth/callback/google` |
+
+Google's consent screen is in Testing, so only the test users added there can sign in with Google until it's published. Search Console has verified `steelman-argument.com`, and Resend has verified it for sending (from `send.steelman-argument.com`, through Cloudflare). GitHub: `main` requires the two `npm run check` jobs and the protected-files check, auto-merge is on, and the `production` environment needs the builder's approval. The DNS records for Cloud Run come with M1-14, when the services exist.
+
 **Done when (machine):** browser tests sign in by emailed code and by the fake Google, and the two reach the same account when the email matches. A code works once, stops working ten minutes later on the test clock, and is cancelled by five wrong tries. The role matrix passes for Owner, Voter, Contributor, signed out, and non-member. Deleting an account passes every row of the deletion table in architecture.md §2. The staging smoke test is green after a merge. The restore-test workflow has run once and passed.
 
 **Done when (person):** three classmates on their own devices build one board together, from creating it to Strongest case. Two of them sign in with different methods, one with a school Google account.
