@@ -16,8 +16,8 @@ beforeEach(async () => {
   b = await seedBoard(db.client, ids);
 });
 
-const snapshot = (as?: string) => api.get(`/api/boards/${b.board}`, { as });
-const changes = (after: number, as?: string) => api.get(`/api/boards/${b.board}/changes?after=${after}`, { as });
+const snapshot = (as: string = b.ana) => api.get(`/api/boards/${b.board}`, { as });
+const changes = (after: number, as: string = b.ana) => api.get(`/api/boards/${b.board}/changes?after=${after}`, { as });
 const vote = (who: string, value: 1 | -1) => api.put(`/api/boards/${b.board}/arguments/${b.argument}/importance`, { as: who, body: { value } });
 
 describe("the snapshot", () => {
@@ -66,7 +66,8 @@ describe("changes after S", () => {
     const { status, body } = await changes(seq);
 
     expect(status).toBe(200);
-    expect(body).toEqual({ seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [] });
+    // The board's access and the reader's role come with every answer (M1-5); nothing else does.
+    expect(body).toEqual({ seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [], access: { general: "link", linkRole: "contributor" }, role: "owner" });
   });
 
   test("M-02: after a vote, only the row it changed comes back, as it is now", async () => {

@@ -53,6 +53,11 @@ export async function soak(options: SoakOptions): Promise<SoakResult> {
     .insertInto("account")
     .values(voterIds.map((id, index) => ({ id, username: `voter_${String(index + 1).padStart(2, "0")}`, created_at: systemClock.now() })))
     .execute();
+  // Each voter was invited to contribute (M1-5: only members can take part).
+  await db
+    .insertInto("board_member")
+    .values(voterIds.map((id) => ({ board_id: DEMO_BOARD, account_id: id, role: "contributor", joined_via: "invite", joined_at: systemClock.now() })))
+    .execute();
   await db.destroy();
 
   const app = buildApp({ clock: systemClock, ids: systemIds, database: createDatabase(options.databaseUrl), mode: "test" });

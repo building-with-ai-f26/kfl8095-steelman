@@ -4,7 +4,8 @@
 //   1. lock:  take the board's next change number (this also locks it, so
 //             writes to one board take turns and commit in number order);
 //   2. load:  read what the write refers to;
-//   3. can(): ask the policy whether this person may do it;
+//   3. can(): ask the policy whether this person, with their role on the
+//             board, may do it;
 //   4. stale: refuse it if what it was made against has changed;
 //   5. change it,
 //   6. stamping every row it touches with the change number.
@@ -17,6 +18,7 @@ import { sql } from "kysely";
 import type { Transaction } from "kysely";
 import { can } from "@steelman/shared";
 import type { Action, Clock, RefusalReason, VersionRow, WriteAnswer } from "@steelman/shared";
+import { entryTo } from "./access.ts";
 import type { Database, Db } from "./db/database.ts";
 
 export type Trx = Transaction<Database>;
@@ -63,8 +65,9 @@ export async function writeToBoard<Loaded>(db: Db, boardId: string, person: stri
       const loaded = await steps.load(trx);
       if (loaded === null) throw new RollBack({ status: "not_found" });
 
-      // 3. May they?
-      const refusal = can(person, steps.action, { closed: board.closed_at !== null }, steps.authorOf?.(loaded));
+      // 3. May they? (Someone who gets in by the link is recorded as a member when they open the board, not here.)
+      const { role } = await entryTo(trx, boardId, person);
+      const refusal = can(person, role, steps.action, { closed: board.closed_at !== null }, steps.authorOf?.(loaded));
       if (refusal) throw new RollBack({ status: "refused", reason: refusal });
 
       // 4. Stale?

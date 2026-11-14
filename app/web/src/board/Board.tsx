@@ -8,6 +8,7 @@ import { Axis, Icon } from "../icons.tsx";
 import { browserIds } from "../system.ts";
 import { Card } from "./Card.tsx";
 import { ArgumentSlot, EMPTY_DRAFT } from "./Forms.tsx";
+import { Sharing } from "./Sharing.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
@@ -24,6 +25,8 @@ export function Board({ boardId }: { boardId: string }) {
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
 
   if (state.phase === "missing") return <p className="sm-meta">There's no board at this link.</p>;
+  if (state.phase === "no_access") return <p className="sm-meta">You don’t have access to this steelman.</p>;
+  if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!state.view) return null;
   return <BoardView view={state.view} state={state} session={session} />;
 }
@@ -91,6 +94,7 @@ function BoardView({ view, state, session }: { view: ReaderView; state: SessionS
       <div className="sm-scene">
         <section className="sm-head" aria-label="The question">
           <h1>{state.question}</h1>
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} session={session} /> : null}
         </section>
         <main id="sm-content">
           <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption) } as React.CSSProperties}>

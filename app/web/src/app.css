@@ -20,3 +20,19 @@ body { margin:0; }
 /* The sign-in screens put their fields in a form, so Enter submits; the form takes no space of its own, so the
    prototype's card still spaces the fields itself. */
 #steelman-study .sm-auth-form { display:contents; }
+
+/* The pill under the question opens the Share panel, so it is a button here (a label in the prototype), and
+   the panel opens under the question card rather than under the prototype's top bar, which the app doesn't
+   have yet. The card is a layer of its own (z-index 1) below the board's; while the panel is open it hangs
+   over the board, so the card comes to the front. */
+#steelman-study button.sm-meta-pill { background:transparent; cursor:pointer; }
+#steelman-study button.sm-meta-pill:hover, #steelman-study button.sm-meta-pill[aria-expanded="true"] { border-color:#ffffff80; color:#fff; }
+#steelman-study .sm-head .sm-share { top:calc(100% + 8px); left:24px; right:auto; color:var(--sm-ink); text-align:left; }
+#steelman-study .sm-head:has(.sm-share) { z-index:50; }
+@media(max-width:640px) {
+  #steelman-study .sm-head .sm-share { left:0; right:0; width:auto; max-width:none; grid-template-columns:minmax(0, 1fr); }
+  #steelman-study .sm-head .sm-share-body { grid-template-columns:minmax(0, 1fr); }
+  #steelman-study .sm-head .sm-share .sm-person { flex-wrap:wrap; }
+  #steelman-study .sm-head .sm-share .sm-person > span:nth-child(2) { flex:0 0 auto; }
+  #steelman-study .sm-head .sm-share .sm-person > select { margin-left:32px; }
+}

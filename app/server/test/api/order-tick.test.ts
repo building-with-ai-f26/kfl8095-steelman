@@ -21,8 +21,8 @@ beforeEach(async () => {
 });
 
 const TICK = 60_000;
-const snapshot = () => api.get(`/api/boards/${b.board}`);
-const changes = (after: number) => api.get(`/api/boards/${b.board}/changes?after=${after}`);
+const snapshot = () => api.get(`/api/boards/${b.board}`, { as: b.ana });
+const changes = (after: number) => api.get(`/api/boards/${b.board}/changes?after=${after}`, { as: b.ana });
 const upvote = (who: string, argument: string) => api.put(`/api/boards/${b.board}/arguments/${argument}/importance`, { as: who, body: { value: 1 } });
 const savedOrder = async () => (await db.client.query("select arguments, changed_seq::int as seq from published_order where board_id = $1", [b.board])).rows[0];
 

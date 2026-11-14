@@ -1,12 +1,14 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
-import type { Clock, IdSource, RefusalReason } from "@steelman/shared";
+import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "@steelman/shared";
+import type { Clock, IdSource, RefusalReason, Role } from "@steelman/shared";
+import { accessOf, entryTo, joinByLink } from "./access.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
+import { setAccess } from "./sharing.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
 import type { WriteResult } from "./write-path.ts";
@@ -37,6 +39,8 @@ const TEST_USER_HEADER = "x-steelman-test-user";
 
 const STATUS_FOR: Record<RefusalReason, number> = {
   signed_out: 401,
+  no_access: 403,
+  not_allowed: 403,
   test_users_off: 403,
   not_author: 403,
   board_closed: 409,
@@ -131,18 +135,52 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     }));
   }
 
+  /**
+   * Lets a reader in and returns their role, or answers why not and returns
+   * null. Someone getting in by the link for the first time is recorded as a
+   * member (Q7).
+   */
+  async function letIn(boardId: string, person: string | null, reply: FastifyReply): Promise<Role | null> {
+    const board = await db.selectFrom("board").select("closed_at").where("id", "=", boardId).executeTakeFirst();
+    if (!board) {
+      void reply.code(404).send({ reason: "not_found" });
+      return null;
+    }
+    const entry = await entryTo(db, boardId, person);
+    // Someone coming by the link is recorded as they open it, which checks the link again (joinByLink).
+    const role = entry.joiningByLink ? await joinByLink(db, clock, boardId, person!) : entry.role;
+    const reason = can(person, role, "read", { closed: board.closed_at !== null });
+    if (reason) {
+      void reply.code(STATUS_FOR[reason]).send({ status: "refused", reason });
+      return null;
+    }
+    return role;
+  }
+
   app.get<{ Params: { board: string } }>("/api/boards/:board", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
     await publishOrderIfDue(db, clock, request.params.board);
     const snapshot = await readSnapshot(db, request.params.board, request.person);
-    return snapshot ?? reply.code(404).send({ reason: "not_found" });
+    const access = await accessOf(db, request.params.board);
+    return snapshot && access ? { ...snapshot, access, role } : reply.code(404).send({ reason: "not_found" });
   });
 
   app.get<{ Params: { board: string } }>("/api/boards/:board/changes", async (request, reply) => {
     const query = changesQuery.safeParse(request.query);
     if (!query.success) return reply.code(400).send({ reason: "invalid", issues: query.error.issues });
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
     await publishOrderIfDue(db, clock, request.params.board);
     const changes = await readChanges(db, request.params.board, request.person, query.data.after);
-    return changes ?? reply.code(404).send({ reason: "not_found" });
+    const access = await accessOf(db, request.params.board);
+    return changes && access ? { ...changes, access, role } : reply.code(404).send({ reason: "not_found" });
+  });
+
+  app.put<{ Params: { board: string } }>("/api/boards/:board/access", async (request, reply) => {
+    const body = accessInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setAccess(services, request.params.board, request.person, body.data));
   });
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", async (request, reply) => {

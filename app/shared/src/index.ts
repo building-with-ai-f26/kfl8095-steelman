@@ -28,10 +28,11 @@ export {
   wordingInput,
 } from "./inputs.ts";
 export type { SourceInput } from "./inputs.ts";
-export { POLICY, can } from "./policy.ts";
-export type { Action, Refusal } from "./policy.ts";
-export { assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "./api.ts";
+export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
+export type { Action, Refusal, Role } from "./policy.ts";
+export { accessInput, assessmentInput, changesQuery, editInput, newArgumentInput, newWordingInput, voteInput } from "./api.ts";
 export type {
+  Access,
   ArgumentRow,
   BoardChanges,
   BoardSnapshot,
@@ -39,6 +40,7 @@ export type {
   OptionRow,
   RefusalReason,
   SourceRow,
+  Standing,
   VersionRow,
   WriteAnswer,
 } from "./api.ts";

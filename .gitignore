@@ -23,6 +23,7 @@ __pycache__/
 
 # Build Outputs & OS Files
 dist/
+*.tsbuildinfo
 build/
 .next/
 out/
