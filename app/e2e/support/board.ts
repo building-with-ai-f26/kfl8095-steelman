@@ -134,7 +134,7 @@ function isExpectedOfflineError(text: string): boolean {
 }
 
 /** The built web app, from the same port as the API, as in production: any path that isn't a file gets the page. */
-function serveWebApp(app: ReturnType<typeof buildApp>): void {
+export function serveWebApp(app: ReturnType<typeof buildApp>): void {
   const directory = process.env.E2E_WEB_DIRECTORY;
   if (!directory) throw new Error("The browser tests' global setup didn't run");
   const types: Record<string, string> = { ".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".svg": "image/svg+xml", ".png": "image/png" };
@@ -150,7 +150,7 @@ function serveWebApp(app: ReturnType<typeof buildApp>): void {
   });
 }
 
-async function copyTemplate(): Promise<URL> {
+export async function copyTemplate(): Promise<URL> {
   const name = `e2e_${randomBytes(6).toString("hex")}`;
   await asAdmin((admin) => admin.query(`create database ${name} template ${TEMPLATE_DATABASE}`));
   const url = new URL(adminUrl());
@@ -158,7 +158,7 @@ async function copyTemplate(): Promise<URL> {
   return url;
 }
 
-async function dropDatabase(url: URL): Promise<void> {
+export async function dropDatabase(url: URL): Promise<void> {
   await asAdmin((admin) => admin.query(`drop database ${url.pathname.slice(1)} with (force)`));
 }
 

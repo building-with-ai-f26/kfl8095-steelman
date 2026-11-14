@@ -1,5 +1,6 @@
-// The web app's only way to the service. Each call says which test account
-// it is acting as (testUser.ts) and answers in the shared API types.
+// The web app's way to the board's API. Each call goes as the person signed
+// in (the browser sends their session cookie), or says which test account the
+// tab is acting as (testUser.ts), and answers in the shared API types.
 
 import type { BoardChanges, BoardSnapshot, QueuedAction, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";

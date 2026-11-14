@@ -1,6 +1,6 @@
-// No sign-in in M0. The browser says which test account it is acting as, and
-// keeps the choice per tab, so two tabs can be two people. The service only
-// listens in development and tests (server/src/app.ts).
+// Instead of signing in, a tab can act as a test account: the browser says
+// which, and keeps the choice per tab, so two tabs can be two people. The
+// service only listens in development and tests (server/src/app.ts).
 
 const KEY = "steelman.testUser";
 

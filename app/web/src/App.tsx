@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Board } from "./board/Board.tsx";
 import { Logo } from "./icons.tsx";
+import { whoIsSignedIn } from "./signIn/account.ts";
+import type { Me } from "./signIn/account.ts";
+import { ChooseUsername } from "./signIn/ChooseUsername.tsx";
+import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
 
@@ -26,27 +30,37 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
         </div>
         <TestUserSwitch />
       </header>
-      <WhenChosen>
+      <SignedIn>
         <Board boardId={board} />
-      </WhenChosen>
+      </SignedIn>
     </div>
   );
 }
 
-/** Draws the board only once the tab is acting as someone, picking the first test account if it isn't yet. */
-function WhenChosen({ children }: { children: React.ReactNode }) {
-  const [chosen, setChosen] = useState(() => chosenTestUser() !== null);
+type Who = { kind: "asking" } | { kind: "test user" } | { kind: "signed out" } | { kind: "signed in"; me: Me };
+
+/**
+ * Draws the board only for someone signed in with a username (L-01). Signed
+ * out, it asks them to sign in first and shows nothing of the board; signed in
+ * without a username, it asks for one. A tab acting as a test account
+ * (development and tests only) skips all of that.
+ */
+function SignedIn({ children }: { children: React.ReactNode }) {
+  const [who, setWho] = useState<Who>(() => (chosenTestUser() !== null ? { kind: "test user" } : { kind: "asking" }));
+  const ask = useCallback(() => {
+    void whoIsSignedIn().then((me) => setWho(me ? { kind: "signed in", me } : { kind: "signed out" }));
+  }, []);
   useEffect(() => {
-    if (chosen) return;
-    void listTestUsers().then((users) => {
-      if (users[0]) chooseTestUser(users[0].id);
-      setChosen(true);
-    });
-  }, [chosen]);
-  return chosen ? children : null;
+    if (who.kind === "asking") ask();
+  }, [who.kind, ask]);
+
+  if (who.kind === "asking") return null;
+  if (who.kind === "signed out") return <SignIn onSignedIn={ask} />;
+  if (who.kind === "signed in" && who.me.username === null) return <ChooseUsername email={who.me.email} onChosen={ask} />;
+  return children;
 }
 
-/** No sign-in in M0: each tab picks which test account it acts as (development and tests only). */
+/** Each tab can act as a test account instead of signing in (development and tests only). */
 function TestUserSwitch() {
   const [users, setUsers] = useState<TestUser[]>([]);
   useEffect(() => {
@@ -63,6 +77,11 @@ function TestUserSwitch() {
           window.location.reload();
         }}
       >
+        {chosenTestUser() === null ? (
+          <option value="" disabled>
+            No one
+          </option>
+        ) : null}
         {users.map((user) => (
           <option key={user.id} value={user.id}>
             {user.username}
