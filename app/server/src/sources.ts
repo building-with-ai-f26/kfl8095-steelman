@@ -1,7 +1,7 @@
 // Sources (C-01): a piece of evidence, shared on the board. Anyone who can
 // contribute adds one to a wording, or cites one already on the board; only
-// the person who added a source edits it or takes it off a wording (the
-// prototype's rules). Nothing leaves the board (invariant 6), so a source
+// the person who added a source edits it (the prototype's rule). Taking one
+// off a wording is for whoever added it, the wording's author, or the Owner. Nothing leaves the board (invariant 6), so a source
 // taken off its last wording stays, cited by nothing.
 //
 // Changing which sources a wording cites saves revision n + 1 with the same
@@ -23,6 +23,7 @@ type NewSource = SourceInput & { id: string };
 
 /** A wording, as these writes need it: its revision now, and the sources that revision cites. */
 interface Wording {
+  author_id: string;
   current_rev: number;
   deleted_at: Date | null;
   hidden_at: Date | null;
@@ -79,16 +80,20 @@ export function citeSource({ db, clock }: Services, boardId: string, person: str
   });
 }
 
-/** Takes a source off a wording. The source stays on the board. */
+/**
+ * Takes a source off a wording. The source stays on the board. The person who
+ * added the source may, and so may the wording's author, since anyone can
+ * cite a source on anyone's wording; the Owner may take any off (policy.ts).
+ */
 export function unciteSource({ db, clock }: Services, boardId: string, person: string | null, versionId: string, sourceId: string): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
-    action: "delete",
+    action: "uncite",
     load: async (trx) => {
       const source = await sourceOnBoard(trx, boardId, sourceId);
       const wording = source && (await loadWording(trx, boardId, versionId));
       return source && wording ? { ...wording, added_by: source.added_by } : null;
     },
-    authorOf: (wording) => wording.added_by,
+    authorOf: (wording) => [wording.added_by, wording.author_id],
     stale: async (_trx, wording) => (wording.cited.includes(sourceId) ? gone(wording) : "already_done"),
     change: async (trx, wording, seq) => {
       const rest = wording.cited.filter((id) => id !== sourceId);
@@ -144,7 +149,7 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
 async function loadWording(trx: Trx, boardId: string, versionId: string): Promise<Wording | null> {
   const version = await trx
     .selectFrom("version")
-    .select(["current_rev", "deleted_at", "hidden_at"])
+    .select(["author_id", "current_rev", "deleted_at", "hidden_at"])
     .where("id", "=", versionId)
     .where("board_id", "=", boardId)
     .executeTakeFirst();

@@ -13,7 +13,7 @@ export const ROLES: readonly Role[] = ["voter", "contributor", "owner"];
 /** The roles a board's link can give. Owner never comes by the link. */
 export const LINK_ROLES = ["voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "share";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share";
 
 interface Rule {
   /** The least role that may do it. */
@@ -22,6 +22,8 @@ interface Rule {
   openBoard: boolean;
   /** Only the author of the item may do it. */
   authorOnly: boolean;
+  /** For an author-only action: the least role that may do it to anyone's item. */
+  anyoneFrom?: Role;
 }
 
 export const POLICY: Record<Action, Rule> = {
@@ -31,6 +33,12 @@ export const POLICY: Record<Action, Rule> = {
   add: { least: "contributor", openBoard: true, authorOnly: false },
   edit: { least: "contributor", openBoard: true, authorOnly: true },
   delete: { least: "contributor", openBoard: true, authorOnly: true },
+  /**
+   * Taking a source off a wording (C-01): for the person who added the source
+   * or the wording's author; the Owner may take any off (the builder, Nov 14).
+   * The Editor, when M2 adds it, takes the Owner's place here.
+   */
+  uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "owner" },
   /** Changing the board's general access and its link role. */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };
@@ -46,15 +54,17 @@ export type Refusal = "signed_out" | "no_access" | "not_allowed" | "board_closed
  * @param person The account acting, or null when signed out.
  * @param role Their role on this board, or null when they have none.
  * @param board Whether the board is closed.
- * @param authorId Who wrote the item acted on, for actions only its author may take.
+ * @param authors Who wrote the item acted on, for actions only its author may take: one person, or each who counts as its author.
  * @returns null when allowed, or why not.
  */
-export function can(person: string | null, role: Role | null, action: Action, board: { closed: boolean }, authorId?: string): Refusal | null {
+export function can(person: string | null, role: Role | null, action: Action, board: { closed: boolean }, authors?: string | readonly string[]): Refusal | null {
   const rule = POLICY[action];
   if (person === null) return "signed_out";
   if (role === null) return "no_access";
   if (ROLES.indexOf(role) < ROLES.indexOf(rule.least)) return "not_allowed";
   if (rule.openBoard && board.closed) return "board_closed";
-  if (rule.authorOnly && person !== authorId) return "not_author";
+  const isAuthor = typeof authors === "string" ? person === authors : (authors ?? []).includes(person);
+  const forAnyone = rule.anyoneFrom !== undefined && ROLES.indexOf(role) >= ROLES.indexOf(rule.anyoneFrom);
+  if (rule.authorOnly && !isAuthor && !forAnyone) return "not_author";
   return null;
 }

@@ -36,8 +36,8 @@ export interface WriteSteps<Loaded> {
   action: Action;
   /** Step 2. Null when the thing isn't on this board. */
   load(trx: Trx): Promise<Loaded | null>;
-  /** For actions only an author may take. */
-  authorOf?(loaded: Loaded): string;
+  /** For actions only an author may take: who counts as its author. */
+  authorOf?(loaded: Loaded): string | string[];
   /** Step 4: why the write is stale, if it is. */
   stale?(trx: Trx, loaded: Loaded): Promise<Outcome | null>;
   /** Steps 5 and 6: make the change, stamping each row with `seq`. */

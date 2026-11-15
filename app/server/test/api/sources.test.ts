@@ -7,9 +7,10 @@ import { useTestDatabase } from "../support/database.ts";
 
 // Sources, on the server (M1-8; C-01). A source is a piece of evidence,
 // shared on the board: anyone who can contribute adds one to a wording, and
-// may cite it on others; only the person who added it edits it or takes it
-// off a wording (the prototype's rules). Nothing is ever removed from a
-// board, so taking a source off a wording leaves the source there.
+// may cite it on others; only the person who added it edits it (the
+// prototype's rule). Taking one off a wording is for whoever added it, the
+// wording's author, or the Owner (the builder, Nov 14). Nothing is ever
+// removed from a board, so taking a source off a wording leaves it there.
 //
 // Changing which sources a wording cites saves a new revision, so its
 // credibility starts over (invariant 2). Editing a source's evidence (where
@@ -285,12 +286,36 @@ describe("taking a source off a wording", () => {
     expect(await version(b.version)).toMatchObject({ rev: 2 });
   });
 
-  test("C-01: only the person who added the source can take it off", async () => {
+  test("C-01: someone who neither added the source nor wrote the wording can't take it off", async () => {
     const { status, body } = await uncite(b.ben, b.version, b.source);
 
     expect(status).toBe(403);
     expect(body).toEqual({ status: "refused", reason: "not_author" });
     expect(await version(b.version)).toMatchObject({ rev: 1, sourceIds: [b.source] });
+  });
+
+  test("C-01: the wording's author may take off a source someone else cited there; the person who cited it may not", async () => {
+    const carol = await addAccount(db.client, ids, "carol");
+    await addMember(db.client, b.board, carol, "contributor");
+    const carols = ids.itemId();
+    await api.post(`/api/boards/${b.board}/arguments/${b.argument}/versions`, { as: carol, body: { id: carols, wording: "Carol's wording.", context: "" } });
+    await cite(b.ben, carols, b.source); // Ana's source, cited by Ben on Carol's wording
+
+    expect((await uncite(b.ben, carols, b.source)).body).toEqual({ status: "refused", reason: "not_author" });
+    expect((await uncite(carol, carols, b.source)).body.status).toBe("done");
+    expect(await version(carols)).toMatchObject({ rev: 3, sourceIds: [] });
+  });
+
+  test("C-01: the Owner may take any source off any wording", async () => {
+    const carol = await addAccount(db.client, ids, "carol");
+    await addMember(db.client, b.board, carol, "contributor");
+    const carols = ids.itemId();
+    const bens = ids.itemId();
+    await api.post(`/api/boards/${b.board}/arguments/${b.argument}/versions`, { as: carol, body: { id: carols, wording: "Carol's wording.", context: "" } });
+    await addSource(b.ben, carols, { id: bens, ...EVIDENCE }); // Ben's source on Carol's wording: Ana, the Owner, wrote neither
+
+    expect((await uncite(b.ana, carols, bens)).body.status).toBe("done");
+    expect(await version(carols)).toMatchObject({ sourceIds: [] });
   });
 
   test("C-01: it is in the change log", async () => {
@@ -478,7 +503,8 @@ describe("an edit of the wording after its sources changed", () => {
 // ---------------------------------------------------------------------------
 // Who may do what with sources (plans/architecture.md §7): adding or citing
 // one needs Contributor; editing one, or taking it off a wording, is for the
-// person who added it. The same shape as the role matrix in roles.test.ts.
+// person who added it (taking off is also for others, tested above). The same
+// shape as the role matrix in roles.test.ts.
 
 const PERSONAS = ["owner", "contributor", "voter", "signed out", "non-member"] as const;
 type Persona = (typeof PERSONAS)[number];
