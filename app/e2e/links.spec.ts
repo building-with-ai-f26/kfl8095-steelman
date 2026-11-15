@@ -25,6 +25,34 @@ const card = (page: Page, wording: string): Locator => page.locator(".sm-card").
 const claim = (page: Page, wording: string): Locator => card(page, wording).getByRole("button", { name: wording });
 const path = (page: Page) => new URL(page.url()).pathname;
 
+/**
+ * Records each card that rings, as it rings: the ring lasts 1.4 s, which a
+ * slow run could miss if a test only looked for it afterwards.
+ */
+async function watchRings(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const rung: string[] = ((window as unknown as { rung: string[] }).rung = []);
+    const note = (element: Element) => {
+      for (const ringed of [element, ...element.querySelectorAll(".sm-arrived")]) {
+        if (ringed instanceof HTMLElement && ringed.classList.contains("sm-arrived") && ringed.dataset.card) rung.push(ringed.dataset.card);
+      }
+    };
+    // A card can be drawn already ringed (added), or be ringed later (its class changes).
+    new MutationObserver((changes) => {
+      for (const change of changes) {
+        if (change.type === "attributes" && change.target instanceof Element) note(change.target);
+        for (const added of change.addedNodes) if (added instanceof Element) note(added);
+      }
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ["class"], childList: true });
+  });
+}
+
+/** Whether the card rang, by its version ID: when it first drew with its ring, or since. */
+async function rang(page: Page, wording: string): Promise<boolean> {
+  const id = await card(page, wording).getAttribute("data-card");
+  return page.evaluate((id) => (window as unknown as { rung: string[] }).rung.includes(id!) || document.querySelector(`[data-card="${id}"]`)!.classList.contains("sm-arrived"), id);
+}
+
 async function versionLink(board: TestBoard, wording: string): Promise<string> {
   return `/b/${board.demo.board}/v/${(await find(board, wording)).version}`;
 }
@@ -66,28 +94,51 @@ test("M-06: folding the row a version is open in gives the address back to the b
   await page.getByRole("button", { name: "Fold versions back into the stack" }).click();
 
   await expect(page).toHaveURL(new RegExp(`/b/${board.demo.board}$`));
+  // Unfolding it again doesn't bring the version, or its address, back.
+  await row(page, LEAD).getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
+  await expect(claim(page, SECOND)).toHaveAttribute("aria-expanded", "false");
+  expect(path(page)).toBe(`/b/${board.demo.board}`);
+});
+
+test("M-06: on a phone, switching to the other side closes the version open on this one", async ({ board }) => {
+  const page = await board.open("jordan_w", { width: 375 });
+
+  await claim(page, LEAD).click();
+  await expect(page).toHaveURL(new RegExp(`${await versionLink(board, LEAD)}$`));
+  await page.getByRole("tab", { name: /^No/ }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/b/${board.demo.board}$`));
+});
+
+test("M-06, M-08: a card's wording is kept out of PostHog's autocapture, since it is what someone wrote", async ({ board }) => {
+  const page = await board.open("jordan_w");
+
+  await expect(claim(page, LEAD)).toHaveClass(/ph-no-capture/);
 });
 
 test("M-06: a version's link unfolds its row, opens the version, and rings it", async ({ board }) => {
   const page = await board.open("jordan_w");
+  await watchRings(page);
 
   await page.goto(await versionLink(board, SECOND));
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
   await expect(row(page, LEAD).getByRole("region", { name: "Versions, best articulated first" })).toBeVisible();
   await expect(claim(page, SECOND)).toHaveAttribute("aria-expanded", "true");
-  await expect(card(page, SECOND)).toHaveClass(/sm-arrived/);
+  expect(await rang(page, SECOND)).toBe(true);
   await expect(card(page, SECOND)).toBeInViewport();
+  await expect(page.locator("#sm-status")).toHaveText(`Opened “${QUESTION}”.`);
   expect(path(page)).toBe(await versionLink(board, SECOND));
 });
 
 test("M-06: a link to a row's leading wording opens it in place, without unfolding the row", async ({ board }) => {
   const page = await board.open("jordan_w");
+  await watchRings(page);
 
   await page.goto(await versionLink(board, LEAD));
 
   await expect(claim(page, LEAD)).toHaveAttribute("aria-expanded", "true");
-  await expect(card(page, LEAD)).toHaveClass(/sm-arrived/);
+  expect(await rang(page, LEAD)).toBe(true);
   await expect(page.getByRole("region", { name: "Versions, best articulated first" })).toHaveCount(0);
 });
 
@@ -152,6 +203,13 @@ test("M-06, M-04: Escape closes a version's menu and puts the cursor back on ⋯
   await options.click();
   await page.getByRole("heading", { level: 1 }).click();
   await expect(page.getByRole("menu")).toHaveCount(0);
+
+  // Tab leaves the menu and closes it, going on from ⋯ to the card's wording.
+  await options.click();
+  await expect(page.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(claim(page, LEAD)).toBeFocused();
 });
 
 test("M-06: a link to a deleted version opens the board, says so, and gives the address back to the board", async ({ board }) => {
@@ -161,14 +219,18 @@ test("M-06: a link to a deleted version opens the board, says so, and gives the 
 
   await page.goto(link);
 
-  const note = page.getByRole("status").filter({ hasText: "That version was deleted." });
+  const note = page.locator(".sm-link-note");
+  await expect(note).toHaveText(/That version was deleted\./);
   await expect(note).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
   await expect(note.getByRole("button", { name: "Dismiss" })).toBeFocused();
   expect(path(page)).toBe(`/b/${board.demo.board}`);
 
+  await expect(page.locator("#sm-status")).toHaveText(`That version was deleted. Opened “${QUESTION}”.`);
+
   await note.getByRole("button", { name: "Dismiss" }).click();
   await expect(note).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
 });
 
 test("M-06: a link to a version that was never on the board says the same", async ({ board }) => {
@@ -176,12 +238,12 @@ test("M-06: a link to a version that was never on the board says the same", asyn
 
   await page.goto(`/b/${board.demo.board}/v/nosuchversion0000000`);
 
-  await expect(page.getByText("That version was deleted.")).toBeVisible();
+  await expect(page.locator(".sm-link-note")).toHaveText(/That version was deleted\./);
   expect(path(page)).toBe(`/b/${board.demo.board}`);
 });
 
 test("M-06: a link to a board that doesn't exist says so, and leads to New steelman", async ({ board }) => {
-  const page = await board.open("jordan_w");
+  const page = await board.open("jordan_w", { missingBoards: true });
 
   for (const address of ["/b/nosuchboard1", "/b/nosuchboard1/v/x", "/b/x/y/z"]) {
     await page.goto(address);
@@ -193,12 +255,12 @@ test("M-06: a link to a board that doesn't exist says so, and leads to New steel
 
 for (const size of SIZES) {
   test(`M-04, M-06: a version's open menu, the deleted-version note, and the missing board pass an accessibility scan at ${size.name} width`, async ({ board }) => {
-    const page = await board.open("jordan_w", { width: size.width });
+    const page = await board.open("jordan_w", { width: size.width, missingBoards: true });
     await card(page, LEAD).getByRole("button", { name: "Options for this version" }).click();
     await expectNoAxeViolations(page);
 
     await page.goto(`/b/${board.demo.board}/v/nosuchversion0000000`);
-    await expect(page.getByText("That version was deleted.")).toBeVisible();
+    await expect(page.locator(".sm-link-note")).toBeVisible();
     await expectNoAxeViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width);
 
@@ -224,6 +286,7 @@ siteTest("M-06, L-01: signed out, a version's link to a board only invited peopl
   const link = `${site.boardPath}/v/${version}`;
 
   const page = await site.browse();
+  await watchRings(page);
   const asked: string[] = [];
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/boards")) asked.push(request.url());
@@ -239,7 +302,7 @@ siteTest("M-06, L-01: signed out, a version's link to a board only invited peopl
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
   expect(path(page)).toBe(link);
   await expect(claim(page, SECOND)).toHaveAttribute("aria-expanded", "true");
-  await expect(card(page, SECOND)).toHaveClass(/sm-arrived/);
+  expect(await rang(page, SECOND)).toBe(true);
 });
 
 /** Signs in by email code on the page as it is, without going anywhere first. */

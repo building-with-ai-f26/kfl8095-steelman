@@ -91,7 +91,12 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
   }, [arrived]);
   useEffect(() => {
     if (arrival.note) dismiss.current?.focus();
-  }, [arrival]);
+    if (linked) session.announce(`${arrival.note ? `${arrival.note} ` : ""}Opened “${state.question}”.`);
+    // Once, when the board first shows.
+  }, []);
+  const question = useRef<HTMLHeadingElement>(null);
+  /** The version open, if it's in this column. */
+  const versionIn = (optionId: string) => openVersion !== null && view.rows.arguments[view.rows.versions[openVersion]!.argumentId]?.optionId === optionId;
   const openOption = open ? view.rows.arguments[open]?.optionId : undefined;
   const [writing, setWriting] = useState<Writing>(null);
   /** Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>". */
@@ -149,13 +154,23 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
     <div className="sm-surface">
       <div className="sm-scene">
         <section className="sm-head" aria-label="The question">
-          <h1>{state.question}</h1>
+          <h1 ref={question} tabIndex={-1}>
+            {state.question}
+          </h1>
           {state.access && state.role ? <Sharing access={state.access} role={state.role} session={session} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
               <span>{note}</span>
-              <button ref={dismiss} type="button" className="sm-link-button cursor-interaction" onClick={() => setNote("")}>
+              <button
+                ref={dismiss}
+                type="button"
+                className="sm-link-button cursor-interaction"
+                onClick={() => {
+                  setNote("");
+                  question.current?.focus();
+                }}
+              >
                 Dismiss
               </button>
             </p>
@@ -172,7 +187,11 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
                   className="cursor-interaction"
                   aria-selected={option.id === side}
                   aria-controls={`sm-col-${option.id}`}
-                  onClick={() => setSide(option.id)}
+                  onClick={() => {
+                    // On a phone the other column is hidden, so the version open in it closes.
+                    if (option.id !== side && openVersion !== null && !versionIn(option.id)) setExpanded(null);
+                    setSide(option.id);
+                  }}
                 >
                   <span>{option.name}</span>
                   <small>{view.shown.arguments[option.id]?.length ?? 0}</small>
@@ -188,6 +207,8 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
                 gap={index > 0}
                 open={open}
                 onToggle={(id) => {
+                  // Folding a row closes the version open in it, unless it's the one still showing.
+                  if (open === id && openVersion !== null && (view.shown.versions[id] ?? []).indexOf(openVersion) > 0) setExpanded(null);
                   if (writing?.kind === "wording") setWriting(null);
                   setOpen(open === id ? null : id);
                 }}

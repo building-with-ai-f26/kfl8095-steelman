@@ -62,7 +62,8 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
           }}
         />
       ) : null}
-      <button type="button" className="sm-claim-button cursor-interaction" aria-expanded={open} aria-controls={reveal} onClick={() => opening.toggle(version.id)}>
+      {/* ph-no-capture: PostHog's autocapture sends a clicked button's text, and this text is what someone wrote. */}
+      <button type="button" className="sm-claim-button cursor-interaction ph-no-capture" aria-expanded={open} aria-controls={reveal} onClick={() => opening.toggle(version.id)}>
         <span className="sm-claim">{version.wording}</span>
       </button>
       <Byline version={version} />
@@ -87,7 +88,9 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
  * A version's ⋯ menu. It hangs from the board's main region, under its
  * button, so a row that scrolls sideways can't clip it (the prototype's
  * positionMenu, which hangs it from the page's root, outside any landmark).
- * Escape closes it and puts the cursor back on ⋯; a click elsewhere closes it.
+ * Escape closes it and puts the cursor back on ⋯; Tab leaves and closes it,
+ * moving on from ⋯; a click elsewhere closes it. It's placed once, so a row
+ * scrolling sideways or the window changing size closes it too.
  */
 function VersionMenu({ trigger, onClose, onCopyLink }: { trigger: RefObject<HTMLButtonElement | null>; onClose(): void; onCopyLink(): void }) {
   const menu = useRef<HTMLDivElement>(null);
@@ -107,19 +110,34 @@ function VersionMenu({ trigger, onClose, onCopyLink }: { trigger: RefObject<HTML
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const here = document.activeElement;
-      if (event.key !== "Escape" || !(menu.current?.contains(here) || trigger.current === here)) return;
-      onClose();
-      trigger.current?.focus();
+      if (event.key === "Escape" && (menu.current?.contains(here) || trigger.current === here)) {
+        onClose();
+        trigger.current?.focus();
+      }
+      // The browser then moves the cursor on from ⋯, so Tab goes where it would without the menu.
+      if (event.key === "Tab" && menu.current?.contains(here)) {
+        onClose();
+        trigger.current?.focus();
+      }
     };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
       if (!menu.current?.contains(target) && !trigger.current?.contains(target)) onClose();
     };
+    // A scroll of anything holding ⋯, other than the page itself, moves ⋯ out from under the menu.
+    const onScroll = (event: Event) => {
+      const scrolled = event.target;
+      if (scrolled instanceof Element && scrolled.contains(trigger.current)) onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onClose);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onClose);
     };
   }, [trigger, onClose]);
 
