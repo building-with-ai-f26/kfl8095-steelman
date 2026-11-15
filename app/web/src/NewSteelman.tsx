@@ -13,6 +13,7 @@ import type { Access } from "@steelman/shared";
 import { createBoard } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
+import { boardPath } from "./links.ts";
 
 const PLACEHOLDERS = ["First option", "Second option", "Third option", "Fourth option"];
 
@@ -76,7 +77,7 @@ export function NewSteelman() {
       // An answer the app can't read (a proxy's error page, say): never leave the button stuck.
       answer = { problem: "Steelman couldn’t make that board. Try again." };
     }
-    if (typeof answer === "string") return window.location.assign(`/b/${answer}`);
+    if (typeof answer === "string") return window.location.assign(boardPath(answer));
     setBusy(false);
     fail(answer.problem, null);
   }
