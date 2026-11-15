@@ -88,7 +88,9 @@ async function idTaken(trx: Trx, id: string): Promise<boolean> {
 }
 
 /**
- * Saves the edited wording as revision n + 1 (A-06). Its sources carry over;
+ * Saves the edited wording as revision n + 1 (A-06). It is refused only if
+ * another edit came after the revision it started from: a change of sources
+ * in between doesn't make it stale (C-01). Its sources carry over;
  * its credibility starts over, because assessments belong to a revision
  * (invariant 2). Importance and articulation votes don't mention revisions,
  * so they stay.
@@ -107,22 +109,34 @@ export function editWording(
         .selectFrom("version as v")
         .innerJoin("version_revision as r", (join) => join.onRef("r.version_id", "=", "v.id").onRef("r.rev", "=", "v.current_rev"))
         .innerJoin("argument as a", "a.id", "v.argument_id")
-        .select(["v.author_id", "v.current_rev", "v.deleted_at", "v.articulation_voters", "a.importance_voters", "r.wording", "r.context", "r.created_by"])
+        .select(["v.author_id", "v.current_rev", "v.deleted_at", "v.articulation_voters", "a.importance_voters", "r.wording", "r.context"])
         .where("v.id", "=", versionId)
         .where("v.board_id", "=", boardId)
         .executeTakeFirst()) ?? null,
     authorOf: (version) => version.author_id,
     stale: async (trx, version): Promise<Outcome | null> => {
       if (version.deleted_at) return { refused: "version_deleted" };
-      const sameText = version.wording === input.wording && version.context === input.context;
-      // Sent again after it was saved: the next revision is already there, with this text.
-      if (input.baseRev === version.current_rev - 1 && sameText && version.created_by === person) return "already_done";
-      if (input.baseRev !== version.current_rev) {
-        // Made against a revision that isn't the latest, such as one an earlier, failed edit would have saved.
+      const changed = async (): Promise<Outcome> => {
         const [current] = await versionRows(trx, boardId, person, { ids: [versionId] });
         return current ? { refused: "revision_changed", current } : { refused: "revision_changed" };
+      };
+      // Made against a revision that doesn't exist yet, such as one an earlier, failed edit would have saved.
+      if (input.baseRev > version.current_rev) return changed();
+      // Someone changing its sources saves revisions too, with the same text; only another edit makes this one stale.
+      const later = await trx
+        .selectFrom("version_revision")
+        .select(["wording", "context", "created_by"])
+        .where("version_id", "=", versionId)
+        .where("rev", ">", input.baseRev)
+        .where("why", "=", "edited")
+        .orderBy("rev")
+        .executeTakeFirst();
+      if (later) {
+        // Sent again after it was saved: the first edit after its revision is this one.
+        const repeat = later.wording === input.wording && later.context === input.context && later.created_by === person;
+        return repeat ? "already_done" : changed();
       }
-      return sameText ? "already_done" : null;
+      return version.wording === input.wording && version.context === input.context ? "already_done" : null;
     },
     change: async (trx, version, seq) => {
       const rev = version.current_rev + 1;

@@ -3,7 +3,7 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
-import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, wordingInput } from "./inputs.ts";
+import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput } from "./inputs.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
 import type { Role } from "./policy.ts";
@@ -28,6 +28,9 @@ export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordin
 
 /** An edit names the revision it started from. */
 export const editInput = z.strictObject({ baseRev: z.number().int().min(1), wording: wordingInput, context: contextInput });
+
+/** A new source, added to a wording, with the ID the browser made for it (C-01). Editing one sends `sourceInput`. */
+export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.shape });
 
 /**
  * Who can get in (H-02): only the people named on the board, or also anyone
@@ -115,6 +118,8 @@ export interface SourceRow {
   finding: string;
   backsUp: string;
   limits: string;
+  /** Who added it: only they may edit it or take it off a wording. */
+  addedBy: string;
   unavailable: boolean;
   changedSeq: number;
 }

@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newBoardInput, newWordingInput, voteInput } from "@steelman/shared";
+import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, sourceInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { createBoard } from "./boards.ts";
@@ -10,6 +10,7 @@ import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { setAccess } from "./sharing.ts";
+import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
 import type { WriteResult } from "./write-path.ts";
@@ -237,6 +238,27 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) =>
     answer(reply, await deleteWording(services, request.params.board, request.person, request.params.id)),
   );
+
+  // Sources (C-01): add a new one to a wording, cite one already on the board, take one off, or edit one.
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/sources", async (request, reply) => {
+    const body = newSourceInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addSource(services, request.params.board, request.person, request.params.id, body.data));
+  });
+
+  app.put<{ Params: { board: string; id: string; source: string } }>("/api/boards/:board/versions/:id/sources/:source", async (request, reply) =>
+    answer(reply, await citeSource(services, request.params.board, request.person, request.params.id, request.params.source)),
+  );
+
+  app.delete<{ Params: { board: string; id: string; source: string } }>("/api/boards/:board/versions/:id/sources/:source", async (request, reply) =>
+    answer(reply, await unciteSource(services, request.params.board, request.person, request.params.id, request.params.source)),
+  );
+
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id", async (request, reply) => {
+    const body = sourceInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await editSource(services, request.params.board, request.person, request.params.id, body.data));
+  });
 
   return app;
 }

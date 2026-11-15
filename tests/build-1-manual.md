@@ -1115,6 +1115,26 @@ M1-7. Every board and version has an address: `/b/<board>` and `/b/<board>/v/<ve
 | Saved screenshots | The ⋯ on every card changed under 1% of the board and Share screenshots (desktop and 375 px), so they still passed but no longer showed it. Retaken with the builder's approval (Nov 14), as in M1-6: the macOS set locally, checked by eye (the ⋯ on every card, nothing else changed); the Linux set from CI's Docker job (run 43663188362), checked by eye |
 | Not checked | Safari and Firefox; a screen reader. A deployed service: it must send the page for any `/b/…` path (M1-14). Whether PostHog's `history_change` page views count each card opened as a page view, now that the address changes with it: the address carries board and version IDs, as it already carried the board's. The builder accepted this on Nov 14 |
 
+## November 14 — Sources, on the server (C-01, C-03)
+
+M1-8. Sources through the API, with no screens yet (the card's evidence and source form come with M1-9). Four writes, each through the one write path: add a new source to a wording (`POST …/versions/<id>/sources`), cite a source already on the board on another wording (`PUT …/versions/<id>/sources/<source>`), take one off a wording (`DELETE` the same address), and edit one (`PUT …/sources/<source>`). As in the prototype, anyone who can contribute adds a source; only the person who added it edits it or takes it off a wording. Nothing leaves a board, so a source taken off its last wording stays, cited by nothing.
+
+| Check | Observed result |
+| --- | --- |
+| Tests first | `app/server/test/api/sources.test.ts` (58 tests) was written first: 56 failed (no routes); the 2 that passed were "not found" cases, which a missing route also answers |
+| New revision | Adding, citing, or taking off a source saves revision n + 1 of the wording, with the same text and `why` = `sources_changed`; its yes and no go to 0 and the reader's own assessment is gone, while importance and articulation votes stay |
+| Shared source (Q10) | Changing its finding, where to find it, what it backs up, or its limits gives every wording whose current revision cites it a new revision (`source_changed`), each starting over; a wording that cites nothing, one that cited it only in an earlier revision, and a deleted one are left alone. Fixing only the name changes the source and starts nothing over |
+| History | The old revision's assessments stay in the `assessment` table, keyed to the revision they judged, and stop counting. An assessment sent for the old revision is refused with the wording as it is now (`revision_changed`) |
+| "Yes" needs evidence | Refused on a wording that cites no source, and after its only source is taken off (`needs_evidence`); "no" is accepted. Adding a source makes "yes" possible |
+| Sent twice | Each write sent again answers "already done" and uses no change number: a new source by its ID (also after it was taken off: a repeat doesn't put it back), citing, taking off, and an edit (including one only tidied to what the source already says). An ID someone else used is refused (`id_taken`) |
+| Links | Where to find it is kept as typed. It is a link only when it is an http or https address: `javascript:…`, `data:…`, `ftp://…`, "Chapter 3, page 41", and empty all come back with `link` null. Text is tidied as the prototype does; a missing name or finding, anything too long, or a field nobody defined is refused (400) |
+| Roles | One test per action × persona: owner and contributor may, a voter may not (`not_allowed`), signed out (401) and a non-member (403) may not, and a refused write uses no change number. On a closed board all four are refused. Editing or taking off someone else's source: `not_author` |
+| Change log | `source_added`, `source_cited`, `source_removed`, `source_edited`, by ID and revision number only; a test checks the source's text isn't in the row |
+| Live updates | Readers asking for changes after an edit get the source and every wording it revised |
+| Edits around a source change | Changing a wording's sources saves revisions too, so an author's edit is now refused only when another edit came after the revision it started from, not when someone added a source meanwhile. The "edited" mark shows the wording before the latest edit, not the revision before this one (a sources change has the same text, so it shows no mark). The existing edit tests pass unchanged |
+| `npm run check` | Types, lint, all 531 unit, API, and simulation tests, and the browser tests pass |
+| Not checked | The simulation doesn't yet play source actions (its oracle for edits assumes no other kind of revision); adding them changes an existing test, so it needs the builder. Reporting a source unavailable (C-02, T3) has no route yet; its rule for "yes" is tested with the database flag. Sources aren't in the example boards yet (with M1-9, when cards show them) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

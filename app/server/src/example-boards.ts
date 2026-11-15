@@ -1,7 +1,7 @@
 // The prototype's example boards, for `npm run db:seed` (M1-6), so a local
 // database looks like the prototype: docs/prototype/source/steelman-refined.html
 // (seedDocs and seedCards), copied on Nov 14. The people who wrote them become
-// test accounts. Left out for now: sources and evidence votes (M1-8), comments
+// test accounts. Left out for now: sources and evidence votes (with M1-9), comments
 // (T3), the AI-drafted argument (T3), and spaces (T4). The prototype's own
 // "you" is riley_park here, so the seed doesn't take a username the builder
 // might choose when signing in locally.
