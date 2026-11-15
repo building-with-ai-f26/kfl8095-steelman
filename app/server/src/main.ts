@@ -41,10 +41,15 @@ function googleFor(): { google?: NonNullable<AppDependencies["signIn"]>["google"
   return {};
 }
 
+// Analytics in the browser (M-08), when there's a PostHog key. Without one, the web app sends nothing.
+const posthogKey = process.env.POSTHOG_KEY;
+const analytics = posthogKey ? { key: posthogKey, host: process.env.POSTHOG_HOST || "https://us.i.posthog.com" } : undefined;
+
 const app = buildApp({
   clock: systemClock,
   ids: systemIds,
   mode,
+  ...(analytics ? { analytics } : {}),
   ...(databaseUrl ? { database: createDatabase(databaseUrl) } : {}),
   ...(signIn ? { signIn } : {}),
 });

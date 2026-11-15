@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
 import { NewSteelman } from "./NewSteelman.tsx";
@@ -40,6 +41,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
       >
         {board ? <Board boardId={board} /> : <NewSteelman />}
       </SignedIn>
+      <AnalyticsNotice />
     </div>
   );
 }

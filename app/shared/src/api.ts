@@ -161,6 +161,15 @@ export interface Standing {
   role: Role;
 }
 
+/**
+ * What the web app asks the service when it starts. `analytics` is the
+ * PostHog project key and address, or null when the service was given none,
+ * and then the browser sends nothing (M-08).
+ */
+export interface PublicConfig {
+  analytics: { key: string; host: string } | null;
+}
+
 /** Why the server refused a write. */
 export type RefusalReason =
   | "signed_out"

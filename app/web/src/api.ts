@@ -2,7 +2,7 @@
 // in (the browser sends their session cookie), or says which test account the
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
-import type { Access, BoardChanges, BoardSnapshot, NewBoard, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardSnapshot, NewBoard, PublicConfig, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
@@ -18,6 +18,16 @@ async function call(method: string, path: string, body?: unknown): Promise<Respo
     return await fetch(`/api/${path}`, { method, headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   } catch (error) {
     throw new Unreachable(String(error));
+  }
+}
+
+/** What the service says the web app should know when it starts. When it can't be asked, analytics stay off. */
+export async function readConfig(): Promise<PublicConfig> {
+  try {
+    const response = await call("GET", "config");
+    return response.ok ? ((await response.json()) as PublicConfig) : { analytics: null };
+  } catch {
+    return { analytics: null };
   }
 }
 
