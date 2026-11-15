@@ -1058,6 +1058,12 @@ Checked by the coding agent in a browser at 1024 px and 375 px, served from `doc
 
 Not checked: the published page (this isn't merged yet). The screenshot shows the dev-only "Acting as" switch, not a real sign-in. The build log's hours are an estimate: the builder's 363 typed messages in the local Claude Code session files from November 7 to 14, grouped into sittings with gaps up to 20 minutes, come to 23.7 hours (31.1 with gaps up to 45 minutes). The costs are as the builder reported them.
 
+## November 14 — PRD v2: biggest risk and cost per run
+
+Checked by the coding agent in a browser at 1024 px and 375 px, served from `docs/`: both sections render, no horizontal overflow, no console errors. No feature changed.
+
+The risk's evidence is from M0's records (the simulation's 9 checks over 300 sequences; the 30-voter, 5-minute soak and recount). The costs are estimates: hosting from `plans/architecture.md` "What it costs" (the database figure not yet confirmed in Google's calculator); the AI check assumes about 5,000 tokens in and 1,000 out, at Anthropic's list prices on Nov 14 (Haiku 5.5 $0.10/$0.50, Opus 5.5 $4/$20 per million tokens).
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

@@ -71,6 +71,16 @@ h2 { font: 700 26px/1.2 var(--sm-serif); letter-spacing: -.5px; }
 .steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
 .steps span { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sm-ink); color: #fff; font-size: 11px; font-weight: 700; }
 
+.workflow .note { margin-top: 14px; font-size: 13px; color: var(--sm-muted); }
+
+/* Cost per run: a two-column table inside a card */
+.costs { padding: 4px 20px; }
+.costs table { width: 100%; border-collapse: collapse; }
+.costs th, .costs td { padding: 12px 0; border-top: 1px solid var(--sm-line); text-align: left; vertical-align: top; font-size: 14px; line-height: 1.6; }
+.costs tr:first-child th, .costs tr:first-child td { border-top: 0; }
+.costs th { width: 190px; padding-right: 24px; font-size: 12px; font-weight: 600; }
+.costs td { color: #3a3a3a; }
+
 /* Non-goals */
 .nongoal { display: flex; gap: 12px; align-items: flex-start; }
 .nongoal > svg.lucide { margin: 2px 0 0; color: var(--sm-cred-weak); }
@@ -114,6 +124,8 @@ footer > div { display: flex; gap: 22px; }
   .statement { font-size: 18px !important; }
   .log { padding-inline: 16px; }
   .log > div { grid-template-columns: 76px 1fr; gap: 14px; }
+  .costs { padding-inline: 16px; }
+  .costs th { width: 96px; padding-right: 14px; }
   footer { flex-wrap: wrap; gap: 12px; }
   footer > div { gap: 16px; flex-wrap: wrap; }
 }

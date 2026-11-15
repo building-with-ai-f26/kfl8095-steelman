@@ -81,6 +81,17 @@
           <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>Money or incentives beyond simple points, like Reddit karma.</p></article>
         </div>
 
+        <h3 class="label">Biggest risk</h3>
+        <article class="card workflow">
+          <p class="statement">Live collaboration. Everyone votes on one shared ranking at once, yet each reader’s screen must hold still and stay correct.</p>
+          <ol class="steps">
+            <li><span>1</span>Built first, before sign-in or hosting.</li>
+            <li><span>2</span>A simulation checks 9 rules across 300 random sequences of readers and writers.</li>
+            <li><span>3</span>30 scripted voters for 5 minutes; stored counts match a recount.</li>
+          </ol>
+          <p class="note">Not yet tested: real people on real networks.</p>
+        </article>
+
         <h3 class="label">How the app works</h3>
         <figure class="shot">
           <a href="assets/app-vote.jpg"><img src="assets/app-vote.jpg" width="2160" height="1350" loading="lazy" alt="The Steelman app running on a laptop, on the board “Is open-weight AI a smart bet for China?”. The first argument’s importance arrow is pressed and its count reads 12."></a>
@@ -90,6 +101,18 @@
           <a href="assets/architecture.svg" aria-label="Open the architecture diagram at full size"><img src="assets/architecture.svg" width="1480" height="740" loading="lazy" alt="Architecture: a React web app in the browser sends HTTPS requests to one Fastify service on Cloud Run, which handles sign-in, the board API, and background jobs, and stores everything in Postgres on Cloud SQL. Outside services: Google for sign-in, Resend for email, Stripe for AI credits, PostHog for analytics, and an AI model provider for evidence checks."></a>
           <figcaption><span>The planned system</span><span>Built so far, on a laptop: web app, service, Postgres, Google sign-in</span></figcaption>
         </figure>
+
+        <h3 class="label">Cost per run</h3>
+        <div class="card costs">
+          <table>
+            <tbody>
+              <tr><th scope="row">Hosting, per month</th><td>~$12–18 for a class of 30: database ~$10, server $0–5, domain ~$1</td></tr>
+              <tr><th scope="row">A vote</th><td>~$0, inside Google Cloud’s free tier</td></tr>
+              <tr><th scope="row">A sign-in email</th><td>$0, up to 3,000 a month</td></tr>
+              <tr><th scope="row">An AI evidence check</th><td>~$0.001–0.04 by model; paid by users through credits (later)</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="block" id="build-log" aria-labelledby="log-title">
