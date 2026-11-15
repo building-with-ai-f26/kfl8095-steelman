@@ -1,0 +1,111 @@
+<!-- Copied from plans/architecture-diagrams.html, with its styles put inside so it stands alone. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="740" viewBox="0 0 1480 740" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">Steelman proposed application architecture</title>
+<desc id="diagram-desc">React browsers send HTTPS requests to a Fastify service on Cloud Run. Better Auth manages sign-in and sessions; the board API authorizes actions and reads or writes PostgreSQL on Cloud SQL. Cloud Tasks queues AI checks and notification emails, then invokes handlers in the same service with retries. Google supplies sign-in identity, Resend delivers email, Stripe collects payments for AI credits, the model provider checks evidence, and PostHog receives analytics from the browser and API with consent. Counts synchronize by polling; readers apply reordered layouts with Update. Database writes serialize per board and commit data, counts and change numbers together.</desc>
+<style>
+text{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#242424}
+.title{font-size:19px;font-weight:650}.body{font-size:15px}.small{font-size:13px;fill:#565656}
+.cap{font-size:12px;letter-spacing:1.2px;font-weight:700;fill:#565656}
+.box{fill:#fff;stroke:#bbb8b0;stroke-width:1.2}.group{fill:#f4f2ed;stroke:#aaa79e;stroke-width:1.3;stroke-dasharray:7 5}
+.service{fill:#242424}.light{fill:#fff}.dim{fill:#d9d7d0}.module{fill:#343434;stroke:#61615b;stroke-width:1}
+.wire{fill:none;stroke:#525d5f;stroke-width:1.7;marker-end:url(#arrow)}
+.label{font-size:12px;fill:#394446;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.inside{stroke:#f4f2ed}.center{text-anchor:middle}.rule{stroke:#cfcdc5;stroke-width:1}
+</style>
+<rect width="1480" height="740" fill="#fff"/>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1L10 5L0 9Z" fill="#525d5f"/></marker></defs>
+
+<text class="cap" x="32" y="46">BROWSER</text>
+<text class="cap" x="1180" y="46">EXTERNAL SERVICES</text>
+<rect class="group" x="420" y="20" width="660" height="690" rx="12"/>
+<text class="cap" x="444" y="46">GOOGLE CLOUD</text>
+
+<!-- Reader state remains local; only board changes cross the API. -->
+<rect class="box" x="32" y="92" width="270" height="330" rx="8"/>
+<text class="title" x="52" y="125">Web app · React</text>
+<text class="small" x="52" y="150">TypeScript · built with Vite</text>
+<line class="rule" x1="52" y1="170" x2="282" y2="170"/>
+<text class="body" x="52" y="201">Read, vote and edit arguments</text>
+<text class="body" x="52" y="245">Refresh counts in place</text>
+<text class="small" x="52" y="271">Apply shared order on Update</text>
+<text class="body" x="52" y="316">Queue actions while offline</text>
+<text class="small" x="52" y="342">In tab memory; retry on reconnect</text>
+<text class="small" x="52" y="390">Sign-in uses an HttpOnly cookie</text>
+<path class="wire" d="M302 210H449"/>
+<text class="label center" x="376" y="180">HTTPS / JSON</text>
+<text class="label center" x="376" y="199">reads + writes</text>
+
+<!-- The modules below are responsibilities inside one deployable service. -->
+<rect class="service" x="450" y="92" width="600" height="370" rx="8"/>
+<text class="title light" x="472" y="126">Application · Fastify on Cloud Run</text>
+<text class="small dim" x="472" y="151">Node.js / TypeScript · serves the web app and API at one origin</text>
+<rect class="module" x="472" y="174" width="556" height="68" rx="5"/>
+<text class="body light" x="490" y="201">Sign-in · Better Auth</text>
+<text class="small dim" x="490" y="224">Google or 6-digit email code → session; accounts stored in Postgres</text>
+<rect class="module" x="472" y="254" width="556" height="94" rx="5"/>
+<text class="body light" x="490" y="281">Board API</text>
+<text class="small dim" x="490" y="305">Validate input · enforce board roles · reject stale edits / assessments</text>
+<text class="small dim" x="490" y="329">Save changes atomically · return snapshots and changed rows</text>
+<rect class="module" x="472" y="360" width="556" height="80" rx="5"/>
+<text class="body light" x="490" y="387">Job handlers · same service</text>
+<text class="small dim" x="490" y="411">Check AI credits → fetch public sources → call model → save verdict</text>
+<text class="small dim" x="490" y="430">Save verdicts per wording revision; send notification emails</text>
+
+<!-- Data is authoritative in Postgres; jobs return to the same application. -->
+<path class="wire" d="M626 462V572"/>
+<text class="label inside center" x="626" y="508">SQL transactions · Kysely</text>
+<text class="label inside center" x="626" y="530">Cloud SQL connection</text>
+<rect class="box" x="450" y="573" width="370" height="112" rx="8"/>
+<text class="title" x="470" y="604">Postgres 17 · Cloud SQL</text>
+<text class="small" x="470" y="630">Accounts, boards, revisions, sources and votes</text>
+<text class="small" x="470" y="651">Counts, shared order, audit log and AI credits</text>
+<text class="small" x="470" y="672">Durable state + relational constraints</text>
+<rect class="box" x="860" y="573" width="190" height="112" rx="8"/>
+<text class="title" x="877" y="604">Cloud Tasks</text>
+<text class="small" x="877" y="630">Queues AI / email jobs</text>
+<text class="small" x="877" y="651">Retries failed delivery</text>
+<path class="wire" d="M892 462V572"/>
+<text class="label inside" x="834" y="526">enqueue</text>
+<path class="wire" d="M1016 573V463"/>
+<text class="label inside" x="943" y="495">invoke job</text>
+<text class="label inside" x="943" y="513">OIDC / HTTP</text>
+
+<!-- Each provider has one purpose; arrow labels name the integration. -->
+<rect class="box" x="1180" y="92" width="268" height="66" rx="6"/>
+<text class="title" x="1198" y="120">Google</text>
+<text class="small" x="1198" y="144">Verifies identity for sign-in</text>
+<path class="wire" d="M1050 125H1179"/>
+<text class="label center" x="1115" y="116">OpenID Connect</text>
+<rect class="box" x="1180" y="190" width="268" height="66" rx="6"/>
+<text class="title" x="1198" y="218">Resend</text>
+<text class="small" x="1198" y="242">Delivers sign-in codes and notices</text>
+<path class="wire" d="M1050 223H1179"/>
+<text class="label center" x="1115" y="214">email API</text>
+<rect class="box" x="1180" y="288" width="268" height="82" rx="6"/>
+<text class="title" x="1198" y="316">Stripe Checkout</text>
+<text class="small" x="1198" y="340">Collects payment for AI credits</text>
+<text class="small" x="1198" y="360">Verified webhook credits the ledger</text>
+<path class="wire" d="M1050 308H1179"/>
+<text class="label center" x="1115" y="299">create checkout</text>
+<path class="wire" d="M1180 355H1051"/>
+<text class="label center" x="1115" y="346">signed webhook</text>
+<rect class="box" x="1180" y="402" width="268" height="66" rx="6"/>
+<text class="title" x="1198" y="430">PostHog</text>
+<text class="small" x="1198" y="454">Usage analytics and session replay</text>
+<path class="wire" d="M1050 435H1179"/>
+<text class="label center" x="1115" y="426">API events¹</text>
+<rect class="box" x="1180" y="573" width="268" height="88" rx="6"/>
+<text class="title" x="1198" y="602">AI model provider</text>
+<text class="small" x="1198" y="627">Evaluates whether cited evidence</text>
+<text class="small" x="1198" y="647">supports the wording</text>
+<path class="wire" d="M1050 450H1125V617H1179"/>
+<text class="label" x="1137" y="535">evidence-check API</text>
+
+<!-- Explain the exceptional browser paths without crossing the main flow. -->
+<text class="small" x="32" y="497">Browser also connects directly:</text>
+<text class="small" x="32" y="524">Google → sign-in redirect</text>
+<text class="small" x="32" y="550">Stripe → hosted payment page</text>
+<text class="small" x="32" y="576">PostHog → events and replay¹</text>
+<text class="small" x="32" y="616">¹ Browser and API analytics honor</text>
+<text class="small" x="32" y="637">the user’s opt-out choice.</text>
+</svg>
