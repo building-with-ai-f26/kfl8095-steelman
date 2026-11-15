@@ -172,39 +172,33 @@
       </section>
 
       <section class="block" id="build-log" aria-labelledby="log-title">
-        <div class="block-head"><h2 id="log-title">Build log</h2><span>Updated November 14, 2026</span></div>
-
-        <h3 class="label">Build 2 · November 7–14 · what was built</h3>
-        <dl class="card log">
-          <div><dt>Nov 7</dt><dd><strong>The prototype becomes editable.</strong> Design tokens and the honeycomb logo. The board saved as one document. Add an argument, comment, edit and delete your own wording with undo, add and remove evidence, move or split a wording, manage options.</dd></div>
-          <div><dt>Nov 9–10</dt><dd><strong>The prototype grows to the whole product.</strong> A list of steelmen, spaces, sharing, presence. Roles, a review queue, moderation, history, closing a board with a decision, and simulated AI evidence checks. Profiles, notifications, onboarding. A new example board. PostHog on this page and the prototype.</dd></div>
-          <div><dt>Nov 11</dt><dd><strong>Design pass, then the plan.</strong> An audit of all 89 features by tier, complexity, and design readiness. The hard cases designed in the prototype: holding the board still while others change it, sign-in, privacy and deletion, links, phones, accessibility. Then the architecture, six decision records, 26 open questions answered, the build plan, and the domain.</dd></div>
-          <div><dt>Nov 11–12</dt><dd><strong>The risky slice of the real app, in 8 pull requests.</strong> One command that runs every check. The voting and ordering rules. The database and what it must never allow. One path for every write. A simulation of random readers and writers. The board screen: two browsers share a board, votes update in place, the order holds still until you press Update, and actions queue while offline. A five-minute run of 30 scripted voters, then a recount.</dd></div>
-          <div><dt>Nov 13–14</dt><dd><strong>Toward one real group, in 6 pull requests.</strong> A nightly check that breaks the code on purpose to see whether the tests notice. Sign-in by emailed code and by Google, and its screens. Roles and link sharing. New steelman. Set up by hand: two Google Cloud projects, Google sign-in, the email sender, and GitHub’s merge rules.</dd></div>
-        </dl>
-
-        <h3 class="label">Build 2 · what it taught</h3>
-        <dl class="card log">
-          <div><dt>Learned</dt><dd>Tests written before the code let agents build unattended, one small pull request at a time. A second agent reading each pull request cold found real bugs every time, such as Enter jumping out of a field while typing Chinese. The simulation caught both bugs planted to test it. The database should hold only what must never break; small rules there make behavior hard to change. A browser can’t be trusted to know it’s offline, so the app learns it from failed requests.</dd></div>
-          <div><dt>Problems</dt><dd>The first break-the-code run took over 15 hours until the random tests were left out of it; it still found 128 breaks the tests missed. Leaked test databases used up the Mac’s shared memory. Docker stopped responding mid-run. Saved screenshots differ between macOS and Linux, so each one is kept twice and was retaken several times.</dd></div>
-          <div><dt>Limits</dt><dd>The app runs on a laptop only. Hosting on Google Cloud, sign-in emails, and analytics in the app are next; the AI evidence check comes later. No classmate has used the app yet.</dd></div>
-          <div><dt>Size</dt><dd>89 commits on seven days and 36 merged pull requests. About 6,100 lines of app code and 7,800 lines of tests: 461 tests and 54 browser tests.</dd></div>
-          <div><dt>Time</dt><dd>About 24 hours on seven days, counted from the timestamps of my 363 messages to the coding agent.</dd></div>
-          <div><dt>Cost</dt><dd>$10 for the domain. Claude’s $20-a-month plan, about half of this week’s allowance. No hosting or API spend yet.</dd></div>
-        </dl>
+        <div class="block-head"><h2 id="log-title">Build log</h2><span>November 5–14, 2026</span></div>
 
         <h3 class="label">Build 1 · November 5–6</h3>
         <dl class="card log">
-          <div><dt>Built</dt><dd>Working card comparisons, evidence views, voting, and suggested versions.</dd></div>
-          <div><dt>Learned</dt><dd>The exported prototype saves changes in the browser, including after a refresh.</dd></div>
-          <div><dt>Changed</dt><dd>Narrowed the PRD to one workflow. Simplified this page to match the diagram.</dd></div>
-          <div><dt>Limits</dt><dd>Sample data; changes stay in one browser. Shared collaboration and user testing are next.</dd></div>
-          <div><dt>Time</dt><dd>About 4–5 hours before page setup. Setup time not yet tallied.</dd></div>
-          <div><dt>Cost</dt><dd>Existing ChatGPT Pro subscription; no extra API or hosting spend reported.</dd></div>
+          <div><dt>Built</dt><dd>A clickable prototype: compare wordings of an argument, see their evidence, and vote.</dd></div>
+          <div><dt>Changed</dt><dd>Narrowed the PRD to one workflow.</dd></div>
+          <div><dt>Time</dt><dd>About 4–5 hours.</dd></div>
+          <div><dt>Cost</dt><dd>An existing ChatGPT Pro subscription; no extra spend.</dd></div>
+        </dl>
+
+        <h3 class="label">Build 2 · November 7–14</h3>
+        <dl class="card log">
+          <div><dt>Nov 7</dt><dd>Prototype made editable: add, edit, and delete arguments, wordings, and evidence.</dd></div>
+          <div><dt>Nov 9–10</dt><dd>Prototype extended to the whole product: sharing, roles, moderation, simulated AI checks. PostHog on this page.</dd></div>
+          <div><dt>Nov 11</dt><dd>Feature audit and the hardest screens designed, then the architecture and build plan.</dd></div>
+          <div><dt>Nov 12</dt><dd>The real app’s riskiest part: a live board several people share, tested by a simulation and 30 scripted voters.</dd></div>
+          <div><dt>Nov 13–14</dt><dd>Sign-in with Google or an emailed code, link sharing, New steelman, and PostHog in the app.</dd></div>
+          <div><dt>Learned</dt><dd>Writing the tests first lets agents build on their own. A second agent reviewing each change found real bugs.</dd></div>
+          <div><dt>Problems</dt><dd>Slow and flaky test runs, one taking 15 hours. Screenshots that differ between Mac and Linux.</dd></div>
+          <div><dt>Next</dt><dd>Hosting on Google Cloud, then a test with classmates.</dd></div>
+          <div><dt>Size</dt><dd>95 commits on seven days, 39 merged pull requests.</dd></div>
+          <div><dt>Time</dt><dd>About 24 hours, from the timestamps of my messages to the coding agent.</dd></div>
+          <div><dt>Cost</dt><dd>$10 for the domain, and about half of Claude’s $20-a-month plan. No hosting spend yet.</dd></div>
         </dl>
       </section>
     </main>
-    <footer><span>Steelman</span><div><a href="reference/steelman-prd-v0.4.md">Original PRD</a><a href="design/">Design tokens</a><a href="https://github.com/building-with-ai-f26/kfl8095-steelman#run-locally">Run locally ↗</a><a href="privacy.html">Privacy</a></div></footer>
+    <footer><span>Steelman</span><div><a href="reference/steelman-prd-v0.4.md">Original PRD</a><a href="design/">Design tokens</a><a href="https://github.com/building-with-ai-f26/kfl8095-steelman#run-the-app">Run locally ↗</a><a href="privacy.html">Privacy</a></div></footer>
   </div>
   <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
   <script>window.lucide && lucide.createIcons({attrs:{width:18,height:18,'stroke-width':1.6}});</script>
