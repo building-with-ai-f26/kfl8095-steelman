@@ -298,6 +298,11 @@ function perform(code: ServerCode, services: { db: Db; clock: FakeClock }, board
       return code.writing.editWording(services, board, person, action.versionId, action);
     case "delete":
       return code.writing.deleteWording(services, board, person, action.versionId);
+    case "addSource":
+    case "editSource":
+    case "uncite":
+      // Sources (M1-8, M1-9) aren't among the steps the simulation picks yet; adding them is the builder's call.
+      throw new Error(`The simulation doesn't play ${action.kind} yet`);
   }
 }
 
@@ -340,6 +345,11 @@ async function expectedRefusal(client: pg.Client, person: string, action: Queued
     }
     case "delete":
       return (await one("select author_id from version where id = $1", [action.versionId])).author_id === person ? null : "not_author";
+    case "addSource":
+    case "editSource":
+    case "uncite":
+      // Sources (M1-8, M1-9) aren't among the steps the simulation picks yet; adding them is the builder's call.
+      throw new Error(`The simulation doesn't play ${action.kind} yet`);
   }
 }
 

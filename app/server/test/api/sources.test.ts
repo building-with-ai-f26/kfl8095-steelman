@@ -14,8 +14,9 @@ import { useTestDatabase } from "../support/database.ts";
 //
 // Changing which sources a wording cites saves a new revision, so its
 // credibility starts over (invariant 2). Editing a source's evidence (where
-// to find it, its finding, what it backs up, its limits) does the same to
-// every wording that cites it; fixing only its name doesn't (Q10).
+// to find it, its finding) does the same to every wording that cites it;
+// fixing its name doesn't (Q10, revised by the builder Nov 14: what it backs
+// up and its limits, which the screens no longer ask for, don't either).
 // Assessments of an old revision stop counting and stay as history (PRD §4).
 
 const db = useTestDatabase({ migrated: true });
@@ -69,7 +70,8 @@ describe("adding a source to a wording", () => {
     expect(await version(b.version)).toMatchObject({ rev: 2, wording: "Sunday is the only free day for many people." });
     expect(await cited(b.version)).toEqual([b.source, id].sort());
     expect(await revision(b.version, 2)).toEqual({ wording: "Sunday is the only free day for many people.", context: "", why: "sources_changed" });
-    expect(await source(id)).toEqual({ id, addedBy: b.ben, changedSeq: body.seq, link: EVIDENCE.locator, unavailable: false, ...EVIDENCE });
+    const ben = (await db.client.query("select username from account where id = $1", [b.ben])).rows[0].username;
+    expect(await source(id)).toEqual({ id, addedBy: b.ben, addedByName: ben, changedSeq: body.seq, link: EVIDENCE.locator, unavailable: false, ...EVIDENCE });
   });
 
   test("C-01, B-03: credibility starts over; assessments of the old revision stay as history; importance and articulation votes stay", async () => {
@@ -117,12 +119,11 @@ describe("adding a source to a wording", () => {
     expect((await addSource(b.ben, b.otherVersion, request)).body).toEqual({ status: "refused", reason: "id_taken" });
   });
 
-  test("C-01: the source follows the input limits; a name and a finding are needed, and nothing else may be sent", async () => {
+  test("C-01: the source follows the input limits; a name is needed, and nothing else may be sent", async () => {
     const tries = [
       { ...EVIDENCE, name: "   " },
-      { ...EVIDENCE, finding: "" },
       { ...EVIDENCE, name: "x".repeat(121) },
-      { ...EVIDENCE, locator: "x".repeat(201) },
+      { ...EVIDENCE, locator: "x".repeat(2001) },
       { ...EVIDENCE, finding: "x".repeat(501) },
       { ...EVIDENCE, backsUp: "x".repeat(301) },
       { ...EVIDENCE, limits: "x".repeat(301) },
@@ -133,6 +134,13 @@ describe("adding a source to a wording", () => {
     }
     expect((await addSource(b.ben, b.version, { id: "short", ...EVIDENCE })).status).toBe(400);
     expect(await version(b.version)).toMatchObject({ rev: 1 });
+  });
+
+  test("C-01: its description (finding) may be left empty (the builder, Nov 15)", async () => {
+    const id = ids.itemId();
+
+    expect((await addSource(b.ben, b.version, { id, ...EVIDENCE, finding: "" })).body.status).toBe("done");
+    expect(await source(id)).toMatchObject({ finding: "" });
   });
 
   test("C-01: text is tidied the way the prototype does", async () => {
@@ -362,19 +370,21 @@ describe("editing a source (Q10)", () => {
     expect(await assessments(b.otherVersion)).toEqual([{ rev: 2, account_id: b.ben, supported: true }]);
   });
 
-  test("C-01: where to find it, what it backs up, and its limits are evidence too; each change starts credibility over", async () => {
-    const changes = [{ locator: "https://example.org/survey" }, { backsUp: "Most visitors work weekdays." }, { limits: "One city only." }];
-    let fields = { ...SEEDED };
-    let rev = 1;
-    for (const change of changes) {
-      await assess(b.ben, b.version, rev, true);
-      fields = { ...fields, ...change };
+  test("C-01: where to find it is evidence too; a change to it starts credibility over", async () => {
+    await assess(b.ben, b.version, 1, true);
 
-      expect((await editSource(b.ana, b.source, fields)).body.status, Object.keys(change)[0]).toBe("done");
+    expect((await editSource(b.ana, b.source, { ...SEEDED, locator: "https://example.org/survey" })).body.status).toBe("done");
 
-      rev += 1;
-      expect(await version(b.version), Object.keys(change)[0]).toMatchObject({ rev, yes: 0 });
-    }
+    expect(await version(b.version)).toMatchObject({ rev: 2, yes: 0 });
+  });
+
+  test("C-01: what it backs up and its limits, which the screens no longer ask for, start nothing over", async () => {
+    await assess(b.ben, b.version, 1, true);
+
+    expect((await editSource(b.ana, b.source, { ...SEEDED, backsUp: "Most visitors work weekdays.", limits: "One city only." })).body.status).toBe("done");
+
+    expect(await version(b.version, b.ben)).toMatchObject({ rev: 1, yes: 1, myAssessment: true });
+    expect(await source(b.source)).toMatchObject({ backsUp: "Most visitors work weekdays.", limits: "One city only." });
   });
 
   test("C-01: fixing only its name starts nothing over", async () => {
@@ -431,7 +441,7 @@ describe("editing a source (Q10)", () => {
   });
 
   test("C-01: it follows the same input limits as adding one", async () => {
-    expect((await editSource(b.ana, b.source, { ...SEEDED, finding: "" })).status).toBe(400);
+    expect((await editSource(b.ana, b.source, { ...SEEDED, name: "" })).status).toBe(400);
     expect((await editSource(b.ana, b.source, { ...SEEDED, id: b.source })).status).toBe(400);
     expect((await editSource(b.ana, "nosuchsource00000000", SEEDED)).status).toBe(404);
   });

@@ -6,9 +6,11 @@
 //
 // Changing which sources a wording cites saves revision n + 1 with the same
 // text, so its credibility starts over (invariant 2). Editing a source's
-// evidence (where to find it, its finding, what it backs up, its limits) does
-// the same to every wording whose current revision cites it; fixing only its
-// name doesn't (Q10). Old assessments stay, keyed to the revision they judged.
+// evidence (where to find it, its finding) does the same to every wording
+// whose current revision cites it; fixing its name doesn't, nor do what it
+// backs up and its limits, which the screens no longer ask for (Q10, as the
+// builder revised it on Nov 14). Old assessments stay, keyed to the revision
+// they judged.
 //
 // Safe to send twice (invariant 10): a new source arrives with an ID the
 // browser made; citing or taking off says what the list should hold; an edit
@@ -115,8 +117,9 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
     load: (trx) => sourceOnBoard(trx, boardId, sourceId),
     authorOf: (source) => source.added_by,
     change: async (trx, source, seq) => {
-      const evidenceChanged = source.locator !== input.locator || source.finding !== input.finding || source.backs_up !== input.backsUp || source.limits !== input.limits;
-      if (!evidenceChanged && source.name === input.name) return "already_done";
+      const evidenceChanged = source.locator !== input.locator || source.finding !== input.finding;
+      const anyChange = evidenceChanged || source.name !== input.name || source.backs_up !== input.backsUp || source.limits !== input.limits;
+      if (!anyChange) return "already_done";
       await trx
         .updateTable("source")
         .set({ name: input.name, locator: input.locator, finding: input.finding, backs_up: input.backsUp, limits: input.limits, changed_seq: seq })

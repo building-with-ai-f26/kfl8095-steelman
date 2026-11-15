@@ -28,14 +28,14 @@ describe("tidying text", () => {
 });
 
 describe("length limits", () => {
-  test("A-01, A-03, C-01: the limits are the prototype's", () => {
+  test("A-01, A-03, C-01: the limits are the prototype's, but for a source's link, which the builder made room for (Nov 15)", () => {
     expect(LIMITS).toEqual({
       question: 200,
       optionName: 80,
       wording: 500,
       context: 700,
       sourceName: 120,
-      sourceLocator: 200,
+      sourceLocator: 2000,
       sourceFinding: 500,
       sourceBacksUp: 300,
       sourceLimits: 300,
@@ -88,17 +88,17 @@ describe("length limits", () => {
 describe("a source", () => {
   const source = { name: "City library survey, 2025", locator: "", finding: "61% of weekday visitors can't come on weekdays.", backsUp: "", limits: "" };
 
-  test("C-01: needs a name and what it shows; the rest is optional", () => {
+  test("C-01: needs a name (its title); the rest, its description included, is optional (the builder, Nov 15)", () => {
     expect(accepts(sourceInput, source)).toBe(true);
     expect(accepts(sourceInput, { ...source, name: " " })).toBe(false);
-    expect(accepts(sourceInput, { ...source, finding: "" })).toBe(false);
+    expect(accepts(sourceInput, { ...source, finding: "" })).toBe(true);
   });
 
   test("C-01: each field has its own limit", () => {
     expect(accepts(sourceInput, { ...source, name: chars(120) })).toBe(true);
     expect(accepts(sourceInput, { ...source, name: chars(121) })).toBe(false);
-    expect(accepts(sourceInput, { ...source, locator: chars(200) })).toBe(true);
-    expect(accepts(sourceInput, { ...source, locator: chars(201) })).toBe(false);
+    expect(accepts(sourceInput, { ...source, locator: chars(2000) })).toBe(true);
+    expect(accepts(sourceInput, { ...source, locator: chars(2001) })).toBe(false);
     expect(accepts(sourceInput, { ...source, finding: chars(500) })).toBe(true);
     expect(accepts(sourceInput, { ...source, finding: chars(501) })).toBe(false);
     expect(accepts(sourceInput, { ...source, backsUp: chars(300) })).toBe(true);

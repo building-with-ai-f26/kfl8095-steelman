@@ -116,10 +116,12 @@ export interface SourceRow {
   /** The locator as a link, when it is an http or https address. */
   link: string | null;
   finding: string;
+  /** Kept, but no longer asked for or shown (the builder, Nov 14): the finding can say it. */
   backsUp: string;
   limits: string;
-  /** Who added it: only they may edit it or take it off a wording. */
+  /** Who added it, by ID and username: only they may edit it. */
   addedBy: string;
+  addedByName: string;
   unavailable: boolean;
   changedSeq: number;
 }

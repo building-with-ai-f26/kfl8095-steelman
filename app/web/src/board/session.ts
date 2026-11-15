@@ -35,6 +35,8 @@ export interface SessionState {
   /** Who can get in, and the reader's own role, as the service last said. */
   access: Access | null;
   role: Role | null;
+  /** Wordings the reader assessed after they changed, so the assessment wasn't counted: until they assess again. */
+  stale: readonly string[];
 }
 
 export class BoardSession {
@@ -49,6 +51,7 @@ export class BoardSession {
     status: "",
     access: null,
     role: null,
+    stale: [],
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -132,6 +135,7 @@ export class BoardSession {
   // ── What the reader does ──
   /** Queues an action and, when online, sends it at once. */
   act(action: QueuedAction): void {
+    if (action.kind === "assess" && this.state.stale.includes(action.versionId)) this.set({ stale: this.state.stale.filter((id) => id !== action.versionId) });
     this.queue = enqueue(this.queue, action);
     this.mineChanged();
     void this.flush();
@@ -209,7 +213,10 @@ export class BoardSession {
         }
         this.queue = this.queue.slice(1);
         if (answer.status === "done" || answer.status === "already_done") this.sent.push(action);
-        else this.announce(refusalNote(answer));
+        else {
+          this.announce(refusalNote(answer));
+          if (action.kind === "assess" && answer.status === "refused" && answer.reason === "revision_changed") this.set({ stale: [...this.state.stale, action.versionId] });
+        }
         sentNow++;
         this.mineChanged();
       }
@@ -237,10 +244,12 @@ export class BoardSession {
         if (!this.opened(await readBoard(this.board))) return;
       } else if (this.state.view) {
         const shares = this.shareCount;
+        // Only what was sent before asking is in the answer: what's sent meanwhile stays the reader's until a later one.
+        const asked = new Set(this.sent);
         const changes = await readChanges(this.board, this.state.view.seq);
         // Access can end while the board is open: the owner turned the link off.
         if (typeof changes === "string") return this.set({ phase: changes, view: null });
-        this.sent = [];
+        this.sent = this.sent.filter((action) => !asked.has(action));
         const accessSettled = !this.sharing && shares === this.shareCount;
         this.set({ view: receive(this.state.view, changes), role: changes.role, ...(accessSettled ? { access: changes.access } : {}) });
         this.mineChanged();
@@ -295,7 +304,7 @@ function refusalNote(answer: Answer): string {
       case "version_deleted":
         return "1 action couldn't be sent: that wording was deleted.";
       case "revision_changed":
-        return "This wording changed while you were away. Take another look.";
+        return "This wording changed; take another look.";
       case "board_closed":
         return "This board closed while you were away.";
       case "not_allowed":

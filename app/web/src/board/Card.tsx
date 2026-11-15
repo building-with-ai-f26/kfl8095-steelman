@@ -2,8 +2,9 @@
 // docs/prototype/source/steelman-refined.html): the claim, who wrote it, and
 // the credibility meter. A wording someone deleted keeps its place, marked.
 // The wording opens the card, which is what a version's link points at
-// (M-06); its ⋯ menu copies that link. Evidence in the open card, and the
-// menu's other actions, come with M1-9 and M1-10.
+// (M-06); its ⋯ menu copies that link. An open card shows its context, its
+// evidence, and the assessment (Evidence.tsx); the menu's other actions come
+// with M1-10. The meter counts the reader's own assessment as soon as it's made.
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
@@ -11,12 +12,15 @@ import { createPortal } from "react-dom";
 import { credibility, credibilityLabel } from "@steelman/shared";
 import type { VersionRow } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
-import { isLiveVersion } from "./display.ts";
+import { assessmentShown, isLiveVersion } from "./display.ts";
+import { Evidence, SourceCount } from "./Evidence.tsx";
+import type { EvidenceBoard } from "./Evidence.tsx";
 
-/** Which version is open, which one a link just brought into view, and what a card can ask of the board. */
+/** Which version is open, which one a link just brought into view, what its evidence needs, and what a card can ask of the board. */
 export interface Opening {
   open: string | null;
   arrived: string | null;
+  evidence: EvidenceBoard;
   toggle(versionId: string): void;
   copyLink(versionId: string): void;
 }
@@ -37,6 +41,8 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
   }
   const open = opening.open === version.id;
   const reveal = `sm-reveal-${version.id}`;
+  const assessment = assessmentShown(version, opening.evidence.mine);
+  const shown: VersionRow = { ...version, yes: assessment.yes, no: assessment.no, myAssessment: assessment.mine };
   return (
     <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}`} data-card={version.id}>
       <button
@@ -69,15 +75,23 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
       <Byline version={version} />
       <div className="sm-card-meta">
         <span className="sm-cred-group">
-          <Meter yes={version.yes} no={version.no} />
+          <Meter yes={shown.yes} no={shown.no} />
         </span>
+        {version.sourceIds.length > 0 ? (
+          <div className="sm-card-tools">
+            <SourceCount count={version.sourceIds.length} />
+          </div>
+        ) : null}
       </div>
       <div className="sm-card-reveal" id={reveal} hidden={!open}>
         {open ? (
-          <section className="sm-card-context" aria-label="Context">
-            <h3>Context</h3>
-            {version.context ? <p className="sm-brief">{version.context}</p> : <p className="sm-meta">No context yet.</p>}
-          </section>
+          <>
+            <section className="sm-card-context" aria-label="Context">
+              <h3>Context</h3>
+              {version.context ? <p className="sm-brief">{version.context}</p> : <p className="sm-meta">No context yet.</p>}
+            </section>
+            <Evidence version={shown} board={opening.evidence} />
+          </>
         ) : null}
       </div>
     </article>
