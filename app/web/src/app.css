@@ -70,3 +70,9 @@ body { margin:0; }
 #steelman-study .sm-analytics-choices button { padding:6px 12px; border-radius:6px; font:600 12px/1.2 var(--sm-sans); cursor:pointer; }
 #steelman-study .sm-analytics-off { border:1px solid #ffffff80; background:transparent; color:#fff; }
 #steelman-study .sm-analytics-ok { border:0; background:#fff; color:var(--sm-ink); padding-inline:14px; }
+
+/* A link's note (M-06), such as "That version was deleted.": the prototype's, under the question. The question
+   card is dark here, so the note keeps the ink colour of its own light card. */
+#steelman-study .sm-head .sm-link-note { color:var(--sm-ink); text-align:left; }
+/* "New steelman" on the page for a board that doesn't exist is a link drawn as a button. */
+#steelman-study a.sm-button { text-decoration:none; justify-content:center; }

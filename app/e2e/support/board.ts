@@ -125,7 +125,7 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
   await options.prepare?.(context);
   const page = await context.newPage();
   page.on("console", (message) => {
-    if (message.type() === "error" && !isExpectedOfflineError(message.text())) errors.push(`${person}: ${message.text()}`);
+    if (message.type() === "error" && !isExpectedOfflineError(message.text()) && !isMissingBoard(message.text(), message.location().url)) errors.push(`${person}: ${message.text()}`);
   });
   page.on("pageerror", (error) => errors.push(`${person}: ${error.message}`));
   // Time runs as usual, but a test can move it on to the next poll.
@@ -133,6 +133,11 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
   await page.goto(`/b/${demo.board}`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Should our library open on Sundays?");
   return page;
+}
+
+/** The browser logs the 404 of a link to a board that doesn't exist, which the board screen expects (M-06). */
+function isMissingBoard(text: string, url: string): boolean {
+  return text.includes("status of 404") && /^\/api\/boards\/[^/?]+$/.test(new URL(url).pathname);
 }
 
 /** While a session is offline, the browser itself logs each request that fails. */

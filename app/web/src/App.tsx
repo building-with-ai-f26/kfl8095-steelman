@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
+import { readLink } from "./links.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
+import { NotFound } from "./NotFound.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
 import type { Me } from "./signIn/account.ts";
 import { AuthCard } from "./signIn/AuthCard.tsx";
@@ -12,12 +14,13 @@ import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
 
 /**
- * Links look like /b/<board ID>. Anything else is the home page, which in M1
- * is New steelman (F-01): there's no list of boards yet, so people come back
- * to a board by its link.
+ * Links look like /b/<board ID>, or /b/<board ID>/v/<version ID> (links.ts).
+ * Anything outside /b/ is the home page, which in M1 is New steelman (F-01):
+ * there's no list of boards yet, so people come back to a board by its link.
  */
 export function App({ path = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
-  const board = /^\/b\/([A-Za-z0-9_-]{12})\/?$/.exec(path)?.[1];
+  const link = readLink(path);
+  const board = link.kind === "board" ? link.board : undefined;
   return (
     <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom="read">
       <SignedIn
@@ -39,7 +42,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
           </header>
         )}
       >
-        {board ? <Board boardId={board} /> : <NewSteelman />}
+        {link.kind === "board" ? <Board boardId={link.board} version={link.version} /> : link.kind === "unknown" ? <NotFound /> : <NewSteelman />}
       </SignedIn>
       <AnalyticsNotice />
     </div>

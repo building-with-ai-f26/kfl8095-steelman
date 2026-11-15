@@ -1093,6 +1093,26 @@ The builder's screen recording of signing in to the local app with Google is on 
 
 The build log now runs oldest first: Build 1, then Build 2 by date, each with short rows for what was learned, problems, time, and cost. Build 1's entry keeps what it said, shorter. Build 2's counts are from `git log origin/main --since=2026-11-07T00:00 --no-merges` (95 commits on seven days) and `gh pr list --state merged` (39 since Nov 7). The footer's "Run locally" link now points at the README's "Run the app". Checked at 1024 px and 375 px: no horizontal overflow, no console errors.
 
+## November 14 — Links (M-06, A-02, A-12)
+
+M1-7. Every board and version has an address: `/b/<board>` and `/b/<board>/v/<version>`, paths rather than the prototype's `#b=…&v=…`, so Google sign-in (which is sent the path) comes back to the very version. A card opens by its wording, as in the prototype, showing its context (evidence comes with M1-9); the open version is what the address follows. Each card has the prototype's ⋯ menu, holding only Copy link for now (the rest comes with M1-10).
+
+| Check | Observed result |
+| --- | --- |
+| Tests first | `app/web/test/links.test.ts` (5) and `app/e2e/links.spec.ts` (15) were written first: the unit tests failed (no `links.ts`), and 14 of the 15 browser tests failed; the one that passed already was a board's link opening the board |
+| Address follows | Opening a card's wording → `/b/<board>/v/<version>`; closing it, or folding the row it's in → `/b/<board>`. One version open at a time. The address changes in place (`history.replaceState`), as the prototype's does when a card opens |
+| Open a version link | A row's second wording: the row unfolds, the card opens, comes into view, and rings for 1.4 s. A row's leading wording opens in place, row folded. On a phone (375 px), the link shows the version's option's column |
+| Reload, Back, Forward | Home → board → open a card: reload keeps the card open; Back goes to New steelman (`/`); Forward comes back to the board with the card open |
+| Copy link | ⋯ → menu "Version options", cursor on Copy link; it copies `http://…/b/<board>/v/<version>`, says "Link copied.", closes, and puts the cursor back on ⋯; the address stays the board's. Escape, or a click elsewhere, closes the menu |
+| Deleted version | A version its author deleted, and an ID never on the board: the board opens with "That version was deleted." and Dismiss under the question, the cursor on Dismiss, and the address cleaned to `/b/<board>` |
+| Unknown board | `/b/nosuchboard1`, `/b/nosuchboard1/v/x`, and `/b/x/y/z` → "This steelman doesn’t exist", with New steelman (M1 has no list of boards, so not the prototype's "Go to your steelmen") |
+| Signed out, invited-only board | A version's link: Sign in, nothing of the board shown and nothing asked of the board's API; after the email code, the board, the address kept, the version open and ringed |
+| Accessibility | Axe scan with a version's menu open, with the deleted-version note, and on the missing board, at desktop and 375 px: no violations, no sideways overflow. The menu hangs from the board's `main` region (the prototype hangs it from the page root, outside any landmark, which axe flags) |
+| By eye, `npm run dev` | The builder's local demo board (invited only; acting as `maya.chen`, the one account it lets in; nothing changed): card opens with "Context · No context yet.", address follows, menu under ⋯; the note and the missing-board page as above. No console errors besides the expected 403s and 404s |
+| `npm run check` | 473 tests and 75 browser tests pass, the saved screenshots included |
+| Saved screenshots | Not retaken. The ⋯ on every card changes under 1% of the board and Share screenshots, so they still pass but no longer show it. Retaking them is the builder's call (rule 9), as in M1-6 |
+| Not checked | Safari and Firefox; a screen reader. A deployed service: it must send the page for any `/b/…` path (M1-14). Whether PostHog's `history_change` page views count each card opened as a page view, now that the address changes with it: the address carries board and version IDs, as it already carried the board's |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

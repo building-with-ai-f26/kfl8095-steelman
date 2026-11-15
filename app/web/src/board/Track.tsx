@@ -7,6 +7,7 @@ import type { VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import type { Writer } from "./Board.tsx";
 import { Card } from "./Card.tsx";
+import type { Opening } from "./Card.tsx";
 import { WordingSlot } from "./Forms.tsx";
 import { articulationShown, isLiveVersion, short } from "./display.ts";
 import type { BoardSession, SessionState } from "./session.ts";
@@ -54,10 +55,11 @@ interface TrackProps {
   writer: Writer;
   state: SessionState;
   session: BoardSession;
+  opening: Opening;
   onAt(index: number): void;
 }
 
-export function Track({ versions, argumentId, writer, state, session, onAt }: TrackProps) {
+export function Track({ versions, argumentId, writer, state, session, opening, onAt }: TrackProps) {
   const single = versions.length < 2;
   const key = `w:${argumentId}`;
   return (
@@ -91,7 +93,7 @@ export function Track({ versions, argumentId, writer, state, session, onAt }: Tr
                 />
               )}
             </div>
-            <Card version={version} inTrack />
+            <Card version={version} opening={opening} inTrack />
           </Fragment>
         );
       })}

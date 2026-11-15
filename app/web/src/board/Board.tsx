@@ -1,22 +1,32 @@
 // The board screen (M0-6): the prototype's markup, drawn from what the
 // reader holds (session.ts). Rows sit where `view.shown` puts them; counts
 // change in place; the pill counts what Update would change.
+//
+// Its address (M-06) is the board's, or the open version's while one is
+// open. It changes in place (history.replaceState), as the prototype's
+// does, so Back leaves the board instead of closing cards one by one.
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ArgumentRow, OptionRow, ReaderView } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
+import { NotFound } from "../NotFound.tsx";
+import { boardPath, versionPath } from "../links.ts";
 import { browserIds } from "../system.ts";
 import { Card } from "./Card.tsx";
+import type { Opening } from "./Card.tsx";
 import { ArgumentSlot, EMPTY_DRAFT } from "./Forms.tsx";
 import { Sharing } from "./Sharing.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { columns, importanceShown, isLive, short } from "./display.ts";
+import { columns, importanceShown, isLive, isLiveVersion, short } from "./display.ts";
 import { BoardSession } from "./session.ts";
 import type { SessionState } from "./session.ts";
 
-export function Board({ boardId }: { boardId: string }) {
+/** How long a version a link points to stays ringed. */
+const RING_MS = 1_400;
+
+export function Board({ boardId, version = null }: { boardId: string; version?: string | null }) {
   const [session] = useState(() => new BoardSession(boardId));
   useEffect(() => {
     void session.start();
@@ -24,18 +34,64 @@ export function Board({ boardId }: { boardId: string }) {
   }, [session]);
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
 
-  if (state.phase === "missing") return <p className="sm-meta">There's no board at this link.</p>;
+  if (state.phase === "missing") return <NotFound />;
   if (state.phase === "no_access") return <p className="sm-meta">You don’t have access to this steelman.</p>;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!state.view) return null;
-  return <BoardView view={state.view} state={state} session={session} />;
+  return <BoardView boardId={boardId} linked={version} view={state.view} state={state} session={session} />;
 }
 
-function BoardView({ view, state, session }: { view: ReaderView; state: SessionState; session: BoardSession }) {
+interface BoardViewProps {
+  boardId: string;
+  /** The version the link that opened the board points to. */
+  linked: string | null;
+  view: ReaderView;
+  state: SessionState;
+  session: BoardSession;
+}
+
+function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
   const options = columns(view);
-  const [side, setSide] = useState(options[0]?.id);
+  const [arrival] = useState(() => arrivalFor(view, linked));
+  const [side, setSide] = useState(arrival.side ?? options[0]?.id);
   /** The row unfolded to compare its wordings: one at a time. */
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(arrival.row);
+  /** The version opened by its wording, one at a time. It counts as open only while it's on screen. */
+  const [expanded, setExpanded] = useState<string | null>(arrival.version);
+  const openVersion = expanded !== null && onScreen(view, open, expanded) ? expanded : null;
+  const [arrived, setArrived] = useState<string | null>(arrival.version);
+  const [note, setNote] = useState(arrival.note);
+  const dismiss = useRef<HTMLButtonElement>(null);
+  const opening: Opening = {
+    open: openVersion,
+    arrived,
+    toggle: (id) => setExpanded(openVersion === id ? null : id),
+    copyLink(id) {
+      const link = new URL(versionPath(boardId, id), window.location.origin).href;
+      const copied = navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject(new Error("No clipboard"));
+      copied.then(
+        () => session.announce("Link copied."),
+        () => session.announce(`Copying isn’t allowed here. The link is ${link}`),
+      );
+    },
+  };
+
+  // The address follows what's open.
+  useEffect(() => {
+    const path = openVersion ? versionPath(boardId, openVersion) : boardPath(boardId);
+    if (window.location.pathname !== path) window.history.replaceState(window.history.state, "", path + window.location.search + window.location.hash);
+  }, [boardId, openVersion]);
+
+  // A link's version comes into view and rings; a link to one that's gone puts the cursor on its note.
+  useEffect(() => {
+    if (!arrived) return;
+    document.querySelector(`[data-card="${CSS.escape(arrived)}"]`)?.scrollIntoView({ block: "center", inline: "nearest" });
+    const timer = window.setTimeout(() => setArrived(null), RING_MS);
+    return () => window.clearTimeout(timer);
+  }, [arrived]);
+  useEffect(() => {
+    if (arrival.note) dismiss.current?.focus();
+  }, [arrival]);
   const openOption = open ? view.rows.arguments[open]?.optionId : undefined;
   const [writing, setWriting] = useState<Writing>(null);
   /** Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>". */
@@ -95,6 +151,15 @@ function BoardView({ view, state, session }: { view: ReaderView; state: SessionS
         <section className="sm-head" aria-label="The question">
           <h1>{state.question}</h1>
           {state.access && state.role ? <Sharing access={state.access} role={state.role} session={session} /> : null}
+          {note ? (
+            <p className="sm-link-note" role="status">
+              <Icon name="info" />
+              <span>{note}</span>
+              <button ref={dismiss} type="button" className="sm-link-button cursor-interaction" onClick={() => setNote("")}>
+                Dismiss
+              </button>
+            </p>
+          ) : null}
         </section>
         <main id="sm-content">
           <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption) } as React.CSSProperties}>
@@ -127,6 +192,7 @@ function BoardView({ view, state, session }: { view: ReaderView; state: SessionS
                   setOpen(open === id ? null : id);
                 }}
                 writer={writer}
+                opening={opening}
                 view={view}
                 state={state}
                 session={session}
@@ -141,6 +207,36 @@ function BoardView({ view, state, session }: { view: ReaderView; state: SessionS
       </div>
     </div>
   );
+}
+
+interface Arrival {
+  side: string | null;
+  row: string | null;
+  version: string | null;
+  note: string;
+}
+
+/**
+ * Where a link to a version lands: its column, its row unfolded unless it
+ * leads the row, and the version open. A version that isn't on the board
+ * (deleted, or never there) gets a note instead.
+ */
+function arrivalFor(view: ReaderView, versionId: string | null): Arrival {
+  const none: Arrival = { side: null, row: null, version: null, note: "" };
+  if (!versionId) return none;
+  const version = view.rows.versions[versionId];
+  const argument = version ? view.rows.arguments[version.argumentId] : undefined;
+  const at = argument ? (view.shown.versions[argument.id] ?? []).indexOf(versionId) : -1;
+  if (!argument || !isLive(argument) || !isLiveVersion(version) || at < 0) return { ...none, note: "That version was deleted." };
+  return { side: argument.optionId, row: at > 0 ? argument.id : null, version: versionId, note: "" };
+}
+
+/** Whether a version can be seen: it leads its row, or its row is unfolded. */
+function onScreen(view: ReaderView, unfolded: string | null, versionId: string): boolean {
+  const version = view.rows.versions[versionId];
+  if (!isLiveVersion(version)) return false;
+  const at = (view.shown.versions[version!.argumentId] ?? []).indexOf(versionId);
+  return at === 0 || (at > 0 && unfolded === version!.argumentId);
 }
 
 /** Which draft form is open: one at a time. */
@@ -220,12 +316,13 @@ interface ColumnProps {
   open: string | null;
   onToggle(argumentId: string): void;
   writer: Writer;
+  opening: Opening;
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
 }
 
-function Column({ option, first, on, gap, open, onToggle, writer, view, state, session }: ColumnProps) {
+function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session }: ColumnProps) {
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
   return (
@@ -246,7 +343,7 @@ function Column({ option, first, on, gap, open, onToggle, writer, view, state, s
         </div>
         {argumentIds.map((id) => {
           const argument = view.rows.arguments[id];
-          return argument ? <Row key={id} argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} view={view} state={state} session={session} /> : null;
+          return argument ? <Row key={id} argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} /> : null;
         })}
         <ArgumentSlot
           optionName={option.name}
@@ -267,12 +364,13 @@ interface RowProps {
   open: boolean;
   onToggle(): void;
   writer: Writer;
+  opening: Opening;
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
 }
 
-function Row({ argument, open, onToggle, writer, view, state, session }: RowProps) {
+function Row({ argument, open, onToggle, writer, opening, view, state, session }: RowProps) {
   const versionIds = view.shown.versions[argument.id] ?? [];
   const versions = versionIds.map((id) => view.rows.versions[id]).filter((version) => version !== undefined);
   const lead = versions[0];
@@ -295,11 +393,11 @@ function Row({ argument, open, onToggle, writer, view, state, session }: RowProp
       />
       <div className="sm-card-wrap">
         {open ? (
-          <Track versions={versions} argumentId={argument.id} writer={writer} state={state} session={session} onAt={setAt} />
+          <Track versions={versions} argumentId={argument.id} writer={writer} state={state} session={session} opening={opening} onAt={setAt} />
         ) : (
           <>
             <Stack count={count} onUnfold={onToggle} />
-            <Card version={lead} />
+            <Card version={lead} opening={opening} />
           </>
         )}
       </div>

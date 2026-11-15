@@ -38,6 +38,8 @@ export interface SignInSite {
   sentTo(email: string): number;
   /** Ages every code waiting to be typed past its ten minutes. (Better Auth checks expiry on the real clock.) */
   expireCodes(): Promise<void>;
+  /** Runs SQL on the site's database, as its owner: for setting up what the app can't do yet, such as inviting someone (H-01). */
+  sql(text: string, values?: unknown[]): Promise<void>;
   /** A new browser session, signed out, at this width. */
   browse(options?: { width?: number }): Promise<Page>;
   /** Every unexpected console error and uncaught exception so far. */
@@ -88,10 +90,13 @@ export const test = base.extend<{ site: SignInSite }>({
       },
       sentTo: (email) => outbox.filter((message) => message.to === email.toLowerCase()).length,
       async expireCodes() {
+        await site.sql("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%'");
+      },
+      async sql(text, values) {
         const client = new pg.Client({ connectionString: databaseUrl.href });
         await client.connect();
         try {
-          await client.query("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%'");
+          await client.query(text, values);
         } finally {
           await client.end();
         }
