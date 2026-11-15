@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newBoardInput, newWordingInput, voteInput } from "@steelman/shared";
-import type { Clock, IdSource, RefusalReason, Role } from "@steelman/shared";
+import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { createBoard } from "./boards.ts";
 import type { Db } from "./db/database.ts";
@@ -33,6 +33,8 @@ export interface AppDependencies {
   mode?: Mode;
   /** Signing in (M1). Without it, only the test-user switch says who is asking. */
   signIn?: SignInDependencies;
+  /** PostHog's project key and address, for the browser (M-08). Without it, the web app sends no analytics. */
+  analytics?: NonNullable<PublicConfig["analytics"]>;
 }
 
 /** The header the browser uses to say which test account it is acting as, while there is no sign-in (M0). */
@@ -68,10 +70,14 @@ declare module "fastify" {
  * Builds the Steelman service without starting it, so tests can call its
  * routes directly and main.ts can listen on a port.
  */
-export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies }: AppDependencies): FastifyInstance {
+export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics }: AppDependencies): FastifyInstance {
   const app = Fastify();
 
   app.get("/api/health", () => ({ status: "ok", time: clock.now().toISOString() }));
+
+  // What the web app needs to know before it draws anything. The PostHog key is public (it can only send events),
+  // but it comes from the service's settings so one build of the web app runs anywhere, with analytics or without.
+  app.get("/api/config", (): PublicConfig => ({ analytics: analytics ?? null }));
 
   if (!database) return app;
   const db = database;

@@ -1045,6 +1045,19 @@ M1-6. The home page is now the New steelman sheet, from the prototype's, revised
 | Second reader | A fresh agent reviewed the pull request: nothing blocking. Fixed: the seed now finds test accounts whatever their capitals, and refuses (checking every name before writing) to write as a real account that has one of its usernames; Enter while an input method is composing no longer jumps out of the question (a test dispatching that Enter failed before the fix); the field an error is about is marked invalid and described by the message, which is announced again on each try; an answer the app can't read no longer leaves Create stuck; tests added for a board made Invited only refusing a confirmed stranger, for making a board over a real session (from another site, or before a username, refused), for being offline, and for the seed's two fixes. The builder decided making a board stays not safe to send twice, and `plans/architecture.md` ("Links and IDs") now says so. Left: a seed run that fails partway leaves that board half-made (start from a fresh database); option names aren't compared after Unicode normalization; the "Acting as" switch (development only) makes the top bar scroll sideways at 320 px |
 | Not checked | `npm run db:seed` against the builder's own database (the seed function is tested; the command around it isn't). A screen reader. Not built: question hints (F-02), drafts (F-03), spaces and their canvases in the sheet, collaboration rules. Sending Create twice (a lost answer and a retry) makes two boards |
 
+## November 14 — Analytics on the app (M-08)
+
+Analytics on the app, brought forward from M1-13 for Build 2: the first-visit notice, Global Privacy Control, Do Not Track, and masked typed text. The privacy page rewrite and the Content Security Policy stay in M1-13.
+
+| Check | Observed result |
+| --- | --- |
+| Tests first | `server/test/api/config.test.ts` (2), `web/test/analytics.test.ts` (5), and `e2e/analytics.spec.ts` (6) were written first and all failed (404 on `/api/config`; no notice), then passed |
+| Real PostHog, locally | With `POSTHOG_KEY` in `app/.env`, `npm run dev`, board `example-0001` acting as `dev_tester`: the notice showed; PostHog loaded from `us-assets.i.posthog.com`, with `environment: local`; session recording started; two clicks sent events to `us.i.posthog.com/e/` and replay to `/s/`. No console errors |
+| Turn off, real PostHog | Turn off opted PostHog out and stopped recording at once, and stored `off`. After a reload, `window.posthog` was undefined and no request went to PostHog |
+| No key | A service with no key: no notice, and no request to any other address (browser test) |
+
+Not checked: the events in PostHog's own dashboard (needs the builder's PostHog account); Safari and Firefox; a deployed service (M1-14).
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

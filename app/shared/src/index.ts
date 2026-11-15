@@ -39,6 +39,7 @@ export type {
   LogRow,
   NewBoard,
   OptionRow,
+  PublicConfig,
   RefusalReason,
   SourceRow,
   Standing,
