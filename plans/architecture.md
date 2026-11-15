@@ -297,7 +297,7 @@ Conflicts are rare by design: **nobody overwrites anybody.** A better wording is
 | Importance vote on an argument | It was deleted | Drops it | "1 action couldn't be sent: that argument was deleted" |
 | Articulation vote on a wording | It moved by combine or separate | Applies it (the wording's ID never changes) | Nothing unusual |
 | Articulation or importance vote | The wording or argument was hidden by a moderator | Drops it | Same note as above |
-| Credibility assessment | The wording or its sources changed | Refuses it: you judged an earlier revision | "This wording changed while you were away. Take another look." |
+| Credibility assessment | The wording or its sources changed | Refuses it: you judged an earlier revision | "This wording changed; take another look." on the card |
 | New wording on an argument | It was combined into another | Adds it to the argument it was combined into (drafts follow their argument) | It appears there |
 | New wording on an argument | It was deleted | Refuses it | Your text comes back as a draft in **Add an argument** in the same column (the prototype's behavior) |
 | Edit of your own wording | (only you can edit it) | Applies it, unless your queue holds an earlier edit that failed; then it refuses | Your text comes back in the edit form |

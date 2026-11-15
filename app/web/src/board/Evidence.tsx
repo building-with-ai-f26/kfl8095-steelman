@@ -28,7 +28,7 @@ import type { QueuedAction, Role, SourceRow, VersionRow } from "@steelman/shared
 import { Icon } from "../icons.tsx";
 import { useReader } from "../reader.ts";
 import { browserIds } from "../system.ts";
-import { isLiveVersion } from "./display.ts";
+import { assessmentShown, isLiveVersion } from "./display.ts";
 
 /** What the evidence needs from the board. */
 export interface EvidenceBoard {
@@ -89,8 +89,16 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   }, [added, version.sourceIds, announce]);
 
   const assessed = version.yes + version.no > 0;
-  /** The assessed wordings citing this source, whose scores an edit of its evidence resets. */
-  const assessedCiting = (sourceId: string) => Object.values(board.versions).filter((v) => isLiveVersion(v) && v.sourceIds.includes(sourceId) && v.yes + v.no > 0).length;
+  /** The assessed wordings citing this source, whose scores an edit of its evidence resets, counting the reader's own pending assessments. */
+  const assessedCiting = (sourceId: string) =>
+    Object.values(board.versions).filter((v) => {
+      const counts = assessmentShown(v, board.mine);
+      return isLiveVersion(v) && v.sourceIds.includes(sourceId) && counts.yes + counts.no > 0;
+    }).length;
+  /** The source being edited, as it is now. */
+  const editing = form?.editing ? board.sources[form.editing] : undefined;
+  /** Whether saving the draft changes a source's evidence: its link or description, which is what resets scores. */
+  const evidenceChanges = !editing || cleanText(draft.locator) !== cleanText(editing.locator) || cleanText(draft.finding) !== cleanText(editing.finding);
 
   const openForm = (editing: SourceRow | null) => {
     setForm({ editing: editing?.id ?? null });
@@ -106,14 +114,13 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   };
   const save = () => {
     const clean = { name: cleanText(draft.name), locator: cleanText(draft.locator), finding: cleanText(draft.finding) };
-    const wrong = problemsWith(clean);
+    const wrong = problemsWith(clean, editing);
     if (wrong.fields.length > 0) {
       setInvalid(wrong.fields);
       setProblem(wrong.message);
       setFocus(`src-${wrong.fields[0]}`);
       return;
     }
-    const editing = form?.editing ? board.sources[form.editing] : undefined;
     if (editing) {
       board.act({ kind: "editSource", sourceId: editing.id, ...clean, backsUp: editing.backsUp, limits: editing.limits });
       setOpened((all) => ({ ...all, [editing.id]: true }));
@@ -134,6 +141,7 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
       return;
     }
     setArmed(null);
+    setForm(null);
     board.act({ kind: "uncite", versionId: version.id, sourceId: source.id });
     announce(`Source removed from this version${assessed ? "; its credibility score resets" : ""}.`);
     setFocus("add-source");
@@ -148,8 +156,17 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   };
   /** "Yes" needs evidence someone can open. */
   const canBackUp = cited.some((source) => !source.unavailable);
+  /**
+   * The reader's own change to this wording's sources, still on its way. It
+   * makes a new revision, so an assessment now would judge the one it
+   * replaces and be refused: the buttons wait for it.
+   */
+  const sourcesChanging = board.mine.some(
+    (action) =>
+      ((action.kind === "addSource" || action.kind === "uncite") && action.versionId === version.id) || (action.kind === "editSource" && version.sourceIds.includes(action.sourceId)),
+  );
 
-  const warning = form ? (form.editing ? assessedCiting(form.editing) : assessed ? 1 : 0) : 0;
+  const warning = !form || !evidenceChanges ? 0 : editing ? assessedCiting(editing.id) : assessed ? 1 : 0;
   return (
     <section ref={section} className="sm-evidence-group" aria-label="Evidence and its assessment">
       <h3>Evidence</h3>
@@ -189,16 +206,16 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
         ) : null}
         <h4 id={`${version.id}-assess`}>Does the evidence back this wording?</h4>
         <div className="sm-assess-actions" role="group" aria-labelledby={`${version.id}-assess`}>
-          <button type="button" className="sm-button cursor-interaction" data-key="assess-yes" aria-pressed={version.myAssessment === true} disabled={!canBackUp} onClick={() => assess(true)}>
+          <button type="button" className="sm-button cursor-interaction" data-key="assess-yes" aria-pressed={version.myAssessment === true} disabled={!canBackUp || sourcesChanging} onClick={() => assess(true)}>
             <Icon name="check" />
             Yes
           </button>
-          <button type="button" className="sm-button cursor-interaction" data-key="assess-no" aria-pressed={version.myAssessment === false} onClick={() => assess(false)}>
+          <button type="button" className="sm-button cursor-interaction" data-key="assess-no" aria-pressed={version.myAssessment === false} disabled={sourcesChanging} onClick={() => assess(false)}>
             <Icon name="x" />
             No
           </button>
           {version.myAssessment !== null ? (
-            <button type="button" className="sm-text-button cursor-interaction" onClick={() => assess(null)}>
+            <button type="button" className="sm-text-button cursor-interaction" disabled={sourcesChanging} onClick={() => assess(null)}>
               Undo
             </button>
           ) : null}
@@ -222,7 +239,8 @@ interface SourceProps {
 
 function Source({ source, open, onToggle, mine, mayRemove, armed, onEdit, onRemove }: SourceProps) {
   return (
-    <details className="sm-source-row" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
+    // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
+    <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
       <summary className="cursor-interaction" data-key={`src-${source.id}`}>
         <Icon name="file-text" />
         <span>
@@ -284,10 +302,15 @@ const FIELDS: { field: Field; label: string; placeholder: string; optional?: tru
   { field: "finding", label: "Description", placeholder: "e.g. Table 4: 41% of shift workers have Sunday as their only day off.", optional: true, max: LIMITS.sourceFinding },
 ];
 
-/** Which fields are wrong, first one first, and what to say. */
-function problemsWith(clean: Draft): { fields: Field[]; message: string } {
-  const noLink = !clean.locator;
-  const badLink = !noLink && webLink(clean.locator) === null;
+/**
+ * Which fields are wrong, first one first, and what to say. A source kept
+ * from before the form asked for links may keep its text where the link
+ * goes, so its title can be fixed without adding one.
+ */
+function problemsWith(clean: Draft, editing: SourceRow | undefined): { fields: Field[]; message: string } {
+  const kept = editing !== undefined && clean.locator === cleanText(editing.locator);
+  const noLink = !clean.locator && !kept;
+  const badLink = !noLink && !kept && webLink(clean.locator) === null;
   const noTitle = !clean.name;
   const fields: Field[] = [...(noLink || badLink ? (["locator"] as const) : []), ...(noTitle ? (["name"] as const) : [])];
   const missing = [noLink ? "a link" : "", noTitle ? "a title" : ""].filter(Boolean);

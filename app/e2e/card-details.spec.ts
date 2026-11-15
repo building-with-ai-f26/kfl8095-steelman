@@ -260,6 +260,7 @@ test.describe("the source form", () => {
     await row.locator("summary").click();
 
     await row.getByRole("button", { name: "Edit" }).click();
+    await fill(page, { finding: "Three in ten." });
 
     await expect(form(page).getByRole("note")).toHaveText("Credibility scores reset on 2 wordings when you save.");
   });
@@ -310,6 +311,66 @@ test.describe("the source form", () => {
     await expect(evidence(page, LEAD).getByText("No sources yet.")).toBeVisible();
     await expect(evidence(page, LEAD).getByRole("button", { name: "Add a source" })).toBeFocused();
     await expect(page.locator("#sm-status")).toHaveText("Source removed from this version; its credibility score resets.");
+  });
+
+  test("C-01: a source whose place to find it isn't a link can have its title fixed without adding one, and nothing resets", async ({ board }) => {
+    await addSource(board, "jordan_w", LEAD, { locator: "Chapter 3, page 41" });
+    await assessNo(board, "tess.b", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    const row = sourceRow(page, LEAD, SURVEY.name);
+    await row.locator("summary").click();
+    await row.getByRole("button", { name: "Edit" }).click();
+
+    await expect(form(page).getByRole("note")).toHaveCount(0);
+    await fill(page, { name: "Shift work survey, 2025" });
+    await expect(form(page).getByRole("note")).toHaveCount(0);
+    await form(page).getByRole("button", { name: "Save source" }).click();
+
+    await expect(sourceRow(page, LEAD, "Shift work survey, 2025")).toBeVisible();
+    await poll(page);
+    await expect(card(page, LEAD).locator(".sm-card-meta .sm-cred")).toHaveAccessibleName(/^0% supported/);
+  });
+
+  test("B-03, C-01: editing a source warns only once its link or description changes, since only those reset the score", async ({ board }) => {
+    await addSource(board, "jordan_w", LEAD);
+    await assessNo(board, "tess.b", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    const row = sourceRow(page, LEAD, SURVEY.name);
+    await row.locator("summary").click();
+    await row.getByRole("button", { name: "Edit" }).click();
+
+    await fill(page, { name: "Shift work survey, 2025" });
+    await expect(form(page).getByRole("note")).toHaveCount(0);
+    await fill(page, { finding: "Three in ten." });
+    await expect(form(page).getByRole("note")).toHaveText("The credibility score resets when you save.");
+    await fill(page, { finding: SURVEY.finding });
+    await expect(form(page).getByRole("note")).toHaveCount(0);
+    await fill(page, { locator: "https://example.org/other" });
+    await expect(form(page).getByRole("note")).toHaveText("The credibility score resets when you save.");
+  });
+
+  test("C-01: Remove while the form is open closes the form and puts the cursor on Add a source", async ({ board }) => {
+    await addSource(board, "jordan_w", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    const row = sourceRow(page, LEAD, SURVEY.name);
+    await row.locator("summary").click();
+    await evidence(page, LEAD).getByRole("button", { name: "Add a source" }).click();
+
+    await row.getByRole("button", { name: "Remove from this version" }).click();
+
+    await expect(form(page)).toHaveCount(0);
+    await expect(evidence(page, LEAD).getByRole("button", { name: "Add a source" })).toBeFocused();
+  });
+
+  test("M-08: a source's row is kept out of analytics, since its title, link, and adder are what people wrote", async ({ board }) => {
+    await addSource(board, "maya.chen", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+
+    await expect(sourceRow(page, LEAD, SURVEY.name)).toHaveClass(/ph-no-capture/);
   });
 
   test("C-01: Edit is only on your own source; Remove is also there for the wording's author and the Owner", async ({ board }) => {
@@ -453,4 +514,73 @@ test.describe("assessing", () => {
     await expect(here.getByText("This wording changed; take another look.")).toHaveCount(0);
     await expect(meter(here)).toHaveAccessibleName(/^100% supported/);
   });
+
+  test("B-03: while your own change to a wording's sources is on its way, Yes and No wait, so they can't judge the revision it replaces", async ({ board }) => {
+    await addSource(board, "jordan_w", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/sources/**", async (route) => {
+      await held;
+      await route.continue();
+    });
+    const row = sourceRow(page, LEAD, SURVEY.name);
+    await row.locator("summary").click();
+
+    await row.getByRole("button", { name: "Remove from this version" }).click();
+
+    await expect(question(page, LEAD).getByRole("button", { name: "No" })).toBeDisabled();
+    release();
+    await expect(question(page, LEAD).getByRole("button", { name: "No" })).toBeEnabled();
+    await question(page, LEAD).getByRole("button", { name: "No" }).click();
+    await expect(meter(card(page, LEAD))).toHaveAccessibleName(/^0% supported/);
+    await poll(page);
+    await expect(meter(card(page, LEAD))).toHaveAccessibleName(/^0% supported/);
+    await expect(page.getByText("This wording changed; take another look.")).toHaveCount(0);
+  });
+
+  test("B-03, M-02: an answer to a question asked before your Undo was sent doesn't bring your earlier assessment back", async ({ board }) => {
+    await addSource(board, "maya.chen", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    const held: (() => void)[] = [];
+    let holding = true;
+    // The question reaches the service at once; only its answer is held back.
+    await page.route("**/changes?**", async (route) => {
+      if (!holding) return route.continue();
+      const response = await route.fetch();
+      await new Promise<void>((resolve) => held.push(resolve));
+      await route.fulfill({ response });
+    });
+    const no = question(page, LEAD).getByRole("button", { name: "No" });
+
+    await no.click();
+    await expect.poll(() => held.length).toBe(1); // asked after No was sent, and held
+    await question(page, LEAD).getByRole("button", { name: "Undo" }).click();
+    await expect.poll(() => held.length).toBe(2); // asked after Undo was sent
+    held[0]!();
+
+    await expect(meter(card(page, LEAD))).toHaveAccessibleName("Unreviewed; no assessments");
+    await expect(no).toHaveAttribute("aria-pressed", "false");
+    holding = false;
+    held[1]!();
+    await expect(no).toHaveAttribute("aria-pressed", "false");
+  });
+
+  for (const size of [{ name: "desktop", width: 1280 }, { name: "375", width: 375 }]) {
+    test(`A-02, B-03, C-01: an open card, with a source open and then the source form, looks as saved at ${size.name} width`, async ({ board }) => {
+      await addSource(board, "maya.chen", LEAD);
+      const page = await board.open("jordan_w", { width: size.width });
+      await openCard(page, LEAD);
+      await sourceRow(page, LEAD, SURVEY.name).locator("summary").click();
+      await question(page, LEAD).getByRole("button", { name: "Yes" }).click();
+      await expect(meter(card(page, LEAD))).toHaveAccessibleName(/^100% supported/);
+      await poll(page);
+
+      await expect(card(page, LEAD)).toHaveScreenshot(`card-open-${size.name}.png`);
+      await evidence(page, LEAD).getByRole("button", { name: "Add a source" }).click();
+      await expect(card(page, LEAD)).toHaveScreenshot(`card-form-${size.name}.png`);
+    });
+  }
 });

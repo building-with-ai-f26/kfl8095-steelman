@@ -244,10 +244,12 @@ export class BoardSession {
         if (!this.opened(await readBoard(this.board))) return;
       } else if (this.state.view) {
         const shares = this.shareCount;
+        // Only what was sent before asking is in the answer: what's sent meanwhile stays the reader's until a later one.
+        const asked = new Set(this.sent);
         const changes = await readChanges(this.board, this.state.view.seq);
         // Access can end while the board is open: the owner turned the link off.
         if (typeof changes === "string") return this.set({ phase: changes, view: null });
-        this.sent = [];
+        this.sent = this.sent.filter((action) => !asked.has(action));
         const accessSettled = !this.sharing && shares === this.shareCount;
         this.set({ view: receive(this.state.view, changes), role: changes.role, ...(accessSettled ? { access: changes.access } : {}) });
         this.mineChanged();
