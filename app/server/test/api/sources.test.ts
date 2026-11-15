@@ -200,6 +200,26 @@ describe("adding a source to a wording", () => {
   });
 });
 
+describe("a wording an editor hid", () => {
+  const hide = (versionId: string) =>
+    write(db.client, b.board, (seq) => db.client.query("update version set hidden_at = $2, hidden_by = $3, changed_seq = $4 where id = $1", [versionId, NOON, b.ana, seq]));
+
+  test("C-01: takes no new source, by adding or citing", async () => {
+    await hide(b.otherVersion);
+
+    expect((await addSource(b.ben, b.otherVersion, { id: ids.itemId(), ...EVIDENCE })).body).toEqual({ status: "refused", reason: "version_deleted" });
+    expect((await cite(b.ben, b.otherVersion, b.source)).body).toEqual({ status: "refused", reason: "version_deleted" });
+  });
+
+  test("C-01: still starts over when a source it cites changes, so it does if it's restored", async () => {
+    await hide(b.version);
+
+    await editSource(b.ana, b.source, { ...SEEDED, finding: "Changed." });
+
+    expect(await revision(b.version, 2)).toEqual({ wording: "Sunday is the only free day for many people.", context: "", why: "source_changed" });
+  });
+});
+
 describe("citing a source already on the board", () => {
   test("C-01: one source can back several wordings; citing it saves a new revision of the wording", async () => {
     await assess(b.ben, b.otherVersion, 1, false);
@@ -418,6 +438,7 @@ describe("editing a source (Q10)", () => {
     expect(log).toEqual([expect.objectContaining({ kind: "source_edited", subjectKind: "source", subjectId: b.source })]);
     const row = (await db.client.query("select before, after from change where board_id = $1 and seq = $2", [b.board, body.seq])).rows[0];
     expect(JSON.stringify(row)).not.toContain("nobody");
+    expect(row.after).toEqual({ revised: [{ version: b.version, rev: 2 }] });
   });
 });
 

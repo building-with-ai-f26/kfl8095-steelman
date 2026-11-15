@@ -1121,7 +1121,7 @@ M1-8. Sources through the API, with no screens yet (the card's evidence and sour
 
 | Check | Observed result |
 | --- | --- |
-| Tests first | `app/server/test/api/sources.test.ts` (58 tests) was written first: 56 failed (no routes); the 2 that passed were "not found" cases, which a missing route also answers |
+| Tests first | `app/server/test/api/sources.test.ts` (58 tests, 60 after the second reader) was written first: 56 failed (no routes); the 2 that passed were "not found" cases, which a missing route also answers |
 | New revision | Adding, citing, or taking off a source saves revision n + 1 of the wording, with the same text and `why` = `sources_changed`; its yes and no go to 0 and the reader's own assessment is gone, while importance and articulation votes stay |
 | Shared source (Q10) | Changing its finding, where to find it, what it backs up, or its limits gives every wording whose current revision cites it a new revision (`source_changed`), each starting over; a wording that cites nothing, one that cited it only in an earlier revision, and a deleted one are left alone. Fixing only the name changes the source and starts nothing over |
 | History | The old revision's assessments stay in the `assessment` table, keyed to the revision they judged, and stop counting. An assessment sent for the old revision is refused with the wording as it is now (`revision_changed`) |
@@ -1132,7 +1132,8 @@ M1-8. Sources through the API, with no screens yet (the card's evidence and sour
 | Change log | `source_added`, `source_cited`, `source_removed`, `source_edited`, by ID and revision number only; a test checks the source's text isn't in the row |
 | Live updates | Readers asking for changes after an edit get the source and every wording it revised |
 | Edits around a source change | Changing a wording's sources saves revisions too, so an author's edit is now refused only when another edit came after the revision it started from, not when someone added a source meanwhile. The "edited" mark shows the wording before the latest edit, not the revision before this one (a sources change has the same text, so it shows no mark). The existing edit tests pass unchanged |
-| `npm run check` | Types, lint, all 531 unit, API, and simulation tests, and the browser tests pass |
+| Second reader | A fresh agent reviewed the pull request: nothing blocking. Fixed: a hidden wording had no tests (now: it takes no new source, and still starts over when a source it cites changes); `source_edited` now logs each revised wording's new revision number, not only its ID. Open for the builder: who may take off a source that someone cited on a wording they didn't add it to (now only the person who added the source, as in the prototype, which has no citing). Left: the offline queue assumes its edit saves revision `baseRev + 1`, which a sources change in between now breaks; that is safe (the next queued action is refused and comes back) and matters once the web app edits offline. Two boards using the same new source ID at the same instant would give the second a server error rather than `id_taken`, as new arguments already can |
+| `npm run check` | Types, lint, all 533 unit, API, and simulation tests, and all 77 browser tests pass, the saved screenshots included |
 | Not checked | The simulation doesn't yet play source actions (its oracle for edits assumes no other kind of revision); adding them changes an existing test, so it needs the builder. Reporting a source unavailable (C-02, T3) has no route yet; its rule for "yes" is tested with the database flag. Sources aren't in the example boards yet (with M1-9, when cards show them) |
 
 ## Limits

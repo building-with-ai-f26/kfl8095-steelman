@@ -118,7 +118,7 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
         .where("id", "=", sourceId)
         .execute();
 
-      const revised: string[] = [];
+      const revised: { version: string; rev: number }[] = [];
       if (evidenceChanged) {
         const citing = await trx
           .selectFrom("version as v")
@@ -131,8 +131,8 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
           .execute();
         for (const version of citing) {
           const sourceIds = await citedBy(trx, version.id, version.current_rev);
-          await saveRevision(trx, clock, { boardId, versionId: version.id, from: version.current_rev, sourceIds, why: "source_changed", person: person!, seq });
-          revised.push(version.id);
+          const rev = await saveRevision(trx, clock, { boardId, versionId: version.id, from: version.current_rev, sourceIds, why: "source_changed", person: person!, seq });
+          revised.push({ version: version.id, rev });
         }
       }
       await log(trx, clock, { boardId, seq, person: person!, kind: "source_edited", subjectKind: "source", subjectId: sourceId, after: { revised } });
