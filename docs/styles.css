@@ -75,12 +75,21 @@ h2 { font: 700 26px/1.2 var(--sm-serif); letter-spacing: -.5px; }
 .nongoal { display: flex; gap: 12px; align-items: flex-start; }
 .nongoal > svg.lucide { margin: 2px 0 0; color: var(--sm-cred-weak); }
 
+/* How the app works: a screenshot and the architecture diagram, framed like the prototype's. The diagram scrolls sideways when the page is narrower than it can be read at. */
+.shot + .shot { margin-top: 24px; }
+.shot > a { display: block; overflow: hidden; border: 1px solid #c8c8c8; border-radius: 12px; background: var(--sm-card); box-shadow: var(--sm-shadow); }
+.shot img { display: block; width: 100%; height: auto; }
+.diagram > a { overflow-x: auto; }
+.diagram img { min-width: 900px; }
+figcaption code { font: 500 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; font-style: normal; }
+
 /* Build log */
 .log { padding: 4px 20px; }
 .log > div { display: grid; grid-template-columns: 120px 1fr; gap: 24px; padding: 12px 0; border-top: 1px solid var(--sm-line); }
 .log > div:first-child { border-top: 0; }
 dt { font-size: 12px; font-weight: 600; }
 dd { font-size: 14px; line-height: 1.6; color: #3a3a3a; }
+dd strong { font-weight: 600; color: var(--sm-ink); }
 
 footer { display: flex; justify-content: space-between; gap: 20px; padding: 20px 0 36px; border-top: 1px solid #00000026; color: #4a4a4a; font-size: 12px; }
 footer > div { display: flex; gap: 22px; }
