@@ -1064,6 +1064,8 @@ Checked by the coding agent in a browser at 1024 px and 375 px, served from `doc
 
 The risk's evidence is from M0's records (the simulation's 9 checks over 300 sequences; the 30-voter, 5-minute soak and recount). The costs are estimates: hosting from `plans/architecture.md` "What it costs" (the database figure not yet confirmed in Google's calculator); the AI check assumes about 5,000 tokens in and 1,000 out, at Anthropic's list prices on Nov 14 (Haiku 5.5 $0.10/$0.50, Opus 5.5 $4/$20 per million tokens).
 
+Revised the same day: the risk is named "Technical complexity of live collaboration"; Other risks lists two Legal and one Cost risk, each labeled; Cost details (folded under the summary) breaks the cost down by month and by action. Rechecked at 1024 px and 375 px: the two detail tables' columns line up, the rows stack on a phone, no horizontal overflow, no console errors. The free-plan behaviours (PostHog drops data over its free tier; Resend refuses sends over its quota) are from their pricing and quota pages, Nov 14.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

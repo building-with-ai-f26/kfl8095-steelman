@@ -81,6 +81,23 @@ h2 { font: 700 26px/1.2 var(--sm-serif); letter-spacing: -.5px; }
 .costs th { width: 190px; padding-right: 24px; font-size: 12px; font-weight: 600; }
 .costs td { color: #3a3a3a; }
 
+/* A risk's kind, as a small inverted label */
+.tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--sm-ink); color: #fff; font: 600 11px/1.5 var(--sm-sans); letter-spacing: .02em; vertical-align: .25em; }
+.statement .tag { margin-right: 6px; }
+.risks th { width: 96px; }
+
+/* Cost details: folded under the summary, three columns (item, cost, why) */
+.detail { margin-top: 12px; padding: 0 20px; }
+.detail summary { padding: 14px 0; font-size: 13px; font-weight: 600; cursor: pointer; }
+.detail[open] summary { border-bottom: 1px solid var(--sm-line); }
+.detail h4 { margin: 18px 0 2px; font: italic 400 15px/1.3 var(--sm-serif); color: #3a3a3a; }
+.detail table { table-layout: fixed; }
+.detail th { width: 190px; }
+.detail td:nth-child(2) { width: 150px; padding-right: 20px; color: var(--sm-ink); font-weight: 500; }
+.detail td:last-child { font-size: 13px; color: var(--sm-muted); }
+.detail .total th, .detail .total td { border-top: 1px solid var(--sm-ink); font-weight: 600; }
+.detail .note { margin: 14px 0 18px; font-size: 13px; color: var(--sm-muted); }
+
 /* Non-goals */
 .nongoal { display: flex; gap: 12px; align-items: flex-start; }
 .nongoal > svg.lucide { margin: 2px 0 0; color: var(--sm-cred-weak); }
@@ -126,6 +143,13 @@ footer > div { display: flex; gap: 22px; }
   .log > div { grid-template-columns: 76px 1fr; gap: 14px; }
   .costs { padding-inline: 16px; }
   .costs th { width: 96px; padding-right: 14px; }
+  .detail { padding-inline: 16px; }
+  .detail tr { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; padding: 10px 0; border-top: 1px solid var(--sm-line); }
+  .detail tr:first-child { border-top: 0; }
+  .detail th, .detail td { width: auto !important; padding: 0 !important; border: 0 !important; }
+  .detail td:nth-child(2) { white-space: normal; text-align: right; }
+  .detail td:last-child { grid-column: 1 / -1; margin-top: 2px; }
+  .detail .total { border-top: 1px solid var(--sm-ink); }
   footer { flex-wrap: wrap; gap: 12px; }
   footer > div { gap: 16px; flex-wrap: wrap; }
 }
