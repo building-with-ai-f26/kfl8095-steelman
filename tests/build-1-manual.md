@@ -1137,6 +1137,16 @@ M1-8. Sources through the API, with no screens yet (the card's evidence and sour
 | `npm run check` | Types, lint, and all 535 unit, API, and simulation tests pass. Browser tests: all 77 passed before the policy change; after it, 76 passed and `leave-prompt.spec.ts` "Leaving with nothing waiting brings up no prompt" failed once, then passed run alone. Nothing it covers changed (the web app doesn't read the policy table), so it looks flaky; reported here, not counted as passing |
 | Not checked | The simulation doesn't yet play source actions (its oracle for edits assumes no other kind of revision); adding them changes an existing test, so it needs the builder. Reporting a source unavailable (C-02, T3) has no route yet; its rule for "yes" is tested with the database flag. Sources aren't in the example boards yet (with M1-9, when cards show them) |
 
+## November 15 — Guards: a pending status instead of a failed run
+
+At the builder's request, to cut GitHub's failure emails (6 of the last 9 were this check failing on purpose before the label was added). The protected-files check now passes as a job and posts a commit status, "builder approval": pending until the builder adds `builder-approved`, success after or when nothing protected changed. `main` requires that status instead of the job.
+
+| Check | Observed result |
+| --- | --- |
+| On its own pull request (#46) | The job passed (so no failure email) and listed `guards.yml`, `architecture.md`, and `build-plan.md`; the commit status "builder approval" is pending: "Protected files changed: the builder reads the list and adds builder-approved." |
+| Not checked by the agent | Adding the label turning it to success: agents never add it. A run where the check can't run, which fails the job and posts no status |
+| The builder's part | Add "builder approval" to `main`'s required checks before merging; afterwards, remove "protected files", which now always passes |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
