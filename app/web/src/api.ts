@@ -10,12 +10,13 @@ export class Unreachable extends Error {}
 
 export type Answer = WriteAnswer | { status: "not_found" } | { status: "invalid" };
 
-async function call(method: string, path: string, body?: unknown): Promise<Response> {
+/** @param keepalive Lets the request finish after the tab closes. */
+async function call(method: string, path: string, body?: unknown, keepalive = false): Promise<Response> {
   const person = chosenTestUser();
   const headers: Record<string, string> = person ? { "x-steelman-test-user": person } : {};
   if (body !== undefined) headers["content-type"] = "application/json";
   try {
-    return await fetch(`/api/${path}`, { method, headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    return await fetch(`/api/${path}`, { method, headers, keepalive, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   } catch (error) {
     throw new Unreachable(String(error));
   }
@@ -81,8 +82,11 @@ export async function setAccess(board: string, access: Access): Promise<Answer> 
   return (await response.json()) as Answer;
 }
 
-/** Sends one queued action. Every write says what the result should be, so sending one twice is safe. */
-export async function send(board: string, action: QueuedAction): Promise<Answer> {
+/**
+ * Sends one queued action. Every write says what the result should be, so sending one twice is safe.
+ * @param keepalive For a delete sent as the tab closes, which has to arrive after the page is gone.
+ */
+export async function send(board: string, action: QueuedAction, keepalive = false): Promise<Answer> {
   const at = `boards/${board}`;
   const response = await (() => {
     switch (action.kind) {
@@ -99,7 +103,7 @@ export async function send(board: string, action: QueuedAction): Promise<Answer>
       case "edit":
         return call("PUT", `${at}/versions/${action.versionId}`, { baseRev: action.baseRev, wording: action.wording, context: action.context });
       case "delete":
-        return call("DELETE", `${at}/versions/${action.versionId}`);
+        return call("DELETE", `${at}/versions/${action.versionId}`, undefined, keepalive);
       case "addSource":
         return call("POST", `${at}/versions/${action.versionId}/sources`, { id: action.id, name: action.name, locator: action.locator, finding: action.finding, backsUp: "", limits: "" });
       case "editSource":

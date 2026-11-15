@@ -2,26 +2,32 @@
 // reader holds (session.ts). Rows sit where `view.shown` puts them; counts
 // change in place; the pill counts what Update would change.
 //
+// A version's ⋯ menu (A-12) edits in place, suggests a revised version in
+// the row's draft, and deletes with Undo: the deletion leaves the screen at
+// once and the session holds it for ten seconds before sending it.
+//
 // Its address (M-06) is the board's, or the open version's while one is
 // open. It changes in place (history.replaceState), as the prototype's
 // does, so Back leaves the board instead of closing cards one by one.
 
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { leaveOut } from "@steelman/shared";
 import type { ArgumentRow, OptionRow, ReaderView } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NotFound } from "../NotFound.tsx";
+import { useReader } from "../reader.ts";
 import { boardPath, versionPath } from "../links.ts";
 import { browserIds } from "../system.ts";
 import { Card } from "./Card.tsx";
-import type { Opening } from "./Card.tsx";
-import { ArgumentSlot, EMPTY_DRAFT } from "./Forms.tsx";
+import type { CardMenu, Opening } from "./Card.tsx";
+import { ArgumentSlot, EMPTY_DRAFT, cleanDraft } from "./Forms.tsx";
 import { Sharing } from "./Sharing.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { columns, importanceShown, isLive, isLiveVersion, short } from "./display.ts";
+import { columns, importanceShown, isLive, isLiveVersion, short, versionMenu } from "./display.ts";
 import { BoardSession } from "./session.ts";
-import type { SessionState } from "./session.ts";
+import type { HeldDelete, SessionState } from "./session.ts";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -33,12 +39,14 @@ export function Board({ boardId, version = null }: { boardId: string; version?: 
     return () => session.stop();
   }, [session]);
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
+  // The reader's own deletions are off the screen at once.
+  const view = useMemo(() => (state.view ? leaveOut(state.view, state.leftOut) : null), [state.view, state.leftOut]);
 
   if (state.phase === "missing") return <NotFound />;
   if (state.phase === "no_access") return <p className="sm-meta">You don’t have access to this steelman.</p>;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
-  if (!state.view) return null;
-  return <BoardView boardId={boardId} linked={version} view={state.view} state={state} session={session} />;
+  if (!view) return null;
+  return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} />;
 }
 
 interface BoardViewProps {
@@ -62,6 +70,76 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
   const [arrived, setArrived] = useState<string | null>(arrival.version);
   const [note, setNote] = useState(arrival.note);
   const dismiss = useRef<HTMLButtonElement>(null);
+  const [writing, setWriting] = useState<Writing>(null);
+  /** Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>". */
+  const [drafts, setDrafts] = useState<Record<string, DraftText>>({});
+  const keep = (key: string, draft: DraftText) => setDrafts((all) => ({ ...all, [key]: draft }));
+  const reader = useReader();
+  /** Where the cursor goes once the screen has changed: after an edit, a delete, or Undo. */
+  const [focusTo, setFocusTo] = useState<string | null>(null);
+  useLayoutEffect(() => {
+    if (!focusTo) return;
+    document.querySelector<HTMLElement>(focusTo)?.focus();
+    setFocusTo(null);
+  }, [focusTo]);
+  const cardControl = (versionId: string, control: "claim" | "menu") => `[data-card="${CSS.escape(versionId)}"] .${control === "claim" ? "sm-claim-button" : "sm-card-menu-button"}`;
+  /** The row's wordings that are still there. */
+  const liveIn = (argumentId: string) => (view.shown.versions[argumentId] ?? []).filter((id) => isLiveVersion(view.rows.versions[id]));
+
+  const menu: CardMenu = {
+    items: (version) => versionMenu(version, reader, state.role, liveIn(version.argumentId).length <= 1),
+    editing: writing?.kind === "edit" ? writing.versionId : null,
+    edit: (versionId) => setWriting({ kind: "edit", versionId }),
+    save(version, draft) {
+      setWriting(null);
+      setFocusTo(cardControl(version.id, "claim"));
+      const clean = cleanDraft(draft);
+      if (!clean || (clean.wording === version.wording && clean.context === (version.context ?? ""))) return session.announce("No changes.");
+      session.act({ kind: "edit", versionId: version.id, baseRev: version.rev, ...clean });
+      session.announce("Your version was saved.");
+    },
+    cancel(versionId) {
+      setWriting(null);
+      setFocusTo(cardControl(versionId, "menu"));
+      session.announce("Changes discarded.");
+    },
+    suggest(version) {
+      // As the prototype does: a draft already started in this row is kept.
+      const key = `w:${version.argumentId}`;
+      const kept = (drafts[key]?.wording ?? "").trim() !== "";
+      if (!kept) keep(key, { wording: version.wording ?? "", context: "" });
+      setOpen(version.argumentId);
+      setWriting({ kind: "wording", argumentId: version.argumentId });
+      setFocusTo(`[data-node="${CSS.escape(version.argumentId)}"] .sm-compose-card .sm-draft-claim`);
+      session.announce(kept ? "Your draft in this row was kept." : "A new version starts from this wording.");
+    },
+    remove(version) {
+      const optionId = view.rows.arguments[version.argumentId]!.optionId;
+      const last = liveIn(version.argumentId).length <= 1;
+      const rowsHere = view.shown.arguments[optionId] ?? [];
+      // The Undo bar sits under the row, or where the row was: under the one above it.
+      const after = last ? (rowsHere[rowsHere.indexOf(version.argumentId) - 1] ?? null) : version.argumentId;
+      if (openVersion === version.id) setExpanded(null);
+      if (last && open === version.argumentId) setOpen(null);
+      session.deleteVersion({ versionId: version.id, label: last ? "Argument deleted." : "Version deleted.", optionId, after });
+      setFocusTo(".sm-undo button");
+    },
+  };
+  // When the Undo bar leaves after its ten seconds with the cursor on it, the cursor goes to the row it sat under, or the column's Add an argument.
+  const lastHeld = useRef<HeldDelete | null>(null);
+  useLayoutEffect(() => {
+    const was = lastHeld.current;
+    lastHeld.current = state.undo;
+    if (!was || state.undo || (document.activeElement && document.activeElement !== document.body)) return;
+    const row = was.after ? document.querySelector<HTMLElement>(`[data-node="${CSS.escape(was.after)}"] .sm-claim-button`) : null;
+    (row ?? document.querySelector<HTMLElement>(`#sm-col-${CSS.escape(was.optionId)} .sm-add-idea`))?.focus();
+  }, [state.undo]);
+  const undo = () => {
+    const held = state.undo;
+    session.undoDelete();
+    if (held) setFocusTo(cardControl(held.versionId, "claim"));
+  };
+
   const opening: Opening = {
     open: openVersion,
     arrived,
@@ -83,6 +161,7 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
         () => session.announce(`Copying isn’t allowed here. The link is ${link}`),
       );
     },
+    menu,
   };
 
   // The address follows what's open.
@@ -107,10 +186,6 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
   /** The version open, if it's in this column. */
   const versionIn = (optionId: string) => openVersion !== null && view.rows.arguments[view.rows.versions[openVersion]!.argumentId]?.optionId === optionId;
   const openOption = open ? view.rows.arguments[open]?.optionId : undefined;
-  const [writing, setWriting] = useState<Writing>(null);
-  /** Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>". */
-  const [drafts, setDrafts] = useState<Record<string, DraftText>>({});
-  const keep = (key: string, draft: DraftText) => setDrafts((all) => ({ ...all, [key]: draft }));
 
   const writer: Writer = {
     writing,
@@ -226,6 +301,7 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
                 view={view}
                 state={state}
                 session={session}
+                onUndo={undo}
               />
             ))}
           </div>
@@ -269,8 +345,8 @@ function onScreen(view: ReaderView, unfolded: string | null, versionId: string):
   return at === 0 || (at > 0 && unfolded === version!.argumentId);
 }
 
-/** Which draft form is open: one at a time. */
-type Writing = { kind: "wording"; argumentId: string } | { kind: "argument"; optionId: string } | null;
+/** Which draft form is open, the author's edit included: one at a time. */
+type Writing = { kind: "wording"; argumentId: string } | { kind: "argument"; optionId: string } | { kind: "edit"; versionId: string } | null;
 
 /** What the rows and columns need to write in place. */
 export interface Writer {
@@ -350,11 +426,15 @@ interface ColumnProps {
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
+  onUndo(): void;
 }
 
-function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session }: ColumnProps) {
+function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session, onUndo }: ColumnProps) {
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
+  const held = state.undo?.optionId === option.id ? state.undo : null;
+  // Under the row it was placed after; first in the column if that row has since gone (Update took it off).
+  const barAfter = held?.after != null && argumentIds.includes(held.after) ? held.after : null;
   return (
     <>
       {gap && <div className="sm-col-gap" aria-hidden="true" />}
@@ -371,9 +451,15 @@ function Column({ option, first, on, gap, open, onToggle, writer, opening, view,
           <Icon name="arrow-down" />
           Most important first
         </div>
+        {held && barAfter === null && <UndoBar held={held} onUndo={onUndo} />}
         {argumentIds.map((id) => {
           const argument = view.rows.arguments[id];
-          return argument ? <Row key={id} argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} /> : null;
+          return argument ? (
+            <Fragment key={id}>
+              <Row argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} />
+              {held && barAfter === id && <UndoBar held={held} onUndo={onUndo} />}
+            </Fragment>
+          ) : null;
         })}
         <ArgumentSlot
           optionName={option.name}
@@ -432,6 +518,18 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
         )}
       </div>
     </section>
+  );
+}
+
+/** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
+function UndoBar({ held, onUndo }: { held: HeldDelete; onUndo(): void }) {
+  return (
+    <div className="sm-undo">
+      <span>{held.label}</span>
+      <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
+        Undo
+      </button>
+    </div>
   );
 }
 
