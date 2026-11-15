@@ -1089,6 +1089,10 @@ The root `README.md` is rewritten for Build 2: the app and how to run it, the Pr
 
 The builder's screen recording of signing in to the local app with Google is on the Product Page, first under How the app works. Made from the 18.5-second original: cut to the first 10 seconds (before a macOS screenshot panel appears at about 14 s), the browser's tab strip cropped off, sound removed, scaled to 1440 px wide (H.264, 190 KB). Google's account list showed five of the builder's email addresses, so it is blurred for exactly the time Google's page is on screen (2.08–6.3 s, found from the frames' brightness); every frame at both edges was checked and none shows the list. Checked on the page at 1024 px and 375 px: the video loads (10 s), no horizontal overflow, no console errors.
 
+## November 14 — Product Page: a shorter build log
+
+The build log now runs oldest first: Build 1, then Build 2 by date, each with short rows for what was learned, problems, time, and cost. Build 1's entry keeps what it said, shorter. Build 2's counts are from `git log origin/main --since=2026-11-07T00:00 --no-merges` (95 commits on seven days) and `gh pr list --state merged` (39 since Nov 7). The footer's "Run locally" link now points at the README's "Run the app". Checked at 1024 px and 375 px: no horizontal overflow, no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
