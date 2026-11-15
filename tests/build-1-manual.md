@@ -1066,6 +1066,12 @@ The risk's evidence is from M0's records (the simulation's 9 checks over 300 seq
 
 Revised the same day: the risk is named "Technical complexity of live collaboration"; Other risks lists two Legal and one Cost risk, each labeled; Cost details (folded under the summary) breaks the cost down by month and by action. Rechecked at 1024 px and 375 px: the two detail tables' columns line up, the rows stack on a phone, no horizontal overflow, no console errors. The free-plan behaviours (PostHog drops data over its free tier; Resend refuses sends over its quota) are from their pricing and quota pages, Nov 14.
 
+## November 14 — Product Page: PostHog screenshots; README
+
+The builder's two PostHog screenshots, cropped to drop PostHog's "invite your team" banner, are on the Product Page under Analytics: product analytics for the last 7 days (12 active users, 27 sessions) and a session replay of the Product Page. Checked at 1024 px (side by side) and 375 px (stacked): both load, no horizontal overflow, no console errors.
+
+The root `README.md` is rewritten for Build 2: the app and how to run it, the Product Page and prototype, and a current project map. It no longer says there is no backend or carries Build 1's hand-in notes.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
