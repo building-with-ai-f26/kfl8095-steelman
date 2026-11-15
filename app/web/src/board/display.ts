@@ -35,6 +35,22 @@ export function articulationShown(version: VersionRow, mine: readonly QueuedActi
   return { vote: queued.value, score: version.articulation - (version.myVote ?? 0) + (queued.value ?? 0) };
 }
 
+/**
+ * The wording's assessment counts and the reader's own, counting one not yet
+ * sent or not yet back. One made of an earlier revision doesn't count: the
+ * service will refuse it.
+ */
+export function assessmentShown(version: VersionRow, mine: readonly QueuedAction[]): { yes: number; no: number; mine: boolean | null } {
+  const queued = mine.find((action) => action.kind === "assess" && action.versionId === version.id);
+  if (!queued || queued.kind !== "assess" || queued.rev !== version.rev) return { yes: version.yes, no: version.no, mine: version.myAssessment };
+  const was = version.myAssessment;
+  return {
+    yes: version.yes - (was === true ? 1 : 0) + (queued.supported === true ? 1 : 0),
+    no: version.no - (was === false ? 1 : 0) + (queued.supported === false ? 1 : 0),
+    mine: queued.supported,
+  };
+}
+
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */
 export function short(wording: string): string {
   return wording.length > 60 ? `${wording.slice(0, 57)}…` : wording;

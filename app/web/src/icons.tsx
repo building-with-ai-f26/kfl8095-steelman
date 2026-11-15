@@ -20,15 +20,19 @@ const PATHS = {
   ellipsis: ["M11 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0", "M18 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0", "M4 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0"],
   info: ["M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0", "M12 16v-4", "M12 8h.01"],
   link: ["M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71", "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"],
+  paperclip: ["m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"],
+  "file-text": ["M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", "M14 2v4a2 2 0 0 0 2 2h4", "M10 9H8", "M16 13H8", "M16 17H8"],
+  "chevron-right": ["m9 18 6-6-6-6"],
+  "triangle-alert": ["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3", "M12 9v4", "M12 17h.01"],
   "fold-horizontal": ["M2 12h6", "M22 12h-6", "M12 2v2", "M12 8v2", "M12 14v2", "M12 20v2", "m19 9-3 3 3 3", "m5 15 3-3-3-3"],
 } as const;
 
 export type IconName = keyof typeof PATHS;
 
-export function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
+export function Icon({ name, size = 16, className }: { name: IconName; size?: number; className?: string }) {
   return (
     <svg
-      className={`lucide lucide-${name}`}
+      className={`lucide lucide-${name}${className ? ` ${className}` : ""}`}
       width={size}
       height={size}
       viewBox="0 0 24 24"

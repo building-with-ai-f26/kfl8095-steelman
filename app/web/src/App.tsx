@@ -3,6 +3,7 @@ import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
 import { readLink } from "./links.ts";
+import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
@@ -70,7 +71,11 @@ function SignedIn({ header, children }: { header: (signedIn: boolean) => React.R
   return (
     <>
       {header(ready)}
-      {ready ? children : <NotYet who={who} ask={ask} retry={() => setWho({ kind: "asking" })} />}
+      {ready ? (
+        <ReaderContext.Provider value={who.kind === "signed in" ? who.me.id : chosenTestUser()}>{children}</ReaderContext.Provider>
+      ) : (
+        <NotYet who={who} ask={ask} retry={() => setWho({ kind: "asking" })} />
+      )}
     </>
   );
 }

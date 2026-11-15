@@ -100,6 +100,12 @@ export async function send(board: string, action: QueuedAction): Promise<Answer>
         return call("PUT", `${at}/versions/${action.versionId}`, { baseRev: action.baseRev, wording: action.wording, context: action.context });
       case "delete":
         return call("DELETE", `${at}/versions/${action.versionId}`);
+      case "addSource":
+        return call("POST", `${at}/versions/${action.versionId}/sources`, { id: action.id, name: action.name, locator: action.locator, finding: action.finding, backsUp: "", limits: "" });
+      case "editSource":
+        return call("PUT", `${at}/sources/${action.sourceId}`, { name: action.name, locator: action.locator, finding: action.finding, backsUp: action.backsUp, limits: action.limits });
+      case "uncite":
+        return call("DELETE", `${at}/versions/${action.versionId}/sources/${action.sourceId}`);
     }
   })();
   if (response.status === 404) return { status: "not_found" };

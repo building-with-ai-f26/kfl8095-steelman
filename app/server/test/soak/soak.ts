@@ -204,6 +204,11 @@ function send(call: (person: string, method: string, path: string, body?: unknow
       return call(person, "PUT", `/versions/${action.versionId}`, { baseRev: action.baseRev, wording: action.wording, context: action.context });
     case "delete":
       return call(person, "DELETE", `/versions/${action.versionId}`);
+    case "addSource":
+    case "editSource":
+    case "uncite":
+      // The soak's voters don't pick source actions (pick, above).
+      throw new Error(`The soak doesn't send ${action.kind}`);
   }
 }
 

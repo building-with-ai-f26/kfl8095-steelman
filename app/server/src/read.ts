@@ -169,12 +169,13 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
 
 async function sourceRows(db: Reader, boardId: string, after: number): Promise<SourceRow[]> {
   const rows = await db
-    .selectFrom("source")
-    .select(["id", "name", "locator", "finding", "backs_up", "limits", "added_by", "unavailable_at", "changed_seq"])
-    .where("board_id", "=", boardId)
-    .where("changed_seq", ">", String(after))
-    .orderBy("created_at")
-    .orderBy("id")
+    .selectFrom("source as s")
+    .innerJoin("account as adder", "adder.id", "s.added_by")
+    .select(["s.id", "s.name", "s.locator", "s.finding", "s.backs_up", "s.limits", "s.added_by", "adder.username as added_by_name", "s.unavailable_at", "s.changed_seq"])
+    .where("s.board_id", "=", boardId)
+    .where("s.changed_seq", ">", String(after))
+    .orderBy("s.created_at")
+    .orderBy("s.id")
     .execute();
   return rows.map((row) => ({
     id: row.id,
@@ -185,6 +186,8 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
     backsUp: row.backs_up,
     limits: row.limits,
     addedBy: row.added_by,
+    // Only an account with a username can write (app.ts), so whoever added it has one.
+    addedByName: row.added_by_name ?? "",
     unavailable: row.unavailable_at !== null,
     changedSeq: Number(row.changed_seq),
   }));

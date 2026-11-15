@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { newBoardInput } from "@steelman/shared";
+import { newBoardInput, sourceInput } from "@steelman/shared";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import { createDatabase } from "../../src/db/database.ts";
 import type { Db } from "../../src/db/database.ts";
 import { DEMO_PEOPLE, seedDemoBoard } from "../../src/demo-board.ts";
-import { EXAMPLE_BOARDS, EXAMPLE_PEOPLE, seedExampleBoards } from "../../src/example-boards.ts";
+import { EXAMPLE_BOARDS, EXAMPLE_PEOPLE, EXAMPLE_SOURCES, scaled, seedExampleBoards } from "../../src/example-boards.ts";
 import { NOON } from "../support/board.ts";
 import { useApi } from "../support/api.ts";
 import { useTestDatabase } from "../support/database.ts";
@@ -126,6 +126,42 @@ describe("the example boards", () => {
     } finally {
       await db.client.query("update account set email = null where username = 'riley_park'");
     }
+  });
+
+  test("C-01, B-03: the open-weight board's wordings cite the prototype's sources and carry its assessments, scaled to the seed's people", async () => {
+    const example = EXAMPLE_BOARDS[0]!;
+    const { body } = await api.get(`/api/boards/${example.id}`, { as: await accountId(example.owner) });
+    const sources = new Map<string, { name: string; locator: string; finding: string; addedByName: string }>(body.sources.map((s: { id: string }) => [s.id, s]));
+    let checked = 0;
+    for (const [, text, , evidence] of example.options.flatMap((o) => o.arguments.flatMap((a) => a.wordings))) {
+      const version = body.versions.find((v: { wording: string }) => v.wording === text);
+      const cited = version.sourceIds.map((id: string) => sources.get(id));
+      const expected = (evidence?.sources ?? []).map((key) => EXAMPLE_SOURCES[key]);
+
+      expect(cited.map((s: { name: string }) => s.name).sort(), text).toEqual(expected.map((s) => s.name).sort());
+      for (const source of expected) expect(cited).toContainEqual(expect.objectContaining({ name: source.name, locator: source.locator, finding: source.finding, addedByName: source.addedBy }));
+      expect({ yes: version.yes, no: version.no }, text).toEqual(evidence ? scaled(evidence, EXAMPLE_PEOPLE.length) : { yes: 0, no: 0 });
+      if (evidence) checked++;
+    }
+    expect(checked).toBe(13);
+  });
+
+  test("C-01: a source cited by several wordings is one source, and each is one the source form could have taken", async () => {
+    const example = EXAMPLE_BOARDS[0]!;
+    const { body } = await api.get(`/api/boards/${example.id}`, { as: await accountId(example.owner) });
+
+    expect(body.sources.map((s: { name: string }) => s.name).sort()).toEqual(Object.values(EXAMPLE_SOURCES).map((s) => s.name).sort());
+    const clouds = body.sources.find((s: { name: string }) => s.name === EXAMPLE_SOURCES.clouds.name).id;
+    expect(body.versions.filter((v: { sourceIds: string[] }) => v.sourceIds.includes(clouds))).toHaveLength(2);
+    for (const source of Object.values(EXAMPLE_SOURCES)) {
+      expect(sourceInput.safeParse({ name: source.name, locator: source.locator, finding: source.finding, backsUp: "", limits: "" }).success, source.name).toBe(true);
+    }
+  });
+
+  test("B-03: scaling keeps the prototype's counts when they fit, and its share when they don't", () => {
+    expect(scaled({ yes: 4, no: 0 }, 17)).toEqual({ yes: 4, no: 0 });
+    expect(scaled({ yes: 14, no: 6 }, 17)).toEqual({ yes: 12, no: 5 });
+    expect(scaled({ yes: 16, no: 4 }, 17)).toEqual({ yes: 14, no: 3 });
   });
 
   test("F-01: running it again adds nothing", async () => {

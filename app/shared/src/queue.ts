@@ -14,7 +14,13 @@ export type QueuedAction =
   | { kind: "addArgument"; id: string; optionId: string; versionId: string; wording: string; context: string }
   | { kind: "addWording"; argumentId: string; id: string; wording: string; context: string }
   | { kind: "edit"; versionId: string; baseRev: number; wording: string; context: string }
-  | { kind: "delete"; versionId: string };
+  | { kind: "delete"; versionId: string }
+  /** A new source on a wording (C-01). What it backs up and its limits aren't asked for (the builder, Nov 14), so they go empty. */
+  | { kind: "addSource"; versionId: string; id: string; name: string; locator: string; finding: string }
+  /** An edit sends the whole source, the fields the screens don't show included, as they were. */
+  | { kind: "editSource"; sourceId: string; name: string; locator: string; finding: string; backsUp: string; limits: string }
+  /** Takes a source off a wording; it stays on the board. */
+  | { kind: "uncite"; versionId: string; sourceId: string };
 
 /** Which item a choice is about, for the kinds where only the latest counts. */
 function choiceKey(action: QueuedAction): string | null {

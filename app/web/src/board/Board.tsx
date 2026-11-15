@@ -65,6 +65,15 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
   const opening: Opening = {
     open: openVersion,
     arrived,
+    evidence: {
+      sources: view.rows.sources,
+      versions: view.rows.versions,
+      role: state.role,
+      mine: state.mine,
+      stale: state.stale,
+      act: (action) => session.act(action),
+      announce: (text) => session.announce(text),
+    },
     toggle: (id) => setExpanded(openVersion === id ? null : id),
     copyLink(id) {
       const link = new URL(versionPath(boardId, id), window.location.origin).href;

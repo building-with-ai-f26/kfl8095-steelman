@@ -75,4 +75,12 @@ body { margin:0; }
    card is dark here, so the note keeps the ink colour of its own light card. */
 #steelman-study .sm-head .sm-link-note { color:var(--sm-ink); text-align:left; }
 /* "New steelman" on the page for a board that doesn't exist is a link drawn as a button. */
+#steelman-study .sm-source-by { margin-left:6px; }
+/* A source's link (the builder, Nov 15): marked with a link icon, in the form and in the open source. */
+#steelman-study .sm-source-link { display:flex; align-items:flex-start; gap:6px; font-size:12px; color:var(--sm-ink); overflow-wrap:anywhere; }
+#steelman-study .sm-source-link svg { flex:none; margin-top:3px; color:var(--sm-muted); }
+#steelman-study .sm-source-link-field { position:relative; display:block; }
+#steelman-study .sm-source-link-field svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--sm-muted); pointer-events:none; }
+#steelman-study .sm-source-form .sm-source-link-field input { padding-left:32px; }
+#steelman-study .sm-source-problem { margin:0; font-size:12px; color:#b4323f; }
 #steelman-study a.sm-button { text-decoration:none; justify-content:center; }

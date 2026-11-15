@@ -14,7 +14,8 @@ export const LIMITS = {
   wording: 500,
   context: 700,
   sourceName: 120,
-  sourceLocator: 200,
+  /** A link, so as long as real addresses get (the builder, Nov 15: the form asks only for a link). */
+  sourceLocator: 2000,
   sourceFinding: 500,
   sourceBacksUp: 300,
   sourceLimits: 300,
@@ -39,11 +40,16 @@ export const optionNameInput = required(LIMITS.optionName);
 export const wordingInput = required(LIMITS.wording);
 export const contextInput = optional(LIMITS.context);
 
-/** A piece of evidence. `strictObject`: a field nobody defined is refused, not ignored. */
+/**
+ * A piece of evidence. `strictObject`: a field nobody defined is refused, not
+ * ignored. The form asks for a link, a title (`name`), and an optional
+ * description (`finding`); the API still takes any text as `locator`, and
+ * shows only an http or https one as a link (`webLink`).
+ */
 export const sourceInput = z.strictObject({
   name: required(LIMITS.sourceName),
   locator: optional(LIMITS.sourceLocator),
-  finding: required(LIMITS.sourceFinding),
+  finding: optional(LIMITS.sourceFinding),
   backsUp: optional(LIMITS.sourceBacksUp),
   limits: optional(LIMITS.sourceLimits),
 });
