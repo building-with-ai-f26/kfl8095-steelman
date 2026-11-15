@@ -1072,6 +1072,10 @@ The builder's two PostHog screenshots, cropped to drop PostHog's "invite your te
 
 The root `README.md` is rewritten for Build 2: the app and how to run it, the Product Page and prototype, and a current project map. It no longer says there is no backend or carries Build 1's hand-in notes.
 
+## November 14 — Product Page: Google sign-in recording
+
+The builder's screen recording of signing in to the local app with Google is on the Product Page, first under How the app works. Made from the 18.5-second original: cut to the first 10 seconds (before a macOS screenshot panel appears at about 14 s), the browser's tab strip cropped off, sound removed, scaled to 1440 px wide (H.264, 190 KB). Google's account list showed five of the builder's email addresses, so it is blurred for exactly the time Google's page is on screen (2.08–6.3 s, found from the frames' brightness); every frame at both edges was checked and none shows the list. Checked on the page at 1024 px and 375 px: the video loads (10 s), no horizontal overflow, no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

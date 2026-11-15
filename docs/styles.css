@@ -107,6 +107,8 @@ h2 { font: 700 26px/1.2 var(--sm-serif); letter-spacing: -.5px; }
 .shot > a { display: block; overflow: hidden; border: 1px solid #c8c8c8; border-radius: 12px; background: var(--sm-card); box-shadow: var(--sm-shadow); }
 .shot img { display: block; width: 100%; height: auto; }
 .diagram > a { overflow-x: auto; }
+.shot > .frame { overflow: hidden; border: 1px solid #c8c8c8; border-radius: 12px; background: #1d1d1d; box-shadow: var(--sm-shadow); }
+.shot video { display: block; width: 100%; height: auto; }
 .shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
 .shots .shot + .shot { margin-top: 0; }
 .diagram img { min-width: 900px; }
