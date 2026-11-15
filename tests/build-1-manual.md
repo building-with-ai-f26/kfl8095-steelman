@@ -1071,6 +1071,24 @@ Analytics on the app, brought forward from M1-13 for Build 2: the first-visit no
 
 Not checked: the events in PostHog's own dashboard (needs the builder's PostHog account); Safari and Firefox; a deployed service (M1-14).
 
+## November 14 — PRD v2: biggest risk and cost per run
+
+Checked by the coding agent in a browser at 1024 px and 375 px, served from `docs/`: both sections render, no horizontal overflow, no console errors. No feature changed.
+
+The risk's evidence is from M0's records (the simulation's 9 checks over 300 sequences; the 30-voter, 5-minute soak and recount). The costs are estimates: hosting from `plans/architecture.md` "What it costs" (the database figure not yet confirmed in Google's calculator); the AI check assumes about 5,000 tokens in and 1,000 out, at Anthropic's list prices on Nov 14 (Haiku 5.5 $0.10/$0.50, Opus 5.5 $4/$20 per million tokens).
+
+Revised the same day: the risk is named "Technical complexity of live collaboration"; Other risks lists two Legal and one Cost risk, each labeled; Cost details (folded under the summary) breaks the cost down by month and by action. Rechecked at 1024 px and 375 px: the two detail tables' columns line up, the rows stack on a phone, no horizontal overflow, no console errors. The free-plan behaviours (PostHog drops data over its free tier; Resend refuses sends over its quota) are from their pricing and quota pages, Nov 14.
+
+## November 14 — Product Page: PostHog screenshots; README
+
+The builder's two PostHog screenshots, cropped to drop PostHog's "invite your team" banner, are on the Product Page under Analytics: product analytics for the last 7 days (12 active users, 27 sessions) and a session replay of the Product Page. Checked at 1024 px (side by side) and 375 px (stacked): both load, no horizontal overflow, no console errors.
+
+The root `README.md` is rewritten for Build 2: the app and how to run it, the Product Page and prototype, and a current project map. It no longer says there is no backend or carries Build 1's hand-in notes.
+
+## November 14 — Product Page: Google sign-in recording
+
+The builder's screen recording of signing in to the local app with Google is on the Product Page, first under How the app works. Made from the 18.5-second original: cut to the first 10 seconds (before a macOS screenshot panel appears at about 14 s), the browser's tab strip cropped off, sound removed, scaled to 1440 px wide (H.264, 190 KB). Google's account list showed five of the builder's email addresses, so it is blurred for exactly the time Google's page is on screen (2.08–6.3 s, found from the frames' brightness); every frame at both edges was checked and none shows the list. Checked on the page at 1024 px and 375 px: the video loads (10 s), no horizontal overflow, no console errors.
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

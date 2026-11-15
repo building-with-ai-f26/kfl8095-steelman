@@ -4,56 +4,57 @@
 
 - **Builder:** Kieran LaMee ([@Kieran-LaMee](https://github.com/Kieran-LaMee))
 - **Pod:** 6 · Building with AI, Fall 2026
-- **Product Page, living PRD v1, and build log:** https://building-with-ai-f26.github.io/kfl8095-steelman/
+- **Product Page, PRD v2, and build log:** https://building-with-ai-f26.github.io/kfl8095-steelman/
 - **Interactive prototype:** https://building-with-ai-f26.github.io/kfl8095-steelman/prototype/
 - **Repository:** https://github.com/building-with-ai-f26/kfl8095-steelman
 
-## Run locally
+The repository holds two things:
 
-No package installation, API keys, or backend are needed. Open `docs/prototype/index.html` directly in a modern browser. An internet connection loads the supplied prototype's fonts and icons.
+- **The app** (`app/`): the real product, built milestone by milestone from `plans/build-plan.md`. A React web app, a Fastify service, and Postgres, in TypeScript; sign-in by Google or an emailed code. It runs on a laptop today; hosting on Google Cloud comes with milestone M1.
+- **The Product Page and prototype** (`docs/`): static pages on GitHub Pages. The prototype is the design reference for the app: every screen is designed there first. It keeps its data in one browser.
 
-To serve both the Product Page and prototype:
+## Run the app
+
+You need Node 22 and Docker Desktop. In `app/`:
 
 ```sh
-git clone https://github.com/building-with-ai-f26/kfl8095-steelman.git
-cd kfl8095-steelman
+npm install
+npx playwright install chromium   # once per machine, for the browser tests
+cp .env.example .env              # then fill it in; each setting is explained there
+docker compose up -d db           # the local database
+npm run db:migrate                # bring it up to date
+npm run db:seed                   # example boards and test accounts
+npm run dev
+```
+
+Open http://localhost:5173. Sign-in codes print in the terminal instead of being emailed. To skip signing in, pick a test account under "Acting as" in the top bar. The example boards are at http://localhost:5173/b/example-0001 to `example-0007`.
+
+`npm run check` runs everything a pull request must pass: types, lint, every test, and the browser tests. It starts its own database. More commands and how the app is laid out: [`app/README.md`](app/README.md).
+
+## Run the Product Page and prototype
+
+Nothing to install. Open `docs/prototype/index.html` in a browser, or serve both pages:
+
+```sh
 python3 -m http.server 8000 --bind 127.0.0.1 --directory docs
 ```
 
-Open http://127.0.0.1:8000/ for the page, or http://127.0.0.1:8000/prototype/ for the demo. Stop the server with Ctrl+C.
-
-## Try the core workflow
-
-1. Read the two cases for “Should our library open on Sundays?”
-2. Open the stack beside the first argument and compare its three wordings.
-3. Prefer a wording, then expand its card with the chevron and inspect its source finding and limitation. Other versions remain alongside it.
-4. Assess whether the evidence supports the wording; change or withdraw the assessment.
-5. Suggest a qualified version, preview it, and add it to the same idea.
-6. Return to the diagram. Importance voting leaves the order stable; “Preview update” applies a simulated shared-order change.
-
-The claims, sources, and aggregate votes are illustrative. The export saves votes and suggestions locally in this browser when browser storage is available. They survive refresh but are not shared with other visitors or devices. There are no real users, live AI calls, shared backend, server storage, or implemented revision history.
+Then open http://127.0.0.1:8000/ for the page, or http://127.0.0.1:8000/prototype/ for the prototype.
 
 ## Project map
 
 | Path | Purpose |
 | --- | --- |
-| `docs/index.html` | Canonical class PRD v1, Product Page, and Build 1 log |
-| `docs/styles.css` | Product Page layout and responsive styling |
-| `docs/prototype/` | Current runnable prototype and editable source fragment; the original is preserved in Git history |
-| `scripts/sync-prototype.py` | Copies source changes into the standalone prototype export |
-| `docs/assets/` | Actual browser screenshots for the Product Page |
-| `docs/reference/steelman-prd-v0.4.md` | Original detailed PRD, unchanged; background vision rather than class scope |
-| `app/` | The real product, from Build 2: its commands and layout are in `app/README.md` |
-| `tests/build-1-manual.md` | Browser checks, results, and limits |
-| `journal/build-01-intent.md` | Build notes and remaining submission tasks |
-| `AGENTS.md` | Project context, run commands, and engineering rules |
+| `app/` | The real product: `shared/` (rules both sides follow), `server/` (the service and database), `web/` (the screens), `e2e/` (browser tests). See `app/README.md` |
+| `plans/` | How it's built: `architecture.md` and its decision records in `decisions/`, `build-plan.md` (milestones and backlogs), `features.csv` (every feature, its tier and status; `feature-audit.xlsx` is generated from it) |
+| `docs/index.html` | The Product Page: PRD v2 and the build log |
+| `docs/prototype/` | The prototype, and its editable source in `source/` |
+| `docs/design/` | Design tokens, shared by the prototype and the app |
+| `docs/privacy.html` | What the Product Page and prototype collect |
+| `docs/reference/steelman-prd-v0.4.md` | The original long-term PRD, kept as background |
+| `tests/build-1-manual.md` | The dated test log: what was checked, how, and what wasn't |
+| `scripts/` | Keeping the prototype, feature audit, and canvas texture in sync |
+| `journal/` | Optional build notes from the course template |
+| `AGENTS.md` | Instructions for coding agents: stack, commands, and ground rules |
 
-GitHub Pages publishes `main` → `/docs`. There is no build command; `.nojekyll` keeps delivery static. The remaining course-template planning and journal files are optional aids for later builds.
-
-## Build 1 handoff
-
-Submit the Product Page URL in Icerynk's Link field and the repository URL in its note, by **Monday, November 9, 2026 at noon New York time**. The page contains the required PRD and log; no separate Intent or journal submission is needed.
-
-Meaningful builds were committed and pushed on November 5 and November 6. Continue the two-day cadence each week.
-
-Still requires builder participation: create a PostHog account (instrumentation is Build 2), complete the Week 1 memo and Terminus Episodes 1–2, submit the two URLs in Icerynk, and prepare the November 10 two-minute demo. Do not backdate commits or treat agent browser checks as user research.
+GitHub Pages publishes `main` → `/docs`. Pull requests run `npm run check` and a protected-files check in GitHub Actions; a nightly run adds the soak test and mutation testing.

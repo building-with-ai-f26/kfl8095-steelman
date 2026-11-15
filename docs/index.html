@@ -81,7 +81,33 @@
           <article class="card nongoal"><i data-lucide="ban" aria-hidden="true"></i><p>Money or incentives beyond simple points, like Reddit karma.</p></article>
         </div>
 
+        <h3 class="label">Biggest risk</h3>
+        <article class="card workflow">
+          <p class="statement"><span class="tag">Technical</span> Technical complexity of live collaboration. Everyone votes on one shared ranking at once, yet each reader’s screen must hold still and stay correct.</p>
+          <ol class="steps">
+            <li><span>1</span>Built first, before sign-in or hosting.</li>
+            <li><span>2</span>A simulation checks 9 rules across 300 random sequences of readers and writers.</li>
+            <li><span>3</span>30 scripted voters for 5 minutes; stored counts match a recount.</li>
+          </ol>
+          <p class="note">Not yet tested: real people on real networks.</p>
+        </article>
+
+        <h3 class="label">Other risks</h3>
+        <div class="card costs risks">
+          <table>
+            <tbody>
+              <tr><th scope="row"><span class="tag">Legal</span></th><td>Classmates’ accounts are real personal data. Privacy page, data download, and account deletion ship before they sign in.</td></tr>
+              <tr><th scope="row"><span class="tag">Legal</span></th><td>Sign-in says people agree to terms that aren’t written yet. Write them before launch.</td></tr>
+              <tr><th scope="row"><span class="tag">Cost</span></th><td>A runaway cloud or AI bill. Budget alerts, capped servers, free tiers that stop rather than charge, and AI off unless users buy credits.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <h3 class="label">How the app works</h3>
+        <figure class="shot">
+          <div class="frame"><video src="assets/google-sign-in.mp4" poster="assets/google-sign-in-poster.jpg" width="1440" height="962" controls muted playsinline preload="metadata" aria-label="Signing in to the app with Google: Steelman’s Sign in, Google’s Choose an account to continue to Steelman, then back in the app, signed in, on New steelman. The list of accounts is blurred."></video></div>
+          <figcaption><span>Signing in with Google, on a laptop</span><span>The service calls Google’s API to confirm who it is; accounts blurred</span></figcaption>
+        </figure>
         <figure class="shot">
           <a href="assets/app-vote.jpg"><img src="assets/app-vote.jpg" width="2160" height="1350" loading="lazy" alt="The Steelman app running on a laptop, on the board “Is open-weight AI a smart bet for China?”. The first argument’s importance arrow is pressed and its count reads 12."></a>
           <figcaption><span>The app on a laptop: one importance vote, saved in Postgres</span><span><code>PUT /api/boards/…/importance</code> → 200 in 37 ms</span></figcaption>
@@ -90,6 +116,59 @@
           <a href="assets/architecture.svg" aria-label="Open the architecture diagram at full size"><img src="assets/architecture.svg" width="1480" height="740" loading="lazy" alt="Architecture: a React web app in the browser sends HTTPS requests to one Fastify service on Cloud Run, which handles sign-in, the board API, and background jobs, and stores everything in Postgres on Cloud SQL. Outside services: Google for sign-in, Resend for email, Stripe for AI credits, PostHog for analytics, and an AI model provider for evidence checks."></a>
           <figcaption><span>The planned system</span><span>Built so far, on a laptop: web app, service, Postgres, Google sign-in</span></figcaption>
         </figure>
+
+        <h3 class="label">Analytics</h3>
+        <div class="shots">
+          <figure class="shot">
+            <a href="assets/posthog-analytics.jpg"><img src="assets/posthog-analytics.jpg" width="1766" height="1402" loading="lazy" alt="PostHog’s product analytics for the last 7 days: 12 active users, 27 sessions, 12 first-time users, and 23 minutes of sessions, with a chart of daily active users peaking on November 11."></a>
+            <figcaption><span>Page views and sessions in PostHog</span></figcaption>
+          </figure>
+          <figure class="shot">
+            <a href="assets/posthog-replay.jpg"><img src="assets/posthog-replay.jpg" width="1766" height="763" loading="lazy" alt="A PostHog session replay of a visitor scrolling this Product Page to the build log, with the visitor’s cursor on the footer links."></a>
+            <figcaption><span>A session replay of this page</span></figcaption>
+          </figure>
+        </div>
+
+        <h3 class="label">Cost per run</h3>
+        <div class="card costs">
+          <table>
+            <tbody>
+              <tr><th scope="row">Hosting, per month</th><td>~$12–18 for a class of 30: database ~$10, server $0–5, domain ~$1</td></tr>
+              <tr><th scope="row">A vote</th><td>~$0, inside Google Cloud’s free tier</td></tr>
+              <tr><th scope="row">A sign-in email</th><td>$0, up to 3,000 a month</td></tr>
+              <tr><th scope="row">An AI evidence check</th><td>~$0.001–0.04 by model; paid by users through credits (later)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details class="card costs detail">
+          <summary>Cost details</summary>
+          <h4>Each month, for a class of 30</h4>
+          <table>
+            <tbody>
+              <tr><th scope="row">Production database</th><td>~$9–10</td><td>Cloud SQL, smallest shared-core, 10 GB. Google’s worked example is $9.37; not yet confirmed in its calculator</td></tr>
+              <tr><th scope="row">Staging database</th><td>~$2</td><td>Stopped except around deploys</td></tr>
+              <tr><th scope="row">App server</th><td>$0–5</td><td>Cloud Run; free each month: 2 million requests, 180,000 vCPU-seconds</td></tr>
+              <tr><th scope="row">Secrets, images, scheduler</th><td>~$0</td><td>Inside Google Cloud’s free allowances</td></tr>
+              <tr><th scope="row">Domain</th><td>~$0.83</td><td>$10 a year</td></tr>
+              <tr><th scope="row">Email</th><td>$0</td><td>Resend free plan: 3,000 a month, 100 a day</td></tr>
+              <tr><th scope="row">Analytics</th><td>$0</td><td>PostHog free tier; extra data is dropped, not billed</td></tr>
+              <tr><th scope="row">Tests and deploys</th><td>$0</td><td>GitHub Actions is free for a public repository</td></tr>
+              <tr class="total"><th scope="row">Total</th><td>~$12–18</td><td>About $0.50 per active person</td></tr>
+            </tbody>
+          </table>
+          <h4>Each action</h4>
+          <table>
+            <tbody>
+              <tr><th scope="row">A vote or edit</th><td>~$0.001 per 1,000</td><td>One request of about 30 ms, beyond the free tier</td></tr>
+              <tr><th scope="row">A board left open</th><td>$0</td><td>A check every 3 s is 1,200 requests an hour; the free tier covers about 1,650 open hours a month</td></tr>
+              <tr><th scope="row">A sign-in</th><td>$0</td><td>One email; beyond the free plan, $20 a month for 50,000</td></tr>
+              <tr><th scope="row">An AI evidence check</th><td>~$0.001–0.04</td><td>About 5,000 tokens in, 1,000 out. Haiku 5.5 ~$0.001 · Sonnet 5.5 ~$0.02 · Opus 5.5 ~$0.04</td></tr>
+              <tr><th scope="row">Buying AI credits</th><td>2.9% + 30¢</td><td>Stripe’s fee per purchase, built into the credit price</td></tr>
+            </tbody>
+          </table>
+          <p class="note">A busy public community would need a bigger database, two servers, and a load balancer: about $100–200 a month.</p>
+        </details>
       </section>
 
       <section class="block" id="build-log" aria-labelledby="log-title">
