@@ -1,11 +1,17 @@
 # The protected-files check (plans/architecture.md §8, "Tests an agent can't
-# quietly weaken"). Fails when a pull request edits, moves, deletes, or skips
-# an existing test, replaces a saved screenshot, or changes the policy table,
-# a merged migration, a CI workflow, or a plan, and lists what it found.
+# quietly weaken"). Lists what a pull request changes that needs the builder:
+# an existing test edited, moved, deleted, or skipped, a saved screenshot
+# replaced, or a change to the policy table, a merged migration, a CI
+# workflow, or a plan.
 #
-# Such a pull request needs the builder: the builder adds the
-# `builder-approved` label after reading the list, and the check passes.
-# Agents never add that label (AGENTS.md rule 9).
+# It answers with a commit status, "builder approval", which `main` requires:
+# success when nothing is protected or the builder has added the
+# `builder-approved` label after reading the list; pending until then. A
+# pending required status blocks merging just as a failure does, without
+# GitHub emailing about a failed run on every push (the builder, Nov 15).
+# The job itself fails only when the check can't run, and then no status is
+# posted, which also blocks merging. Agents never add that label (AGENTS.md
+# rule 9).
 name: guards
 
 on:
@@ -14,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   protected-files:
@@ -32,15 +39,29 @@ jobs:
         with:
           node-version-file: app/.nvmrc
       # Node runs the TypeScript directly, and the script needs no packages.
-      - name: List protected changes
+      # It exits 0 when nothing is protected, 1 when it lists something, and
+      # otherwise when it couldn't check.
+      - name: List protected changes and set the builder-approval status
         env:
           BASE: ${{ github.event.pull_request.base.ref }}
           APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'builder-approved') }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if node scripts/guards/protected-files-cli.ts "origin/$BASE"; then exit 0; fi
-          if [ "$APPROVED" = "true" ]; then
-            echo "The builder approved these changes (label builder-approved)."
-            exit 0
+          set +e
+          node scripts/guards/protected-files-cli.ts "origin/$BASE"
+          found=$?
+          set -e
+          if [ "$found" -eq 0 ]; then
+            state=success; description="No protected files changed."
+          elif [ "$found" -ne 1 ]; then
+            echo "The check couldn't run, so no status is set and the pull request stays blocked."
+            exit "$found"
+          elif [ "$APPROVED" = "true" ]; then
+            state=success; description="The builder approved these changes (builder-approved)."
+          else
+            state=pending; description="Protected files changed: the builder reads the list and adds builder-approved."
           fi
-          echo "Ask the builder to read the list above and add the builder-approved label."
-          exit 1
+          echo "$description"
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" -f context="builder approval" -f description="$description" -f target_url="$RUN" > /dev/null
