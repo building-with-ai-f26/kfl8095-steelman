@@ -1058,6 +1058,19 @@ Checked by the coding agent in a browser at 1024 px and 375 px, served from `doc
 
 Not checked: the published page (this isn't merged yet). The screenshot shows the dev-only "Acting as" switch, not a real sign-in. The build log's hours are an estimate: the builder's 363 typed messages in the local Claude Code session files from November 7 to 14, grouped into sittings with gaps up to 20 minutes, come to 23.7 hours (31.1 with gaps up to 45 minutes). The costs are as the builder reported them.
 
+## November 14 — Analytics on the app (M-08)
+
+Analytics on the app, brought forward from M1-13 for Build 2: the first-visit notice, Global Privacy Control, Do Not Track, and masked typed text. The privacy page rewrite and the Content Security Policy stay in M1-13.
+
+| Check | Observed result |
+| --- | --- |
+| Tests first | `server/test/api/config.test.ts` (2), `web/test/analytics.test.ts` (5), and `e2e/analytics.spec.ts` (6) were written first and all failed (404 on `/api/config`; no notice), then passed |
+| Real PostHog, locally | With `POSTHOG_KEY` in `app/.env`, `npm run dev`, board `example-0001` acting as `dev_tester`: the notice showed; PostHog loaded from `us-assets.i.posthog.com`, with `environment: local`; session recording started; two clicks sent events to `us.i.posthog.com/e/` and replay to `/s/`. No console errors |
+| Turn off, real PostHog | Turn off opted PostHog out and stopped recording at once, and stored `off`. After a reload, `window.posthog` was undefined and no request went to PostHog |
+| No key | A service with no key: no notice, and no request to any other address (browser test) |
+
+Not checked: the events in PostHog's own dashboard (needs the builder's PostHog account); Safari and Firefox; a deployed service (M1-14).
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

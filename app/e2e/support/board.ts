@@ -8,7 +8,7 @@ import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { test as base, expect } from "@playwright/test";
-import type { APIRequestContext, Browser, Page } from "@playwright/test";
+import type { APIRequestContext, Browser, BrowserContext, Page } from "@playwright/test";
 import pg from "pg";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import type { FakeClock } from "@steelman/shared/testing";
@@ -24,6 +24,8 @@ const NOON = new Date("2026-11-16T12:00:00Z");
 export const POLL_MS = 3_000;
 /** How long a shared order stands (the board's tick_seconds). */
 export const TICK_MS = 60_000;
+/** The PostHog key and address a test's service is given when the test asks for analytics. The address can't exist, so nothing reaches PostHog. */
+export const TEST_POSTHOG = { key: "phc_test", host: "https://posthog.invalid" };
 
 export interface TestBoard {
   demo: DemoBoard;
@@ -43,6 +45,8 @@ export interface OpenOptions {
   width?: number;
   /** Makes the browser's navigator.onLine say false, as it does on a machine with only the loopback network. */
   onLine?: false;
+  /** Sets up the browser session before the board opens: answering an outside address, or changing what the browser says about itself. */
+  prepare?: (context: BrowserContext) => Promise<unknown>;
 }
 
 export interface Caller {
@@ -54,8 +58,10 @@ export interface Caller {
   delete(path: string): Promise<unknown>;
 }
 
-export const test = base.extend<{ board: TestBoard }>({
-  board: async ({ browser, playwright }, use) => {
+export const test = base.extend<{ board: TestBoard; analytics: boolean }>({
+  // `test.use({ analytics: true })` gives the service a PostHog key (M-08). Without it, as when deployed without one, analytics are off.
+  analytics: [false, { option: true }],
+  board: async ({ browser, playwright, analytics }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(7);
@@ -63,7 +69,7 @@ export const test = base.extend<{ board: TestBoard }>({
     const demo = await seedDemoBoard(db, clock, ids);
     await db.destroy();
 
-    const app = buildApp({ clock, ids, database: createDatabase(databaseUrl.href), mode: "test" });
+    const app = buildApp({ clock, ids, database: createDatabase(databaseUrl.href), mode: "test", ...(analytics ? { analytics: TEST_POSTHOG } : {}) });
     serveWebApp(app);
     await app.listen({ port: 0, host: "127.0.0.1" });
     const address = app.server.address();
@@ -116,6 +122,7 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
   // The switch keeps the choice per tab, in sessionStorage (web/src/testUser.ts).
   await context.addInitScript((id) => sessionStorage.setItem("steelman.testUser", id), demo.people[person]);
   if (options.onLine === false) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, "onLine", { get: () => false }));
+  await options.prepare?.(context);
   const page = await context.newPage();
   page.on("console", (message) => {
     if (message.type() === "error" && !isExpectedOfflineError(message.text())) errors.push(`${person}: ${message.text()}`);

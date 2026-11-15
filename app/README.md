@@ -52,6 +52,10 @@ Google is reached through standard OpenID Connect: the service reads Google's di
 
 Better Auth reads the system clock itself, so the sign-in tests (`server/test/support/sign-in.ts`) move Vitest's fake system time along with the test clock. It also turns off its own origin check when `NODE_ENV` is `test`; `sign-in.ts` turns it back on, so the tests run what's deployed.
 
+## Analytics
+
+Page views, clicks, and session replays go to PostHog when the service has a key: put `POSTHOG_KEY` in `.env` (the project's public key, the one `../docs/analytics.js` uses). Without it, nothing is sent. The web app asks `GET /api/config` once when it starts, then follows the Product Page's rules (`web/src/analytics.ts`): a browser sending Global Privacy Control or Do Not Track never loads PostHog; anyone else sees a notice the first time (`web/src/AnalyticsNotice.tsx`), and Turn off stops PostHog at once and keeps it from loading again. Typed text is masked in replays, no one is identified, and events from a laptop are tagged `environment: local`, so they can be filtered out in PostHog. The browser tests answer PostHog's address themselves (`e2e/analytics.spec.ts`), so none reaches it.
+
 ## New steelman
 
 The home page, http://localhost:5173/, is New steelman (`web/src/NewSteelman.tsx`): M1 has no list of boards, so people come back to a board by its link. A board's top bar has + New steelman. Creating a board (`POST /api/boards`, `server/src/boards.ts`) makes its maker the Owner and, unless they choose otherwise, opens it to anyone with the link as Contributor. The service chooses the board's ID (72 random bits), since the ID is the link.
