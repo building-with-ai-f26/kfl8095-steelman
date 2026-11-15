@@ -131,7 +131,13 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     from version v
     join account author on author.id = v.author_id
     join version_revision now_rev on now_rev.version_id = v.id and now_rev.rev = v.current_rev
-    left join version_revision before_rev on before_rev.version_id = v.id and before_rev.rev = v.current_rev - 1
+    -- The wording before the latest edit. Not simply the revision before this one: a change of sources saves a revision with the same text.
+    left join lateral (
+      select replaced.wording from version_revision edit
+      join version_revision replaced on replaced.version_id = edit.version_id and replaced.rev = edit.rev - 1
+      where edit.version_id = v.id and edit.why = 'edited'
+      order by edit.rev desc limit 1
+    ) before_rev on true
     left join articulation_vote my_vote on my_vote.version_id = v.id and my_vote.account_id = ${me}
     left join assessment my_assessment on my_assessment.version_id = v.id and my_assessment.rev = v.current_rev and my_assessment.account_id = ${me}
     where v.board_id = ${boardId} and ${filter}
@@ -164,7 +170,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
 async function sourceRows(db: Reader, boardId: string, after: number): Promise<SourceRow[]> {
   const rows = await db
     .selectFrom("source")
-    .select(["id", "name", "locator", "finding", "backs_up", "limits", "unavailable_at", "changed_seq"])
+    .select(["id", "name", "locator", "finding", "backs_up", "limits", "added_by", "unavailable_at", "changed_seq"])
     .where("board_id", "=", boardId)
     .where("changed_seq", ">", String(after))
     .orderBy("created_at")
@@ -178,6 +184,7 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
     finding: row.finding,
     backsUp: row.backs_up,
     limits: row.limits,
+    addedBy: row.added_by,
     unavailable: row.unavailable_at !== null,
     changedSeq: Number(row.changed_seq),
   }));
