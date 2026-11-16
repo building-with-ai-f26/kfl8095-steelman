@@ -9,6 +9,7 @@ import AxeBuilder from "@axe-core/playwright";
 import type { Locator, Page, Request } from "@playwright/test";
 import { expect, test } from "./support/board.ts";
 import type { TestBoard } from "./support/board.ts";
+import { POLL_MS } from "./support/board.ts";
 import { column, find, pill, poll, row, rows, status } from "./support/screen.ts";
 
 const LEAD = "Sunday is the only free day for many people who work weekdays.";
@@ -307,6 +308,9 @@ test.describe("deleting", () => {
   test("A-06, M-02: closing the tab offline during the ten seconds asks first, since the delete can't be sent", async ({ board }) => {
     const page = await board.open("maya.chen");
     await page.context().setOffline(true);
+    // A browser already offline (CI's machine with no network) sends no "offline" event: the next poll failing is how the board learns it.
+    await page.clock.runFor(POLL_MS);
+    await expect(pill(page)).toHaveText("Offline");
     await openMenu(page, LEAD);
     await page.getByRole("menuitem", { name: "Delete version" }).click();
     await expect(undoBar(page)).toBeVisible();
