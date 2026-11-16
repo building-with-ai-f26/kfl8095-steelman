@@ -1,5 +1,5 @@
-import Fastify from "fastify";
-import type { FastifyInstance, FastifyReply } from "fastify";
+import Fastify, { LogController } from "fastify";
+import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   accessInput,
   assessmentInput,
@@ -18,6 +18,7 @@ import {
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { accountSummary, deleteAccount, exportData } from "./account.ts";
+import { serveWebApp } from "./web.ts";
 import { createBoard } from "./boards.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
@@ -51,6 +52,10 @@ export interface AppDependencies {
   signIn?: SignInDependencies;
   /** PostHog's project key and address, for the browser (M-08). Without it, the web app sends no analytics. */
   analytics?: NonNullable<PublicConfig["analytics"]>;
+  /** The built web app's folder, to serve it from the same address as the API (M1-14a). Without it, the service serves only the API. */
+  webDirectory?: string;
+  /** Where to write one JSON line per request, as Cloud Logging reads them (M1-14a). Without it, nothing is logged. */
+  logs?: NodeJS.WritableStream;
 }
 
 /**
@@ -76,6 +81,18 @@ export function contentSecurityPolicy(analytics: PublicConfig["analytics"] | und
     "base-uri 'none'",
     "form-action 'self'",
   ].join("; ");
+}
+
+/** Fastify's logger, writing what Cloud Logging reads: a JSON line with `severity` and `message`, and no host or process ID. */
+function cloudLogging(stream: NodeJS.WritableStream, clock: Clock) {
+  return {
+    stream,
+    level: "info",
+    messageKey: "message",
+    base: undefined,
+    timestamp: () => `,"time":"${clock.now().toISOString()}"`,
+    formatters: { level: (label: string) => ({ severity: label.toUpperCase() }) },
+  };
 }
 
 /** The header the browser uses to say which test account it is acting as, while there is no sign-in (M0). */
@@ -111,8 +128,24 @@ declare module "fastify" {
  * Builds the Steelman service without starting it, so tests can call its
  * routes directly and main.ts can listen on a port.
  */
-export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics }: AppDependencies): FastifyInstance {
-  const app = Fastify();
+export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics, webDirectory, logs }: AppDependencies): FastifyInstance {
+  // Fastify's own per-request lines are off (they hold the address and the IP); ours are below.
+  const app = Fastify({ logger: logs ? cloudLogging(logs, clock) : false, logController: new LogController({ disableRequestLogging: true }) });
+  if (logs) {
+    // One line per request: its route (the pattern, so no board or version ID: a board's link is what lets
+    // people in), how it ended, how long it took. Never the address itself, a query string, or a body, which can
+    // hold an email or a sign-in token: logs aren't reached by account deletion (architecture §6).
+    const routeOf = (request: FastifyRequest) => request.routeOptions.url ?? "unmatched";
+    app.addHook("onResponse", async (request, reply) => {
+      request.log.info({ method: request.method, route: routeOf(request), status: reply.statusCode, durationMs: Math.round(reply.elapsedTime) }, "request");
+    });
+    // A failure is logged with its stack as the message, which is how Error Reporting groups them, and nothing
+    // else of the error: a database error's details can quote a value, such as an email. The answer is Fastify's own.
+    app.setErrorHandler(async (error: FastifyError, request, reply) => {
+      if ((error.statusCode ?? 500) >= 500) request.log.error({ method: request.method, route: routeOf(request) }, error.stack ?? String(error));
+      return reply.send(error);
+    });
+  }
   const policy = contentSecurityPolicy(analytics);
   app.addHook("onSend", async (_request, reply) => {
     reply.header("content-security-policy", policy);
@@ -124,6 +157,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   // What the web app needs to know before it draws anything. The PostHog key is public (it can only send events),
   // but it comes from the service's settings so one build of the web app runs anywhere, with analytics or without.
   app.get("/api/config", (): PublicConfig => ({ analytics: analytics ?? null }));
+
+  if (webDirectory) serveWebApp(app, webDirectory);
 
   if (!database) return app;
   const db = database;

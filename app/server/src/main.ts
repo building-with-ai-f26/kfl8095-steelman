@@ -1,7 +1,7 @@
 import { buildApp } from "./app.ts";
 import type { AppDependencies } from "./app.ts";
 import { createDatabase } from "./db/database.ts";
-import { terminalEmail } from "./email.ts";
+import { resendEmail, terminalEmail } from "./email.ts";
 import { systemClock, systemIds, throwawaySecret } from "./system.ts";
 
 // PORT is set by `npm run dev` locally and by the host when deployed.
@@ -14,9 +14,19 @@ const mode = process.env.NODE_ENV === "development" ? "development" : "productio
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) console.warn("DATABASE_URL isn't set, so only /api/health is available (see app/.env.example).");
 
-// Sign-in. Locally, codes are printed to the terminal. A deployed service
-// has no way to send email until Resend is added (M1-14), so until then it
-// runs without sign-in rather than print codes into its logs.
+// In the container (it sets WEB_DIRECTORY), a missing setting is a bad deploy: stop at once, so the release
+// fails, rather than start without a database or sign-in and pass the health check.
+const deployed = mode === "production" && Boolean(process.env.WEB_DIRECTORY);
+const needed = ["DATABASE_URL", "APP_ORIGIN", "BETTER_AUTH_SECRET", "RESEND_API_KEY", "EMAIL_FROM"].filter((name) => !process.env[name]);
+if (deployed && needed.length > 0) {
+  console.error(`Not starting: ${needed.join(", ")} not set (see app/.env.example).`);
+  process.exit(1);
+}
+
+// Sign-in. Locally, codes are printed to the terminal. Deployed, they're
+// emailed through Resend (M1-14a), and the service needs its address and a
+// signing secret; without all of them it runs without sign-in rather than
+// print codes into its logs.
 function signInFor(): AppDependencies["signIn"] {
   if (mode === "development") {
     return {
@@ -26,8 +36,15 @@ function signInFor(): AppDependencies["signIn"] {
       ...googleFor(),
     };
   }
-  console.warn("Sign-in is off: no way to send email yet (M1-14).");
-  return undefined;
+  const { APP_ORIGIN: origin, BETTER_AUTH_SECRET: secret, RESEND_API_KEY: apiKey, EMAIL_FROM: from } = process.env;
+  const missing = Object.entries({ APP_ORIGIN: origin, BETTER_AUTH_SECRET: secret, RESEND_API_KEY: apiKey, EMAIL_FROM: from })
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+  if (missing.length > 0) {
+    console.warn(`Sign-in is off: ${missing.join(", ")} not set (see app/.env.example).`);
+    return undefined;
+  }
+  return { origin: origin!, secret: secret!, email: resendEmail({ apiKey: apiKey!, from: from! }), ...googleFor() };
 }
 const signIn = databaseUrl ? signInFor() : undefined;
 
@@ -49,9 +66,15 @@ const app = buildApp({
   clock: systemClock,
   ids: systemIds,
   mode,
+  // In the container, the built web app is served from the same address as the API (M1-14a).
+  ...(process.env.WEB_DIRECTORY ? { webDirectory: process.env.WEB_DIRECTORY } : {}),
+  // Deployed, one JSON line per request for Cloud Logging. `npm run dev` keeps its terminal quiet.
+  ...(mode === "production" ? { logs: process.stdout } : {}),
   ...(analytics ? { analytics } : {}),
   ...(databaseUrl ? { database: createDatabase(databaseUrl) } : {}),
   ...(signIn ? { signIn } : {}),
 });
-await app.listen({ port, host: "127.0.0.1" });
-console.log(`Steelman service listening on http://127.0.0.1:${port} (${mode})`);
+// In a container the service must listen on every address (HOST=0.0.0.0); on a laptop, only this machine.
+const host = process.env.HOST || "127.0.0.1";
+await app.listen({ port, host });
+console.log(`Steelman service listening on http://${host}:${port} (${mode})`);
