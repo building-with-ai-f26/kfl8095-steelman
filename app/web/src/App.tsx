@@ -8,6 +8,7 @@ import { readLink } from "./links.ts";
 import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
+import { Privacy } from "./Privacy.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
 import type { Me } from "./signIn/account.ts";
 import { AuthCard } from "./signIn/AuthCard.tsx";
@@ -28,44 +29,55 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
   const [zoom, setZoom] = useState<Zoom>("read");
   /** The switch shows only while a board is on screen, not on its not-found or no-access page. */
   const [boardShown, setBoardShown] = useState(false);
+  const wordmark = (
+    <div className="sm-wordmark">
+      <Logo />
+      {/* On a phone the prototype shows only the logo while a board is open, leaving room for the view switch. */}
+      <span className="sm-wordmark-text">steelman.</span>
+    </div>
+  );
   return (
     <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined}>
-      <SignedIn
-        header={(signedIn) => (
-          <header className="sm-site">
-            <div className="sm-wordmark">
-              <Logo />
-              {/* On a phone the prototype shows only the logo while a board is open, leaving room for the view switch. */}
-              <span className="sm-wordmark-text">steelman.</span>
-            </div>
-            <div className="sm-site-tools">
-              {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={setZoom} /> : null}
-              {signedIn && board ? (
-                <a className="sm-share-button cursor-interaction" href="/" aria-label="New steelman">
-                  <Icon name="plus" size={14} />
-                  <span>New steelman</span>
-                </a>
-              ) : null}
-              {signedIn ? (
-                <a className="sm-me cursor-interaction" href="/account" aria-label="Your account" data-tooltip="Your account" aria-current={link.kind === "account" ? "page" : undefined}>
-                  <Icon name="user" size={15} />
-                </a>
-              ) : null}
-              <TestUserSwitch />
-            </div>
-          </header>
-        )}
-      >
-        {link.kind === "board" ? (
-          <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
-        ) : link.kind === "account" ? (
-          <Account />
-        ) : link.kind === "unknown" ? (
-          <NotFound />
-        ) : (
-          <NewSteelman />
-        )}
-      </SignedIn>
+      {link.kind === "privacy" ? (
+        // Readable by anyone, signed in or not (M-07).
+        <>
+          <header className="sm-site">{wordmark}</header>
+          <Privacy />
+        </>
+      ) : (
+        <SignedIn
+          header={(signedIn) => (
+            <header className="sm-site">
+              {wordmark}
+              <div className="sm-site-tools">
+                {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={setZoom} /> : null}
+                {signedIn && board ? (
+                  <a className="sm-share-button cursor-interaction" href="/" aria-label="New steelman">
+                    <Icon name="plus" size={14} />
+                    <span>New steelman</span>
+                  </a>
+                ) : null}
+                {signedIn ? (
+                  <a className="sm-me cursor-interaction" href="/account" aria-label="Your account" data-tooltip="Your account" aria-current={link.kind === "account" ? "page" : undefined}>
+                    <Icon name="user" size={15} />
+                  </a>
+                ) : null}
+                <TestUserSwitch />
+              </div>
+            </header>
+          )}
+        >
+          {link.kind === "board" ? (
+            <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
+          ) : link.kind === "account" ? (
+            <Account />
+          ) : link.kind === "unknown" ? (
+            <NotFound />
+          ) : (
+            <NewSteelman />
+          )}
+        </SignedIn>
+      )}
       <AnalyticsNotice />
     </div>
   );

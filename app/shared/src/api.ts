@@ -176,6 +176,11 @@ export interface Standing {
  * PostHog project key and address, or null when the service was given none,
  * and then the browser sends nothing (M-08).
  */
+/** Where PostHog's scripts come from, for its address: us.i.posthog.com's are at us-assets.i.posthog.com. */
+export function posthogAssetsHost(host: string): string {
+  return host.replace(".i.posthog.com", "-assets.i.posthog.com");
+}
+
 export interface PublicConfig {
   analytics: { key: string; host: string } | null;
 }

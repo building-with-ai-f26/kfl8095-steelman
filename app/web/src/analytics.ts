@@ -12,6 +12,7 @@
 //   an anonymous visitor, never an email or username.
 
 import type { PublicConfig } from "@steelman/shared";
+import { posthogAssetsHost } from "@steelman/shared";
 import { readConfig } from "./api.ts";
 
 /** The choice, as docs/analytics.js keeps it: "on", "off", or nothing yet. Same name, so a choice made there holds here on the same site. */
@@ -70,7 +71,7 @@ function load(analytics: NonNullable<Analytics>): void {
   const script = document.createElement("script");
   script.async = true;
   script.crossOrigin = "anonymous";
-  script.src = `${analytics.host.replace(".i.posthog.com", "-assets.i.posthog.com")}/static/array.js`;
+  script.src = `${posthogAssetsHost(analytics.host)}/static/array.js`;
   document.head.appendChild(script);
 
   posthog("init", analytics.key, {
@@ -84,20 +85,26 @@ function load(analytics: NonNullable<Analytics>): void {
   posthog("register", { environment: environmentOf(location.hostname), page: "app" });
 }
 
+/** The choice made on this page, for when the browser blocks storage. */
+let chosenHere: "on" | "off" | null = null;
+
 function stored(): string | null {
   try {
-    return localStorage.getItem(STORE);
+    return localStorage.getItem(STORE) ?? chosenHere;
   } catch {
-    return null;
+    return chosenHere;
   }
 }
 
 let started: Promise<Decision> | null = null;
+let config: Promise<PublicConfig> | null = null;
+const askedConfig = () => (config ??= readConfig());
+const signalled = () => privacySignal(navigator as Navigator & { globalPrivacyControl?: boolean }, (window as Window & { doNotTrack?: string | null }).doNotTrack);
 
 /** Asks the service once, decides, and loads PostHog unless analytics are off. Answers whether to ask. */
 export function startAnalytics(): Promise<Decision> {
-  started ??= readConfig().then(({ analytics }) => {
-    const signal = privacySignal(navigator as Navigator & { globalPrivacyControl?: boolean }, (window as Window & { doNotTrack?: string | null }).doNotTrack);
+  started ??= askedConfig().then(({ analytics }) => {
+    const signal = signalled();
     const decision = decide({ analytics, signal, stored: stored() });
     if (decision !== "off" && analytics) load(analytics);
     return decision;
@@ -105,8 +112,12 @@ export function startAnalytics(): Promise<Decision> {
   return started;
 }
 
-/** OK or Turn off, from the notice. Turning off stops PostHog at once; from the next page on, it isn't loaded. */
+/** Told when the choice changes, so the notice goes once the privacy page has chosen. */
+export const CHOSEN = "steelman-analytics-chosen";
+
+/** OK or Turn off, from the notice or the privacy page. Turning off stops PostHog at once; from the next page on, it isn't loaded. */
 export function chooseAnalytics(on: boolean): void {
+  chosenHere = on ? "on" : "off";
   try {
     localStorage.setItem(STORE, on ? "on" : "off");
   } catch {
@@ -116,4 +127,26 @@ export function chooseAnalytics(on: boolean): void {
     posthog("stopSessionRecording");
     posthog("opt_out_capturing");
   }
+  window.dispatchEvent(new Event(CHOSEN));
+}
+
+/** What the privacy page says: no PostHog key here, a browser signal, or this browser's choice. */
+export type AnalyticsStatus = "none" | "signal" | "on" | "off";
+
+export async function analyticsStatus(): Promise<AnalyticsStatus> {
+  const { analytics } = await askedConfig();
+  if (!analytics) return "none";
+  if (signalled()) return "signal";
+  return stored() === "off" ? "off" : "on";
+}
+
+/** Turn on, from the privacy page: PostHog starts again now, loading it if this page never did. */
+export async function turnOnAnalytics(): Promise<void> {
+  chooseAnalytics(true);
+  const { analytics } = await askedConfig();
+  if (!analytics || signalled()) return;
+  // PostHog remembers an opt-out in its own storage, so it is told to opt in again even when it's only now loading.
+  if (!window.posthog) load(analytics);
+  posthog("opt_in_capturing");
+  posthog("startSessionRecording");
 }

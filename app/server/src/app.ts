@@ -1,6 +1,20 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { accessInput, assessmentInput, can, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, sourceInput, voteInput } from "@steelman/shared";
+import {
+  accessInput,
+  assessmentInput,
+  can,
+  deleteAccountInput,
+  posthogAssetsHost,
+  changesQuery,
+  editInput,
+  newArgumentInput,
+  newBoardInput,
+  newSourceInput,
+  newWordingInput,
+  sourceInput,
+  voteInput,
+} from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { accountSummary, deleteAccount, exportData } from "./account.ts";
@@ -39,6 +53,31 @@ export interface AppDependencies {
   analytics?: NonNullable<PublicConfig["analytics"]>;
 }
 
+/**
+ * The Content Security Policy (M-07, architecture §7): the page may load only
+ * from its own site, Google Fonts, and, when the service has a key, PostHog.
+ * A script from anywhere else is refused, and no other site may frame the app.
+ * Inline styles are allowed: React's `style` attributes and the prototype's
+ * stylesheet need them; inline scripts are not.
+ */
+export function contentSecurityPolicy(analytics: PublicConfig["analytics"] | undefined): string {
+  const posthog = analytics ? [...new Set([analytics.host, posthogAssetsHost(analytics.host)])] : [];
+  const scripts = analytics ? [posthogAssetsHost(analytics.host)] : [];
+  return [
+    "default-src 'self'",
+    `script-src ${["'self'", ...scripts].join(" ")}`,
+    `connect-src ${["'self'", ...posthog].join(" ")}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob:",
+    "worker-src 'self' blob:",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
 /** The header the browser uses to say which test account it is acting as, while there is no sign-in (M0). */
 const TEST_USER_HEADER = "x-steelman-test-user";
 
@@ -74,6 +113,11 @@ declare module "fastify" {
  */
 export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics }: AppDependencies): FastifyInstance {
   const app = Fastify();
+  const policy = contentSecurityPolicy(analytics);
+  app.addHook("onSend", async (_request, reply) => {
+    reply.header("content-security-policy", policy);
+    reply.header("x-content-type-options", "nosniff");
+  });
 
   app.get("/api/health", () => ({ status: "ok", time: clock.now().toISOString() }));
 
