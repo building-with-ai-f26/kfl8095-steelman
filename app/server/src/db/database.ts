@@ -131,5 +131,10 @@ export type Db = Kysely<Database>;
  * instances stay well inside the smallest Cloud SQL's limit (architecture §4).
  */
 export function createDatabase(url: string): Db {
-  return new Kysely<Database>({ dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString: url, max: 5 }) }) });
+  const pool = new pg.Pool({ connectionString: url, max: 5 });
+  // The database can end a connection while it sits idle in the pool: Cloud SQL's maintenance does, and so does
+  // dropping a test's database. The pool drops it and opens another when next needed; without this listener, Node
+  // would treat it as an uncaught error and stop the process. The line names no person: only Postgres's reason.
+  pool.on("error", (error) => console.warn(JSON.stringify({ severity: "WARNING", message: `A database connection ended while idle: ${error.message}` })));
+  return new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
 }
