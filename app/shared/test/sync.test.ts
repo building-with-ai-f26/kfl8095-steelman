@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { openView, pillCount, pressUpdate, receive } from "@steelman/shared";
+import { leaveOut, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
 import type { ArgumentRow, BoardChanges, BoardSnapshot, OptionRow, VersionRow } from "@steelman/shared";
 
 // The browser's sync rules (plans/architecture.md §3), as pure functions so
@@ -190,5 +190,37 @@ describe("pressing Update", () => {
     later.order = changes.order!;
 
     expect(caughtUp).toEqual(openView(later));
+  });
+});
+
+describe("the reader's own deletions", () => {
+  test("A-06: a wording the reader deleted leaves the screen, unmarked, and the pill doesn't count it", () => {
+    const sent = receive(openView(snapshot()), { ...nothing(6), versions: [version("a2", "a", 1, { deleted: true, wording: null, changedSeq: 6 })] });
+    expect(pillCount(sent)).toBe(1);
+
+    const shown = leaveOut(sent, ["a2"]);
+
+    expect(shown.shown.versions.a).toEqual(["a1"]);
+    expect(shown.shown.arguments.yes).toEqual(["b", "a", "c"]);
+    expect(pillCount(shown)).toBe(0);
+  });
+
+  test("A-06: before it's sent, a deleted last wording takes its row off too, and the other rows stay where they are", () => {
+    const view = openView(snapshot());
+
+    const shown = leaveOut(view, ["b1"]);
+
+    expect(shown.shown.arguments.yes).toEqual(["a", "c"]);
+    expect(shown.shown.versions.b).toBeUndefined();
+    expect(shown.rows).toBe(view.rows);
+    expect(pillCount(shown)).toBe(0);
+  });
+
+  test("A-06: a row whose other wordings are all deleted goes with the reader's own deletion; leaving out nothing changes nothing", () => {
+    const view = receive(openView(snapshot()), { ...nothing(6), versions: [version("a1", "a", 1, { deleted: true, wording: null, changedSeq: 6 })] });
+
+    // a1 was deleted by someone else and stays marked; leaving out a2 leaves no live wording, so the row goes.
+    expect(leaveOut(view, ["a2"]).shown.arguments.yes).toEqual(["b", "c"]);
+    expect(leaveOut(view, [])).toBe(view);
   });
 });

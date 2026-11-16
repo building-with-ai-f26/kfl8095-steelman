@@ -46,7 +46,7 @@ export type {
   VersionRow,
   WriteAnswer,
 } from "./api.ts";
-export { openView, pillCount, pressUpdate, receive } from "./sync.ts";
+export { leaveOut, openView, pillCount, pressUpdate, receive } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
 export { enqueue } from "./queue.ts";
 export type { QueuedAction } from "./queue.ts";

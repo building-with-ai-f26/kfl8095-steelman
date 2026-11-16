@@ -2,7 +2,8 @@
 // decisions about order live here: the order on screen is `view.shown`,
 // which only the shared rules change.
 
-import type { ArgumentRow, OptionRow, QueuedAction, ReaderView, VersionRow } from "@steelman/shared";
+import { can } from "@steelman/shared";
+import type { ArgumentRow, OptionRow, QueuedAction, ReaderView, Role, VersionRow } from "@steelman/shared";
 
 export type Vote = 1 | -1 | null;
 
@@ -49,6 +50,40 @@ export function assessmentShown(version: VersionRow, mine: readonly QueuedAction
     no: version.no - (was === false ? 1 : 0) + (queued.supported === false ? 1 : 0),
     mine: queued.supported,
   };
+}
+
+/**
+ * The wording with the reader's own edit in it, until the edit is back (A-06):
+ * as the next revision, marked edited, its credibility score reset. Votes
+ * and sources stay. An assessment made meanwhile names that revision.
+ */
+export function editShown(version: VersionRow, mine: readonly QueuedAction[]): VersionRow {
+  let shown = version;
+  // `mine` is newest first; edits made one after another each start from the one before.
+  for (const action of [...mine].reverse()) {
+    if (action.kind !== "edit" || action.versionId !== version.id || action.baseRev !== shown.rev) continue;
+    shown = { ...shown, rev: shown.rev + 1, wording: action.wording, context: action.context, previousWording: shown.wording, yes: 0, no: 0, myAssessment: null };
+  }
+  return shown;
+}
+
+/** What a version's ⋯ menu offers (A-12), in order: Copy link first and Delete last, as GitHub's comment menus put them. */
+export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument";
+
+/**
+ * Only what the service would allow (the shared policy table): the author
+ * edits and deletes; anyone else who may write suggests a revised version.
+ * Combine, separate, report, and the AI actions come in later milestones.
+ *
+ * @param lastWording Whether it's its row's only live wording, so deleting it deletes the argument.
+ */
+export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean): MenuItem[] {
+  const board = { closed: false };
+  const items: MenuItem[] = ["copyLink"];
+  if (can(reader, role, "edit", board, version.authorId) === null) items.push("edit");
+  else if (can(reader, role, "add", board) === null) items.push("suggest");
+  if (can(reader, role, "delete", board, version.authorId) === null) items.push(lastWording ? "deleteArgument" : "deleteVersion");
+  return items;
 }
 
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */

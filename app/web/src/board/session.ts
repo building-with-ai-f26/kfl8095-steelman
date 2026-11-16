@@ -4,7 +4,7 @@
 // (`openView`, `receive`, `pressUpdate`, `pillCount`, `enqueue`); this only
 // runs them at the right moments and tells React when something changed.
 
-import { enqueue, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
+import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
 import type { Access, BoardSnapshot, QueuedAction, ReaderView, Role, Standing } from "@steelman/shared";
 import { Unreachable, readBoard, readChanges, send, setAccess } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
@@ -16,6 +16,16 @@ const HIDDEN_POLL_MS = 30_000;
 const HIDDEN_POLLS = 20;
 /** How long "Back online · N sent" stays up. */
 const BACK_ONLINE_MS = 4_000;
+/** How long a delete waits in the browser, so Undo can take it back without anything sent (plans/architecture.md §2). */
+export const UNDO_MS = 10_000;
+
+/** A delete waiting for its ten seconds, and where its Undo bar goes: after this row, or first in the column when null. */
+export interface HeldDelete {
+  versionId: string;
+  label: "Version deleted." | "Argument deleted.";
+  optionId: string;
+  after: string | null;
+}
 
 export interface SessionState {
   /** Ready, or why the board can't be shown: no such board, no access to it, or signed out. */
@@ -37,6 +47,10 @@ export interface SessionState {
   role: Role | null;
   /** Wordings the reader assessed after they changed, so the assessment wasn't counted: until they assess again. */
   stale: readonly string[];
+  /** The reader's own deletions, kept off the screen (leaveOut): held for Undo, on their way, or back. */
+  leftOut: readonly string[];
+  /** The delete Undo can still take back. */
+  undo: HeldDelete | null;
 }
 
 export class BoardSession {
@@ -52,6 +66,8 @@ export class BoardSession {
     access: null,
     role: null,
     stale: [],
+    leftOut: [],
+    undo: null,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -60,6 +76,7 @@ export class BoardSession {
   private sending = false;
   private pollTimer: number | undefined;
   private backOnlineTimer: number | undefined;
+  private undoTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
   private stopped = false;
@@ -99,6 +116,7 @@ export class BoardSession {
     window.addEventListener("online", this.cameOnline);
     window.addEventListener("offline", this.wentOffline);
     window.addEventListener("beforeunload", this.beforeUnload);
+    window.addEventListener("pagehide", this.pageHide);
     document.addEventListener("visibilitychange", this.visibilityChanged);
     try {
       const snapshot = await readBoard(this.board);
@@ -123,12 +141,15 @@ export class BoardSession {
   }
 
   stop(): void {
+    // Leaving the board sends what Undo was holding.
+    this.sendHeld(true);
     this.stopped = true;
     window.clearTimeout(this.pollTimer);
     window.clearTimeout(this.backOnlineTimer);
     window.removeEventListener("online", this.cameOnline);
     window.removeEventListener("offline", this.wentOffline);
     window.removeEventListener("beforeunload", this.beforeUnload);
+    window.removeEventListener("pagehide", this.pageHide);
     document.removeEventListener("visibilitychange", this.visibilityChanged);
   }
 
@@ -139,6 +160,37 @@ export class BoardSession {
     this.queue = enqueue(this.queue, action);
     this.mineChanged();
     void this.flush();
+  }
+
+  /**
+   * Deletes the reader's own wording (A-06). It leaves the screen at once and
+   * is held here for ten seconds, so Undo sends nothing; then it's sent. One
+   * is held at a time: a second delete sends the first at once.
+   */
+  deleteVersion(held: HeldDelete): void {
+    this.sendHeld();
+    this.set({ leftOut: [...this.state.leftOut, held.versionId], undo: held, status: `${held.label} Undo is available for ten seconds.` });
+    this.undoTimer = window.setTimeout(() => this.sendHeld(), UNDO_MS);
+  }
+
+  /** Undo: the held delete is dropped, unsent, and the wording comes back where it was. */
+  undoDelete(): void {
+    const held = this.state.undo;
+    if (!held) return;
+    window.clearTimeout(this.undoTimer);
+    this.set({ undo: null, leftOut: this.state.leftOut.filter((id) => id !== held.versionId), status: "Restored." });
+  }
+
+  /** Sends the held delete now: its ten seconds are up, another delete was made, or the board is closing. */
+  private sendHeld(closing = false): void {
+    const held = this.state.undo;
+    if (!held) return;
+    window.clearTimeout(this.undoTimer);
+    this.set({ undo: null });
+    const action: QueuedAction = { kind: "delete", versionId: held.versionId };
+    // A closing tab can't wait for the queue: the request goes now, and finishes after the page is gone.
+    if (closing) void send(this.board, action, true).catch(() => undefined);
+    else this.act(action);
   }
 
   /** Update: draws the board in the newest shared order. */
@@ -192,7 +244,7 @@ export class BoardSession {
   }
 
   pillCount(): number {
-    return this.state.view ? pillCount(this.state.view) : 0;
+    return this.state.view ? pillCount(leaveOut(this.state.view, this.state.leftOut)) : 0;
   }
 
   // ── Sending ──
@@ -216,6 +268,8 @@ export class BoardSession {
         else {
           this.announce(refusalNote(answer));
           if (action.kind === "assess" && answer.status === "refused" && answer.reason === "revision_changed") this.set({ stale: [...this.state.stale, action.versionId] });
+          // A delete refused comes back on screen.
+          if (action.kind === "delete") this.set({ leftOut: this.state.leftOut.filter((id) => id !== action.versionId) });
         }
         sentNow++;
         this.mineChanged();
@@ -287,9 +341,15 @@ export class BoardSession {
     else void this.poll();
   };
 
-  /** The queue lives only in this tab (Q20), so leaving with actions waiting asks first. */
+  /** The tab is going: a delete Undo was holding is sent at once (§2). */
+  private readonly pageHide = () => this.sendHeld(true);
+
+  /**
+   * The queue lives only in this tab (Q20), so leaving with actions waiting asks first. A held delete
+   * doesn't ask: it's sent, unless the tab is offline, when sending it would fail.
+   */
   private readonly beforeUnload = (event: BeforeUnloadEvent) => {
-    if (this.queue.length === 0) return;
+    if (this.queue.length === 0 && !(this.state.undo && this.state.offline)) return;
     event.preventDefault();
     event.returnValue = "";
   };

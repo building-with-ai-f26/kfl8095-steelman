@@ -53,6 +53,26 @@ export function pressUpdate(view: ReaderView): ReaderView {
   return { ...view, shown: layout(view.rows, view.published) };
 }
 
+/**
+ * What's on screen without the reader's own deletions (A-06). Others'
+ * deletions stay, marked, until Update; one's own leaves at once, unmarked:
+ * held for Undo, on its way, or back. An argument with no live wording left
+ * on screen goes with it. Nothing else moves.
+ */
+export function leaveOut(view: ReaderView, versionIds: readonly string[]): ReaderView {
+  if (versionIds.length === 0) return view;
+  const gone = new Set(versionIds);
+  const shown: BoardOrder = { arguments: {}, versions: {} };
+  const emptied = new Set<string>();
+  for (const [argumentId, ids] of Object.entries(view.shown.versions)) {
+    const kept = ids.filter((id) => !gone.has(id));
+    if (kept.length < ids.length && !kept.some((id) => isLiveVersion(view.rows.versions[id]))) emptied.add(argumentId);
+    else shown.versions[argumentId] = kept;
+  }
+  for (const [optionId, ids] of Object.entries(view.shown.arguments)) shown.arguments[optionId] = ids.filter((id) => !emptied.has(id));
+  return { ...view, shown };
+}
+
 /** The number on the pill: moves to the newest order, plus each change still marked in place. */
 export function pillCount(view: ReaderView): number {
   return staleCount(view.shown, view.published, markedChanges(view));

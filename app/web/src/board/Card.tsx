@@ -2,17 +2,23 @@
 // docs/prototype/source/steelman-refined.html): the claim, who wrote it, and
 // the credibility meter. A wording someone deleted keeps its place, marked.
 // The wording opens the card, which is what a version's link points at
-// (M-06); its ⋯ menu copies that link. An open card shows its context, its
-// evidence, and the assessment (Evidence.tsx); the menu's other actions come
-// with M1-10. The meter counts the reader's own assessment as soon as it's made.
+// (M-06). Its ⋯ menu (A-12) offers what the reader's role allows: the author
+// edits in place and deletes; anyone else who may write suggests a revised
+// version; everyone copies the link. An open card shows its context, its
+// evidence, and the assessment (Evidence.tsx). The card shows the reader's
+// own edit and assessment as soon as they're made.
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { credibility, credibilityLabel } from "@steelman/shared";
 import type { VersionRow } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
-import { assessmentShown, isLiveVersion } from "./display.ts";
+import type { IconName } from "../icons.tsx";
+import { assessmentShown, editShown, isLiveVersion } from "./display.ts";
+import type { MenuItem } from "./display.ts";
+import { DraftCard, cleanDraft } from "./Forms.tsx";
+import type { DraftText } from "./Forms.tsx";
 import { Evidence, SourceCount } from "./Evidence.tsx";
 import type { EvidenceBoard } from "./Evidence.tsx";
 
@@ -23,6 +29,18 @@ export interface Opening {
   evidence: EvidenceBoard;
   toggle(versionId: string): void;
   copyLink(versionId: string): void;
+  menu: CardMenu;
+}
+
+/** What a card's ⋯ menu does (A-12), and which wording its author is editing. */
+export interface CardMenu {
+  items(version: VersionRow): MenuItem[];
+  editing: string | null;
+  edit(versionId: string): void;
+  save(version: VersionRow, draft: DraftText): void;
+  cancel(versionId: string): void;
+  suggest(version: VersionRow): void;
+  remove(version: VersionRow): void;
 }
 
 export function Card({ version, opening, inTrack = false }: { version: VersionRow; opening: Opening; inTrack?: boolean }) {
@@ -41,8 +59,19 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
   }
   const open = opening.open === version.id;
   const reveal = `sm-reveal-${version.id}`;
-  const assessment = assessmentShown(version, opening.evidence.mine);
-  const shown: VersionRow = { ...version, yes: assessment.yes, no: assessment.no, myAssessment: assessment.mine };
+  const edited = editShown(version, opening.evidence.mine);
+  const assessment = assessmentShown(edited, opening.evidence.mine);
+  const shown: VersionRow = { ...edited, yes: assessment.yes, no: assessment.no, myAssessment: assessment.mine };
+  if (opening.menu.editing === version.id) return <EditCard version={shown} className={face.trim()} menu={opening.menu} />;
+  const choose = (item: MenuItem) => {
+    setMenu(false);
+    if (item === "copyLink") {
+      menuButton.current?.focus();
+      opening.copyLink(version.id);
+    } else if (item === "edit") opening.menu.edit(version.id);
+    else if (item === "suggest") opening.menu.suggest(shown);
+    else opening.menu.remove(shown);
+  };
   return (
     <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}`} data-card={version.id}>
       <button
@@ -58,21 +87,13 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
         <Icon name="ellipsis" />
       </button>
       {menu ? (
-        <VersionMenu
-          trigger={menuButton}
-          onClose={() => setMenu(false)}
-          onCopyLink={() => {
-            setMenu(false);
-            menuButton.current?.focus();
-            opening.copyLink(version.id);
-          }}
-        />
+        <VersionMenu trigger={menuButton} items={opening.menu.items(shown)} onClose={() => setMenu(false)} onChoose={choose} />
       ) : null}
       {/* ph-no-capture: PostHog's autocapture sends a clicked button's text, and this text is what someone wrote. */}
       <button type="button" className="sm-claim-button cursor-interaction ph-no-capture" aria-expanded={open} aria-controls={reveal} onClick={() => opening.toggle(version.id)}>
-        <span className="sm-claim">{version.wording}</span>
+        <span className="sm-claim">{shown.wording}</span>
       </button>
-      <Byline version={version} />
+      <Byline version={shown} />
       <div className="sm-card-meta">
         <span className="sm-cred-group">
           <Meter yes={shown.yes} no={shown.no} />
@@ -88,7 +109,7 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
           <>
             <section className="sm-card-context" aria-label="Context">
               <h3>Context</h3>
-              {version.context ? <p className="sm-brief">{version.context}</p> : <p className="sm-meta">No context yet.</p>}
+              {shown.context ? <p className="sm-brief">{shown.context}</p> : <p className="sm-meta">No context yet.</p>}
             </section>
             <Evidence version={shown} board={opening.evidence} />
           </>
@@ -99,14 +120,66 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
 }
 
 /**
+ * The author's edit, in the wording's place (A-06), as the prototype draws it.
+ * Votes stay; an assessed wording's credibility score resets, so once the
+ * text changes the form says so.
+ */
+function EditCard({ version, className, menu }: { version: VersionRow; className: string; menu: CardMenu }) {
+  const [draft, setDraft] = useState<DraftText>({ wording: version.wording ?? "", context: version.context ?? "" });
+  const clean = cleanDraft(draft);
+  const changes = clean !== null && (clean.wording !== version.wording || clean.context !== (version.context ?? ""));
+  const note: ReactNode =
+    changes && version.yes + version.no > 0 ? (
+      <p className="sm-source-warn sm-edit-warn" role="note">
+        <Icon name="triangle-alert" />
+        The credibility score resets when you save.
+      </p>
+    ) : null;
+  return (
+    <DraftCard
+      className={className}
+      label="Edit your version"
+      wordingLabel="Your version"
+      contextLabel="Context (optional)"
+      contextPlaceholder="Context (optional)"
+      closeLabel="Cancel editing"
+      addLabel="Save changes"
+      closeTooltip="Cancel"
+      addTooltip="Save"
+      note={note}
+      draft={draft}
+      onChange={setDraft}
+      onClose={() => menu.cancel(version.id)}
+      onAdd={(ready) => menu.save(version, ready)}
+    />
+  );
+}
+
+const MENU_ITEMS: Record<MenuItem, { icon: IconName; label: string }> = {
+  edit: { icon: "pencil", label: "Edit wording and context" },
+  suggest: { icon: "pen-line", label: "Suggest a revised version" },
+  copyLink: { icon: "link", label: "Copy link" },
+  deleteVersion: { icon: "trash-2", label: "Delete version" },
+  deleteArgument: { icon: "trash-2", label: "Delete argument" },
+};
+
+/**
  * A version's ⋯ menu. It hangs from the board's main region, under its
  * button, so a row that scrolls sideways can't clip it (the prototype's
  * positionMenu, which hangs it from the page's root, outside any landmark).
- * Escape closes it and puts the cursor back on ⋯; Tab leaves and closes it,
- * moving on from ⋯; a click elsewhere closes it. It's placed once, so a row
+ * The arrow keys, Home, and End move between its items. Escape closes it
+ * and puts the cursor back on ⋯; Tab leaves and closes it, moving on from ⋯;
+ * a click elsewhere closes it. It's placed once, so a row
  * scrolling sideways or the window changing size closes it too.
  */
-function VersionMenu({ trigger, onClose, onCopyLink }: { trigger: RefObject<HTMLButtonElement | null>; onClose(): void; onCopyLink(): void }) {
+interface VersionMenuProps {
+  trigger: RefObject<HTMLButtonElement | null>;
+  items: MenuItem[];
+  onClose(): void;
+  onChoose(item: MenuItem): void;
+}
+
+function VersionMenu({ trigger, items, onClose, onChoose }: VersionMenuProps) {
   const menu = useRef<HTMLDivElement>(null);
   const root = document.getElementById("sm-content");
 
@@ -133,6 +206,13 @@ function VersionMenu({ trigger, onClose, onCopyLink }: { trigger: RefObject<HTML
         onClose();
         trigger.current?.focus();
       }
+      const all = [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+      const at = all.indexOf(here as HTMLElement);
+      const to = at < 0 ? undefined : { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: all.length - 1 }[event.key];
+      if (to !== undefined) {
+        event.preventDefault();
+        all[(to + all.length) % all.length]?.focus();
+      }
     };
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
@@ -158,10 +238,20 @@ function VersionMenu({ trigger, onClose, onCopyLink }: { trigger: RefObject<HTML
   if (!root) return null;
   return createPortal(
     <div ref={menu} className="sm-menu" role="menu" aria-label="Version options">
-      <button type="button" role="menuitem" className="sm-menu-item cursor-interaction" onClick={onCopyLink}>
-        <Icon name="link" />
-        <span>Copy link</span>
-      </button>
+      {items.map((item) => (
+        <button
+          key={item}
+          type="button"
+          role="menuitem"
+          className="sm-menu-item cursor-interaction"
+          // The prototype colours a delete's icon by this.
+          data-action={item === "deleteVersion" || item === "deleteArgument" ? "delete-card" : undefined}
+          onClick={() => onChoose(item)}
+        >
+          <Icon name={MENU_ITEMS[item].icon} />
+          <span>{MENU_ITEMS[item].label}</span>
+        </button>
+      ))}
     </div>,
     root,
   );

@@ -1,8 +1,10 @@
 // Writing in place, as the prototype does: a dashed card at the end of an
 // unfolded row opens a draft wording, and one at the foot of each column
-// opens a draft argument. Closing a form keeps its draft for later.
+// opens a draft argument. Closing a form keeps its draft for later. The
+// author's edit (A-06) uses the same card in the wording's place.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+import type { ReactNode } from "react";
 import { LIMITS, contextInput, wordingInput } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 
@@ -28,6 +30,12 @@ interface DraftCardProps {
   contextPlaceholder: string;
   closeLabel: string;
   addLabel: string;
+  closeTooltip?: string;
+  addTooltip?: string;
+  /** Classes the card adds, as a wording in an unfolded row does. */
+  className?: string;
+  /** A warning above the buttons. */
+  note?: ReactNode;
   draft: DraftText;
   onChange(draft: DraftText): void;
   onClose(): void;
@@ -40,9 +48,10 @@ export function DraftCard(props: DraftCardProps) {
   const wording = useRef<HTMLTextAreaElement>(null);
   useEffect(() => wording.current?.focus(), []);
   const ready = cleanDraft(draft);
+  const noteId = useId();
   return (
     <form
-      className="sm-card sm-compose-card"
+      className={`sm-card sm-compose-card${props.className ? ` ${props.className}` : ""}`}
       aria-label={props.label}
       onSubmit={(event) => {
         event.preventDefault();
@@ -72,11 +81,12 @@ export function DraftCard(props: DraftCardProps) {
         value={draft.context}
         onChange={(event) => onChange({ ...draft, context: event.target.value })}
       />
+      {props.note ? <div id={noteId}>{props.note}</div> : null}
       <div className="sm-card-meta">
-        <button type="button" className="sm-icon-button cursor-interaction" aria-label={props.closeLabel} data-tooltip="Close" onClick={onClose}>
+        <button type="button" className="sm-icon-button cursor-interaction" aria-label={props.closeLabel} data-tooltip={props.closeTooltip ?? "Close"} onClick={onClose}>
           <Icon name="x" />
         </button>
-        <button type="submit" className="sm-icon-button sm-primary cursor-interaction" aria-label={props.addLabel} data-tooltip="Add" disabled={!ready}>
+        <button type="submit" className="sm-icon-button sm-primary cursor-interaction" aria-label={props.addLabel} data-tooltip={props.addTooltip ?? "Add"} aria-describedby={props.note ? noteId : undefined} disabled={!ready}>
           <Icon name="check" />
         </button>
       </div>
