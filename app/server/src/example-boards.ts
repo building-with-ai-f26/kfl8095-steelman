@@ -209,12 +209,13 @@ export async function seedExampleBoards(db: Db, clock: Clock, ids: IdSource): Pr
   // Usernames are unique ignoring capitals, so look them up the same way. A test account has no email; one with
   // an email is a real person who signed in and chose the name, and the seed never writes as them. All are
   // checked before anything is written.
-  const found = new Map<string, { id: string; email: string | null }>();
+  const found = new Map<string, { id: string; email: string | null; deleted_at: Date | null }>();
   for (const name of EXAMPLE_PEOPLE) {
-    const account = await db.selectFrom("account").select(["id", "email"]).where(sql`lower(username)`, "=", name.toLowerCase()).executeTakeFirst();
+    const account = await db.selectFrom("account").select(["id", "email", "deleted_at"]).where(sql`lower(username)`, "=", name.toLowerCase()).executeTakeFirst();
     if (account) found.set(name, account);
   }
-  const taken = [...found].filter(([, account]) => account.email !== null).map(([name]) => name);
+  // A deleted account's username is held for 30 days with its email erased; it isn't a test account either.
+  const taken = [...found].filter(([, account]) => account.email !== null || account.deleted_at !== null).map(([name]) => name);
   if (taken.length > 0) throw new Error(`The seed's usernames ${taken.join(", ")} belong to real accounts (with an email) here. Rename them, or use a fresh database.`);
   for (const name of EXAMPLE_PEOPLE) {
     person[name] = found.get(name)?.id ?? ids.itemId();

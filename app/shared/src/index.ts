@@ -30,7 +30,7 @@ export {
 export type { SourceInput } from "./inputs.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
-export { accessInput, assessmentInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, voteInput } from "./api.ts";
+export { accessInput, assessmentInput, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, voteInput } from "./api.ts";
 export type {
   Access,
   ArgumentRow,
@@ -48,5 +48,7 @@ export type {
 } from "./api.ts";
 export { leaveOut, openView, pillCount, pressUpdate, receive } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
+export { CASE_SIZE, strongestCase } from "./strongest.ts";
+export type { CaseItem, OptionCase } from "./strongest.ts";
 export { enqueue } from "./queue.ts";
 export type { QueuedAction } from "./queue.ts";

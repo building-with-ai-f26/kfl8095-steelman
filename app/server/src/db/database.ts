@@ -42,6 +42,8 @@ export interface Database {
     general_access: Generated<string>;
     /** The role the link gives: "voter" or "contributor". */
     link_role: Generated<string>;
+    /** Set when it was deleted with its owner's account, nobody else able to open it (Q11; migration 0009). Its text is erased. */
+    deleted_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
   };
   /** A person's role on a board, and whether they came by the link or were added by name (migration 0008). */
   board_member: { board_id: string; account_id: string; role: string; joined_via: string; joined_at: Date };

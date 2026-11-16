@@ -18,6 +18,11 @@ export function chooseTestUser(id: string): void {
   sessionStorage.setItem(KEY, id);
 }
 
+/** After the account it acted as is deleted, the tab acts as nobody. */
+export function forgetTestUser(): void {
+  sessionStorage.removeItem(KEY);
+}
+
 export async function listTestUsers(): Promise<TestUser[]> {
   const response = await fetch("/api/test-users");
   if (!response.ok) return [];

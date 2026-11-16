@@ -12,7 +12,7 @@
 
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { leaveOut } from "@steelman/shared";
-import type { ArgumentRow, OptionRow, ReaderView } from "@steelman/shared";
+import type { ArgumentRow, CaseItem, OptionRow, ReaderView } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NotFound } from "../NotFound.tsx";
 import { useReader } from "../reader.ts";
@@ -22,6 +22,7 @@ import { Card } from "./Card.tsx";
 import type { CardMenu, Opening } from "./Card.tsx";
 import { ArgumentSlot, EMPTY_DRAFT, cleanDraft } from "./Forms.tsx";
 import { Sharing } from "./Sharing.tsx";
+import { StrongestCase } from "./StrongestCase.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
@@ -32,7 +33,19 @@ import type { Held, SessionState } from "./session.ts";
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
 
-export function Board({ boardId, version = null }: { boardId: string; version?: string | null }) {
+/** The board's view (E-01): "read" is the whole board, "case" each option's strongest case. */
+export type Zoom = "read" | "case";
+
+interface BoardProps {
+  boardId: string;
+  version?: string | null;
+  zoom?: Zoom;
+  onZoom?(zoom: Zoom): void;
+  /** Told when the board itself is on screen, and when it's gone: the switch shows only then. */
+  onShown?(shown: boolean): void;
+}
+
+export function Board({ boardId, version = null, zoom = "read", onZoom = () => {}, onShown = () => {} }: BoardProps) {
   const [session] = useState(() => new BoardSession(boardId));
   useEffect(() => {
     void session.start();
@@ -46,7 +59,7 @@ export function Board({ boardId, version = null }: { boardId: string; version?: 
   if (state.phase === "no_access") return <p className="sm-meta">You don’t have access to this steelman.</p>;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!view) return null;
-  return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} />;
+  return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
 }
 
 interface BoardViewProps {
@@ -56,9 +69,12 @@ interface BoardViewProps {
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
+  zoom: Zoom;
+  onZoom(zoom: Zoom): void;
+  onShown(shown: boolean): void;
 }
 
-function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
+function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
   const options = columns(view);
   const [arrival] = useState(() => arrivalFor(view, linked));
   const [side, setSide] = useState(arrival.side ?? options[0]?.id);
@@ -131,6 +147,8 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
     const was = lastHeld.current;
     lastHeld.current = state.undo;
     if (!was || state.undo || (document.activeElement && document.activeElement !== document.body)) return;
+    // In Strongest case the rows aren't there, so the cursor goes back to the switch.
+    if (zoom === "case") return document.querySelector<HTMLElement>(".sm-zoom [aria-pressed='true']")?.focus();
     // A source removal's cursor stays in its card's evidence, on Add a source.
     const evidence = was.action.kind === "uncite" ? document.querySelector<HTMLElement>(`[data-card="${CSS.escape(was.action.versionId)}"] [data-key="add-source"]`) : null;
     const row = was.after ? document.querySelector<HTMLElement>(`[data-node="${CSS.escape(was.after)}"] .sm-claim-button`) : null;
@@ -229,6 +247,35 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
     if (now !== undefined && now !== held.top) window.scrollBy(0, now - held.top);
   }, [view.shown]);
 
+  useEffect(() => {
+    onShown(true);
+    return () => onShown(false);
+  }, [onShown]);
+  // Switching views says where the reader is now. Strongest case closes what's open on the board, as the
+  // prototype does: drafts of new arguments and wordings are kept, an edit in progress is discarded.
+  const shownZoom = useRef(zoom);
+  useEffect(() => {
+    if (shownZoom.current === zoom) return;
+    shownZoom.current = zoom;
+    if (zoom === "read") return session.announce("Board.");
+    const editing = writing?.kind === "edit";
+    setOpen(null);
+    setExpanded(null);
+    setWriting(null);
+    session.announce(`${editing ? "Your changes were discarded. " : ""}Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.`);
+  }, [zoom, session, writing]);
+  /** Choosing an argument in Strongest case opens its wording on the board, its row unfolded if the wording doesn't lead it there. */
+  const openFromCase = (item: CaseItem) => {
+    const at = (view.shown.versions[item.argumentId] ?? []).indexOf(item.versionId);
+    if (writing?.kind === "wording") setWriting(null);
+    setOpen(at > 0 ? item.argumentId : null);
+    setExpanded(item.versionId);
+    setSide(view.rows.arguments[item.argumentId]!.optionId);
+    setArrived(item.versionId);
+    setFocusTo(cardControl(item.versionId, "claim"));
+    onZoom("read");
+  };
+
   const update = () => {
     anchor.current = readingAnchor(open);
     const gone = writing?.kind === "wording" ? view.rows.arguments[writing.argumentId] : undefined;
@@ -271,53 +318,65 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
           ) : null}
         </section>
         <main id="sm-content">
-          <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption) } as React.CSSProperties}>
-            <div className="sm-sides" role="tablist" aria-label="Sides">
-              {options.map((option) => (
-                <button
+          {zoom === "case" ? (
+            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, undefined) } as React.CSSProperties}>
+              {state.undo && (
+                <div className="sm-board-undo">
+                  <UndoBar held={state.undo} onUndo={undo} />
+                </div>
+              )}
+              <StrongestCase view={view} leftOut={state.leftOut} mine={state.mine} onOpen={openFromCase} />
+            </div>
+          ) : (
+            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption) } as React.CSSProperties}>
+              <div className="sm-sides" role="tablist" aria-label="Sides">
+                {options.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="tab"
+                    className="cursor-interaction"
+                    aria-selected={option.id === side}
+                    aria-controls={`sm-col-${option.id}`}
+                    onClick={() => {
+                      // On a phone the other column is hidden, so the version open in it closes.
+                      if (option.id !== side && openVersion !== null && !versionIn(option.id)) setExpanded(null);
+                      setSide(option.id);
+                    }}
+                  >
+                    <span>{option.name}</span>
+                    <small>{view.shown.arguments[option.id]?.length ?? 0}</small>
+                  </button>
+                ))}
+              </div>
+              {options.map((option, index) => (
+                <Column
                   key={option.id}
-                  type="button"
-                  role="tab"
-                  className="cursor-interaction"
-                  aria-selected={option.id === side}
-                  aria-controls={`sm-col-${option.id}`}
-                  onClick={() => {
-                    // On a phone the other column is hidden, so the version open in it closes.
-                    if (option.id !== side && openVersion !== null && !versionIn(option.id)) setExpanded(null);
-                    setSide(option.id);
+                  option={option}
+                  first={index === 0}
+                  on={option.id === side}
+                  gap={index > 0}
+                  open={open}
+                  onToggle={(id) => {
+                    // Folding a row closes the version open in it, unless it's the one still showing.
+                    if (open === id && openVersion !== null && (view.shown.versions[id] ?? []).indexOf(openVersion) > 0) setExpanded(null);
+                    if (writing?.kind === "wording") setWriting(null);
+                    setOpen(open === id ? null : id);
                   }}
-                >
-                  <span>{option.name}</span>
-                  <small>{view.shown.arguments[option.id]?.length ?? 0}</small>
-                </button>
+                  writer={writer}
+                  opening={opening}
+                  view={view}
+                  state={state}
+                  session={session}
+                  onUndo={undo}
+                />
               ))}
             </div>
-            {options.map((option, index) => (
-              <Column
-                key={option.id}
-                option={option}
-                first={index === 0}
-                on={option.id === side}
-                gap={index > 0}
-                open={open}
-                onToggle={(id) => {
-                  // Folding a row closes the version open in it, unless it's the one still showing.
-                  if (open === id && openVersion !== null && (view.shown.versions[id] ?? []).indexOf(openVersion) > 0) setExpanded(null);
-                  if (writing?.kind === "wording") setWriting(null);
-                  setOpen(open === id ? null : id);
-                }}
-                writer={writer}
-                opening={opening}
-                view={view}
-                state={state}
-                session={session}
-                onUndo={undo}
-              />
-            ))}
-          </div>
+          )}
         </main>
       </div>
-      <Pill state={state} count={session.pillCount()} onUpdate={update} />
+      {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
+      <Pill state={state} count={zoom === "case" ? 0 : session.pillCount()} onUpdate={update} />
       <div id="sm-status" className="sm-live" role="status" aria-live="polite">
         {state.status}
       </div>

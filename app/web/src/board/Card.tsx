@@ -287,7 +287,7 @@ function Byline({ version }: { version: VersionRow }) {
 }
 
 /** Four segments, one filled per quarter of assessments that support the wording; dashed under five; empty gray when unreviewed. */
-function Meter(counts: { yes: number; no: number }) {
+export function Meter(counts: { yes: number; no: number }) {
   const c = credibility(counts);
   const label = credibilityLabel(c);
   const color = c.percent === null ? "#9a9a9a" : c.percent <= 50 ? mix("--sm-cred-weak", "--sm-cred-mid", c.percent / 50) : mix("--sm-cred-mid", "--sm-cred-strong", (c.percent - 50) / 50);
