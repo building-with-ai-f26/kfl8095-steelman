@@ -12,8 +12,9 @@
 // click can never run it.
 //
 // Changing a wording's evidence starts its assessments over, so the form warns
-// that its credibility score resets, and Remove asks for a second click (the
-// prototype's rule; "credibility score resets" is the builder's wording, Nov 15).
+// that its credibility score resets ("credibility score resets" is the
+// builder's wording, Nov 15). Remove takes a source off at once, with the
+// board's ten-second Undo in place of a second click (the builder, Nov 15).
 // The service decides who may do what; the board offers Edit only on your own
 // source, and Remove to whoever added it, the wording's author, and the Owner.
 //
@@ -39,6 +40,10 @@ export interface EvidenceBoard {
   mine: readonly QueuedAction[];
   /** Wordings whose assessment wasn't counted because they changed first. */
   stale: readonly string[];
+  /** The source removal held for Undo, if any: already off the card, not yet sent. */
+  removing: { versionId: string; sourceId: string } | null;
+  /** Takes a source off the wording, held ten seconds for Undo (session.ts). */
+  removeSource(version: VersionRow, sourceId: string, assessed: boolean): void;
   act(action: QueuedAction): void;
   announce(text: string): void;
 }
@@ -65,8 +70,6 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   const [problem, setProblem] = useState("");
   /** Which sources are open, by ID. */
   const [opened, setOpened] = useState<Record<string, boolean>>({});
-  /** The source whose Remove was clicked once, waiting for the second click. */
-  const [armed, setArmed] = useState<string | null>(null);
   /** A source just added, to open and put the cursor on when the service has it. */
   const [added, setAdded] = useState<string | null>(null);
   /** Where the cursor goes next, by data-key. */
@@ -105,7 +108,6 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     setDraft(editing ? { name: editing.name, locator: editing.locator, finding: editing.finding } : EMPTY);
     setInvalid([]);
     setProblem("");
-    setArmed(null);
     setFocus("src-locator");
   };
   const closeForm = () => {
@@ -134,17 +136,10 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     }
     setForm(null);
   };
+  /** Takes it off at once, with Undo for ten seconds in place of asking first (the builder, Nov 15). */
   const remove = (source: SourceRow) => {
-    if (assessed && armed !== source.id) {
-      setArmed(source.id);
-      announce("Removing this source resets the credibility score. Click Remove again to confirm.");
-      return;
-    }
-    setArmed(null);
     setForm(null);
-    board.act({ kind: "uncite", versionId: version.id, sourceId: source.id });
-    announce(`Source removed from this version${assessed ? "; its credibility score resets" : ""}.`);
-    setFocus("add-source");
+    board.removeSource(version, source.id, assessed);
   };
   /** Yes, No, or withdrawn (null). Pressing your answer again withdraws it, as Undo does. */
   const assess = (supported: boolean | null) => {
@@ -157,14 +152,16 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   /** "Yes" needs evidence someone can open. */
   const canBackUp = cited.some((source) => !source.unavailable);
   /**
-   * The reader's own change to this wording's sources, still on its way. It
-   * makes a new revision, so an assessment now would judge the one it
-   * replaces and be refused: the buttons wait for it.
+   * The reader's own change to this wording's sources, held for Undo or still
+   * on its way. It makes a new revision, so an assessment now would judge the
+   * one it replaces and be refused: the buttons wait for it.
    */
-  const sourcesChanging = board.mine.some(
-    (action) =>
-      ((action.kind === "addSource" || action.kind === "uncite") && action.versionId === version.id) || (action.kind === "editSource" && version.sourceIds.includes(action.sourceId)),
-  );
+  const sourcesChanging =
+    board.removing?.versionId === version.id ||
+    board.mine.some(
+      (action) =>
+        ((action.kind === "addSource" || action.kind === "uncite") && action.versionId === version.id) || (action.kind === "editSource" && version.sourceIds.includes(action.sourceId)),
+    );
 
   const warning = !form || !evidenceChanges ? 0 : editing ? assessedCiting(editing.id) : assessed ? 1 : 0;
   return (
@@ -180,7 +177,6 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               onToggle={(open) => setOpened((all) => (all[source.id] === open ? all : { ...all, [source.id]: open }))}
               mine={source.addedBy === reader}
               mayRemove={source.addedBy === reader || version.authorId === reader || board.role === "owner"}
-              armed={armed === source.id}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
             />
@@ -231,13 +227,11 @@ interface SourceProps {
   onToggle(open: boolean): void;
   mine: boolean;
   mayRemove: boolean;
-  /** Remove is waiting for its second click. */
-  armed: boolean;
   onEdit(): void;
   onRemove(): void;
 }
 
-function Source({ source, open, onToggle, mine, mayRemove, armed, onEdit, onRemove }: SourceProps) {
+function Source({ source, open, onToggle, mine, mayRemove, onEdit, onRemove }: SourceProps) {
   return (
     // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
     <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
@@ -268,13 +262,8 @@ function Source({ source, open, onToggle, mine, mayRemove, armed, onEdit, onRemo
               </button>
             ) : null}
             {mayRemove ? (
-              <button
-                type="button"
-                className={`sm-link-button${armed ? " sm-armed" : ""} cursor-interaction`}
-                aria-label={armed ? "Remove: the credibility score resets" : "Remove from this version"}
-                onClick={onRemove}
-              >
-                {armed ? "Remove · credibility score resets" : "Remove"}
+              <button type="button" className="sm-link-button cursor-interaction" aria-label="Remove from this version" onClick={onRemove}>
+                Remove
               </button>
             ) : null}
           </div>

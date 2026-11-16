@@ -34,6 +34,18 @@ async function addSource(board: TestBoard, person: DemoPerson, wording: string, 
   return id;
 }
 
+/** How long a removal waits for Undo (web/src/board/session.ts). */
+const UNDO_MS = 10_000;
+
+/** Every request this page sends to take a source off a wording. */
+function uncitesSent(page: Page): string[] {
+  const sent: string[] = [];
+  page.on("request", (request) => {
+    if (request.method() === "DELETE" && /\/sources\/[^/]+$/.test(new URL(request.url()).pathname)) sent.push(request.url());
+  });
+  return sent;
+}
+
 async function expectNoAxeViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
@@ -293,24 +305,68 @@ test.describe("the source form", () => {
     await expect(page.locator("#sm-status")).toHaveText("Source updated.");
   });
 
-  test("C-01: Remove, when the credibility score would reset, asks for a second click, then takes the source off this wording", async ({ board }) => {
+  // Changed with the builder, Nov 15: Undo replaces Remove's second click, as it does for a deleted wording (M1-10).
+  test("C-01: Remove takes the source off this wording at once, with Undo, saying the credibility score resets; nothing is sent for ten seconds", async ({ board }) => {
     await addSource(board, "jordan_w", LEAD);
     await assessNo(board, "tess.b", LEAD);
     const page = await board.open("jordan_w");
+    const sent = uncitesSent(page);
     await openCard(page, LEAD);
     const row = sourceRow(page, LEAD, SURVEY.name);
     await row.locator("summary").click();
 
     await row.getByRole("button", { name: "Remove from this version" }).click();
-    const armed = row.getByRole("button", { name: "Remove: the credibility score resets" });
-    await expect(armed).toBeFocused();
-    await expect(armed).toHaveText("Remove · credibility score resets");
-    await expect(page.locator("#sm-status")).toHaveText("Removing this source resets the credibility score. Click Remove again to confirm.");
-    await armed.click();
 
     await expect(evidence(page, LEAD).getByText("No sources yet.")).toBeVisible();
-    await expect(evidence(page, LEAD).getByRole("button", { name: "Add a source" })).toBeFocused();
-    await expect(page.locator("#sm-status")).toHaveText("Source removed from this version; its credibility score resets.");
+    await expect(card(page, LEAD).getByRole("img", { name: /sources?$/ })).toHaveCount(0);
+    await expect(page.locator(".sm-undo")).toHaveText("Source removed. The credibility score resets.Undo");
+    await expect(page.locator(".sm-undo").getByRole("button", { name: "Undo" })).toBeFocused();
+    await expect(page.locator("#sm-status")).toHaveText("Source removed. The credibility score resets. Undo is available for ten seconds.");
+    await page.clock.runFor(UNDO_MS - 1_000);
+    expect(sent).toHaveLength(0);
+
+    const answered = page.waitForResponse((response) => response.request().method() === "DELETE");
+    await page.clock.runFor(2_000);
+    await answered;
+    await poll(page);
+    expect(sent).toHaveLength(1);
+    await expect(page.locator(".sm-undo")).toHaveCount(0);
+    await expect(card(page, LEAD).locator(".sm-card-meta .sm-cred")).toHaveAccessibleName(/^Unreviewed/);
+    await expect(evidence(page, LEAD).getByText("No sources yet.")).toBeVisible();
+  });
+
+  test("C-01: Undo within ten seconds puts the source back, the cursor on it, and sends nothing", async ({ board }) => {
+    await addSource(board, "jordan_w", LEAD);
+    const page = await board.open("jordan_w");
+    const sent = uncitesSent(page);
+    await openCard(page, LEAD);
+    await sourceRow(page, LEAD, SURVEY.name).locator("summary").click();
+    await sourceRow(page, LEAD, SURVEY.name).getByRole("button", { name: "Remove from this version" }).click();
+    await expect(page.locator(".sm-undo")).toHaveText("Source removed.Undo");
+
+    await page.clock.runFor(UNDO_MS - 1_000);
+    await page.locator(".sm-undo").getByRole("button", { name: "Undo" }).click();
+
+    await expect(sourceRow(page, LEAD, SURVEY.name).locator("summary")).toBeFocused();
+    await expect(page.locator("#sm-status")).toHaveText("Restored.");
+    await page.clock.runFor(3 * UNDO_MS);
+    expect(sent).toHaveLength(0);
+    await page.reload();
+    await expect(card(page, LEAD).getByRole("img", { name: "1 source" })).toBeVisible();
+  });
+
+  test("C-01: closing the tab within ten seconds sends the removal at once", async ({ board }) => {
+    const id = await addSource(board, "jordan_w", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    await sourceRow(page, LEAD, SURVEY.name).locator("summary").click();
+    await sourceRow(page, LEAD, SURVEY.name).getByRole("button", { name: "Remove from this version" }).click();
+    await expect(page.locator(".sm-undo")).toBeVisible();
+
+    await page.close({ runBeforeUnload: true });
+
+    const { version } = await find(board, LEAD);
+    await expect.poll(async () => (await board.api("tess.b").snapshot()).versions.find((v: { id: string }) => v.id === version).sourceIds).not.toContain(id);
   });
 
   test("C-01: a source whose place to find it isn't a link can have its title fixed without adding one, and nothing resets", async ({ board }) => {
@@ -351,7 +407,8 @@ test.describe("the source form", () => {
     await expect(form(page).getByRole("note")).toHaveText("The credibility score resets when you save.");
   });
 
-  test("C-01: Remove while the form is open closes the form and puts the cursor on Add a source", async ({ board }) => {
+  // Changed with the builder, Nov 15: the cursor goes to Undo, as it does after any removal (M1-10).
+  test("C-01: Remove while the form is open closes the form and puts the cursor on Undo", async ({ board }) => {
     await addSource(board, "jordan_w", LEAD);
     const page = await board.open("jordan_w");
     await openCard(page, LEAD);
@@ -362,7 +419,7 @@ test.describe("the source form", () => {
     await row.getByRole("button", { name: "Remove from this version" }).click();
 
     await expect(form(page)).toHaveCount(0);
-    await expect(evidence(page, LEAD).getByRole("button", { name: "Add a source" })).toBeFocused();
+    await expect(page.locator(".sm-undo").getByRole("button", { name: "Undo" })).toBeFocused();
   });
 
   test("M-08: a source's row is kept out of analytics, since its title, link, and adder are what people wrote", async ({ board }) => {
@@ -447,6 +504,35 @@ test.describe("assessing", () => {
     await expect(no).toBeFocused();
   });
 
+  test("B-03, M-02: an answer changed while the one before it is still being sent is sent too, not dropped", async ({ board }) => {
+    await addSource(board, "maya.chen", LEAD);
+    const page = await board.open("jordan_w");
+    await openCard(page, LEAD);
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    let first = true;
+    // Holds the first answer's request, as a slow connection would.
+    await page.route("**/assessment", async (route) => {
+      if (first) {
+        first = false;
+        await held;
+      }
+      await route.continue();
+    });
+    const no = question(page, LEAD).getByRole("button", { name: "No" });
+
+    await no.click();
+    await question(page, LEAD).getByRole("button", { name: "Undo" }).click();
+    release();
+    await poll(page);
+    await poll(page);
+
+    await expect(no).toHaveAttribute("aria-pressed", "false");
+    await expect(meter(card(page, LEAD))).toHaveAccessibleName("Unreviewed; no assessments");
+    const { version } = await find(board, LEAD);
+    expect((await board.api("jordan_w").snapshot()).versions.find((v: { id: string }) => v.id === version).myAssessment).toBeNull();
+  });
+
   test("B-03, B-04, M-02: with two people, an edit in one browser resets the meter in the other", async ({ board }) => {
     await addSource(board, "jordan_w", LEAD);
     const tess = await board.open("tess.b");
@@ -515,7 +601,8 @@ test.describe("assessing", () => {
     await expect(meter(here)).toHaveAccessibleName(/^100% supported/);
   });
 
-  test("B-03: while your own change to a wording's sources is on its way, Yes and No wait, so they can't judge the revision it replaces", async ({ board }) => {
+  // Changed with the builder, Nov 15: a removal is held ten seconds for Undo (M1-10), and Yes and No wait through those too.
+  test("B-03: while your own change to a wording's sources is held for Undo or on its way, Yes and No wait, so they can't judge the revision it replaces", async ({ board }) => {
     await addSource(board, "jordan_w", LEAD);
     const page = await board.open("jordan_w");
     await openCard(page, LEAD);
@@ -531,6 +618,14 @@ test.describe("assessing", () => {
     await row.getByRole("button", { name: "Remove from this version" }).click();
 
     await expect(question(page, LEAD).getByRole("button", { name: "No" })).toBeDisabled();
+    const sent = page.waitForRequest((request) => request.method() === "DELETE");
+    await page.clock.runFor(UNDO_MS + 1_000);
+    await sent;
+    await expect(question(page, LEAD).getByRole("button", { name: "No" })).toBeDisabled();
+    // Sent and not yet back, the source stays off the card.
+    await expect(evidence(page, LEAD).getByText("No sources yet.")).toBeVisible();
+    await expect(page.locator(".sm-undo")).toHaveCount(0);
+    await expect(evidence(page, LEAD).getByRole("button", { name: "Add a source" })).toBeFocused();
     release();
     await expect(question(page, LEAD).getByRole("button", { name: "No" })).toBeEnabled();
     await question(page, LEAD).getByRole("button", { name: "No" }).click();

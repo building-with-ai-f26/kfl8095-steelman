@@ -1189,6 +1189,23 @@ M1-10. A version's ⋯ menu offers what the reader's role allows, from the share
 | Accessibility | Axe at desktop and 375 px with the author's menu open, the edit form showing its warning, and the Undo bar: no violations, no sideways overflow |
 | Not checked | Safari and Firefox; a screen reader. The bar's ten seconds don't pause while the cursor is on Undo. A phone that ends a background tab without `pagehide` loses a held delete. The menu doesn't know when a board is closed (nothing closes one in M1), so it would offer what the service then refuses. "Argument deleted." is decided from the wordings on screen, so a wording the reader added offline and that hasn't come back yet isn't counted. Opening Suggest or another Edit while editing drops the edit without a word. Undo after removing a source isn't part of this item: Remove still asks for a second click on an assessed wording. The card shows the reader's own edit as revision n + 1 until it's back. If someone changes the wording's sources before it arrives, the service saves the edit as n + 2: the card shows it from the next poll, and an assessment the author makes in between is refused as stale ("This wording changed; take another look.") |
 
+## November 15 — Undo for removing a source, and a dropped answer (C-01, C-03, B-03)
+
+Not a backlog item: the builder asked for it after M1-10 and chose, of three ways offered, that Undo replaces Remove's second click, as Gmail and GitHub use Undo instead of asking first (from memory). Remove now takes the source off at once and holds the removal in the browser for ten seconds with the same Undo bar as a deleted wording, under the wording's row; it's sent after the ten seconds, or at once if the tab closes. On an assessed wording the bar says "Source removed. The credibility score resets."
+
+| Check | Observed result |
+| --- | --- |
+| Existing tests changed (the builder, Nov 15) | Three tests in `app/e2e/card-details.spec.ts`, each marked with a comment: the second-click test became "Remove takes the source off this wording at once, with Undo…"; "Remove while the form is open" now expects the cursor on Undo, not Add a source; "Yes and No wait" now holds them through the ten seconds as well as while the removal is on its way. All three failed before the change, as did the two new tests |
+| Remove | The source leaves the card and its count at once; the cursor goes to Undo; the status line says "Source removed. The credibility score resets. Undo is available for ten seconds." Nothing is sent for nine seconds; then one request, and with the next poll the meter is Unreviewed. On an unassessed wording the bar says "Source removed." |
+| Undo | At nine seconds: the source is back, the cursor on its row ("Restored."), nothing sent then or later, still there after a reload |
+| Closing the tab | Within the ten seconds, the removal is sent at once (`keepalive`), and the service has the source off the wording |
+| Yes and No | Off from Remove until the removal is back, through the ten seconds and while it's on its way |
+| Sent and not yet back | After the ten seconds, while the removal is on its way, the source stays off the card (found by the second reader: it came back until the next poll), and when the bar leaves with the cursor on it, the cursor goes to the card's Add a source |
+| A dropped answer (found while testing) | "Undo withdraws it" (M1-9) failed twice in full runs: when a new answer replaced one still being sent, the queue dropped the new one once the first was back, by its place in the line, so Undo was never sent and No stayed pressed. A new browser test holds the first answer's request and failed every time; the queue now takes off what was sent by the action itself. Both tests then passed five times over |
+| Second reader | A fresh agent reviewed it: nothing blocking. Fixed: the source coming back while the removal was on its way; where the cursor goes when the bar leaves; C-01 and C-03 kept their earlier evidence. Left: Undo after closing the card puts the cursor on the row, not the source |
+| `npm run check` | Types, lint, all 550 unit, API, and simulation tests, and all 134 browser tests pass on Node 22, run alone. (A run made while another browser run shared its results folder failed three tests on missing trace files, not counted) |
+| Not checked | Safari and Firefox; a screen reader. As for a deleted wording, the ten seconds don't pause while the cursor is on Undo |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

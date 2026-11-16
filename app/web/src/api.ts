@@ -84,7 +84,7 @@ export async function setAccess(board: string, access: Access): Promise<Answer> 
 
 /**
  * Sends one queued action. Every write says what the result should be, so sending one twice is safe.
- * @param keepalive For a delete sent as the tab closes, which has to arrive after the page is gone.
+ * @param keepalive For a removal sent as the tab closes, which has to arrive after the page is gone.
  */
 export async function send(board: string, action: QueuedAction, keepalive = false): Promise<Answer> {
   const at = `boards/${board}`;
@@ -109,7 +109,7 @@ export async function send(board: string, action: QueuedAction, keepalive = fals
       case "editSource":
         return call("PUT", `${at}/sources/${action.sourceId}`, { name: action.name, locator: action.locator, finding: action.finding, backsUp: action.backsUp, limits: action.limits });
       case "uncite":
-        return call("DELETE", `${at}/versions/${action.versionId}/sources/${action.sourceId}`);
+        return call("DELETE", `${at}/versions/${action.versionId}/sources/${action.sourceId}`, undefined, keepalive);
     }
   })();
   if (response.status === 404) return { status: "not_found" };
