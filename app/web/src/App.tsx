@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Account } from "./Account.tsx";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import type { Zoom } from "./board/Board.tsx";
@@ -45,12 +46,25 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
                   <span>New steelman</span>
                 </a>
               ) : null}
+              {signedIn ? (
+                <a className="sm-me cursor-interaction" href="/account" aria-label="Your account" data-tooltip="Your account" aria-current={link.kind === "account" ? "page" : undefined}>
+                  <Icon name="user" size={15} />
+                </a>
+              ) : null}
               <TestUserSwitch />
             </div>
           </header>
         )}
       >
-        {link.kind === "board" ? <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} /> : link.kind === "unknown" ? <NotFound /> : <NewSteelman />}
+        {link.kind === "board" ? (
+          <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
+        ) : link.kind === "account" ? (
+          <Account />
+        ) : link.kind === "unknown" ? (
+          <NotFound />
+        ) : (
+          <NewSteelman />
+        )}
       </SignedIn>
       <AnalyticsNotice />
     </div>

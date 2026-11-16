@@ -1,8 +1,9 @@
 import Fastify from "fastify";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { accessInput, assessmentInput, can, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, sourceInput, voteInput } from "@steelman/shared";
+import { accessInput, assessmentInput, can, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, sourceInput, voteInput } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
+import { accountSummary, deleteAccount, exportData } from "./account.ts";
 import { createBoard } from "./boards.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
@@ -143,6 +144,28 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     }));
   }
 
+  // Your account (M-07): who you are, Download your data, and Delete account.
+  app.get("/api/account", async (request, reply) => {
+    const summary = request.person === null ? null : await accountSummary(db, request.person);
+    return summary ?? reply.code(401).send({ status: "refused", reason: "signed_out" });
+  });
+
+  app.get("/api/account/data", async (request, reply) => {
+    const data = request.person === null ? null : await exportData(db, clock, request.person);
+    if (!data) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return reply.header("content-disposition", 'attachment; filename="steelman-data.json"').send(data);
+  });
+
+  app.post("/api/account/delete", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = deleteAccountInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    const outcome = await deleteAccount(db, clock, request.person, body.data.username);
+    if (outcome === "wrong_username") return reply.code(400).send({ status: "refused", reason: "wrong_username" });
+    if (outcome === "not_found") return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return { status: "done" };
+  });
+
   // A new board (F-01). Anyone signed in may make one; they become its Owner.
   app.post("/api/boards", async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
@@ -157,7 +180,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
    * member (Q7).
    */
   async function letIn(boardId: string, person: string | null, reply: FastifyReply): Promise<Role | null> {
-    const board = await db.selectFrom("board").select("closed_at").where("id", "=", boardId).executeTakeFirst();
+    const board = await db.selectFrom("board").select("closed_at").where("id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst();
     if (!board) {
       void reply.code(404).send({ reason: "not_found" });
       return null;

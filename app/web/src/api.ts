@@ -117,3 +117,46 @@ export async function send(board: string, action: QueuedAction, keepalive = fals
   if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
   return (await response.json()) as Answer;
 }
+
+/** Your account (M-07): who you are and how you sign in. */
+export interface MyAccount {
+  username: string | null;
+  email: string | null;
+  signIn: string[];
+}
+
+export async function readMyAccount(): Promise<MyAccount | "signed_out"> {
+  const response = await call("GET", "account");
+  if (response.status === 401) return "signed_out";
+  if (!response.ok) throw new Error(`Reading your account failed: ${response.status}`);
+  return (await response.json()) as MyAccount;
+}
+
+/** Download your data: saves steelman-data.json. Through fetch, so a tab acting as a test account downloads that account's. */
+export async function downloadMyData(): Promise<boolean> {
+  try {
+    const response = await call("GET", "account/data");
+    if (!response.ok) return false;
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(await response.blob());
+    link.download = "steelman-data.json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 2_000);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Delete account, confirmed by the username they typed. */
+export async function deleteMyAccount(username: string): Promise<"done" | "wrong_username" | "failed"> {
+  try {
+    const response = await call("POST", "account/delete", { username });
+    if (response.ok) return "done";
+    return response.status === 400 ? "wrong_username" : "failed";
+  } catch {
+    return "failed";
+  }
+}

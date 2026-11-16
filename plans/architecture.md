@@ -188,7 +188,7 @@ How undo works for the hard cases (T3, but the log is shaped for it now):
 
 ### Account deletion and anonymization
 
-One sentinel account, **`deleted_account`**, exists from the start. Deleting an account runs as one job, in one transaction:
+One sentinel account, **`deleted_account`**, is added by the first deletion (its name is reserved from the start, so nobody can take it first). Deleting an account runs as one job, in one transaction:
 
 | Data | What happens |
 |---|---|
@@ -197,8 +197,8 @@ One sentinel account, **`deleted_account`**, exists from the start. Deleting an 
 | Comments | Deleted. A comment with replies leaves "Comment deleted" in place so the thread still reads (the prototype's behavior) |
 | Arguments, versions, revisions, sources | **Kept**, with the author changed to `deleted_account` |
 | Change log rows they made | Actor changed to `deleted_account`; any `before` / `after` fields that hold their account ID are scrubbed |
-| Username | Released; whether after a waiting period is open (Q6) |
-| Board ownership | A board must keep an owner. If they own a board with other members, ownership passes to its longest-standing editor, else contributor. A board nobody else can open is deleted with the account (Q11) |
+| Username | Held for 30 days, so nobody can take it straight away, then released by the daily scheduled call (Q6) |
+| Board ownership | A board must keep an owner. If they own a board, ownership passes to its longest-standing editor, else contributor (a community admin first, once communities exist). With neither (only voters, or nobody else), the board is deleted with the account (Q11; the builder, Nov 15). A deleted board keeps its rows with every text erased, like a deleted wording, so the change log stays append-only; its link answers that it doesn't exist |
 
 Because all of their credited content points to the one sentinel, nobody can link two of a deleted person's contributions together afterwards.
 
@@ -574,7 +574,7 @@ The prototype already has the rule book: a map from every action to the least ro
 
 **Export** (Download your data) runs straight away in one request: account details, sign-in methods, votes and assessments, everything the person wrote (wording, context, option, date), their comments and reports. It's the same JSON shape the prototype already produces.
 
-**Deletion** runs in one transaction, as step 2 describes: erase email and sign-in methods; delete votes, assessments, comments, reports, and sessions; credit arguments, wordings, and sources to `deleted_account`; scrub the change log; hand over or delete boards (Q11). Then, outside the transaction, ask PostHog to delete the person's analytics.
+**Deletion** runs in one transaction, as step 2 describes: erase email and sign-in methods; delete votes, assessments, comments, reports, and sessions; credit arguments, wordings, and sources to `deleted_account`; scrub the change log; hand over or delete boards (Q11). PostHog isn't asked to delete anything while analytics are anonymous: nothing links a person's analytics to their account (the builder, Nov 15). If people are ever identified in PostHog, deletion asks PostHog to delete them, outside the transaction.
 
 **Two places a deletion can't reach at once, and the privacy page must say so:**
 - **Backups:** deleted data stays in database backups until they expire: 14 days for automated backups, 8 weeks for the weekly copy. Restoring a backup re-runs every deletion made since it was taken, from a list of deleted account IDs kept for that purpose.
@@ -590,7 +590,7 @@ The prototype already has the rule book: a map from every action to the least ro
 | The change log (structural and moderation actions only; it holds no votes) | For the life of the board (it's the audit trail and the undo history) |
 | Database backups / weekly copies | 14 days / 8 weeks |
 | A deleted account's username | Unavailable to others for 30 days, then released |
-| Analytics in PostHog | PostHog's plan retention; deleted with the account |
+| Analytics in PostHog | PostHog's plan retention. Anonymous, so not tied to an account or deleted with it (the builder, Nov 15) |
 
 ### What the privacy page will need to say once accounts exist
 

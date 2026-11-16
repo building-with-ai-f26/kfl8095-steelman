@@ -59,7 +59,8 @@ export async function writeToBoard<Loaded>(db: Db, boardId: string, person: stri
       // 1. Lock.
       const taken = await sql<{ seq: string }>`select take_change_number(${boardId}) as seq`.execute(trx);
       const seq = Number(taken.rows[0]!.seq);
-      const board = await trx.selectFrom("board").select("closed_at").where("id", "=", boardId).executeTakeFirstOrThrow();
+      const board = await trx.selectFrom("board").select(["closed_at", "deleted_at"]).where("id", "=", boardId).executeTakeFirstOrThrow();
+      if (board.deleted_at) throw new RollBack({ status: "not_found" });
 
       // 2. Load.
       const loaded = await steps.load(trx);

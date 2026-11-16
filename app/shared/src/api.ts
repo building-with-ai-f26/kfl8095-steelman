@@ -40,6 +40,9 @@ export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.s
 export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
 
+/** Delete account (M-07): the username they typed to confirm. */
+export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
+
 /**
  * A new board (F-01): its question and two to four options, each named
  * differently, ignoring capitals. The service chooses the board's ID: it is
