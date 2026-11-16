@@ -27,7 +27,7 @@ import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
 import { columns, importanceShown, isLive, isLiveVersion, short, versionMenu } from "./display.ts";
 import { BoardSession } from "./session.ts";
-import type { HeldDelete, SessionState } from "./session.ts";
+import type { Held, SessionState } from "./session.ts";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -121,23 +121,26 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
       const after = last ? (rowsHere[rowsHere.indexOf(version.argumentId) - 1] ?? null) : version.argumentId;
       if (openVersion === version.id) setExpanded(null);
       if (last && open === version.argumentId) setOpen(null);
-      session.deleteVersion({ versionId: version.id, label: last ? "Argument deleted." : "Version deleted.", optionId, after });
+      session.hold({ action: { kind: "delete", versionId: version.id }, label: last ? "Argument deleted." : "Version deleted.", optionId, after });
       setFocusTo(".sm-undo button");
     },
   };
   // When the Undo bar leaves after its ten seconds with the cursor on it, the cursor goes to the row it sat under, or the column's Add an argument.
-  const lastHeld = useRef<HeldDelete | null>(null);
+  const lastHeld = useRef<Held | null>(null);
   useLayoutEffect(() => {
     const was = lastHeld.current;
     lastHeld.current = state.undo;
     if (!was || state.undo || (document.activeElement && document.activeElement !== document.body)) return;
+    // A source removal's cursor stays in its card's evidence, on Add a source.
+    const evidence = was.action.kind === "uncite" ? document.querySelector<HTMLElement>(`[data-card="${CSS.escape(was.action.versionId)}"] [data-key="add-source"]`) : null;
     const row = was.after ? document.querySelector<HTMLElement>(`[data-node="${CSS.escape(was.after)}"] .sm-claim-button`) : null;
-    (row ?? document.querySelector<HTMLElement>(`#sm-col-${CSS.escape(was.optionId)} .sm-add-idea`))?.focus();
+    (evidence ?? row ?? document.querySelector<HTMLElement>(`#sm-col-${CSS.escape(was.optionId)} .sm-add-idea`))?.focus();
   }, [state.undo]);
   const undo = () => {
     const held = state.undo;
-    session.undoDelete();
-    if (held) setFocusTo(cardControl(held.versionId, "claim"));
+    session.undo();
+    if (held?.action.kind === "delete") setFocusTo(cardControl(held.action.versionId, "claim"));
+    if (held?.action.kind === "uncite") setFocusTo(`[data-card="${CSS.escape(held.action.versionId)}"] [data-key="src-${CSS.escape(held.action.sourceId)}"]`);
   };
 
   const opening: Opening = {
@@ -149,6 +152,13 @@ function BoardView({ boardId, linked, view, state, session }: BoardViewProps) {
       role: state.role,
       mine: state.mine,
       stale: state.stale,
+      removing: state.undo?.action.kind === "uncite" ? state.undo.action : null,
+      removeSource(version, sourceId, assessed) {
+        const optionId = view.rows.arguments[version.argumentId]!.optionId;
+        const label = assessed ? "Source removed. The credibility score resets." : "Source removed.";
+        session.hold({ action: { kind: "uncite", versionId: version.id, sourceId }, label, optionId, after: version.argumentId });
+        setFocusTo(".sm-undo button");
+      },
       act: (action) => session.act(action),
       announce: (text) => session.announce(text),
     },
@@ -522,7 +532,7 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
 }
 
 /** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
-function UndoBar({ held, onUndo }: { held: HeldDelete; onUndo(): void }) {
+function UndoBar({ held, onUndo }: { held: Held; onUndo(): void }) {
   return (
     <div className="sm-undo">
       <span>{held.label}</span>

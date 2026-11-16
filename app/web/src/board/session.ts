@@ -19,10 +19,14 @@ const BACK_ONLINE_MS = 4_000;
 /** How long a delete waits in the browser, so Undo can take it back without anything sent (plans/architecture.md §2). */
 export const UNDO_MS = 10_000;
 
-/** A delete waiting for its ten seconds, and where its Undo bar goes: after this row, or first in the column when null. */
-export interface HeldDelete {
-  versionId: string;
-  label: "Version deleted." | "Argument deleted.";
+/**
+ * A removal waiting for its ten seconds: a wording deleted, or a source taken
+ * off a wording. Its Undo bar says what happened and goes after this row, or
+ * first in the column when null.
+ */
+export interface Held {
+  action: Extract<QueuedAction, { kind: "delete" } | { kind: "uncite" }>;
+  label: string;
   optionId: string;
   after: string | null;
 }
@@ -50,7 +54,7 @@ export interface SessionState {
   /** The reader's own deletions, kept off the screen (leaveOut): held for Undo, on their way, or back. */
   leftOut: readonly string[];
   /** The delete Undo can still take back. */
-  undo: HeldDelete | null;
+  undo: Held | null;
 }
 
 export class BoardSession {
@@ -163,31 +167,34 @@ export class BoardSession {
   }
 
   /**
-   * Deletes the reader's own wording (A-06). It leaves the screen at once and
-   * is held here for ten seconds, so Undo sends nothing; then it's sent. One
-   * is held at a time: a second delete sends the first at once.
+   * Deletes the reader's own wording (A-06) or takes a source off a wording
+   * (C-01). It leaves the screen at once and is held here for ten seconds, so
+   * Undo sends nothing; then it's sent. One is held at a time: another sends
+   * the first at once. A held source removal is drawn by the card (Evidence).
    */
-  deleteVersion(held: HeldDelete): void {
+  hold(held: Held): void {
     this.sendHeld();
-    this.set({ leftOut: [...this.state.leftOut, held.versionId], undo: held, status: `${held.label} Undo is available for ten seconds.` });
+    const { action } = held;
+    this.set({ undo: held, status: `${held.label} Undo is available for ten seconds.`, ...(action.kind === "delete" ? { leftOut: [...this.state.leftOut, action.versionId] } : {}) });
     this.undoTimer = window.setTimeout(() => this.sendHeld(), UNDO_MS);
   }
 
-  /** Undo: the held delete is dropped, unsent, and the wording comes back where it was. */
-  undoDelete(): void {
+  /** Undo: the held removal is dropped, unsent, and what it removed comes back where it was. */
+  undo(): void {
     const held = this.state.undo;
     if (!held) return;
     window.clearTimeout(this.undoTimer);
-    this.set({ undo: null, leftOut: this.state.leftOut.filter((id) => id !== held.versionId), status: "Restored." });
+    const { action } = held;
+    this.set({ undo: null, status: "Restored.", ...(action.kind === "delete" ? { leftOut: this.state.leftOut.filter((id) => id !== action.versionId) } : {}) });
   }
 
-  /** Sends the held delete now: its ten seconds are up, another delete was made, or the board is closing. */
+  /** Sends the held removal now: its ten seconds are up, another removal was made, or the board is closing. */
   private sendHeld(closing = false): void {
     const held = this.state.undo;
     if (!held) return;
     window.clearTimeout(this.undoTimer);
     this.set({ undo: null });
-    const action: QueuedAction = { kind: "delete", versionId: held.versionId };
+    const { action } = held;
     // A closing tab can't wait for the queue: the request goes now, and finishes after the page is gone.
     if (closing) void send(this.board, action, true).catch(() => undefined);
     else this.act(action);
@@ -263,7 +270,8 @@ export class BoardSession {
           this.set({ offline: true });
           return;
         }
-        this.queue = this.queue.slice(1);
+        // By this action, not by place: a newer choice made while it was on its way may have replaced it in the queue.
+        this.queue = this.queue.filter((queued) => queued !== action);
         if (answer.status === "done" || answer.status === "already_done") this.sent.push(action);
         else {
           this.announce(refusalNote(answer));

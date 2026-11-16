@@ -61,7 +61,11 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
   const reveal = `sm-reveal-${version.id}`;
   const edited = editShown(version, opening.evidence.mine);
   const assessment = assessmentShown(edited, opening.evidence.mine);
-  const shown: VersionRow = { ...edited, yes: assessment.yes, no: assessment.no, myAssessment: assessment.mine };
+  // A source the reader removed is off the card already: held for Undo, or on its way and not yet back.
+  const removed = new Set(opening.evidence.mine.flatMap((action) => (action.kind === "uncite" && action.versionId === version.id ? [action.sourceId] : [])));
+  if (opening.evidence.removing?.versionId === version.id) removed.add(opening.evidence.removing.sourceId);
+  const sourceIds = removed.size > 0 ? edited.sourceIds.filter((id) => !removed.has(id)) : edited.sourceIds;
+  const shown: VersionRow = { ...edited, sourceIds, yes: assessment.yes, no: assessment.no, myAssessment: assessment.mine };
   if (opening.menu.editing === version.id) return <EditCard version={shown} className={face.trim()} menu={opening.menu} />;
   const choose = (item: MenuItem) => {
     setMenu(false);
@@ -98,9 +102,9 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
         <span className="sm-cred-group">
           <Meter yes={shown.yes} no={shown.no} />
         </span>
-        {version.sourceIds.length > 0 ? (
+        {shown.sourceIds.length > 0 ? (
           <div className="sm-card-tools">
-            <SourceCount count={version.sourceIds.length} />
+            <SourceCount count={shown.sourceIds.length} />
           </div>
         ) : null}
       </div>
