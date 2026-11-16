@@ -58,7 +58,11 @@ export const test = base.extend<{ site: SignInSite }>({
     // Writes must come from the site's own origin, so the port is chosen before the service is built.
     const port = await freePort();
     const origin = `http://127.0.0.1:${port}`;
-    const google = await startFakeGoogle({ now: () => clock.now() });
+    // The fake Google signs its tokens with the real time, not the test clock: Better Auth checks a token's
+    // expiry against the real clock, and the service runs in this process, where that clock isn't faked (the API
+    // tests fake it with vi.useFakeTimers). With the test clock, every token expired once the real day passed
+    // the test clock's hour plus one (13:00 UTC, November 16).
+    const google = await startFakeGoogle({ now: () => new Date() });
     const outbox: { to: string; code: string }[] = [];
     const app = buildApp({
       clock,
