@@ -245,7 +245,7 @@ Because the answer is the rows' current state, not a list of events, the browser
 
 **The pill and Update happen in the browser.** "3 changes" is the fewest moves from what's on screen to the newest published order, plus the marked structural changes. This is the prototype's `staleCount()`, and it stays in the browser. **Update** applies the order and structural changes the browser is already holding, keeping the row you're reading in place. Reloading fetches a fresh snapshot. The server never tracks what any one reader is looking at. That keeps it simple, and it's why a reader's view can't be broken by the server.
 
-**Strongest case** follows the reader's current order, so it always agrees with the board they're looking at, and changes when they press Update.
+**Strongest case** follows the newest shared order the reader has been sent, not the order on their screen: the board holds still until Update, the case doesn't wait. While it's showing, the pill offers no Update. (Changed with the builder, Nov 15: the first draft had it follow the board on screen, which disagreed with M1-11's test.)
 
 ### How the browser asks: polling first
 

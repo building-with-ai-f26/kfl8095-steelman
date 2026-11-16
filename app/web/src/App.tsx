@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
+import type { Zoom } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
 import { readLink } from "./links.ts";
 import { ReaderContext } from "./reader.ts";
@@ -22,16 +23,22 @@ import type { TestUser } from "./testUser.ts";
 export function App({ path = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
   const link = readLink(path);
   const board = link.kind === "board" ? link.board : undefined;
+  /** The board's view (E-01): the whole board, or each option's strongest case. */
+  const [zoom, setZoom] = useState<Zoom>("read");
+  /** The switch shows only while a board is on screen, not on its not-found or no-access page. */
+  const [boardShown, setBoardShown] = useState(false);
   return (
-    <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom="read">
+    <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined}>
       <SignedIn
         header={(signedIn) => (
           <header className="sm-site">
             <div className="sm-wordmark">
               <Logo />
-              steelman.
+              {/* On a phone the prototype shows only the logo while a board is open, leaving room for the view switch. */}
+              <span className="sm-wordmark-text">steelman.</span>
             </div>
             <div className="sm-site-tools">
+              {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={setZoom} /> : null}
               {signedIn && board ? (
                 <a className="sm-share-button cursor-interaction" href="/" aria-label="New steelman">
                   <Icon name="plus" size={14} />
@@ -43,9 +50,25 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
           </header>
         )}
       >
-        {link.kind === "board" ? <Board boardId={link.board} version={link.version} /> : link.kind === "unknown" ? <NotFound /> : <NewSteelman />}
+        {link.kind === "board" ? <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} /> : link.kind === "unknown" ? <NotFound /> : <NewSteelman />}
       </SignedIn>
       <AnalyticsNotice />
+    </div>
+  );
+}
+
+/** Board / Strongest case, as the prototype's switch: two pressed buttons, the label hidden on a phone. */
+function ViewSwitch({ zoom, onZoom }: { zoom: Zoom; onZoom(zoom: Zoom): void }) {
+  const choice = (level: Zoom, icon: "layout-grid" | "award", label: string) => (
+    <button type="button" className="cursor-interaction" aria-pressed={zoom === level} aria-label={label} data-tooltip={label} onClick={() => onZoom(level)}>
+      <Icon name={icon} />
+      <span>{label}</span>
+    </button>
+  );
+  return (
+    <div className="sm-zoom" role="group" aria-label="View">
+      {choice("read", "layout-grid", "Board")}
+      {choice("case", "award", "Strongest case")}
     </div>
   );
 }

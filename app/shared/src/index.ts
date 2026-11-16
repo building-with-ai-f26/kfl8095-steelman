@@ -48,5 +48,7 @@ export type {
 } from "./api.ts";
 export { leaveOut, openView, pillCount, pressUpdate, receive } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
+export { CASE_SIZE, strongestCase } from "./strongest.ts";
+export type { CaseItem, OptionCase } from "./strongest.ts";
 export { enqueue } from "./queue.ts";
 export type { QueuedAction } from "./queue.ts";
