@@ -3,15 +3,19 @@
 // no choice has been made (analytics.ts).
 
 import { useEffect, useState } from "react";
-import { chooseAnalytics, startAnalytics } from "./analytics.ts";
+import { CHOSEN, chooseAnalytics, startAnalytics } from "./analytics.ts";
 
 export function AnalyticsNotice() {
   const [asking, setAsking] = useState(false);
   useEffect(() => {
     let live = true;
     void startAnalytics().then((decision) => live && setAsking(decision === "ask"));
+    // Chosen on the privacy page: nothing left to ask.
+    const chosen = () => setAsking(false);
+    window.addEventListener(CHOSEN, chosen);
     return () => {
       live = false;
+      window.removeEventListener(CHOSEN, chosen);
     };
   }, []);
   if (!asking) return null;
@@ -22,7 +26,9 @@ export function AnalyticsNotice() {
   };
   return (
     <div className="sm-analytics-notice" role="region" aria-label="Analytics">
-      <p>Steelman records anonymous usage and screen replays to improve it. Typed text is hidden.</p>
+      <p>
+        Steelman records anonymous usage and screen replays to improve it. Typed text is hidden. <a href="/privacy">Privacy</a>
+      </p>
       <div className="sm-analytics-choices">
         <button type="button" className="sm-analytics-off cursor-interaction" onClick={() => choose(false)}>
           Turn off

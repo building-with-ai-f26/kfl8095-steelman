@@ -40,12 +40,13 @@ export function Account() {
             Your account
           </h1>
           <div className="sm-rgroup">
+            {/* ph-no-capture: kept out of analytics and screen replays (M-08). */}
             <Row label="Username">
-              <span className="sm-rrow-value">{account.username}</span>
+              <span className="sm-rrow-value ph-no-capture">{account.username}</span>
             </Row>
             {account.email && (
               <Row label="Email">
-                <span className="sm-rrow-value">{account.email}</span>
+                <span className="sm-rrow-value ph-no-capture">{account.email}</span>
               </Row>
             )}
           </div>
@@ -64,6 +65,13 @@ export function Account() {
                 <button type="button" className="sm-button cursor-interaction" onClick={() => void download()}>
                   Download
                 </button>
+              </span>
+            </Row>
+            <Row label="Privacy notice">
+              <span className="sm-rrow-control">
+                <a className="sm-button cursor-interaction" href="/privacy">
+                  Read
+                </a>
               </span>
             </Row>
           </div>
