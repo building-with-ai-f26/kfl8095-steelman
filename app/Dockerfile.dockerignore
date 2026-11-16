@@ -1,0 +1,16 @@
+# For app/Dockerfile, whose build starts at the repository's root: only the
+# app and the prototype's look go in; never installed or built files (the
+# build makes its own), test output, or anything secret.
+*
+!app
+!docs/prototype/source
+!docs/design
+**/node_modules
+**/dist
+app/e2e/results
+app/e2e/report
+app/reports
+app/.stryker-tmp
+app/server/test/simulation/.planted
+**/.env
+**/.env.*

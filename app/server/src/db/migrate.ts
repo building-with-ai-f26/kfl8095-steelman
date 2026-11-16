@@ -18,7 +18,8 @@ import { Migrator } from "kysely/migration";
 import type { Migration, MigrationProvider } from "kysely/migration";
 import pg from "pg";
 
-const MIGRATIONS_DIRECTORY = fileURLToPath(new URL("../../migrations/", import.meta.url));
+/** server/migrations, or where the container keeps them (MIGRATIONS_DIRECTORY): the bundled service runs from elsewhere. */
+const MIGRATIONS_DIRECTORY = process.env.MIGRATIONS_DIRECTORY || fileURLToPath(new URL("../../migrations/", import.meta.url));
 
 /** Kysely keeps its record of what has run in two small tables. They live in this schema, apart from the product's own. */
 const BOOKKEEPING_SCHEMA = "migrations";
