@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Account } from "./Account.tsx";
+import { Hints } from "./Hints.tsx";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import type { Zoom } from "./board/Board.tsx";
@@ -38,6 +39,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
   );
   return (
     <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined}>
+      <Hints />
       {link.kind === "privacy" ? (
         // Readable by anyone, signed in or not (M-07).
         <>
