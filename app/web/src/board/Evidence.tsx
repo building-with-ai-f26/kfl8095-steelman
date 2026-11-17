@@ -29,7 +29,8 @@ import type { QueuedAction, Role, SourceRow, VersionRow } from "@steelman/shared
 import { Icon } from "../icons.tsx";
 import { useReader } from "../reader.ts";
 import { browserIds } from "../system.ts";
-import { assessmentShown, isLiveVersion } from "./display.ts";
+import { assessmentShown, blockedProps, isLiveVersion, whyNot } from "./display.ts";
+import type { Blocked } from "./display.ts";
 
 /** What the evidence needs from the board. */
 export interface EvidenceBoard {
@@ -151,6 +152,9 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   };
   /** "Yes" needs evidence someone can open. */
   const canBackUp = cited.some((source) => !source.unavailable);
+  // What the reader's role can't do here: faded, saying why (display.ts). A role reason comes before any other.
+  const voteBlocked = whyNot(reader, board.role, "vote");
+  const addBlocked = whyNot(reader, board.role, "add");
   /**
    * The reader's own change to this wording's sources, held for Undo or still
    * on its way. It makes a new revision, so an assessment now would judge the
@@ -176,6 +180,7 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               open={opened[source.id] ?? false}
               onToggle={(open) => setOpened((all) => (all[source.id] === open ? all : { ...all, [source.id]: open }))}
               mine={source.addedBy === reader}
+              editBlocked={addBlocked}
               mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId)}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
@@ -188,7 +193,7 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
       {form ? (
         <SourceForm editing={form.editing !== null} draft={draft} invalid={invalid} problem={problem} warning={warning} onChange={setDraft} onCancel={closeForm} onSave={save} />
       ) : (
-        <button type="button" className="sm-text-button sm-add-source cursor-interaction" data-key="add-source" onClick={() => openForm(null)}>
+        <button type="button" className="sm-text-button sm-add-source cursor-interaction" data-key="add-source" {...blockedProps(addBlocked)} onClick={() => addBlocked || openForm(null)}>
           <Icon name="plus" />
           Add a source
         </button>
@@ -202,11 +207,11 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
         ) : null}
         <h4 id={`${version.id}-assess`}>Does the evidence back this wording?</h4>
         <div className="sm-assess-actions" role="group" aria-labelledby={`${version.id}-assess`}>
-          <button type="button" className="sm-button cursor-interaction" data-key="assess-yes" aria-pressed={version.myAssessment === true} disabled={!canBackUp || sourcesChanging} onClick={() => assess(true)}>
+          <button type="button" className="sm-button cursor-interaction" data-key="assess-yes" aria-pressed={version.myAssessment === true} disabled={!voteBlocked && (!canBackUp || sourcesChanging)} {...blockedProps(voteBlocked)} onClick={() => voteBlocked || assess(true)}>
             <Icon name="check" />
             Yes
           </button>
-          <button type="button" className="sm-button cursor-interaction" data-key="assess-no" aria-pressed={version.myAssessment === false} disabled={sourcesChanging} onClick={() => assess(false)}>
+          <button type="button" className="sm-button cursor-interaction" data-key="assess-no" aria-pressed={version.myAssessment === false} disabled={!voteBlocked && sourcesChanging} {...blockedProps(voteBlocked)} onClick={() => voteBlocked || assess(false)}>
             <Icon name="x" />
             No
           </button>
@@ -226,12 +231,14 @@ interface SourceProps {
   open: boolean;
   onToggle(open: boolean): void;
   mine: boolean;
+  /** Set when the reader added it but their role can no longer write. */
+  editBlocked: Blocked | null;
   mayRemove: boolean;
   onEdit(): void;
   onRemove(): void;
 }
 
-function Source({ source, open, onToggle, mine, mayRemove, onEdit, onRemove }: SourceProps) {
+function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, onRemove }: SourceProps) {
   return (
     // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
     <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
@@ -257,7 +264,7 @@ function Source({ source, open, onToggle, mine, mayRemove, onEdit, onRemove }: S
         {mine || mayRemove ? (
           <div className="sm-source-actions">
             {mine ? (
-              <button type="button" className="sm-link-button cursor-interaction" onClick={onEdit}>
+              <button type="button" className="sm-link-button cursor-interaction" {...blockedProps(editBlocked)} onClick={() => editBlocked || onEdit()}>
                 Edit
               </button>
             ) : null}

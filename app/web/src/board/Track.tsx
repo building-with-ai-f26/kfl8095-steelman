@@ -9,7 +9,8 @@ import type { Writer } from "./Board.tsx";
 import { Card } from "./Card.tsx";
 import type { Opening } from "./Card.tsx";
 import { WordingSlot } from "./Forms.tsx";
-import { articulationShown, isLiveVersion, short } from "./display.ts";
+import { articulationShown, isLiveVersion, short, whyNot } from "./display.ts";
+import { useReader } from "../reader.ts";
 import type { BoardSession, SessionState } from "./session.ts";
 import { VoteControl } from "./Vote.tsx";
 
@@ -60,6 +61,7 @@ interface TrackProps {
 }
 
 export function Track({ versions, argumentId, writer, state, session, opening, onAt }: TrackProps) {
+  const reader = useReader();
   const single = versions.length < 2;
   const key = `w:${argumentId}`;
   return (
@@ -90,6 +92,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
                   forward="Better articulated"
                   back="Less well articulated"
                   onVote={(value) => session.act({ kind: "articulation", versionId: version.id, value })}
+                  blocked={whyNot(reader, state.role, "vote")}
                 />
               )}
             </div>
@@ -97,14 +100,17 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
           </Fragment>
         );
       })}
-      <WordingSlot
-        open={writer.writing?.kind === "wording" && writer.writing.argumentId === argumentId}
-        draft={writer.draft(key)}
-        onOpen={() => writer.start({ kind: "wording", argumentId })}
-        onChange={(draft) => writer.change(key, draft)}
-        onClose={writer.close}
-        onAdd={(draft) => writer.addWording(argumentId, draft)}
-      />
+      {/* Someone who can't write isn't offered a new version at all, as in the prototype. */}
+      {whyNot(reader, state.role, "add") ? null : (
+        <WordingSlot
+          open={writer.writing?.kind === "wording" && writer.writing.argumentId === argumentId}
+          draft={writer.draft(key)}
+          onOpen={() => writer.start({ kind: "wording", argumentId })}
+          onChange={(draft) => writer.change(key, draft)}
+          onClose={writer.close}
+          onAdd={(draft) => writer.addWording(argumentId, draft)}
+        />
+      )}
     </div>
   );
 }

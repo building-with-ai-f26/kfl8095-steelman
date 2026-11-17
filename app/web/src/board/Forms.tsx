@@ -7,6 +7,8 @@ import { useEffect, useId, useRef } from "react";
 import type { ReactNode } from "react";
 import { LIMITS, contextInput, wordingInput } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
+import { blockedProps } from "./display.ts";
+import type { Blocked } from "./display.ts";
 
 export interface DraftText {
   wording: string;
@@ -132,7 +134,7 @@ export function WordingSlot({ open, draft, onOpen, onChange, onClose, onAdd }: S
 }
 
 /** The last row of a column: a new argument for this option. */
-export function ArgumentSlot({ optionName, open, draft, onOpen, onChange, onClose, onAdd }: SlotProps & { optionName: string }) {
+export function ArgumentSlot({ optionName, open, draft, onOpen, onChange, onClose, onAdd, blocked }: SlotProps & { optionName: string; blocked: Blocked | null }) {
   return (
     <div className="sm-new-idea">
       <span aria-hidden="true" />
@@ -151,7 +153,7 @@ export function ArgumentSlot({ optionName, open, draft, onOpen, onChange, onClos
           onAdd={onAdd}
         />
       ) : (
-        <button type="button" className="sm-add-card sm-add-idea cursor-interaction" aria-label={`Add an argument for ${optionName}`} onClick={onOpen}>
+        <button type="button" className="sm-add-card sm-add-idea cursor-interaction" aria-label={`Add an argument for ${optionName}`} {...blockedProps(blocked)} onClick={() => blocked || onOpen()}>
           <Icon name="plus" />
           <span>Add an argument</span>
         </button>
