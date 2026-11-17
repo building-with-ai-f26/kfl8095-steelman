@@ -7,6 +7,31 @@ import type { ArgumentRow, OptionRow, QueuedAction, ReaderView, Role, VersionRow
 
 export type Vote = 1 | -1 | null;
 
+/** A control the reader's role can't use: why, in the prototype's words (WHY), and the hidden note that says so to a screen reader. */
+export interface Blocked {
+  why: string;
+  noteId: string;
+}
+
+export const WHY = {
+  vote: { why: "Voting and assessing evidence need “can vote” access.", noteId: "sm-why-vote" },
+  add: { why: "Writing and editing need “can contribute” access.", noteId: "sm-why-write" },
+} as const satisfies Record<string, Blocked>;
+
+/** Why the reader's role can't vote (or assess) or write, or null when it can. A closed board or a missing role is the service's to refuse. */
+export function whyNot(reader: string | null, role: Role | null, action: "vote" | "add"): Blocked | null {
+  return can(reader, role, action, { closed: false }) === "not_allowed" ? WHY[action] : null;
+}
+
+/**
+ * What marks a control unavailable, as the prototype does (applyAccess): faded
+ * by `data-blocked`, its tooltip the reason, and still focusable, so the
+ * keyboard reaches it and a screen reader hears why. Its own click does nothing.
+ */
+export function blockedProps(blocked: Blocked | null) {
+  return blocked ? { "aria-disabled": true, "data-blocked": "", "data-tooltip": blocked.why, "aria-describedby": blocked.noteId } : {};
+}
+
 /** The options with a column, left to right. */
 export function columns(view: ReaderView): OptionRow[] {
   return Object.keys(view.shown.arguments)

@@ -26,7 +26,7 @@ import { StrongestCase } from "./StrongestCase.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { columns, importanceShown, isLive, isLiveVersion, short, versionMenu } from "./display.ts";
+import { WHY, columns, importanceShown, isLive, isLiveVersion, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 
@@ -293,6 +293,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
 
   return (
     <div className="sm-surface">
+      {/* What a faded control says to a screen reader: each names one of these by aria-describedby. */}
+      {Object.values(WHY).map(({ why, noteId }) => (
+        <span key={noteId} id={noteId} hidden>
+          {why}
+        </span>
+      ))}
       <div className="sm-scene">
         <section className="sm-head" aria-label="The question">
           <h1 ref={question} tabIndex={-1}>
@@ -499,6 +505,7 @@ interface ColumnProps {
 }
 
 function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session, onUndo }: ColumnProps) {
+  const reader = useReader();
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
   const held = state.undo?.optionId === option.id ? state.undo : null;
@@ -538,6 +545,7 @@ function Column({ option, first, on, gap, open, onToggle, writer, opening, view,
           onChange={(draft) => writer.change(key, draft)}
           onClose={writer.close}
           onAdd={(draft) => writer.addArgument(option.id, draft)}
+          blocked={whyNot(reader, state.role, "add")}
         />
       </section>
     </>
@@ -556,6 +564,7 @@ interface RowProps {
 }
 
 function Row({ argument, open, onToggle, writer, opening, view, state, session }: RowProps) {
+  const reader = useReader();
   const versionIds = view.shown.versions[argument.id] ?? [];
   const versions = versionIds.map((id) => view.rows.versions[id]).filter((version) => version !== undefined);
   const lead = versions[0];
@@ -575,6 +584,7 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
         forward="More important if true"
         back="Less important if true"
         onVote={(value) => session.act({ kind: "importance", argumentId: argument.id, value })}
+        blocked={whyNot(reader, state.role, "vote")}
       />
       <div className="sm-card-wrap">
         {open ? (
