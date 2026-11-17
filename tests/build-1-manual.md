@@ -1352,6 +1352,22 @@ Two things the builder found looking at the board.
 | In the browser | Locally: a new board with one argument shows no axis; the demo board's Share, as a contributor, shows both menus faded |
 | `npm run check` | On Node 22: types, lint, all 707 unit, API, database, and simulation tests, and all 158 browser tests pass; no saved screenshot changed |
 
+## November 17 — The hint box (M-04, H-03)
+
+Found while checking M2-2a in the browser: the app had never drawn its `data-tooltip` hints, so the faded controls' reasons, and every older hint (the vote arrows, Close, Fold back, …), showed nothing on hover. The prototype's hint box lives in its page shell (`docs/prototype/index.html`), which the app doesn't load. The builder chose to build it.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | GitHub's Primer ([Tooltip](https://primer.style/product/components/tooltip/)) and the W3C's tooltip pattern ([APG](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/)): a hint opens on hover after a short delay and on keyboard focus, never takes focus, and closes on Escape or when the pointer or focus leaves. The prototype's own does the same, with a 700 ms delay and the next opening at once after one closes. Its look is the prototype's: a small dark box above the control |
+| No new package | The prototype positions with Floating UI. Here it's a few lines in `web/src/Hints.tsx`: above the control, centred; below it if there's no room; never past the window's sides |
+| Tests first | `e2e/hints.spec.ts`, 7 tests, all seen to fail first: hover after a moment, above the control, gone on leaving; a Viewer's faded control shows its reason; keyboard focus at once, Escape hides it and keeps the focus; the next opens at once; scrolling; at 375 px it stays inside the window; axe passes with one open, and it never takes the pointer. Two more after the second reader (below): 9 in all, passing three runs over |
+| A race found on the way | Moving to a control below the fold scrolls the page just after the pointer arrives, and closing on scroll then cancelled the hint about to open. Scrolling no longer cancels a hint waiting to open |
+| Second reader | A fresh agent found two things to fix: closing on scroll would also close a keyboard hint as Tab scrolled its control into view (now the box follows its control while the page scrolls, and goes once the control has left the window; a test at a short window failed with the old behaviour and passes now; Tab to a control below the fold shows its hint, though Chrome didn't reproduce the failure); and a hint could stay after its control left the page, where a browser sends no leave event (now it watches for that, and for its text changing while shown, as the prototype's does; Chrome passed the test either way). Also: the "next opens at once" test now waits 300 ms at most, since the browser's clock still moves with real time; a touch that becomes a scroll, or a click made with the keyboard, no longer counts as a tap. It checked that every hint's text is already its control's name or description, so hiding the box from screen readers loses nothing |
+| Screen readers | The box is hidden from them (`aria-hidden`): what it says is already each control's name or description |
+| In the browser | Locally, as a Viewer: hovering a faded vote arrow shows "Voting and assessing evidence need “can vote” access." above it, inside the window |
+| `npm run check` | On Node 22, after the second reader's fixes and with PR 62 merged in: types, lint, all 707 unit, API, database, and simulation tests, and all 175 browser tests pass; no saved screenshot changed |
+| Not checked | A real touch screen (a tap shows the hint until the next tap); a real screen reader |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
