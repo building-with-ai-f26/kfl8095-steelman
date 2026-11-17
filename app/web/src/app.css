@@ -100,3 +100,7 @@ body { margin:0; }
 #steelman-study .sm-privacy .sm-privacy-lede { font-size:17px; }
 #steelman-study .sm-privacy-switch { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:14px; }
 #steelman-study .sm-privacy-switch p { margin:0; font-weight:600; color:var(--sm-ink); }
+
+/* Share's settings, for someone who can't change them: faded, arrows and all, like the board's faded controls.
+   The muted grey alone is dark enough to read as changeable, and the menu's arrow keeps its colour. */
+#steelman-study .sm-share select:disabled { opacity:.45; cursor:not-allowed; }

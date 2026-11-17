@@ -76,6 +76,8 @@ interface BoardViewProps {
 
 function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
   const options = columns(view);
+  // The importance axis only means something once a column has two arguments to rank.
+  const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
   const [arrival] = useState(() => arrivalFor(view, linked));
   const [side, setSide] = useState(arrival.side ?? options[0]?.id);
   /** The row unfolded to compare its wordings: one at a time. */
@@ -354,6 +356,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   key={option.id}
                   option={option}
                   first={index === 0}
+                  ranked={ranked}
                   on={option.id === side}
                   gap={index > 0}
                   open={open}
@@ -486,6 +489,8 @@ function Pill({ state, count, onUpdate }: { state: SessionState; count: number; 
 interface ColumnProps {
   option: OptionRow;
   first: boolean;
+  /** Whether any column has two arguments to rank, so the importance axis means something. */
+  ranked: boolean;
   on: boolean;
   gap: boolean;
   open: string | null;
@@ -498,7 +503,7 @@ interface ColumnProps {
   onUndo(): void;
 }
 
-function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session, onUndo }: ColumnProps) {
+function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo }: ColumnProps) {
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
   const held = state.undo?.optionId === option.id ? state.undo : null;
@@ -508,7 +513,7 @@ function Column({ option, first, on, gap, open, onToggle, writer, opening, view,
     <>
       {gap && <div className="sm-col-gap" aria-hidden="true" />}
       <section className={`sm-column${first ? " sm-first" : ""}${on ? " sm-side-on" : ""}`} id={`sm-col-${option.id}`} data-option={option.id} aria-label={option.name}>
-        {first && (
+        {first && ranked && (
           <div className="sm-col-vaxis">
             <Axis kind="v" start="more important" end="less important" />
           </div>
@@ -516,10 +521,12 @@ function Column({ option, first, on, gap, open, onToggle, writer, opening, view,
         <div className="sm-column-head">
           <h2>{option.name}</h2>
         </div>
-        <div className="sm-col-axis" aria-hidden="true">
-          <Icon name="arrow-down" />
-          Most important first
-        </div>
+        {argumentIds.length >= 2 && (
+          <div className="sm-col-axis" aria-hidden="true">
+            <Icon name="arrow-down" />
+            Most important first
+          </div>
+        )}
         {held && barAfter === null && <UndoBar held={held} onUndo={onUndo} />}
         {argumentIds.map((id) => {
           const argument = view.rows.arguments[id];

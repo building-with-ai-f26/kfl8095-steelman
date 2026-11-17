@@ -55,6 +55,7 @@ export interface Caller {
   /** The board as this person reads it. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   snapshot(): Promise<any>;
+  get(path: string): Promise<unknown>;
   put(path: string, body: unknown): Promise<unknown>;
   post(path: string, body: unknown): Promise<unknown>;
   delete(path: string): Promise<unknown>;
@@ -99,6 +100,7 @@ export const test = base.extend<{ board: TestBoard; analytics: boolean }>({
         };
         return {
           snapshot: () => send("get", `../${demo.board}`),
+          get: (path) => send("get", path),
           put: (path, body) => send("put", path, body),
           post: (path, body) => send("post", path, body),
           delete: (path) => send("delete", path),

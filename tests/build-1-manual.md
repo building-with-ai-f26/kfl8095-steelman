@@ -1327,6 +1327,18 @@ M2-1, the first item of M2's backlog (approved by the builder Nov 17, with Q27â€
 | `npm run check` | On Node 22: types, lint, and all 707 unit, API, database, and simulation tests pass; 154 of 155 browser tests pass, with no saved screenshot changed. The one failure, `sharing.spec.ts` "the owner's change shows at once, is saved, and reaches everyone else", is a race in that existing test: Share shows the change before the service has saved it (`session.ts`, `share()`), and the test reads the saved value as soon as the screen changes, so under a full run's load the read can come first. Run alone, eight times over, the file passed all 64. Not edited (rule 9): left to the builder, with a fix proposed on the pull request |
 | Not checked | Nobody has been made an Editor through the screens: that's M2-2's people list |
 
+## November 17 â€” Share's settings faded for non-owners; the importance axis only when there's something to rank (H-02, A-01)
+
+Two things the builder found looking at the board.
+
+| Check | Observed result |
+| --- | --- |
+| Share | For someone who isn't the owner, General access and the link role were disabled but looked changeable: the prototype's muted grey is dark (darkened for contrast on every label), and the menus' arrows keep their colour. They now fade to 45%, arrows and all, like the board's faded controls, with "Only the owner can change who can get in." under them as before. Disabled controls are exempt from the contrast rule, and axe doesn't check them. The owner's menus are unchanged |
+| The axis | "More important / Less important" down the board's left edge crowded and ran past the bottom of a column with one argument or none. It now shows only once some column has two arguments to rank; on a phone, each column's "Most important first" shows only once that column has two |
+| Tests first | `e2e/share-and-axis.spec.ts`, 3 tests, each seen to fail first (the phone test was tightened after it passed before the change, finding the line by its class rather than by text) |
+| In the browser | Locally: a new board with one argument shows no axis; the demo board's Share, as a contributor, shows both menus faded |
+| `npm run check` | On Node 22: types, lint, all 707 unit, API, database, and simulation tests, and all 158 browser tests pass; no saved screenshot changed |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
