@@ -399,8 +399,9 @@ resource "google_cloud_run_v2_service" "app" {
   }
 
   lifecycle {
-    # The deploy workflow (M1-14c) puts each release's image in.
-    ignore_changes = [template[0].containers[0].image, client, client_version]
+    # The deploy workflows own what each release changes: the image, the new version's name, and which version
+    # gets the traffic (each is deployed with none at a test address, then given all of it).
+    ignore_changes = [template[0].containers[0].image, template[0].revision, traffic, client, client_version]
   }
 
   depends_on = [google_secret_manager_secret_iam_member.readers, google_project_iam_member.sql_client, google_secret_manager_secret_version.made, google_secret_manager_secret_version.builder_placeholder]
