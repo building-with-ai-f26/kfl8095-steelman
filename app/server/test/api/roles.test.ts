@@ -358,11 +358,10 @@ describe("changing who can get in", () => {
     expect(await boardSeq(b.board)).toBe(seq);
   });
 
-  test("H-02: general access is invited people or anyone with the link, and the link role is Voter or Contributor", async () => {
+  test("H-02: general access is invited people or anyone with the link, and the link role is Viewer, Voter, or Contributor", async () => {
     for (const body of [
       { general: "everyone", linkRole: "voter" },
       { general: "link", linkRole: "owner" },
-      { general: "link", linkRole: "viewer" },
       { general: "link" },
       { general: "link", linkRole: "voter", extra: true },
     ]) {

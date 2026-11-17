@@ -31,6 +31,10 @@ function asRole(stored: string): Role | null {
   return (ROLES as readonly string[]).includes(stored) ? (stored as Role) : null;
 }
 
+function asLinkRole(stored: string): Access["linkRole"] | null {
+  return (LINK_ROLES as readonly string[]).includes(stored) ? (stored as Access["linkRole"]) : null;
+}
+
 /** How this person gets in to the board, if they do. */
 export async function entryTo(db: Reader, boardId: string, person: string | null): Promise<Entry> {
   if (person === null) return NO_ROLE;
@@ -47,8 +51,9 @@ export async function entryTo(db: Reader, boardId: string, person: string | null
     .where("account.deleted_at", "is", null)
     .executeTakeFirst();
   if (!byLink) return NO_ROLE;
-  const role = asRole(byLink.link_role);
-  return role === "owner" ? NO_ROLE : { role, joiningByLink: role !== null };
+  // Only a role a link may give: a stored Editor or Owner, or a word the service doesn't know, gives nothing.
+  const role = asLinkRole(byLink.link_role);
+  return role === null ? NO_ROLE : { role, joiningByLink: true };
 }
 
 /**
@@ -87,6 +92,6 @@ export async function accessOf(db: Reader, boardId: string): Promise<Access | nu
 export function asAccess(board: { general_access: string; link_role: string }): Access {
   return {
     general: board.general_access === "link" ? "link" : "invited",
-    linkRole: board.link_role === "voter" ? "voter" : "contributor",
+    linkRole: asLinkRole(board.link_role) ?? "contributor",
   };
 }

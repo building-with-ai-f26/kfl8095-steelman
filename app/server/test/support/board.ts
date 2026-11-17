@@ -68,7 +68,7 @@ export async function addAccount(client: pg.Client, ids: IdSource, name: string,
   return id;
 }
 
-export type MemberRole = "owner" | "contributor" | "voter";
+export type MemberRole = "owner" | "editor" | "contributor" | "voter" | "viewer";
 
 /** Makes someone a member of a board: invited by name, unless `via` says they came by the link. */
 export async function addMember(client: pg.Client, board: string, account: string, role: MemberRole, via: "invite" | "link" = "invite"): Promise<void> {

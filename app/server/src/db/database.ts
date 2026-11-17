@@ -40,7 +40,7 @@ export interface Database {
     last_seq: ColumnType<string, never, never>;
     /** "invited" or "link" (migration 0008). */
     general_access: Generated<string>;
-    /** The role the link gives: "voter" or "contributor". */
+    /** The role the link gives: "viewer", "voter", or "contributor". */
     link_role: Generated<string>;
     /** Set when it was deleted with its owner's account, nobody else able to open it (Q11; migration 0009). Its text is erased. */
     deleted_at: ColumnType<Date | null, Date | null | undefined, Date | null>;

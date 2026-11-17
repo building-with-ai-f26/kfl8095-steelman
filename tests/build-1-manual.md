@@ -1311,6 +1311,22 @@ M1-14c, the third part of M1-14: what puts Steelman on the infrastructure M1-14b
 | `npm run check` | Types, lint, all 597 unit, API, database, and simulation tests, and all 155 browser tests pass on Node 22; `git diff --check` is clean. The first run stopped at a type error in the smoke test, fixed |
 | Not checked | A real run: the first merge after this one is the first deploy, and the first release is the builder's. The restore test (M1-14d) |
 
+## November 17 — Viewer and Editor, and the full matrix (H-02, H-03)
+
+M2-1, the first item of M2's backlog (approved by the builder Nov 17, with Q27–Q29). The policy table now has five roles, Viewer, Voter, Contributor, Editor, and Owner, and the matrix test covers all seven personas.
+
+| Check | Observed result |
+| --- | --- |
+| Tests first | `server/test/api/role-matrix.test.ts` was written first: its 30 Viewer and Editor tests failed (no such roles), and every Owner, Contributor, and Voter row passed, showing the test board was set up right |
+| The matrix | 15 actions × 7 personas, one test each: read, read changes, both votes, assess, add an argument, add a wording, edit and delete your own wording and someone else's, add a source, edit a source someone else added, take a source someone else added off someone else's wording, and change who can get in. A Viewer reads only. An Editor may do what a Contributor may and also take any source off any wording; editing and deleting a wording or a source stay the author's (Q28). Every refused write leaves the change number where it was |
+| Viewer by the link | The owner may set the link role to Viewer; someone who opens the board then becomes a Viewer member and can't vote. Editor and Owner are refused as link roles (400). A stored Editor or Owner link role still gives no access (M1-5's test) |
+| Closed board | A Viewer and an Editor may still read and may not write |
+| On the screen | Share's link role offers "can view". Removing a source from a card now asks the same `can()` the service does, so an Editor sees the remove button on anyone's source. Fading what a role can't use is M2-2 |
+| An existing test changed, with the builder's decision (rule 9) | `roles.test.ts`'s check that a link role can't be Viewer: the Viewer row is removed and the test renamed "Viewer, Voter, or Contributor". Owner and the other refused bodies stay |
+| Second reader | A fresh agent found nothing in the code to fix. It noted that the records said the seed makes an Editor (it doesn't: corrected; only tests do until M2-2's people list); that Share had no Viewer option, so a Viewer link showed "can vote" (added); that the matrix left out the source routes (added: the two rows pass with no code change); and that the card copied the uncite rule by hand (now calls `can()`). Left as is: a stored link role the service doesn't know is reported as Contributor, so choosing Contributor answers "already done"; it needs a direct database edit to reach and predates M2 |
+| `npm run check` | On Node 22: types, lint, and all 707 unit, API, database, and simulation tests pass; 154 of 155 browser tests pass, with no saved screenshot changed. The one failure, `sharing.spec.ts` "the owner's change shows at once, is saved, and reaches everyone else", is a race in that existing test: Share shows the change before the service has saved it (`session.ts`, `share()`), and the test reads the saved value as soon as the screen changes, so under a full run's load the read can come first. Run alone, eight times over, the file passed all 64. Not edited (rule 9): left to the builder, with a fix proposed on the pull request |
+| Not checked | Nobody has been made an Editor through the screens: that's M2-2's people list |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

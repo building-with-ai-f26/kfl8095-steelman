@@ -1,17 +1,19 @@
 // Who may do what (plans/architecture.md §7). The server asks `can()` before
 // every read and write; the browser uses the same table only to fade controls.
 //
-// M1's roles, least to most: Voter (votes and assesses), Contributor (also
-// writes), Owner (also decides who can get in). M2 adds Viewer below Voter
-// and Editor between Contributor and Owner, and their rows in the matrix test.
+// The roles, least to most: Viewer (reads), Voter (also votes and assesses),
+// Contributor (also writes), Editor (also takes a source off anyone's
+// wording; hiding and restoring come with it in M2-4), Owner (also decides
+// who can get in). Editing and deleting a wording stay its author's, for an
+// Editor too (Q28).
 
-export type Role = "voter" | "contributor" | "owner";
+export type Role = "viewer" | "voter" | "contributor" | "editor" | "owner";
 
 /** Each role, least to most. A role may do everything the ones before it may. */
-export const ROLES: readonly Role[] = ["voter", "contributor", "owner"];
+export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor", "owner"];
 
-/** The roles a board's link can give. Owner never comes by the link. */
-export const LINK_ROLES = ["voter", "contributor"] as const satisfies readonly Role[];
+/** The roles a board's link can give. Editor and Owner never come by the link. */
+export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
 export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share";
 
@@ -27,7 +29,7 @@ interface Rule {
 }
 
 export const POLICY: Record<Action, Rule> = {
-  read: { least: "voter", openBoard: false, authorOnly: false },
+  read: { least: "viewer", openBoard: false, authorOnly: false },
   vote: { least: "voter", openBoard: true, authorOnly: false },
   assess: { least: "voter", openBoard: true, authorOnly: false },
   add: { least: "contributor", openBoard: true, authorOnly: false },
@@ -35,10 +37,10 @@ export const POLICY: Record<Action, Rule> = {
   delete: { least: "contributor", openBoard: true, authorOnly: true },
   /**
    * Taking a source off a wording (C-01): for the person who added the source
-   * or the wording's author; the Owner may take any off (the builder, Nov 14).
-   * The Editor, when M2 adds it, takes the Owner's place here.
+   * or the wording's author; an Editor or the Owner may take any off (the
+   * builder, Nov 14; the Editor since M2-1).
    */
-  uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "owner" },
+  uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
   /** Changing the board's general access and its link role. */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };
