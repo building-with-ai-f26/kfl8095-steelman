@@ -44,15 +44,16 @@ function signInFor(): AppDependencies["signIn"] {
     console.warn(`Sign-in is off: ${missing.join(", ")} not set (see app/.env.example).`);
     return undefined;
   }
-  return { origin: origin!, secret: secret!, email: resendEmail({ apiKey: apiKey!, from: from! }), ...googleFor() };
+  // Trimmed: a secret pasted into Secret Manager easily keeps a newline, which breaks an HTTP header.
+  return { origin: origin!, secret: secret!, email: resendEmail({ apiKey: apiKey!.trim(), from: from! }), ...googleFor() };
 }
 const signIn = databaseUrl ? signInFor() : undefined;
 
 // Google sign-in, when both of its settings are there. Locally, the staging
 // OAuth client, which lists http://localhost:5173 (plans/build-plan.md, M1).
 function googleFor(): { google?: NonNullable<AppDependencies["signIn"]>["google"] } {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
   if (clientId && clientSecret) return { google: { clientId, clientSecret } };
   if (clientId || clientSecret) console.warn("Google sign-in is off: it needs both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.");
   return {};
