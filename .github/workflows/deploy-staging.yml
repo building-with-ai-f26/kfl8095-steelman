@@ -1,0 +1,90 @@
+# Every merge to main goes to staging (plans/architecture.md §6): build the
+# image once, start staging's database, run the migrations (which also make
+# the service's own database login), then deploy the new version with no
+# traffic, at a test address of its own. The smoke test runs there; only if it
+# passes does traffic move to the new version. A version that fails never
+# serves anyone, so there's nothing to roll back.
+#
+# GitHub signs in to Google with no stored key (Workload Identity Federation,
+# infra/): only runs on main started by a push, a schedule, or the builder may
+# act as the deploy account, which can deploy but can't read secrets. The IDs
+# below are Terraform's outputs, and none is secret.
+name: deploy to staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # to prove to Google which repository and branch this run is
+
+# One deploy or release at a time, and never one cut off halfway through its migrations.
+concurrency:
+  group: steelman-deploy
+  cancel-in-progress: false
+
+env:
+  PROJECT: steelman-staging
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  IMAGE: us-central1-docker.pkg.dev/steelman-staging/steelman/app
+
+jobs:
+  deploy:
+    name: deploy to staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      # The smoke test's tools, first: nothing is deployed until they're ready.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: app
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/1072423828337/locations/global/workloadIdentityPools/github/providers/github
+          service_account: steelman-deploy@steelman-staging.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build the image and push it
+        run: |
+          gcloud auth configure-docker "$REGISTRY" --quiet
+          docker build --file app/Dockerfile --tag "$IMAGE:$GITHUB_SHA" .
+          docker push "$IMAGE:$GITHUB_SHA"
+          # Deploy by digest, as the registry has it, so exactly this image runs.
+          DIGEST="$IMAGE@$(gcloud artifacts docker images describe "$IMAGE:$GITHUB_SHA" --format 'value(image_summary.digest)')"
+          test "$DIGEST" != "$IMAGE@" || { echo "The registry has no digest for $IMAGE:$GITHUB_SHA"; exit 1; }
+          echo "DIGEST=$DIGEST" >> "$GITHUB_ENV"
+
+      - name: Start staging's database (it's stopped every night)
+        run: gcloud sql instances patch steelman-staging --project "$PROJECT" --activation-policy ALWAYS --quiet
+
+      # Migrations only ever add, so the version serving now keeps working with them (AGENTS.md rule 7).
+      - name: Run the migrations
+        run: |
+          gcloud run jobs update steelman-migrate --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
+          gcloud run jobs execute steelman-migrate --project "$PROJECT" --region "$REGION" --wait
+
+      - name: Deploy the new version with no traffic, at its own test address
+        run: |
+          gcloud run deploy steelman --project "$PROJECT" --region "$REGION" --image "$DIGEST" --no-traffic --tag candidate --quiet
+          CANDIDATE=$(gcloud run services describe steelman --project "$PROJECT" --region "$REGION" --format json | jq -r '.status.traffic[] | select(.tag == "candidate") | .url')
+          test -n "$CANDIDATE" || { echo "The new version has no test address"; exit 1; }
+          echo "CANDIDATE=$CANDIDATE" >> "$GITHUB_ENV"
+
+      - name: Smoke test the new version, before anyone is sent to it
+        working-directory: app
+        run: npx tsx server/src/smoke-cli.ts "$CANDIDATE"
+
+      - name: Send everyone to the new version, and give the daily job its image
+        run: |
+          gcloud run services update-traffic steelman --project "$PROJECT" --region "$REGION" --to-latest --quiet
+          gcloud run jobs update steelman-daily --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
+          echo "Staging runs $DIGEST"

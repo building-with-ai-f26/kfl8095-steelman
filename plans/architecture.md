@@ -487,7 +487,7 @@ All in **GitHub Actions**, which signs in to GCP with **Workload Identity Federa
 | When | What runs | Stops the line if |
 |---|---|---|
 | **Every push to a pull request** | `npm run check`, the same command an agent runs before pushing (§8): types, lint, the rules, the database invariants, the API, the simulation, the browser tests. Then the guard checks (§8), `git diff --check`, a scan for secrets, and the container build. All against a Postgres the run starts and throws away | Anything fails. Nothing is retried |
-| **Merge to `main`** | Start staging's database; run migrations on staging; deploy; run a short smoke test (sign in with a test account, open a board, vote, see it from a second session) | A migration or the smoke test fails |
+| **Merge to `main`** | Start staging's database; run migrations on staging; deploy; run a short smoke test, signed out for now (the builder, Nov 17: the page, its built files, its security headers, the health and config answers, sign-in on, and signed-out requests refused; the signed-in path stays with the browser tests until a safe test login exists); if it fails, traffic goes back to the previous revision | A migration or the smoke test fails |
 | **Release to production** | Same container image as staging (never rebuilt), after the builder approves it in GitHub (a protected environment) | Migrations or the health check fail; traffic stays on the previous version |
 | **Every night** | The soak run, mutation testing, and a dependency audit (§8). Monthly: the restore test (below) | Opens an issue; the next agent session picks it up first |
 

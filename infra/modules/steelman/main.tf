@@ -246,7 +246,7 @@ resource "google_secret_manager_secret_iam_member" "readers" {
 
 # GitHub's way in, with no key stored anywhere (architecture §6): GitHub proves which repository, branch, and
 # environment a run belongs to, and only this repository's runs may act as the deploy account. Staging takes
-# runs from main; production only runs in GitHub's protected "production" environment, which the builder approves.
+# runs from main; production only runs on main in GitHub's protected "production" environment, which the builder approves.
 resource "google_iam_workload_identity_pool" "github" {
   project                   = var.project_id
   workload_identity_pool_id = "github"
@@ -266,7 +266,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     "attribute.environment" = "assertion.environment"
   }
   # Staging: only runs on main that a merge, a schedule, or the builder started; never a pull request's run.
-  attribute_condition = var.environment == "production" ? "assertion.repository == '${var.github_repository}' && assertion.environment == 'production'" : "assertion.repository == '${var.github_repository}' && assertion.ref == 'refs/heads/main' && assertion.event_name in ['push', 'schedule', 'workflow_dispatch']"
+  attribute_condition = var.environment == "production" ? "assertion.repository == '${var.github_repository}' && assertion.environment == 'production' && assertion.ref == 'refs/heads/main'" : "assertion.repository == '${var.github_repository}' && assertion.ref == 'refs/heads/main' && assertion.event_name in ['push', 'schedule', 'workflow_dispatch']"
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
