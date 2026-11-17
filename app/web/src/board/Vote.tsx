@@ -1,7 +1,8 @@
 // One control for importance (vertical) and articulation (horizontal), as the prototype draws it.
 
 import { Icon } from "../icons.tsx";
-import type { Vote } from "./display.ts";
+import { blockedProps } from "./display.ts";
+import type { Blocked, Vote } from "./display.ts";
 
 interface VoteProps {
   axis: "v" | "h";
@@ -11,10 +12,12 @@ interface VoteProps {
   forward: string;
   back: string;
   onVote(value: Vote): void;
+  /** Set when the reader's role can't vote. */
+  blocked?: Blocked | null;
 }
 
 /** One control for importance (vertical) and articulation (horizontal). Pressing your vote again withdraws it. */
-export function VoteControl({ axis, group, value, score, forward, back, onVote }: VoteProps) {
+export function VoteControl({ axis, group, value, score, forward, back, onVote, blocked = null }: VoteProps) {
   const button = (direction: 1 | -1, label: string) => (
     <button
       type="button"
@@ -22,7 +25,8 @@ export function VoteControl({ axis, group, value, score, forward, back, onVote }
       aria-pressed={value === direction}
       aria-label={label}
       data-tooltip={label}
-      onClick={() => onVote(value === direction ? null : direction)}
+      {...blockedProps(blocked)}
+      onClick={() => blocked || onVote(value === direction ? null : direction)}
     >
       <Icon name={direction > 0 ? "chevron-up" : "chevron-down"} />
     </button>

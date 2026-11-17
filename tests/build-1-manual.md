@@ -1327,6 +1327,20 @@ M2-1, the first item of M2's backlog (approved by the builder Nov 17, with Q27�
 | `npm run check` | On Node 22: types, lint, and all 707 unit, API, database, and simulation tests pass; 154 of 155 browser tests pass, with no saved screenshot changed. The one failure, `sharing.spec.ts` "the owner's change shows at once, is saved, and reaches everyone else", is a race in that existing test: Share shows the change before the service has saved it (`session.ts`, `share()`), and the test reads the saved value as soon as the screen changes, so under a full run's load the read can come first. Run alone, eight times over, the file passed all 64. Not edited (rule 9): left to the builder, with a fix proposed on the pull request |
 | Not checked | Nobody has been made an Editor through the screens: that's M2-2's people list |
 
+## November 17 — Faded controls that say why (H-03)
+
+M2-2a, the first part of M2-2. The builder dropped the prototype's "You can…" line under the question the same day: Google Docs and Figma have none, and the faded controls already say it.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | The prototype's design follows Google Docs' Share dialog. Google Docs shows view-only readers the full editor, with a "View only" marker ([Workspace Updates, 2015](https://workspaceupdates.googleblog.com/2015/07/clearer-indication-of-and-access-in.html)), so faded controls stay where they are rather than disappearing. Figma's role words, "can view" and "can edit" ([Figma](https://help.figma.com/hc/articles/360039485514)), match the link roles, which the reasons repeat. Left out: Request access, which both have, since M2 has no request flow |
+| Tests first | `e2e/roles-on-screen.spec.ts`: six of its first seven tests failed before the change (the Contributor's passed, as nothing was faded yet); the eighth, a demoted author's source, was added after the second reader and failed before its fix |
+| What fades | For a Viewer: importance and articulation votes and Yes / No ("Voting and assessing evidence need “can vote” access."), Add an argument, Add a source, and Edit on a source they added before ("Writing and editing need “can contribute” access."). For a Voter: only the writing ones. Each has `aria-disabled`, the prototype's faded `data-blocked` look, the reason as its tooltip and as its accessible description, and stays reachable by the keyboard. Pressed, or Enter on it, sends nothing and opens nothing. Suggest a version isn't offered at all to someone who can't write, as in the prototype. A Contributor sees nothing faded |
+| Accessibility and screenshots | No axe violations for a Viewer at desktop and 375 px, folded, with a card open, and unfolded. New saved screenshots `board-viewer-desktop` and `board-viewer-375` (darwin here; CI keeps its linux ones with the run) |
+| Second reader | A fresh agent found that a source's Edit wasn't faded for someone who added it and lost the right to write (fixed, with a test). Also acted on: the keyboard test now presses Enter; the articulation test waits for the vote to show unpressed before counting requests; the accessibility scan covers an open card and an unfolded row. Left: a draft or form already open when a role drops stays open and its send is refused (added to M2-2b, where the people list makes it reachable); on a single-wording row a Viewer's ≫ still says "Write another wording", as in the prototype |
+| `npm run check` | On Node 22: types, lint, all 707 unit, API, database, and simulation tests, and all 163 browser tests pass; `git diff --check` is clean |
+| Not checked | The reason doesn't appear on hover yet: the app has never drawn `data-tooltip` hints (the prototype's hint box lives in its page shell, which the app doesn't load). Found while looking in the browser; the builder chose to build the hint box next, as its own pull request. Screen readers already hear the reason. A role changing while the board is open, through the screens: M2-2b. A real screen reader |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
