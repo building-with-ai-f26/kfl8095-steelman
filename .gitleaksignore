@@ -1,0 +1,13 @@
+# Findings the secret scan (.github/workflows/container.yml) reported that aren't secrets. Each is pinned
+# to the commit and line it was found at, so anything new still fails the scan. Add one only with the
+# builder's agreement, and say here why it isn't a secret.
+
+# A made-up signing secret, for a test copy of the service in the smoke test's own test.
+4afecee491a0b701dab535b7367e69dde6f15061:app/server/test/api/smoke.test.ts:generic-api-key:43
+
+# A deliberately invalid Google ID token (header {"alg":"RS256"}, body {}, signature "sig"), which the
+# test shows is refused.
+5a91519afe4881e4b7955a88e829924c4a26df53:app/server/test/api/google-sign-in.test.ts:generic-api-key:174
+
+# PostHog's public project key: it can only send events, and belongs in the page (AGENTS.md, Tech stack).
+af1582d51dcc6af9ae61760d792b0b38d8da6b66:docs/analytics.js:generic-api-key:5

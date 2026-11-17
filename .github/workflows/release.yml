@@ -1,0 +1,101 @@
+# Release to production (plans/architecture.md §6): the image staging is
+# serving, never rebuilt, after the builder approves it. The job runs in
+# GitHub's protected "production" environment, which waits for that approval
+# and takes only runs on main; production's Google login accepts only those.
+#
+# It copies staging's serving image into production's registry, runs
+# production's migrations, deploys the new version with no traffic at a test
+# address of its own, smoke-tests it there, and only then sends everyone to it.
+#
+# Start it from the Actions tab (Run workflow, on main), or:
+#   gh workflow run release.yml --repo building-with-ai-f26/kfl8095-steelman
+name: release to production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Shared with the staging deploy: a release never reads staging halfway through a deploy.
+concurrency:
+  group: steelman-deploy
+  cancel-in-progress: false
+
+env:
+  PROJECT: steelman-production
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  IMAGE: us-central1-docker.pkg.dev/steelman-production/steelman/app
+
+jobs:
+  release:
+    name: release to production
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: app
+
+      # First as staging's deploy account: which image is staging serving? Then fetch it.
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/1072423828337/locations/global/workloadIdentityPools/github/providers/github
+          service_account: steelman-deploy@steelman-staging.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Fetch the image staging is serving
+        run: |
+          gcloud auth configure-docker "$REGISTRY" --quiet
+          SERVING=$(gcloud run services describe steelman --project steelman-staging --region "$REGION" --format json | jq -r '.status.traffic[] | select(.percent == 100) | .revisionName')
+          STAGED=$(gcloud run revisions describe "$SERVING" --project steelman-staging --region "$REGION" --format 'value(spec.containers[0].image)')
+          # Staging serves an image by its digest; anything else (Google's sample, before the first deploy) isn't releasable.
+          case "$STAGED" in *"/steelman-staging/steelman/app@sha256:"*) ;; *) echo "Staging isn't serving a Steelman image: $STAGED"; exit 1 ;; esac
+          echo "Releasing $STAGED, which staging's revision $SERVING serves"
+          docker pull "$STAGED"
+          echo "STAGED=$STAGED" >> "$GITHUB_ENV"
+
+      # Then as production's: copy it in, unchanged.
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/1029089358609/locations/global/workloadIdentityPools/github/providers/github
+          service_account: steelman-deploy@steelman-production.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Copy it into production's registry
+        run: |
+          gcloud auth configure-docker "$REGISTRY" --quiet
+          docker tag "$STAGED" "$IMAGE:$GITHUB_SHA"
+          docker push "$IMAGE:$GITHUB_SHA"
+          DIGEST="$IMAGE@$(gcloud artifacts docker images describe "$IMAGE:$GITHUB_SHA" --format 'value(image_summary.digest)')"
+          test "$DIGEST" != "$IMAGE@" || { echo "The registry has no digest for $IMAGE:$GITHUB_SHA"; exit 1; }
+          echo "DIGEST=$DIGEST" >> "$GITHUB_ENV"
+
+      - name: Run the migrations
+        run: |
+          gcloud run jobs update steelman-migrate --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
+          gcloud run jobs execute steelman-migrate --project "$PROJECT" --region "$REGION" --wait
+
+      - name: Deploy the new version with no traffic, at its own test address
+        run: |
+          gcloud run deploy steelman --project "$PROJECT" --region "$REGION" --image "$DIGEST" --no-traffic --tag candidate --quiet
+          CANDIDATE=$(gcloud run services describe steelman --project "$PROJECT" --region "$REGION" --format json | jq -r '.status.traffic[] | select(.tag == "candidate") | .url')
+          test -n "$CANDIDATE" || { echo "The new version has no test address"; exit 1; }
+          echo "CANDIDATE=$CANDIDATE" >> "$GITHUB_ENV"
+
+      - name: Smoke test the new version, before anyone is sent to it
+        working-directory: app
+        run: npx tsx server/src/smoke-cli.ts "$CANDIDATE"
+
+      - name: Send everyone to the new version, and give the daily job its image
+        run: |
+          gcloud run services update-traffic steelman --project "$PROJECT" --region "$REGION" --to-latest --quiet
+          gcloud run jobs update steelman-daily --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
+          echo "Production runs $DIGEST"

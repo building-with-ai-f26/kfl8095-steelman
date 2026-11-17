@@ -1,0 +1,55 @@
+# Three checks on every pull request (plans/architecture.md §6), next to
+# `npm run check`: the container builds, no secret is anywhere in the
+# history, and the Terraform is formatted and valid. Nothing is pushed or
+# applied: a pull request never touches staging.
+name: container
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: the container builds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      # From the repository's root: the web app takes its look from docs/.
+      - run: docker build --file app/Dockerfile --tag steelman:check .
+
+  secrets:
+    name: no secrets in the history
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # every commit, not just the newest
+      # Gitleaks, a pinned release, scanning every commit; --redact keeps anything it finds out of the log.
+      - run: docker run --rm --volume "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner --verbose
+
+  terraform:
+    name: the Terraform is valid
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.17.2
+      - run: terraform fmt -check -recursive infra
+      - name: Validate staging and production (no credentials, no state)
+        run: |
+          for environment in staging production; do
+            terraform -chdir=infra/$environment init -backend=false -input=false
+            terraform -chdir=infra/$environment validate
+          done
