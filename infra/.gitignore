@@ -1,0 +1,8 @@
+# Terraform's working files and anything holding values: never committed.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+*.tfplan

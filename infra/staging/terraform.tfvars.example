@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (never committed) and fill in.
+billing_account = "01ABCD-23EF45-6789GH" # gcloud billing accounts list
+alert_email     = "you@example.com"      # where uptime and budget alerts go
+posthog_key     = ""                     # PostHog's public project key, or empty for no analytics
