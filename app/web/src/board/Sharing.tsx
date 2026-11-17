@@ -10,8 +10,8 @@ import { Icon } from "../icons.tsx";
 import type { BoardSession } from "./session.ts";
 
 const GENERAL = { invited: "Invited only", link: "Anyone with the link" } as const;
-const LINK_ROLE = { voter: "can vote", contributor: "can contribute" } as const;
-const MAY = { voter: "read and vote", contributor: "read, vote, and write" } as const;
+const LINK_ROLE = { viewer: "can view", voter: "can vote", contributor: "can contribute" } as const;
+const MAY = { viewer: "read", voter: "read and vote", contributor: "read, vote, and write" } as const;
 
 export function Sharing({ access, role, session }: { access: Access; role: Role; session: BoardSession }) {
   const [open, setOpen] = useState(false);
@@ -105,6 +105,7 @@ export function Sharing({ access, role, session }: { access: Access; role: Role;
                   </span>
                   {access.general === "link" ? (
                     <select aria-label="Link role" value={access.linkRole} disabled={!owner} onChange={(event) => change({ linkRole: event.target.value as Access["linkRole"] })}>
+                      <option value="viewer">{LINK_ROLE.viewer}</option>
                       <option value="voter">{LINK_ROLE.voter}</option>
                       <option value="contributor">{LINK_ROLE.contributor}</option>
                     </select>

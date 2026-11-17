@@ -241,7 +241,7 @@ export class BoardSession {
       this.sharing = false;
     }
     const now = this.accepted!;
-    this.announce(now.general === "link" ? `Anyone with the link can ${now.linkRole === "voter" ? "vote" : "contribute"}.` : "Only invited people can open it.");
+    this.announce(now.general === "link" ? `Anyone with the link can ${{ viewer: "view", voter: "vote", contributor: "contribute" }[now.linkRole]}.` : "Only invited people can open it.");
     await this.poll();
   }
 

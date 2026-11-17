@@ -24,7 +24,7 @@
 // if the wording changed first, it isn't counted, and the card says so.
 
 import { useEffect, useId, useRef, useState } from "react";
-import { LIMITS, cleanText, webLink } from "@steelman/shared";
+import { LIMITS, can, cleanText, webLink } from "@steelman/shared";
 import type { QueuedAction, Role, SourceRow, VersionRow } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { useReader } from "../reader.ts";
@@ -176,7 +176,7 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               open={opened[source.id] ?? false}
               onToggle={(open) => setOpened((all) => (all[source.id] === open ? all : { ...all, [source.id]: open }))}
               mine={source.addedBy === reader}
-              mayRemove={source.addedBy === reader || version.authorId === reader || board.role === "owner"}
+              mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId)}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
             />
@@ -389,4 +389,9 @@ export function SourceCount({ count }: { count: number }) {
       {` ${count}`}
     </span>
   );
+}
+
+/** The policy's uncite rule (shared/src/policy.ts): the source's adder, the wording's author, or an Editor or the Owner. A closed board is the service's to refuse. */
+function mayUncite(reader: string | null, role: Role | null, addedBy: string, authorId: string): boolean {
+  return can(reader, role, "uncite", { closed: false }, [addedBy, authorId]) === null;
 }
