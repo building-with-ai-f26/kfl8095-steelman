@@ -1368,6 +1368,18 @@ Found while checking M2-2a in the browser: the app had never drawn its `data-too
 | `npm run check` | On Node 22, after the second reader's fixes and with PR 62 merged in: types, lint, all 707 unit, API, database, and simulation tests, and all 175 browser tests pass; no saved screenshot changed |
 | Not checked | A real touch screen (a tap shows the hint until the next tap); a real screen reader |
 
+## November 17 — Share opens without a focus outline; test accounts come in by a link (H-02)
+
+Two things the builder found using the app locally.
+
+| Check | Observed result |
+| --- | --- |
+| Share's outline | Opening Share put the cursor on its first setting, and the browser drew its blue focus outline round it even after a click. The cursor now goes to the panel itself, whose edge already shows where it is, as the W3C's dialog pattern allows; Tab reaches Close, then General access, and Escape still closes it and returns to the pill |
+| Test accounts and the link | A board open to anyone with the link needs a confirmed email (M1-5), and the seed's test accounts had none, so switching "Acting as" to one on a new link board said "You don't have access". The seed now marks its test accounts as confirmed, still with no email (which is how it tells them from real accounts), and brings an older seed's accounts up to date. The seed runs only locally and in tests |
+| Tests first | `server/test/api/test-accounts.test.ts` (2) and `e2e/share-open.spec.ts` (2), each seen to fail first. The keyboard test first expected General access straight after the panel; Close comes before it, which is the panel's order, so the test was corrected |
+| Locally | After `npm run db:seed`, the 17 seeded test accounts are confirmed; tess.b opens the builder's own link board |
+| `npm run check` | On Node 22: types, lint, all 709 unit, API, database, and simulation tests, and all 177 browser tests pass (177 s). Two earlier runs, made while the local app was also running, each timed out one test unrelated to this change (a database test, then a lint test and a role test) and took 188 s and 500 s: the machine was busy. Stopping the local app, the run was clean |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

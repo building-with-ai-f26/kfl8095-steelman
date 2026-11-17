@@ -219,7 +219,10 @@ export async function seedExampleBoards(db: Db, clock: Clock, ids: IdSource): Pr
   if (taken.length > 0) throw new Error(`The seed's usernames ${taken.join(", ")} belong to real accounts (with an email) here. Rename them, or use a fresh database.`);
   for (const name of EXAMPLE_PEOPLE) {
     person[name] = found.get(name)?.id ?? ids.itemId();
-    if (!found.has(name)) await db.insertInto("account").values({ id: person[name], username: name, created_at: clock.now() }).execute();
+    // Counted as confirmed, so the link lets them in, as it would anyone signed in (demo-board.ts). An older seed's
+    // test account is brought up to date.
+    if (found.has(name)) await db.updateTable("account").set({ email_verified: true }).where("id", "=", person[name]!).execute();
+    else await db.insertInto("account").values({ id: person[name], username: name, email_verified: true, created_at: clock.now() }).execute();
   }
 
   const services = { db, clock };
