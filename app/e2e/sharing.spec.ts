@@ -40,7 +40,8 @@ test("H-02: the owner's change shows at once, is saved, and reaches everyone els
   await expect(owner.getByRole("combobox", { name: "Link role" })).toHaveCount(0);
   await expect(panel(owner)).toContainText("Only invited people can open it.");
   // Saved: the service says so, and so does the next poll in another browser.
-  expect((await board.api("tess.b").snapshot()).access).toEqual({ general: "invited", linkRole: "voter" });
+  // The screen shows the change before the service has it, so wait for the save.
+  await expect.poll(async () => (await board.api("tess.b").snapshot()).access).toEqual({ general: "invited", linkRole: "voter" });
   await other.clock.runFor(10_000);
   await expect(pill(other)).toHaveText("Invited only");
 });
