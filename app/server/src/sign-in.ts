@@ -18,6 +18,7 @@ import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, genericOAuth, username } from "better-auth/plugins";
+import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
@@ -67,6 +68,12 @@ const WRONG_TRIES_ALLOWED = 5;
 const SESSION_LASTS_SECONDS = 30 * 24 * 60 * 60;
 const EMAILS_PER_ADDRESS_PER_HOUR = 5;
 const HOUR = 60 * 60 * 1000;
+/**
+ * The first half of the Postgres lock that lets one request at a time count an
+ * address's emails; the second half comes from the address's hash. Any number
+ * no other lock in the app uses.
+ */
+const SENT_EMAIL_LOCK = 7001;
 
 const timestamps = { createdAt: "created_at", updatedAt: "updated_at" };
 
@@ -276,17 +283,28 @@ export function acceptGoogleIdentity(claims: Record<string, unknown>): { sub: st
   return { sub, email };
 }
 
-/** Counts this sign-in email against its address's limit, or says the limit is reached. */
+/**
+ * Counts this sign-in email against its address's limit, or says the limit is reached.
+ *
+ * Counting and adding happen while holding a lock on the address, so requests
+ * that arrive together, at any copy of the service, take their turns: without
+ * it, each could count four and all be sent (M2-6a). The lock is Postgres's,
+ * held until the transaction ends, so it's shared by every copy and can't be
+ * left behind. Other addresses almost always take other locks, so they rarely wait.
+ */
 async function mayEmail(db: Db, clock: Clock, address: string): Promise<boolean> {
   const addressHash = createHash("sha256").update(address).digest("hex");
   const now = clock.now();
-  const { sent } = await db
-    .selectFrom("sign_in.sent_email")
-    .select((eb) => eb.fn.countAll<string>().as("sent"))
-    .where("address_hash", "=", addressHash)
-    .where("sent_at", ">", new Date(now.getTime() - HOUR))
-    .executeTakeFirstOrThrow();
-  if (Number(sent) >= EMAILS_PER_ADDRESS_PER_HOUR) return false;
-  await db.insertInto("sign_in.sent_email").values({ address_hash: addressHash, sent_at: now }).execute();
-  return true;
+  return db.transaction().execute(async (trx) => {
+    await sql`select pg_advisory_xact_lock(${SENT_EMAIL_LOCK}, hashtext(${addressHash}))`.execute(trx);
+    const { sent } = await trx
+      .selectFrom("sign_in.sent_email")
+      .select((eb) => eb.fn.countAll<string>().as("sent"))
+      .where("address_hash", "=", addressHash)
+      .where("sent_at", ">", new Date(now.getTime() - HOUR))
+      .executeTakeFirstOrThrow();
+    if (Number(sent) >= EMAILS_PER_ADDRESS_PER_HOUR) return false;
+    await trx.insertInto("sign_in.sent_email").values({ address_hash: addressHash, sent_at: now }).execute();
+    return true;
+  });
 }
