@@ -122,7 +122,8 @@ export async function runSimulation(code: ServerCode, connection: { db: Db; clie
     fc.asyncProperty(fc.array(stepArbitrary, { maxLength: 40, size: "medium" }), async (steps) => {
       await playSequence(code, connection, steps, tally);
     }),
-    { numRuns: options.numRuns, examples: [[EVERY_STALE_REFUSAL]], ...(options.seed === undefined ? {} : { seed: options.seed }) },
+    // fast-check counts the example among numRuns, so one more keeps every random sequence there was before.
+    { numRuns: options.numRuns + 1, examples: [[EVERY_STALE_REFUSAL]], ...(options.seed === undefined ? {} : { seed: options.seed }) },
   );
   return tally;
 }
