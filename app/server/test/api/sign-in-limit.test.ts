@@ -6,12 +6,8 @@ import type { Answer, SignInApi } from "../support/sign-in.ts";
 // The limit of five sign-in emails per address an hour holds when many
 // requests arrive at once, at one copy of the service or at several sharing
 // the database (L-01; plans/architecture.md §7 "Rate limits and abuse";
-// build plan M2-6a). Emails are kept in memory, never sent.
-//
-// Requests let past the limit at the same moment for the same address can
-// still collide over the one code an address may have: one is sent, and the
-// others fail without an email. So these tests count requests let past the
-// limit (not refused as too many) and emails sent, which can be fewer.
+// build plan M2-6a). Emails are kept in memory, never sent. An address has
+// one code at a time, so of the codes sent together, one signs in.
 
 const db = useTestDatabase({ migrated: true });
 // Two copies of the service on one database, as Cloud Run runs up to three.
@@ -83,5 +79,18 @@ describe("the sign-in email limit, with requests arriving together", () => {
 
     expect((await two.requestCode(email)).status).toBe(200);
     expect((await one.requestCode(email)).status).toBe(200);
+  });
+
+  test("L-01: requests let past the limit together are each answered and emailed, never a server error, and one of their codes signs in", async () => {
+    const email = newAddress();
+
+    const answers = await crowd(email, [one, two]);
+
+    expect(answers.map((answer) => answer.status).sort()).toEqual([...Array(LIMIT).fill(200), ...Array(CROWD - LIMIT).fill(429)]);
+    const codes = [...one.outbox, ...two.outbox].filter((message) => message.to === email).map((message) => message.code);
+    expect(codes).toHaveLength(LIMIT);
+    const signedIn: number[] = [];
+    for (const code of codes) signedIn.push((await one.signIn(email, code)).status);
+    expect(signedIn.filter((status) => status === 200)).toHaveLength(1);
   });
 });
