@@ -279,9 +279,11 @@ resource "google_service_account_iam_member" "deploy_from_github" {
 }
 
 # What deploying takes: push the image, deploy the service and jobs and run the migration job, act as the
-# accounts they run as, and (staging) start the database. Not reading secrets.
+# accounts they run as, and (staging) start the database. Not reading secrets. Cloud SQL Editor, which starting
+# the database needs, also lets its holder export the database or change its settings, so only staging, whose
+# database each deploy starts, has it (M2-13, plans/reviews/deployment-trust-boundary.md).
 resource "google_project_iam_member" "deploy" {
-  for_each = toset(["roles/run.developer", "roles/cloudsql.editor"])
+  for_each = toset(concat(["roles/run.developer"], var.stop_database_nightly ? ["roles/cloudsql.editor"] : []))
   project  = var.project_id
   role     = each.value
   member   = "serviceAccount:${google_service_account.deploy.email}"
