@@ -40,6 +40,20 @@ export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.s
 export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
 
+/** The roles the owner may give someone on Share's people list (M2-2b, Q27): any but Owner. */
+export const MEMBER_ROLES = ["viewer", "voter", "contributor", "editor"] as const satisfies readonly Role[];
+
+/** The owner sets someone's role on the board. */
+export const memberRoleInput = z.strictObject({ role: z.enum(MEMBER_ROLES) });
+
+/** Someone on the board, as Share's people list shows them: by username, never by email. */
+export interface Person {
+  id: string;
+  /** Null until they've chosen a username. */
+  name: string | null;
+  role: Role;
+}
+
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 

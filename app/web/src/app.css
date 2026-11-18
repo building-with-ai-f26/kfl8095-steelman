@@ -29,6 +29,13 @@ body { margin:0; }
 #steelman-study button.sm-meta-pill:hover, #steelman-study button.sm-meta-pill[aria-expanded="true"] { border-color:#ffffff80; color:#fff; }
 #steelman-study .sm-head .sm-share { top:calc(100% + 8px); left:24px; right:auto; color:var(--sm-ink); text-align:left; }
 #steelman-study .sm-head:has(.sm-share) { z-index:50; }
+/* The panel hangs from the question's list of facts, whose items are spaced and divided by a rule; the people
+   list's rows are list items too, so they get the prototype's own spacing back, and no rule. */
+#steelman-study .sm-share .sm-person { display:flex; gap:10px; }
+#steelman-study .sm-share .sm-person::before { content:none; }
+/* On a phone the General access row wraps (below); a person's row keeps its name and role on one line. */
+#steelman-study .sm-head .sm-share .sm-people .sm-person { flex-wrap:nowrap; }
+#steelman-study .sm-head .sm-share .sm-people .sm-person > span:nth-child(2) { flex:1 1 0; }
 @media(max-width:640px) {
   #steelman-study .sm-head .sm-share { left:0; right:0; width:auto; max-width:none; grid-template-columns:minmax(0, 1fr); }
   #steelman-study .sm-head .sm-share-body { grid-template-columns:minmax(0, 1fr); }
