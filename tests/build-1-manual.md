@@ -1445,6 +1445,17 @@ From the Build 1 grading feedback: the Nov 9 refresh (commit `32233b5`) replaced
 | Console | No errors |
 | Not checked | The published GitHub Pages copy, until this merges; no classmate has been asked yet, so the steps describe the plan, not a result |
 
+## November 18 — The simulation no longer fails by chance (M-02, M0-5)
+
+PR 71's check (Nov 18, embedded-offline) failed in the simulation, though the pull request changed only documents. Every check held; what failed was the test's demand that each kind of stale action be refused at least once in its 300 random sequences. That run had no action on a deleted argument, which needs a reader to act from an old view on an argument whose last wording has since been deleted. Over the 19 runs before it, that refusal came 3 to 10 times a run.
+
+| Check | Observed result |
+| --- | --- |
+| The fix | `server/test/simulation/world.ts` gives fast-check one fixed sequence to play before the random ones in every run (`EVERY_STALE_REFUSAL`): Ben goes offline and, from his old view, votes on and assesses everything; Cy edits his wording; Ana deletes both of hers, which deletes the argument that had only hers; Ben comes back. The random sequences, their number, and the nine checks are unchanged; the existing test isn't edited |
+| Shown first | With 20 random sequences, where the gap is common: 5 runs out of 5 failed as PR 71's did (a refusal missing, "received undefined"); with the fixed sequence, 5 out of 5 passed |
+| New test | `server/test/simulation/stale-refusals.test.ts` plays the fixed sequence alone, with all nine checks after each step, and requires an action refused for a deleted argument, a deleted wording, and a changed revision |
+| `npm run check` | On Node 22: types, lint, all 733 unit, API, database, and simulation tests (1 new), including both planted-bug tests, and all 181 browser tests pass; no saved screenshot changed |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
