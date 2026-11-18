@@ -1434,6 +1434,17 @@ Build plan M2-13, from the security follow-up approved Nov 17. A review, not a f
 | `npm run check` | On Node 22: types, lint, all 732 unit, API, database, and simulation tests (6 new), and all 181 browser tests pass; no saved screenshot changed. After the second reader's changes to the new test file only: types, lint, and the 48 tooling tests again, all pass |
 | Not verified live | That Google refuses a real pull-request run (shown by configuration only); a release without Cloud SQL Editor; organization-level GitHub settings; reads of Cloud SQL settings, which the always-on audit log doesn't record |
 
+## November 18 — First users: Pod 6 again, on the Product Page
+
+From the Build 1 grading feedback: the Nov 9 refresh (commit `32233b5`) replaced "First users: Pod 6 classmates … reachable for a first test" with three broad groups (students, companies, online communities). The page's idea section (PRD v3) now opens with First users: Pod 6 classmates deciding something real together, asked in class this week, signing in on the test site, and steelmanning one pod decision. The three broad groups follow under Later.
+
+| Check | Observed result |
+| --- | --- |
+| Laptop width | Served locally (`python3 -m http.server`); the First users card uses the page's existing statement-and-steps card, with the Later cards below it and Before and after unchanged |
+| Phone width | At 375 px the steps and the Later cards stack in one column; the page is 375 px wide, with nothing scrolling sideways |
+| Console | No errors |
+| Not checked | The published GitHub Pages copy, until this merges; no classmate has been asked yet, so the steps describe the plan, not a result |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
