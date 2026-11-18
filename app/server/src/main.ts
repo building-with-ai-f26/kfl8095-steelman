@@ -71,6 +71,10 @@ const app = buildApp({
   ...(process.env.WEB_DIRECTORY ? { webDirectory: process.env.WEB_DIRECTORY } : {}),
   // Deployed, one JSON line per request for Cloud Logging. `npm run dev` keeps its terminal quiet.
   ...(mode === "production" ? { logs: process.stdout } : {}),
+  // In the container, Cloud Run's front end is the one proxy before the service (architecture §7, rate limits). If a
+  // load balancer or another proxy is ever put in front (T4), the last X-Forwarded-For entry becomes that proxy's,
+  // and everyone would share one sign-in limit: this must change with it.
+  ...(deployed ? { behindProxy: true } : {}),
   ...(analytics ? { analytics } : {}),
   ...(databaseUrl ? { database: createDatabase(databaseUrl) } : {}),
   ...(signIn ? { signIn } : {}),

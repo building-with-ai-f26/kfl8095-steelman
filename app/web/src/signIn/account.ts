@@ -42,12 +42,14 @@ export async function whoIsSignedIn(): Promise<Me | null | "unreachable"> {
   }
 }
 
-export type SendAnswer = "sent" | "too_many" | "failed";
+/** "too_many": this address's five an hour; `{ waitSeconds }`: too many codes asked for from this network (architecture §7). */
+export type SendAnswer = "sent" | "too_many" | "failed" | { waitSeconds: number };
 
 /** Emails a sign-in code, which cancels any code sent before it. */
 export async function emailCode(email: string): Promise<SendAnswer> {
   const reply = await post("email-otp/send-verification-otp", { email, type: "sign-in" });
   if (reply?.status === 200) return "sent";
+  if (reply?.status === 429 && reply.body?.code === "TOO_MANY_REQUESTS" && typeof reply.body.retryAfter === "number") return { waitSeconds: reply.body.retryAfter };
   if (reply?.status === 429) return "too_many";
   return "failed";
 }

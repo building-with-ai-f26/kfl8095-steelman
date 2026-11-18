@@ -33,6 +33,8 @@ export interface Request {
   /** The Origin header to send; our own unless a test says otherwise, or null for none. */
   origin?: string | null;
   body?: unknown;
+  /** The X-Forwarded-For header to send: what a caller, and Cloud Run after it, put there. */
+  forwardedFor?: string;
 }
 
 export interface Answer {
@@ -99,7 +101,7 @@ export function withCookies(cookie: string | undefined, setCookies: string[]): s
 }
 
 /** Call once at the top of a test file, after `useTestDatabase`. */
-export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: number; google?: boolean } = {}): SignInApi {
+export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: number; google?: boolean; behindProxy?: boolean } = {}): SignInApi {
   const clock = createFakeClock(new Date(NOON));
   const move = { advance: clock.advance, set: clock.set };
   clock.advance = (milliseconds) => {
@@ -123,6 +125,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
       ids: createSeededIds(options.seed ?? 1),
       database: createDatabase(db.url),
       mode: options.mode ?? "test",
+      ...(options.behindProxy ? { behindProxy: true } : {}),
       signIn: {
         origin: ORIGIN,
         // Not a secret: it signs cookies in a throwaway test database only.
@@ -144,8 +147,9 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
     return app;
   };
 
-  const request: SignInApi["request"] = async (method, url, { cookie, origin = ORIGIN, body } = {}) => {
+  const request: SignInApi["request"] = async (method, url, { cookie, origin = ORIGIN, body, forwardedFor } = {}) => {
     const headers: Record<string, string> = {};
+    if (forwardedFor !== undefined) headers["x-forwarded-for"] = forwardedFor;
     if (cookie) headers.cookie = cookie;
     if (origin !== null) headers.origin = origin;
     if (body !== undefined) headers["content-type"] = "application/json";

@@ -454,10 +454,18 @@ function readingAnchor(open: string | null): { id: string; top: number } | null 
   return null;
 }
 
-/** "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
+/** "Too many in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
 function Pill({ state, count, onUpdate }: { state: SessionState; count: number; onUpdate(): void }) {
   let content: React.ReactNode = null;
-  if (state.offline) {
+  if (state.tooMany !== null) {
+    // Over a rate limit: what's waiting is sent once the wait has passed (architecture §7).
+    content = (
+      <span>
+        <Icon name="clock" size={15} />
+        {`${state.tooMany}${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`}
+      </span>
+    );
+  } else if (state.offline) {
     content = (
       <span>
         <Icon name="wifi-off" size={15} />

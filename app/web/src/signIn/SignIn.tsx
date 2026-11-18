@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { tooManyMessage } from "@steelman/shared";
 import { emailCode, googleAddress, signInWithCode } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
 
@@ -69,6 +70,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     setBusy(true);
     const answer = await emailCode(email);
     if (answer === "too_many") return fail(MESSAGES.tooManyEmails);
+    if (typeof answer === "object") return fail(tooManyMessage(answer.waitSeconds));
     if (answer === "failed") return fail(MESSAGES.unreachable);
     setStep("code");
     setResent(again);
