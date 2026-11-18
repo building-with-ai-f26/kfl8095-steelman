@@ -14,6 +14,7 @@ import pg from "pg";
 import type { Page } from "@playwright/test";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import { buildApp } from "../../server/src/app.ts";
+import type { Limits } from "../../server/src/limits.ts";
 import { createDatabase } from "../../server/src/db/database.ts";
 import { seedDemoBoard } from "../../server/src/demo-board.ts";
 import type { DemoBoard } from "../../server/src/demo-board.ts";
@@ -46,8 +47,10 @@ export interface SignInSite {
   errors: string[];
 }
 
-export const test = base.extend<{ site: SignInSite }>({
-  site: async ({ browser }, use) => {
+export const test = base.extend<{ site: SignInSite; limits: Limits | undefined }>({
+  // `test.use({ limits })` gives the service its own rate limits, small enough to reach (M-12). Without it, the class trial's.
+  limits: [undefined, { option: true }],
+  site: async ({ browser, limits }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(11);
@@ -69,6 +72,7 @@ export const test = base.extend<{ site: SignInSite }>({
       ids,
       database: createDatabase(databaseUrl.href),
       mode: "test",
+      ...(limits ? { limits } : {}),
       signIn: {
         origin,
         // Not a secret: it signs cookies in a throwaway test database only.

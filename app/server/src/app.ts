@@ -14,12 +14,15 @@ import {
   newWordingInput,
   sourceInput,
   voteInput,
+  tooManyMessage,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { accountSummary, deleteAccount, exportData } from "./account.ts";
 import { serveWebApp } from "./web.ts";
 import { createBoard } from "./boards.ts";
+import { LIMITS, createLimiter } from "./limits.ts";
+import type { LimitName, Limits } from "./limits.ts";
 import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
@@ -56,6 +59,14 @@ export interface AppDependencies {
   webDirectory?: string;
   /** Where to write one JSON line per request, as Cloud Logging reads them (M1-14a). Without it, nothing is logged. */
   logs?: NodeJS.WritableStream;
+  /**
+   * Behind Cloud Run's front end, which appends the caller's address to
+   * X-Forwarded-For: the last entry is the caller's (one proxy hop is trusted).
+   * Without it, the connection's own address, and the header is ignored.
+   */
+  behindProxy?: boolean;
+  /** The rate limits (architecture §7); the class trial's unless a test sets its own. */
+  limits?: Limits;
 }
 
 /**
@@ -112,6 +123,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   id_taken: 409,
   needs_username: 403,
   wrong_origin: 403,
+  too_many: 429,
 };
 
 /** Requests that only read. Anything else is a write, and must come from our own site. */
@@ -122,13 +134,17 @@ declare module "fastify" {
     /** The account acting, or null when signed out. */
     person: string | null;
   }
+  interface FastifyContextConfig {
+    /** The rate limit a signed-in person's request to this route counts against (architecture §7). */
+    limit?: LimitName;
+  }
 }
 
 /**
  * Builds the Steelman service without starting it, so tests can call its
  * routes directly and main.ts can listen on a port.
  */
-export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics, webDirectory, logs }: AppDependencies): FastifyInstance {
+export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics, webDirectory, logs, behindProxy = false, limits = LIMITS }: AppDependencies): FastifyInstance {
   // Fastify's own per-request lines are off (they hold the address and the IP); ours are below.
   const app = Fastify({ logger: logs ? cloudLogging(logs, clock) : false, logController: new LogController({ disableRequestLogging: true }) });
   if (logs) {
@@ -191,6 +207,24 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     request.person = person.id;
   });
 
+  // Rate limits (M2-6, architecture §7): a signed-in person's request to a route that names a limit counts
+  // against it; over it, nothing is done. It's counted on arriving, so requests sent together can't all slip
+  // under, and given back if it saved nothing (invalid, or refused). A signed-out request is refused by the
+  // route itself, uncounted.
+  const limiter = createLimiter(clock, limits);
+  app.addHook("preHandler", async (request, reply) => {
+    const limit = request.routeOptions.config.limit;
+    if (!limit || request.person === null) return;
+    const wait = limiter.take(limit, request.person);
+    if (wait !== null) return reply.code(429).header("retry-after", String(wait)).send({ status: "refused", reason: "too_many", retryAfter: wait });
+    counted.add(request);
+  });
+  const counted = new WeakSet<FastifyRequest>();
+  app.addHook("onResponse", async (request, reply) => {
+    const limit = request.routeOptions.config.limit;
+    if (limit && request.person !== null && counted.has(request) && reply.statusCode !== 200) limiter.giveBack(limit, request.person);
+  });
+
   if (signIn) {
     app.route({
       method: ["GET", "POST"],
@@ -199,6 +233,13 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
         const url = new URL(request.url, signInDependencies.origin);
         const route = `${request.method} ${url.pathname.slice("/api/auth".length)}`;
         if (!SIGN_IN_ROUTES.has(route)) return reply.code(404).send({ reason: "not_found" });
+        // Codes to any address from one network address (architecture §7); the per-address limit is sign-in's own.
+        if (route === "POST /email-otp/send-verification-otp") {
+          const wait = limiter.take("signInCode", callerNetwork(request, behindProxy));
+          if (wait !== null) {
+            return reply.code(429).header("retry-after", String(wait)).send({ code: "TOO_MANY_REQUESTS", message: tooManyMessage(wait), retryAfter: wait });
+          }
+        }
         const response = await signIn.handle(
           new Request(url, {
             method: request.method,
@@ -246,7 +287,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   });
 
   // A new board (F-01). Anyone signed in may make one; they become its Owner.
-  app.post("/api/boards", async (request, reply) => {
+  app.post("/api/boards", { config: { limit: "board" } }, async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     const body = newBoardInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
@@ -301,37 +342,37 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return answer(reply, await setAccess(services, request.params.board, request.person, body.data));
   });
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", async (request, reply) => {
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setImportance(services, request.params.board, request.person, request.params.id, body.data.value));
   });
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/articulation", async (request, reply) => {
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/articulation", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setArticulation(services, request.params.board, request.person, request.params.id, body.data.value));
   });
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/assessment", async (request, reply) => {
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/assessment", { config: { limit: "voting" } }, async (request, reply) => {
     const body = assessmentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data));
   });
 
-  app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", async (request, reply) => {
+  app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newArgumentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await addArgument(services, request.params.board, request.person, body.data));
   });
 
-  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/versions", async (request, reply) => {
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/versions", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newWordingInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await addWording(services, request.params.board, request.person, request.params.id, body.data));
   });
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) => {
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", { config: { limit: "writing" } }, async (request, reply) => {
     const body = editInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await editWording(services, request.params.board, request.person, request.params.id, body.data));
@@ -342,13 +383,13 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   );
 
   // Sources (C-01): add a new one to a wording, cite one already on the board, take one off, or edit one.
-  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/sources", async (request, reply) => {
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/sources", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newSourceInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await addSource(services, request.params.board, request.person, request.params.id, body.data));
   });
 
-  app.put<{ Params: { board: string; id: string; source: string } }>("/api/boards/:board/versions/:id/sources/:source", async (request, reply) =>
+  app.put<{ Params: { board: string; id: string; source: string } }>("/api/boards/:board/versions/:id/sources/:source", { config: { limit: "writing" } }, async (request, reply) =>
     answer(reply, await citeSource(services, request.params.board, request.person, request.params.id, request.params.source)),
   );
 
@@ -356,7 +397,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     answer(reply, await unciteSource(services, request.params.board, request.person, request.params.id, request.params.source)),
   );
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id", async (request, reply) => {
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id", { config: { limit: "writing" } }, async (request, reply) => {
     const body = sourceInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await editSource(services, request.params.board, request.person, request.params.id, body.data));
@@ -375,7 +416,32 @@ function headersOf(headers: Record<string, string | string[] | undefined>): Head
   return result;
 }
 
+/**
+ * The caller's network, used only to count sign-in code requests, in memory (architecture §7). Behind Cloud Run,
+ * the last X-Forwarded-For entry: Cloud Run appends the address it saw, and anything the caller sent goes in front of
+ * it. Node joins repeated headers into one, in order. Otherwise, the connection's own address. An IPv6 address counts
+ * by its first 64 bits, the block one home or school line is given, so a caller can't take a new address each time.
+ */
+export function callerNetwork(request: FastifyRequest, behindProxy: boolean): string {
+  const forwarded = request.headers["x-forwarded-for"];
+  const last = behindProxy && typeof forwarded === "string" ? forwarded.split(",").at(-1)?.trim() : undefined;
+  return networkOf(last || request.socket.remoteAddress || "unknown");
+}
+
+/** An IPv4 address as it is; an IPv6 address as its first four groups, written out in full. */
+export function networkOf(address: string): string {
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(address);
+  if (mapped) return mapped[1]!;
+  if (!address.includes(":")) return address;
+  const [head, tail] = address.split("%")[0]!.split("::") as [string, string | undefined];
+  const front = head ? head.split(":") : [];
+  const back = tail ? tail.split(":") : [];
+  const groups = tail === undefined ? front : [...front, ...Array(Math.max(0, 8 - front.length - back.length)).fill("0"), ...back];
+  return `${groups.slice(0, 4).map((group) => (parseInt(group, 16) || 0).toString(16)).join(":")}::/64`;
+}
+
 /** Sends a write's answer with the matching HTTP status. */
+
 function answer(reply: FastifyReply, result: WriteResult): FastifyReply {
   if (result.status === "not_found") return reply.code(404).send({ reason: "not_found" });
   if (result.status === "refused") return reply.code(STATUS_FOR[result.reason]).send(result);

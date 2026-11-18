@@ -204,9 +204,17 @@ export type RefusalReason =
   /** Signed in, but hasn't picked a username yet, so there is nothing to credit a write to. */
   | "needs_username"
   /** A write carrying a session cookie came from another site, or didn't say where from (cross-site request forgery). */
-  | "wrong_origin";
+  | "wrong_origin"
+  /** Over a rate limit (architecture §7): nothing was saved; `retryAfter` says how many seconds until it would be. */
+  | "too_many";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }
   | { status: "already_done" }
-  | { status: "refused"; reason: RefusalReason; current?: VersionRow };
+  | { status: "refused"; reason: RefusalReason; current?: VersionRow; retryAfter?: number };
+
+/** What a person over a rate limit is told: "a minute" for a wait of a minute or less, else the minutes, rounded up. */
+export function tooManyMessage(seconds: number): string {
+  const minutes = Math.ceil(seconds / 60);
+  return `Too many in a row. Try again in ${minutes <= 1 ? "a minute" : `${minutes} minutes`}.`;
+}

@@ -4,7 +4,7 @@
 // (`openView`, `receive`, `pressUpdate`, `pillCount`, `enqueue`); this only
 // runs them at the right moments and tells React when something changed.
 
-import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
+import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardSnapshot, QueuedAction, ReaderView, Role, Standing } from "@steelman/shared";
 import { Unreachable, readBoard, readChanges, send, setAccess } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
@@ -40,6 +40,8 @@ export interface SessionState {
   /** Actions not yet accepted by the service. */
   waiting: number;
   offline: boolean;
+  /** Over a rate limit (architecture §7): what the reader is told, while the queue waits to send again; null otherwise. */
+  tooMany: string | null;
   /** How many were sent on coming back, while that note is up; null otherwise. */
   backOnline: number | null;
   /** The reader's own choices, newest first: queued, or sent but not yet in the rows the reader holds. */
@@ -64,6 +66,7 @@ export class BoardSession {
     question: "",
     waiting: 0,
     offline: false,
+    tooMany: null,
     backOnline: null,
     mine: [],
     status: "",
@@ -81,6 +84,7 @@ export class BoardSession {
   private pollTimer: number | undefined;
   private backOnlineTimer: number | undefined;
   private undoTimer: number | undefined;
+  private tooManyTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
   private stopped = false;
@@ -150,6 +154,7 @@ export class BoardSession {
     this.stopped = true;
     window.clearTimeout(this.pollTimer);
     window.clearTimeout(this.backOnlineTimer);
+    window.clearTimeout(this.tooManyTimer);
     window.removeEventListener("online", this.cameOnline);
     window.removeEventListener("offline", this.wentOffline);
     window.removeEventListener("beforeunload", this.beforeUnload);
@@ -256,7 +261,7 @@ export class BoardSession {
 
   // ── Sending ──
   private async flush(): Promise<void> {
-    if (this.sending || this.state.offline) return;
+    if (this.sending || this.state.offline || this.state.tooMany !== null) return;
     this.sending = true;
     let sentNow = 0;
     try {
@@ -268,6 +273,11 @@ export class BoardSession {
         } catch (error) {
           if (!(error instanceof Unreachable)) throw error;
           this.set({ offline: true });
+          return;
+        }
+        // Over a rate limit nothing was saved: the action stays queued, with the rest, and is sent once the wait has passed.
+        if (answer.status === "refused" && answer.reason === "too_many") {
+          this.waitToSend(answer.retryAfter ?? 60);
           return;
         }
         // By this action, not by place: a newer choice made while it was on its way may have replaced it in the queue.
@@ -286,6 +296,16 @@ export class BoardSession {
       this.sending = false;
     }
     if (sentNow > 0) await this.poll();
+  }
+
+  private waitToSend(seconds: number): void {
+    const note = tooManyMessage(seconds);
+    this.set({ tooMany: note, status: note });
+    window.clearTimeout(this.tooManyTimer);
+    this.tooManyTimer = window.setTimeout(() => {
+      this.set({ tooMany: null });
+      void this.flush();
+    }, seconds * 1000);
   }
 
   // ── Polling ──

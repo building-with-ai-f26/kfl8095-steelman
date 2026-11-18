@@ -14,6 +14,7 @@ import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import type { FakeClock } from "@steelman/shared/testing";
 import type { IdSource } from "@steelman/shared";
 import { buildApp } from "../../server/src/app.ts";
+import type { Limits } from "../../server/src/limits.ts";
 import { createDatabase } from "../../server/src/db/database.ts";
 import { seedDemoBoard } from "../../server/src/demo-board.ts";
 import type { DemoBoard, DemoPerson } from "../../server/src/demo-board.ts";
@@ -63,10 +64,12 @@ export interface Caller {
   delete(path: string): Promise<unknown>;
 }
 
-export const test = base.extend<{ board: TestBoard; analytics: boolean }>({
+export const test = base.extend<{ board: TestBoard; analytics: boolean; limits: Limits | undefined }>({
   // `test.use({ analytics: true })` gives the service a PostHog key (M-08). Without it, as when deployed without one, analytics are off.
   analytics: [false, { option: true }],
-  board: async ({ browser, playwright, analytics }, use) => {
+  // `test.use({ limits })` gives the service its own rate limits, small enough to reach (M-12). Without it, the class trial's.
+  limits: [undefined, { option: true }],
+  board: async ({ browser, playwright, analytics, limits }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(7);
@@ -74,7 +77,7 @@ export const test = base.extend<{ board: TestBoard; analytics: boolean }>({
     const demo = await seedDemoBoard(db, clock, ids);
     await db.destroy();
 
-    const app = buildApp({ clock, ids, database: createDatabase(databaseUrl.href), mode: "test", ...(analytics ? { analytics: TEST_POSTHOG } : {}) });
+    const app = buildApp({ clock, ids, database: createDatabase(databaseUrl.href), mode: "test", ...(analytics ? { analytics: TEST_POSTHOG } : {}), ...(limits ? { limits } : {}) });
     serveWebApp(app);
     await app.listen({ port: 0, host: "127.0.0.1" });
     const address = app.server.address();

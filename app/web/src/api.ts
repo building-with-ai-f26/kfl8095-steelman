@@ -2,6 +2,7 @@
 // in (the browser sends their session cookie), or says which test account the
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
+import { tooManyMessage } from "@steelman/shared";
 import type { Access, BoardChanges, BoardSnapshot, NewBoard, PublicConfig, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";
 
@@ -69,6 +70,7 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
     return { problem: "Couldn’t reach Steelman. Try again." };
   }
   if (response.status === 401) return { problem: "You’ve been signed out. Reload the page to sign in." };
+  if (response.status === 429) return { problem: tooManyMessage(((await response.json()) as { retryAfter: number }).retryAfter) };
   if (!response.ok) return { problem: "Steelman couldn’t make that board. Try again." };
   return ((await response.json()) as { board: string }).board;
 }
