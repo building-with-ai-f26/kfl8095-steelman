@@ -5,6 +5,10 @@ GitHub and Google actually hold, read live the same day. Read-only throughout: n
 was changed. This review proposes one permission reduction (in this pull request, for the builder to apply)
 and puts three decisions to the builder.
 
+**Outcome, Nov 18:** the builder applied the reduction (PR 70; production's deploy account no longer holds
+Cloud SQL Editor, confirmed live), and decided to keep all three as they are for the class trial (below,
+"The builder's decisions"). Re-review before access widens beyond the class.
+
 ## In short
 
 - **Deploying is reading the secrets, one step removed.** The deploy account can't read Secret Manager, but it
@@ -183,6 +187,20 @@ weekly export goes to a bucket in the staging project, which staging's owner, ed
 None of these is in this pull request's diff: each is a workflow change, a GitHub setting, or a change to how
 agent sessions are signed in, which stay with the builder (M2-13's row).
 
+### The builder's decisions (Nov 18)
+
+All three stay as they are for the class trial, accepted knowingly:
+
+1. **Agents keep acting as the builder on GitHub and Google.** The builder trusts their agent sessions, and
+   taking the access away would make deploying harder and more error-prone for one person. To be changed
+   as the project scales and needs more security.
+2. **The protected-files check stays as it is.** This is a class project, not yet enterprise software; open
+   to the fix, and to be reviewed again as it scales.
+3. **Admins keep their bypass** of the release approval and of `main`'s rules.
+
+**When to review again:** before access widens beyond the class trial (the security follow-up approved
+Nov 17), and before the public-communities phase. The proposals below stand ready for then.
+
 ### 1. Agents act on GitHub and Google as the builder
 
 Local agent sessions use the builder's GitHub login (a token with `repo` and `workflow`, admin on the
@@ -308,6 +326,11 @@ gcloud projects get-iam-policy steelman-production --flatten=bindings --filter=b
 Staging needs no apply (its plan shows no changes). Staging's deploy and migrations ran successfully on
 the current configuration on Nov 18 (run 44368472988, PR 69's merge: migrations, smoke test, traffic), and
 this pull request's own merge will deploy again with it.
+
+**Done Nov 18.** The builder's plan showed `0 to add, 0 to change, 1 to destroy`, that grant only; the
+apply removed it, and the check above lists only `steelman-scheduler`. PR 70's merge then deployed to
+staging (run 44396368827): migrations, smoke test, and traffic all passed. A release without the role is
+still to come.
 
 ## Not verified live
 
