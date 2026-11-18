@@ -18,6 +18,7 @@ import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, genericOAuth, username } from "better-auth/plugins";
+import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
@@ -54,6 +55,12 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
   "GET /callback/google",
 ]);
 
+/**
+ * The routes that store a sign-in code: asking for one, and signing in with a
+ * wrong one, which puts the code back with one more try counted.
+ */
+const CODE_ROUTES: ReadonlySet<string> = new Set(["/email-otp/send-verification-otp", "/sign-in/email-otp"]);
+
 /** What a request to start a Google sign-in may carry: which provider, and where to send the browser afterwards. */
 const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackURL", "errorCallbackURL", "newUserCallbackURL"]);
 
@@ -67,6 +74,12 @@ const WRONG_TRIES_ALLOWED = 5;
 const SESSION_LASTS_SECONDS = 30 * 24 * 60 * 60;
 const EMAILS_PER_ADDRESS_PER_HOUR = 5;
 const HOUR = 60 * 60 * 1000;
+/**
+ * The first half of the Postgres lock that lets one request at a time count an
+ * address's emails; the second half comes from the address's hash. Any number
+ * no other lock in the app uses.
+ */
+const SENT_EMAIL_LOCK = 7001;
 
 const timestamps = { createdAt: "created_at", updatedAt: "updated_at" };
 
@@ -138,6 +151,20 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
       account: {
         create: { before: async (method) => ({ data: { ...method, ...NO_TOKENS } }) },
         update: { before: async (method) => ({ data: { ...method, ...NO_TOKENS } }) },
+      },
+      // An address has one sign-in code at a time. Better Auth replaces the old
+      // one by trying to add the new one, and on failing, deleting the old and
+      // adding again: requests that arrive together can fail twice, and answer
+      // with a server error. So on the routes that store a code, it's stored
+      // here, in one statement that can't collide, and Better Auth adds nothing.
+      verification: {
+        create: {
+          before: async (code, context) => {
+            if (!CODE_ROUTES.has(context?.path ?? "")) return;
+            await storeCode(db, ids.itemId(), code);
+            return false;
+          },
+        },
       },
     },
     // Where a Google sign-in that fails sends the browser, with ?error=… added,
@@ -276,17 +303,55 @@ export function acceptGoogleIdentity(claims: Record<string, unknown>): { sub: st
   return { sub, email };
 }
 
-/** Counts this sign-in email against its address's limit, or says the limit is reached. */
+/**
+ * Counts this sign-in email against its address's limit, or says the limit is reached.
+ *
+ * Counting and adding happen while holding a lock on the address, so requests
+ * that arrive together, at any copy of the service, take their turns: without
+ * it, each could count four and all be sent (M2-6a). The lock is Postgres's,
+ * held until the transaction ends, so it's shared by every copy and can't be
+ * left behind. Other addresses almost always take other locks, so they rarely wait.
+ */
 async function mayEmail(db: Db, clock: Clock, address: string): Promise<boolean> {
   const addressHash = createHash("sha256").update(address).digest("hex");
   const now = clock.now();
-  const { sent } = await db
-    .selectFrom("sign_in.sent_email")
-    .select((eb) => eb.fn.countAll<string>().as("sent"))
-    .where("address_hash", "=", addressHash)
-    .where("sent_at", ">", new Date(now.getTime() - HOUR))
-    .executeTakeFirstOrThrow();
-  if (Number(sent) >= EMAILS_PER_ADDRESS_PER_HOUR) return false;
-  await db.insertInto("sign_in.sent_email").values({ address_hash: addressHash, sent_at: now }).execute();
-  return true;
+  return db.transaction().execute(async (trx) => {
+    await sql`select pg_advisory_xact_lock(${SENT_EMAIL_LOCK}, hashtext(${addressHash}))`.execute(trx);
+    const { sent } = await trx
+      .selectFrom("sign_in.sent_email")
+      .select((eb) => eb.fn.countAll<string>().as("sent"))
+      .where("address_hash", "=", addressHash)
+      .where("sent_at", ">", new Date(now.getTime() - HOUR))
+      .executeTakeFirstOrThrow();
+    if (Number(sent) >= EMAILS_PER_ADDRESS_PER_HOUR) return false;
+    await trx.insertInto("sign_in.sent_email").values({ address_hash: addressHash, sent_at: now }).execute();
+    return true;
+  });
+}
+
+/**
+ * Stores a sign-in code in place of the address's old one, if any, in one
+ * statement, so codes stored at the same moment can't collide. Of two codes,
+ * the one that expires later stays: a new code replaces the old, and a code put
+ * back after a wrong try doesn't replace a newer one sent meanwhile. Two that
+ * expire at the same millisecond (only codes sent at the same moment) go to the
+ * last stored.
+ */
+async function storeCode(db: Db, id: string, code: { identifier: string; value: string; expiresAt: Date; createdAt: Date; updatedAt: Date }): Promise<void> {
+  await db
+    .insertInto("sign_in.sign_in_code")
+    .values({ id, identifier: code.identifier, value: code.value, expires_at: code.expiresAt, created_at: code.createdAt, updated_at: code.updatedAt })
+    .onConflict((conflict) =>
+      conflict
+        .column("identifier")
+        .doUpdateSet((eb) => ({
+          id: eb.ref("excluded.id"),
+          value: eb.ref("excluded.value"),
+          expires_at: eb.ref("excluded.expires_at"),
+          created_at: eb.ref("excluded.created_at"),
+          updated_at: eb.ref("excluded.updated_at"),
+        }))
+        .where(sql<boolean>`excluded.expires_at >= sign_in_code.expires_at`),
+    )
+    .execute();
 }

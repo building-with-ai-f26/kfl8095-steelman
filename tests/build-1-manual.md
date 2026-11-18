@@ -1380,6 +1380,32 @@ Two things the builder found using the app locally.
 | Locally | After `npm run db:seed`, the 17 seeded test accounts are confirmed; tess.b opens the builder's own link board |
 | `npm run check` | On Node 22: types, lint, all 709 unit, API, database, and simulation tests, and all 177 browser tests pass (177 s). Two earlier runs, made while the local app was also running, each timed out one test unrelated to this change (a database test, then a lint test and a role test) and took 188 s and 500 s: the machine was busy. Stopping the local app, the run was clean |
 
+## November 18 — The sign-in email limit under concurrency (L-01)
+
+Build plan M2-6a, from the security follow-up approved Nov 17. The limit of five sign-in emails per address an hour counted the address's recent emails and then added one, as two separate steps, so requests arriving together each counted fewer than five and all got through.
+
+| Check | Observed result |
+| --- | --- |
+| The race, shown first | `server/test/api/sign-in-limit.test.ts`, 4 tests, through the API with emails kept in memory. Before the fix, 12 requests at once for one address were all let past the limit (none refused); at two copies of the service on one database, 6 of 12 were refused instead of 7 |
+| The fix | `mayEmail` in `server/src/sign-in.ts` counts and adds inside one transaction that first takes a Postgres lock on the address (`pg_advisory_xact_lock`, keyed by the address's hash). Requests for one address take turns, at every copy of the service; other addresses take other locks. The lock ends with the transaction, so a crash can't leave it held. No new package, no migration; addresses stay hashed and the daily job still deletes them after 24 hours |
+| After | 12 requests at once, in mixed capitals: exactly 5 let through, 7 refused as too many; the same across two copies, and neither copy sends a sixth afterwards; another address asking meanwhile gets its own five; an hour later the address is sent codes again. Five runs over, all pass. The existing test of the sixth email in an hour still passes |
+| Second reader | A fresh agent found nothing to change: the lock's key can't overlap the migration runner's (Postgres keeps one-number and two-number locks apart), it can't deadlock (the holder never asks for a second connection), and Better Auth lowercases addresses exactly as the limit does. One comment claimed other addresses never wait; with a 32-bit key two can share a lock, so it now says they rarely do. A burst for one address can briefly hold that copy's five database connections; each turn takes milliseconds |
+| `npm run check` | On Node 22: types, lint, all 711 unit, API, database, and simulation tests (4 new), and all 175 browser tests pass; no saved screenshot changed |
+| Known limitation | Requests let through at the same moment for the same address can still collide over the one code an address may have: one is sent, and the others answer with a server error (500) and send nothing. The person still gets one working code. Not part of this item |
+
+## November 18 — Sign-in codes asked for together (L-01)
+
+Found while building M2-6a; the builder chose to fix it next. An address has one sign-in code at a time. Better Auth replaces the old code by trying to add the new one and, on failing, deleting the old and adding again, so requests arriving together for one address could fail twice and answer with a server error (500), sending nothing.
+
+| Check | Observed result |
+| --- | --- |
+| Shown first | A fifth test in `server/test/api/sign-in-limit.test.ts`: 12 requests at once for one address, across two copies of the service. Before the fix, two of the five let past the limit answered 500 |
+| The fix | On the two routes that store a code (asking for one; signing in with a wrong one, which puts it back with a try counted), `server/src/sign-in.ts` stores it itself, in one Postgres statement that replaces the address's old code (`insert … on conflict do update`), and Better Auth adds nothing. Of two codes, the one that expires later stays: a new code replaces the old, and a code put back after a wrong try can't replace a newer one sent meanwhile. Other uses of the same table (Google sign-in's state) are untouched. No migration, no package |
+| After | All five let past the limit answer 200 and are emailed; the other seven are refused as too many; exactly one of the five codes signs in. Five runs over, all pass. Every existing sign-in test passes, including a new code cancelling the old, the ten-minute expiry, five wrong tries, and Google sign-in |
+| Second reader | A fresh agent found nothing to change. It confirmed only the two code routes reach the new step (Google sign-in's state, which needs Better Auth's own insert, never does), that the step stores exactly what Better Auth would have, and that nobody gets more than five tries per code. One comment overstated the rule: two codes that expire at the same millisecond go to the last stored, which it now says. The migration's comment on how Better Auth replaces codes is now out of date and is left alone, since migrations aren't edited |
+| `npm run check` | On Node 22: types, lint, all 712 unit, API, database, and simulation tests (1 new), and all 175 browser tests pass; no saved screenshot changed |
+| Known limitation | When codes are sent at the same moment, their emails can arrive in either order, and only one code works: the person may type one from an earlier email and need to try the other |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

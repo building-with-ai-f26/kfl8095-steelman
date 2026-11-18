@@ -566,9 +566,26 @@ The prototype already has the rule book: a map from every action to the least ro
 
 | Phase | What's in place |
 |---|---|
-| **Class trial (MVP)** | Limits in the service, per account and per IP address. Starting values, tuned from real use: sign-in emails 5 per address per hour; new arguments and wordings 30 per hour; votes and assessments 300 per minute; reports 20 per hour. Over the limit: a clear message and a short wait. Counters live in each service instance's memory, so a vote doesn't cost a second database write; with at most 3 instances, a limit can be at most three times too generous, which is fine for limits this loose. The one exception is sign-in emails, counted in Postgres, because each one costs money and reaches a real inbox. Plus moderation itself: reports, hide with a reason, the audit trail (J-01, J-02) |
+| **Class trial (MVP)** | Limits in the service, per account, and per network address where there's no account yet: the values are in the table below (proposed Nov 18 for M2-6), tuned from real use. Over the limit: a clear message and a short wait. Counters live in each service instance's memory, so a vote doesn't cost a second database write; with at most 3 instances, a limit can be at most three times too generous, which is fine for limits this loose. The one exception is sign-in emails, counted in Postgres, because each one costs money and reaches a real inbox. Plus moderation itself: reports, hide with a reason, the audit trail (J-01, J-02) |
 | **Public communities (T4)** | Everything above, plus: the load balancer (step 6) with **Cloud Armor** rate limiting per IP in front of the service (price *unverified*); **new-member holds**, so a brand-new account's contributions in a community are held for review (permissions.md open question, answered yes for public communities); a bot check on sign-up (reCAPTCHA, which is Google's own) only if sign-up spam actually appears |
 | **Watching for vote brigades** | Vote rows have timestamps, so a burst of new accounts voting one way on one board is a query. Turning that into an alert is T4 work; the data is collected from the start |
+
+**The class-trial limits** (M2-6; proposed Nov 18, waiting for the builder). Each counts in a fixed window that starts with the first request counted.
+
+| What | Counted by | Limit | Why this number |
+|---|---|---|---|
+| Sign-in emails to one address | the address (Postgres, hashed) | 5 an hour | Built (M1-4, M2-6a) |
+| Asking for a sign-in code, any address | network address | 30 an hour | A class signing in together from one school network, with a few asking for a second code. Stops one machine cycling through addresses, which the per-address limit can't. Resend's free plan sends 100 a day, so one network can still use a third of a day's emails, or all of them across three instances (see below) |
+| New boards | account | 20 an hour | A person trying the app makes a handful |
+| Writing: new arguments, new wordings, edits, and sources added | account | 60 an hour | Was 30 for arguments and wordings alone; edits and sources weren't counted, and a busy classmate adds both |
+| Voting: importance, articulation, and assessments | account | 300 a minute | Unchanged. The board's offline queue keeps only the latest choice per item, so coming back online sends at most one per item |
+| Reports | account | 20 an hour | Unchanged; wired in when reports exist (M2-3) |
+
+- **Per account, not per network address, for everything that needs an account.** A class shares one address: a per-address limit on votes would have to allow the whole class's, and would then stop no one. Accounts come only through a sign-in, which the two sign-in limits bound.
+- **Deleting, undoing, Share settings, and reading** aren't counted.
+- **Over a limit:** the request is refused (HTTP 429, with `Retry-After`) and nothing is saved. The screen says "Too many in a row. Try again in a minute.", or "in N minutes" when the wait is longer. A queued board action that's refused this way stays queued, shown as waiting, and is sent again once the wait has passed.
+- **The network address** is the last entry of `X-Forwarded-For`, which Cloud Run appends; anything a caller sends goes in front of it, so a made-up header can't change it. Trusted only when the service is deployed (one proxy hop); locally, the connection's own address. Google's documentation doesn't say this outright (community tests do, *unverified*), so it's checked on staging before release. The address is held only in the counter, in memory, until its window ends: never stored or logged by the service. Request logs already keep it for 30 days (What we collect, below), so this collects nothing new.
+- **In memory, per instance:** with up to 3 instances a limit can be up to three times too generous, and a restart or deploy resets the counts. Fine for limits this loose; the per-address sign-in email limit stays in Postgres because each email costs money and reaches a real inbox.
 
 ### Export and deletion
 
