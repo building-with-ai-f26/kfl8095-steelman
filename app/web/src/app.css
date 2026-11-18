@@ -108,3 +108,6 @@ body { margin:0; }
 /* The hint box (Hints.tsx), as the prototype's page draws it: a small dark box above its control.
    It sits on <body>, outside #steelman-study, so it uses the page-wide tokens directly. */
 .sm-hint { position:fixed; z-index:1000; top:0; left:0; width:max-content; max-width:min(20rem, calc(100vw - 10px)); padding:5px 10px; border-radius:8px; background:var(--sm-ink); color:#fff; box-shadow:0 8px 18px rgb(15 23 42 / 20%); font:600 13px/18px var(--sm-sans); text-align:center; overflow-wrap:break-word; pointer-events:none; user-select:none; }
+
+/* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
+#steelman-study .sm-share:focus { outline:none; }

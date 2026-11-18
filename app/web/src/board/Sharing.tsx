@@ -29,7 +29,9 @@ export function Sharing({ access, role, session }: { access: Access; role: Role;
   // Escape, or a click anywhere else, closes it.
   useEffect(() => {
     if (!open) return;
-    panel.current?.querySelector<HTMLElement>("select:not(:disabled), footer button")?.focus();
+    // The cursor goes to the panel itself, not its first setting: a setting focused on opening shows the
+    // browser's focus outline even after a click (the builder, Nov 17). Tab reaches the settings from here.
+    panel.current?.focus();
     // Only while the cursor is in the panel or on the pill: Escape elsewhere belongs to whatever has the cursor.
     const onKey = (event: KeyboardEvent) => {
       const here = document.activeElement;
@@ -83,7 +85,7 @@ export function Sharing({ access, role, session }: { access: Access; role: Role;
           {GENERAL[access.general]}
         </button>
         {open ? (
-          <section ref={panel} id="sm-share" className="sm-share" role="dialog" aria-modal="false" aria-labelledby="sm-share-title">
+          <section ref={panel} id="sm-share" className="sm-share" role="dialog" aria-modal="false" aria-labelledby="sm-share-title" tabIndex={-1}>
             <div className="sm-share-head">
               <h2 id="sm-share-title">Share</h2>
               <button type="button" className="sm-icon-button cursor-interaction" aria-label="Close sharing" onClick={close}>
