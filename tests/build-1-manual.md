@@ -1435,6 +1435,29 @@ Build plan M2-13, from the security follow-up approved Nov 17. A review, not a f
 | Not verified live | That Google refuses a real pull-request run (shown by configuration only); a release without Cloud SQL Editor; organization-level GitHub settings; reads of Cloud SQL settings, which the always-on audit log doesn't record |
 | Applied, and the builder's decisions | After PR 70 merged, the builder's production plan showed only that grant to destroy; the apply removed it, and production's policy now lists only the scheduler with Cloud SQL Editor. PR 70's staging deploy (run 44396368827) then passed its migrations, smoke test, and traffic. The builder kept the review's three open points as they are for the class trial (agents act as the builder; the protected-files check unchanged; admins keep their bypass), to be reviewed again before access widens beyond the class |
 
+## November 18 — First users: Pod 6 again, on the Product Page
+
+From the Build 1 grading feedback: the Nov 9 refresh (commit `32233b5`) replaced "First users: Pod 6 classmates … reachable for a first test" with three broad groups (students, companies, online communities). The page's idea section (PRD v3) now opens with First users: Pod 6 classmates deciding something real together, asked in class this week, signing in on the test site, and steelmanning one pod decision. The three broad groups follow under Later.
+
+| Check | Observed result |
+| --- | --- |
+| Laptop width | Served locally (`python3 -m http.server`); the First users card uses the page's existing statement-and-steps card, with the Later cards below it and Before and after unchanged |
+| Phone width | At 375 px the steps and the Later cards stack in one column; the page is 375 px wide, with nothing scrolling sideways |
+| Console | No errors |
+| Not checked | The published GitHub Pages copy, until this merges; no classmate has been asked yet, so the steps describe the plan, not a result |
+
+## November 18 — The simulation no longer fails by chance (M-02, M0-5)
+
+PR 71's check (Nov 18, embedded-offline) failed in the simulation, though the pull request changed only documents. Every check held; what failed was the test's demand that each kind of stale action be refused at least once in its 300 random sequences. That run had no action on a deleted argument, which needs a reader to act from an old view on an argument whose last wording has since been deleted. Over the 19 runs before it, that refusal came 3 to 10 times a run.
+
+| Check | Observed result |
+| --- | --- |
+| The fix | `server/test/simulation/world.ts` gives fast-check one fixed sequence to play before the random ones in every run (`EVERY_STALE_REFUSAL`): Ben goes offline and, from his old view, votes on and assesses everything; Cy edits his wording; Ana deletes both of hers, which deletes the argument that had only hers; Ben comes back. fast-check counts that sequence among the runs, so the run count goes up by one: the random sequences are exactly those it played before, and the nine checks are unchanged. The existing test isn't edited; its demand that each refusal happen now rests on the fixed sequence, not on luck |
+| Shown first | With 20 random sequences, where the gap is common: 5 runs out of 5 failed as PR 71's did (a refusal missing, "received undefined"); with the fixed sequence, 5 out of 5 passed |
+| New test | `server/test/simulation/stale-refusals.test.ts` plays the fixed sequence alone, with all nine checks after each step, and requires an action refused for a deleted argument, a deleted wording, a changed revision, and an assessment without evidence |
+| `npm run check` | On Node 22: types, lint, all 733 unit, API, database, and simulation tests (1 new), including both planted-bug tests, and all 181 browser tests pass; no saved screenshot changed |
+| Second reader | A fresh agent found nothing blocking, and confirmed the sequence produces each refusal whatever the order on screen (every target is reached, and the offline queue merges none of them). Fixed: fast-check counts the fixed sequence among the runs, so there had been 299 random sequences, not 300 (now one more run); the new test also requires the refusal for an assessment without evidence. The planted skipped-stamp bug is now caught by the fixed sequence, and still shrinks to a one-step example |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

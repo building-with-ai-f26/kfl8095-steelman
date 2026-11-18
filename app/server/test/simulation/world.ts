@@ -65,6 +65,25 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("online" as const), reader }) },
 );
 
+/**
+ * One sequence played before the random ones in every run, so each run sees an action refused for each way it
+ * can go stale, however the random ones fall: a deleted argument can only be acted on by a reader who saw it
+ * before it went, and in 300 random sequences that sometimes never happens. Ben (reader 1) goes offline and,
+ * from his old view, votes on both arguments and on and assesses every wording; meanwhile Cy edits his
+ * wording, and Ana deletes both of hers, which deletes the argument that had only hers. Back online, Ben's
+ * queue is refused for a deleted argument, a deleted wording, and a changed revision.
+ */
+export const EVERY_STALE_REFUSAL: Step[] = [
+  { kind: "offline", reader: 1 },
+  ...[0, 1].map((target): Step => ({ kind: "importance", reader: 1, target, value: 1 })),
+  ...[0, 1, 2, 3].map((target): Step => ({ kind: "articulation", reader: 1, target, value: 1 })),
+  ...[0, 1, 2, 3].map((target): Step => ({ kind: "assess", reader: 1, target, supported: true })),
+  { kind: "edit", reader: 2, target: 0 },
+  { kind: "delete", reader: 0, target: 0 },
+  { kind: "delete", reader: 0, target: 1 },
+  { kind: "online", reader: 1 },
+];
+
 interface Reader {
   person: string;
   view: ReaderView;
@@ -103,7 +122,8 @@ export async function runSimulation(code: ServerCode, connection: { db: Db; clie
     fc.asyncProperty(fc.array(stepArbitrary, { maxLength: 40, size: "medium" }), async (steps) => {
       await playSequence(code, connection, steps, tally);
     }),
-    { numRuns: options.numRuns, ...(options.seed === undefined ? {} : { seed: options.seed }) },
+    // fast-check counts the example among numRuns, so one more keeps every random sequence there was before.
+    { numRuns: options.numRuns + 1, examples: [[EVERY_STALE_REFUSAL]], ...(options.seed === undefined ? {} : { seed: options.seed }) },
   );
   return tally;
 }
