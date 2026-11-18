@@ -31,7 +31,7 @@ export type { SourceInput } from "./inputs.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
 export { posthogAssetsHost, tooManyMessage } from "./api.ts";
-export { accessInput, assessmentInput, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, voteInput } from "./api.ts";
+export { REPORT_REASONS, accessInput, reportInput, assessmentInput, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, voteInput } from "./api.ts";
 export type {
   Access,
   ArgumentRow,
@@ -42,6 +42,7 @@ export type {
   OptionRow,
   PublicConfig,
   RefusalReason,
+  ReportReason,
   SourceRow,
   Standing,
   VersionRow,

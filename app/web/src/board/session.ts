@@ -5,8 +5,8 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardSnapshot, QueuedAction, ReaderView, Role, Standing } from "@steelman/shared";
-import { Unreachable, readBoard, readChanges, send, setAccess } from "../api.ts";
+import type { Access, BoardSnapshot, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, readBoard, readChanges, send, setAccess, setReport } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -250,6 +250,29 @@ export class BoardSession {
     await this.poll();
   }
 
+  /** Reports a wording (M2-3). Not queued: it needs the service there to answer. */
+  report(versionId: string, report: { reason: ReportReason; note: string }): Promise<void> {
+    return this.sendReport(versionId, report, "Reported. Editors will see it.");
+  }
+
+  withdrawReport(versionId: string): Promise<void> {
+    return this.sendReport(versionId, null, "Report withdrawn.");
+  }
+
+  private async sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<void> {
+    let answer: Answer;
+    try {
+      answer = await setReport(this.board, versionId, report);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return this.announce("Couldn’t reach Steelman. Try again.");
+    }
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return this.announce(tooManyMessage(answer.retryAfter));
+    if (answer.status !== "done" && answer.status !== "already_done") return this.announce(refusalNote(answer));
+    this.announce(done);
+    await this.poll();
+  }
+
   private stopSharing(status: string): void {
     this.wanted = null;
     this.set({ access: this.accepted, status });
@@ -333,7 +356,16 @@ export class BoardSession {
         if (typeof changes === "string") return this.set({ phase: changes, view: null });
         this.sent = this.sent.filter((action) => !asked.has(action));
         const accessSettled = !this.sharing && shares === this.shareCount;
+        const wasModerator = moderates(this.state.role);
         this.set({ view: receive(this.state.view, changes), role: changes.role, ...(accessSettled ? { access: changes.access } : {}) });
+        // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
+        if (moderates(changes.role) !== wasModerator) {
+          const fresh = await readBoard(this.board);
+          if (typeof fresh !== "string" && this.state.view) {
+            const { options, arguments: args, versions, sources } = fresh;
+            this.set({ view: receive(this.state.view, { seq: Math.max(fresh.board.seq, this.state.view.seq), options, arguments: args, versions, sources, order: null, log: [] }) });
+          }
+        }
         this.mineChanged();
       }
       if (this.state.offline) this.cameOnline();
@@ -382,6 +414,9 @@ export class BoardSession {
     event.returnValue = "";
   };
 }
+
+/** Whether a role sees a wording's open reports (M2-3). */
+const moderates = (role: Role | null) => role === "editor" || role === "owner";
 
 /** What the reader is told when the service refuses something they did. */
 function refusalNote(answer: Answer): string {

@@ -40,6 +40,15 @@ export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.s
 export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
 
+/** Why someone reports a wording (J-01), as the prototype's REASONS. */
+export const REPORT_REASONS = ["spam", "abuse", "offtopic", "other"] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+/** A report: its reason, and a note, which Something else needs. */
+export const reportInput = z
+  .strictObject({ reason: z.enum(REPORT_REASONS), note: z.string().trim().max(500) })
+  .refine(({ reason, note }) => reason !== "other" || note.length > 0, { message: "Say what's wrong with it.", path: ["note"] });
+
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 
@@ -110,6 +119,10 @@ export interface VersionRow {
   myVote: 1 | -1 | null;
   /** The reader's assessment of the current revision. */
   myAssessment: boolean | null;
+  /** The reader's own open report on it (M2-3), so they can withdraw it. */
+  myReport: ReportReason | null;
+  /** Its open reports, by reason: only for an Editor or the Owner, and null when there are none. Never who made them. */
+  reports: { count: number; reasons: Partial<Record<ReportReason, number>> } | null;
 }
 
 export interface SourceRow {

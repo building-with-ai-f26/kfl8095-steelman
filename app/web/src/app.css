@@ -111,3 +111,9 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+
+/* Report (M2-3): Something else asks what's wrong, in the menu's place. */
+#steelman-study .sm-report-note { display:grid; gap:6px; }
+#steelman-study .sm-report-note textarea { margin:0 4px; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; font:400 13px/1.4 var(--sm-sans); resize:vertical; }
+#steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); outline:0; }
+#steelman-study .sm-report-actions { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:2px 4px 2px; }

@@ -8,11 +8,11 @@
 // evidence, and the assessment (Evidence.tsx). The card shows the reader's
 // own edit and assessment as soon as they're made.
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { credibility, credibilityLabel } from "@steelman/shared";
-import type { VersionRow } from "@steelman/shared";
+import type { ReportReason, VersionRow } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import type { IconName } from "../icons.tsx";
 import { assessmentShown, editShown, isLiveVersion } from "./display.ts";
@@ -41,6 +41,9 @@ export interface CardMenu {
   cancel(versionId: string): void;
   suggest(version: VersionRow): void;
   remove(version: VersionRow): void;
+  /** Report someone else's wording (M2-3), or withdraw the reader's report. */
+  report(version: VersionRow, reason: ReportReason, note: string): void;
+  withdrawReport(version: VersionRow): void;
 }
 
 export function Card({ version, opening, inTrack = false }: { version: VersionRow; opening: Opening; inTrack?: boolean }) {
@@ -74,10 +77,19 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
       opening.copyLink(version.id);
     } else if (item === "edit") opening.menu.edit(version.id);
     else if (item === "suggest") opening.menu.suggest(shown);
-    else opening.menu.remove(shown);
+    else if (item === "withdrawReport") {
+      menuButton.current?.focus();
+      opening.menu.withdrawReport(shown);
+    } else opening.menu.remove(shown);
+  };
+  const report = (reason: ReportReason, note: string) => {
+    setMenu(false);
+    menuButton.current?.focus();
+    opening.menu.report(shown, reason, note);
   };
   return (
     <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}`} data-card={version.id}>
+      {shown.reports ? <ReportFlag reports={shown.reports} /> : null}
       <button
         ref={menuButton}
         type="button"
@@ -91,7 +103,7 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
         <Icon name="ellipsis" />
       </button>
       {menu ? (
-        <VersionMenu trigger={menuButton} items={opening.menu.items(shown)} onClose={() => setMenu(false)} onChoose={choose} />
+        <VersionMenu trigger={menuButton} items={opening.menu.items(shown)} onClose={() => setMenu(false)} onChoose={choose} onReport={report} />
       ) : null}
       {/* ph-no-capture: PostHog's autocapture sends a clicked button's text, and this text is what someone wrote. */}
       <button type="button" className="sm-claim-button cursor-interaction ph-no-capture" aria-expanded={open} aria-controls={reveal} onClick={() => opening.toggle(version.id)}>
@@ -165,7 +177,36 @@ const MENU_ITEMS: Record<MenuItem, { icon: IconName; label: string }> = {
   copyLink: { icon: "link", label: "Copy link" },
   deleteVersion: { icon: "trash-2", label: "Delete version" },
   deleteArgument: { icon: "trash-2", label: "Delete argument" },
+  report: { icon: "flag", label: "Report" },
+  withdrawReport: { icon: "flag-off", label: "Withdraw your report" },
 };
+
+/** The report reasons, in the prototype's words and icons (REASONS in docs/prototype/source/steelman-refined.html). */
+export const REASONS: Record<ReportReason, { icon: IconName; label: string }> = {
+  spam: { icon: "ban", label: "Spam" },
+  abuse: { icon: "shield-alert", label: "Abusive" },
+  offtopic: { icon: "move-right", label: "Off-topic" },
+  other: { icon: "circle-help", label: "Something else" },
+};
+
+/** "Spam ×2, Abusive", as the prototype's reasonsOf says them. */
+export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>): string {
+  return (Object.keys(REASONS) as ReportReason[])
+    .filter((reason) => (reasons[reason] ?? 0) > 0)
+    .map((reason) => REASONS[reason].label + (reasons[reason]! > 1 ? ` ×${reasons[reason]}` : ""))
+    .join(", ");
+}
+
+/** For an Editor or the Owner: a red flag with how many open reports a wording has; its reasons on hover or focus. Never who. */
+function ReportFlag({ reports }: { reports: NonNullable<VersionRow["reports"]> }) {
+  const why = reasonsSaid(reports.reasons);
+  return (
+    <span className="sm-flag-tag" role="img" tabIndex={0} aria-label={`${reports.count} ${reports.count === 1 ? "report" : "reports"}: ${why}`} data-tooltip={why}>
+      <Icon name="flag" />
+      {reports.count}
+    </span>
+  );
+}
 
 /**
  * A version's ⋯ menu. It hangs from the board's main region, under its
@@ -181,11 +222,21 @@ interface VersionMenuProps {
   items: MenuItem[];
   onClose(): void;
   onChoose(item: MenuItem): void;
+  onReport(reason: ReportReason, note: string): void;
 }
 
-function VersionMenu({ trigger, items, onClose, onChoose }: VersionMenuProps) {
+function VersionMenu({ trigger, items, onClose, onChoose, onReport }: VersionMenuProps) {
   const menu = useRef<HTMLDivElement>(null);
   const root = document.getElementById("sm-content");
+  /** Report switches the menu to its reasons, as the prototype's does; Something else then asks what's wrong. */
+  const [view, setView] = useState<"items" | "reasons" | "note">("items");
+  const [note, setNote] = useState("");
+
+  // Each view starts with the cursor on its first control.
+  useEffect(() => {
+    if (view === "items") return;
+    menu.current?.querySelector<HTMLElement>(view === "note" ? "textarea" : '[role="menuitem"]')?.focus();
+  }, [view]);
 
   useLayoutEffect(() => {
     const element = menu.current;
@@ -206,7 +257,10 @@ function VersionMenu({ trigger, items, onClose, onChoose }: VersionMenuProps) {
         trigger.current?.focus();
       }
       // The browser then moves the cursor on from ⋯, so Tab goes where it would without the menu.
-      if (event.key === "Tab" && menu.current?.contains(here)) {
+      // In the note form, Tab moves between its fields, and closes it only from the last one (or Shift+Tab from the first).
+      const fields = [...(menu.current?.querySelectorAll<HTMLElement>("textarea, button:not(:disabled)") ?? [])];
+      const leaving = menu.current?.dataset.view !== "note" || here === (event.shiftKey ? fields[0] : fields.at(-1));
+      if (event.key === "Tab" && menu.current?.contains(here) && leaving) {
         onClose();
         trigger.current?.focus();
       }
@@ -240,22 +294,73 @@ function VersionMenu({ trigger, items, onClose, onChoose }: VersionMenuProps) {
   }, [trigger, onClose]);
 
   if (!root) return null;
+  const ready = note.trim().length > 0;
   return createPortal(
-    <div ref={menu} className="sm-menu" role="menu" aria-label="Version options">
-      {items.map((item) => (
-        <button
-          key={item}
-          type="button"
-          role="menuitem"
-          className="sm-menu-item cursor-interaction"
-          // The prototype colours a delete's icon by this.
-          data-action={item === "deleteVersion" || item === "deleteArgument" ? "delete-card" : undefined}
-          onClick={() => onChoose(item)}
+    <div
+      ref={menu}
+      className="sm-menu"
+      role={view === "note" ? "dialog" : "menu"}
+      aria-label={view === "note" ? "Report it as something else" : view === "reasons" ? "Report it as" : "Version options"}
+      data-view={view}
+    >
+      {view === "note" ? (
+        <form
+          className="sm-report-note"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (ready) onReport("other", note.trim());
+          }}
         >
-          <Icon name={MENU_ITEMS[item].icon} />
-          <span>{MENU_ITEMS[item].label}</span>
-        </button>
-      ))}
+          <label className="sm-menu-note" htmlFor="sm-report-note">
+            What’s wrong with it?
+          </label>
+          <textarea id="sm-report-note" className="ph-no-capture" rows={3} maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} />
+          <div className="sm-report-actions">
+            <button type="button" className="sm-link-button cursor-interaction" onClick={() => setView("reasons")}>
+              Back
+            </button>
+            <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={!ready}>
+              Report
+            </button>
+          </div>
+        </form>
+      ) : view === "reasons" ? (
+        <>
+          <p className="sm-menu-note" aria-hidden="true">
+            Report it as
+          </p>
+          {(Object.keys(REASONS) as ReportReason[]).map((reason) => (
+            <button
+              key={reason}
+              type="button"
+              role="menuitem"
+              className="sm-menu-item cursor-interaction"
+              onClick={() => (reason === "other" ? setView("note") : onReport(reason, ""))}
+            >
+              <Icon name={REASONS[reason].icon} />
+              <span>{REASONS[reason].label}</span>
+            </button>
+          ))}
+        </>
+      ) : (
+        items.map((item) => (
+          <Fragment key={item}>
+            {/* Report sits below a rule, as the prototype's moderation items do. */}
+            {item === "report" || item === "withdrawReport" ? <div className="sm-menu-rule" role="separator" /> : null}
+            <button
+              type="button"
+              role="menuitem"
+              className="sm-menu-item cursor-interaction"
+              // The prototype colours a delete's icon by this.
+              data-action={item === "deleteVersion" || item === "deleteArgument" ? "delete-card" : undefined}
+              onClick={() => (item === "report" ? setView("reasons") : onChoose(item))}
+            >
+              <Icon name={MENU_ITEMS[item].icon} />
+              <span>{MENU_ITEMS[item].label}</span>
+            </button>
+          </Fragment>
+        ))
+      )}
     </div>,
     root,
   );

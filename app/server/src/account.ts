@@ -78,6 +78,14 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("assessed_at")
     .orderBy("version_id")
     .execute();
+  // Their reports (M2-3): reason, note, and when, and whether withdrawn. Not who else reported.
+  const reports = await db
+    .selectFrom("report")
+    .select(["board_id", "version_id", "reason", "note", "reported_at", "withdrawn_at"])
+    .where("reporter_id", "=", person)
+    .orderBy("reported_at")
+    .orderBy("version_id")
+    .execute();
 
   // Their own words: the revisions they wrote of their own wordings. (A revision made because a cited source changed is the source editor's.)
   const wrote = await db
@@ -118,6 +126,7 @@ export async function exportData(db: Db, clock: Clock, person: string) {
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
       evidence: evidence.map((v) => ({ board: v.board_id, version: v.version_id, rev: v.rev, supported: v.supported, at: v.assessed_at.toISOString() })),
     },
+    reports: reports.map((r) => ({ board: r.board_id, version: r.version_id, reason: r.reason, note: r.note, at: r.reported_at.toISOString(), withdrawn: r.withdrawn_at?.toISOString() ?? null })),
     boards: boards.map((board) => ({
       board: board.id,
       link: `/b/${board.id}`,
@@ -162,11 +171,13 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       union select board_id from version_revision where created_by = ${person}
       union select board_id from source where added_by = ${person} or unavailable_by = ${person}
       union select id from board where created_by = ${person}
+      union select board_id from report where reporter_id = ${person} or resolved_by = ${person}
       order by 1`.execute(trx);
 
     for (const { board_id: boardId } of touched.rows) {
       const seq = Number((await sql<{ seq: string }>`select take_change_number(${boardId}) as seq`.execute(trx)).rows[0]!.seq);
       await withdrawJudgments(trx, boardId, person, seq);
+      await deleteReports(trx, boardId, person, seq);
       await credit(trx, boardId, person, seq);
       const stays = await handOver(trx, boardId, person);
       if (!stays) await deleteBoard(trx, boardId, now, seq);
@@ -204,6 +215,16 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
 }
 
 /** Their votes and assessments are deleted, and the counts they were part of recounted. */
+/**
+ * Their reports go (the deletion table), and the wordings they were on are stamped, so an Editor's open board
+ * learns the count changed. Reports they resolved as a moderator are credited to the stand-in.
+ */
+async function deleteReports(trx: Trx, boardId: string, person: string, seq: number): Promise<void> {
+  const versionIds = (await trx.deleteFrom("report").where("board_id", "=", boardId).where("reporter_id", "=", person).returning("version_id").execute()).map((row) => row.version_id);
+  if (versionIds.length > 0) await trx.updateTable("version").set({ changed_seq: seq }).where("id", "in", versionIds).execute();
+  await trx.updateTable("report").set({ resolved_by: DELETED_ACCOUNT }).where("board_id", "=", boardId).where("resolved_by", "=", person).execute();
+}
+
 async function withdrawJudgments(trx: Trx, boardId: string, person: string, seq: number): Promise<void> {
   const argumentIds = (await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).where("account_id", "=", person).returning("argument_id").execute()).map((row) => row.argument_id);
   if (argumentIds.length > 0) {

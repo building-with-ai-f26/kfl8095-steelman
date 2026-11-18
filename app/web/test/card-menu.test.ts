@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { VersionRow } from "@steelman/shared";
-import { editShown, versionMenu } from "../src/board/display.ts";
+import { editShown, reportItem, versionMenu } from "../src/board/display.ts";
 
 // What a version's ⋯ menu offers (A-12), by the reader's role and whether
 // they wrote it, and how the reader's own edit shows before it's back (A-06).
@@ -26,6 +26,8 @@ const version = (extra: Partial<VersionRow> = {}): VersionRow => ({
   changedSeq: 1,
   myVote: null,
   myAssessment: true,
+  myReport: null,
+  reports: null,
   ...extra,
 });
 
@@ -71,4 +73,15 @@ test("A-06: once the edit is back, or for another version, the version shows as 
 
   expect(editShown(back, [edit])).toBe(back);
   expect(editShown(version({ id: "v2" }), [edit]).wording).toBe("Sunday is the only free day.");
+});
+
+test("M2-3, J-01: anyone who can read may report someone else's wording; nobody reports their own", () => {
+  expect(reportItem(version(), "ben", "viewer")).toEqual(["report"]);
+  expect(reportItem(version(), "ben", "editor")).toEqual(["report"]);
+  expect(reportItem(version(), "ana", "contributor")).toEqual([]);
+  expect(reportItem(version(), null, null)).toEqual([]);
+});
+
+test("M2-3, J-01: with their report open, the reader is offered Withdraw your report instead", () => {
+  expect(reportItem(version({ myReport: "spam" }), "ben", "voter")).toEqual(["withdrawReport"]);
 });

@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardSnapshot, NewBoard, PublicConfig, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardSnapshot, NewBoard, PublicConfig, ReportReason, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
@@ -78,6 +78,16 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
 /** The owner changes who can get in. Not queued: it needs the service there to answer. */
 export async function setAccess(board: string, access: Access): Promise<Answer> {
   const response = await call("PUT", `boards/${board}/access`, access);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
+/** Reports a wording (M2-3), or with `null` withdraws the reader's report. Not queued, like setAccess. */
+export async function setReport(board: string, version: string, report: { reason: ReportReason; note: string } | null): Promise<Answer> {
+  const path = `boards/${board}/versions/${encodeURIComponent(version)}/report`;
+  const response = report ? await call("PUT", path, report) : await call("DELETE", path);
   if (response.status === 404) return { status: "not_found" };
   if (response.status === 400) return { status: "invalid" };
   if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
