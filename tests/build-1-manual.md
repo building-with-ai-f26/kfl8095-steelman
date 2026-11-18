@@ -1368,6 +1368,19 @@ Found while checking M2-2a in the browser: the app had never drawn its `data-too
 | `npm run check` | On Node 22, after the second reader's fixes and with PR 62 merged in: types, lint, all 707 unit, API, database, and simulation tests, and all 175 browser tests pass; no saved screenshot changed |
 | Not checked | A real touch screen (a tap shows the hint until the next tap); a real screen reader |
 
+## November 18 — The sign-in email limit under concurrency (L-01)
+
+Build plan M2-6a, from the security follow-up approved Nov 17. The limit of five sign-in emails per address an hour counted the address's recent emails and then added one, as two separate steps, so requests arriving together each counted fewer than five and all got through.
+
+| Check | Observed result |
+| --- | --- |
+| The race, shown first | `server/test/api/sign-in-limit.test.ts`, 4 tests, through the API with emails kept in memory. Before the fix, 12 requests at once for one address were all let past the limit (none refused); at two copies of the service on one database, 6 of 12 were refused instead of 7 |
+| The fix | `mayEmail` in `server/src/sign-in.ts` counts and adds inside one transaction that first takes a Postgres lock on the address (`pg_advisory_xact_lock`, keyed by the address's hash). Requests for one address take turns, at every copy of the service; other addresses take other locks. The lock ends with the transaction, so a crash can't leave it held. No new package, no migration; addresses stay hashed and the daily job still deletes them after 24 hours |
+| After | 12 requests at once, in mixed capitals: exactly 5 let through, 7 refused as too many; the same across two copies, and neither copy sends a sixth afterwards; another address asking meanwhile gets its own five; an hour later the address is sent codes again. Five runs over, all pass. The existing test of the sixth email in an hour still passes |
+| Second reader | A fresh agent found nothing to change: the lock's key can't overlap the migration runner's (Postgres keeps one-number and two-number locks apart), it can't deadlock (the holder never asks for a second connection), and Better Auth lowercases addresses exactly as the limit does. One comment claimed other addresses never wait; with a 32-bit key two can share a lock, so it now says they rarely do. A burst for one address can briefly hold that copy's five database connections; each turn takes milliseconds |
+| `npm run check` | On Node 22: types, lint, all 711 unit, API, database, and simulation tests (4 new), and all 175 browser tests pass; no saved screenshot changed |
+| Known limitation | Requests let through at the same moment for the same address can still collide over the one code an address may have: one is sent, and the others answer with a server error (500) and send nothing. The person still gets one working code. Not part of this item |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
