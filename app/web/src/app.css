@@ -111,3 +111,6 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+
+/* "edited" (M2-5): under the earlier wording, the votes it had just before the edit. */
+#steelman-study .sm-prev .sm-prev-votes { margin:2px 0 0; }

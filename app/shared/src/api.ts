@@ -98,6 +98,8 @@ export interface VersionRow {
   context: string | null;
   /** The wording before the latest edit, for the "edited" mark; null if never edited. */
   previousWording: string | null;
+  /** How many importance and articulation votes it had just before its latest edit, for the "edited" mark (Q22); null if never edited. */
+  votesBefore: { importance: number; articulation: number } | null;
   sourceIds: string[];
   articulation: number;
   articulationVoters: number;

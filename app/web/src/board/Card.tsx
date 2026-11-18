@@ -261,30 +261,64 @@ function VersionMenu({ trigger, items, onClose, onChoose }: VersionMenuProps) {
   );
 }
 
-/** Who wrote it. An edited wording says so; "edited" shows the wording it replaced. */
+/**
+ * Who wrote it. An edited wording says so; "edited" shows the wording it
+ * replaced and how many importance and articulation votes it had just before
+ * the edit (Q22): on hover with a mouse, and a press (a tap, on a phone)
+ * keeps it open until pressed again.
+ */
 function Byline({ version }: { version: VersionRow }) {
-  const [showPrevious, setShowPrevious] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const shown = pinned || hovered;
+  const before = version.votesBefore;
+  // Escape hides it without moving the pointer (WCAG 1.4.13).
+  useEffect(() => {
+    if (!shown) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setHovered(false);
+      setPinned(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [shown]);
   return (
-    <>
+    // The pointer can move from "edited" onto what it shows without it going (WCAG 1.4.13).
+    <div className="sm-byline-wrap" onPointerLeave={(event) => event.pointerType === "mouse" && setHovered(false)}>
       <p className="sm-byline">
         {version.authorName}
         {version.previousWording !== null && (
           <>
             {" · "}
-            <button type="button" className="sm-link-button sm-edited cursor-interaction" aria-expanded={showPrevious} onClick={() => setShowPrevious(!showPrevious)}>
+            <button
+              type="button"
+              className="sm-link-button sm-edited cursor-interaction"
+              aria-expanded={shown}
+              // A press decides on its own: it opens what hovering showed, or closes it.
+              onClick={() => {
+                setPinned(!shown);
+                setHovered(false);
+              }}
+              // A touch sends pointer events too; only a mouse hovers.
+              onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
+            >
               edited
             </button>
           </>
         )}
       </p>
-      {showPrevious && version.previousWording !== null && (
-        <p className="sm-prev">
+      {shown && version.previousWording !== null && (
+        <div className="sm-prev">
           <del>{version.previousWording}</del>
-        </p>
+          {before ? <p className="sm-prev-votes">{`Before this edit: ${votes(before.importance, "importance")} · ${votes(before.articulation, "articulation")}`}</p> : null}
+        </div>
       )}
-    </>
+    </div>
   );
 }
+
+const votes = (count: number, kind: string) => `${count} ${kind} ${count === 1 ? "vote" : "votes"}`;
 
 /** Four segments, one filled per quarter of assessments that support the wording; dashed under five; empty gray when unreviewed. */
 export function Meter(counts: { yes: number; no: number }) {
