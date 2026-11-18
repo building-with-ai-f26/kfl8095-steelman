@@ -55,7 +55,12 @@ export async function seedDemoBoard(db: Db, clock: Clock, ids: IdSource): Promis
   const options = { yes: ids.itemId(), no: ids.itemId() };
 
   await db.transaction().execute(async (trx) => {
-    await trx.insertInto("account").values(DEMO_PEOPLE.map((name) => ({ id: people[name], username: name, created_at: clock.now() }))).execute();
+    // Test accounts count as having confirmed an email, as everyone who signs in has, so a board open to anyone
+    // with the link lets them in; they still have no email, which is how the seed tells them from real people.
+    await trx
+      .insertInto("account")
+      .values(DEMO_PEOPLE.map((name) => ({ id: people[name], username: name, email_verified: true, created_at: clock.now() })))
+      .execute();
     // Open to anyone with the link, so anyone who signs in can take part. Maya owns it; the other test people were invited to contribute.
     await trx
       .insertInto("board")
