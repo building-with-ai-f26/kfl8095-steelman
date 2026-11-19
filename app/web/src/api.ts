@@ -94,6 +94,16 @@ export async function setReport(board: string, version: string, report: { reason
   return (await response.json()) as Answer;
 }
 
+/** An Editor or the Owner hides a wording with a reason (M2-4), or with `null` restores it. Not queued. */
+export async function setHidden(board: string, version: string, reason: ReportReason | null): Promise<Answer> {
+  const path = `boards/${board}/versions/${encodeURIComponent(version)}/hidden`;
+  const response = reason ? await call("PUT", path, { reason }) : await call("DELETE", path);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
 /**
  * Sends one queued action. Every write says what the result should be, so sending one twice is safe.
  * @param keepalive For a removal sent as the tab closes, which has to arrive after the page is gone.

@@ -13,14 +13,15 @@ import type { Services, Trx, WriteResult } from "./write-path.ts";
 
 /** The wording reported, if it's on this board. */
 const loadVersion = (boardId: string, versionId: string) => async (trx: Trx) =>
-  (await trx.selectFrom("version").select("deleted_at").where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
+  (await trx.selectFrom("version").select(["deleted_at", "hidden_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
 
 /** Reports a wording, or changes the reason of the person's report on it. */
 export function setReport({ db, clock }: Services, boardId: string, person: string | null, versionId: string, input: { reason: ReportReason; note: string }): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
     action: "report",
     load: loadVersion(boardId, versionId),
-    stale: async (_trx, version) => (version.deleted_at ? { refused: "version_deleted" } : null),
+    // A hidden wording is gone for anyone who could report it, as votes on it are (M2-4).
+    stale: async (_trx, version) => (version.deleted_at || version.hidden_at ? { refused: "version_deleted" } : null),
     async change(trx, _version, seq) {
       const mine = await trx
         .selectFrom("report")

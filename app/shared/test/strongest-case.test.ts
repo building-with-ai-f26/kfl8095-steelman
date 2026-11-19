@@ -36,6 +36,7 @@ const version = (id: string, argumentId: string, createdSeq: number, extra: Part
   no: 0,
   deleted: false,
   hidden: false,
+  hiddenReason: null,
   changedSeq: createdSeq,
   myVote: null,
   myAssessment: null,
@@ -122,4 +123,14 @@ describe("Strongest case", () => {
 
     expect(strongestCase(openView(s), "maybe")).toEqual({ items: [], total: 0 });
   });
+});
+
+test("M2-4, J-02: a hidden wording leaves Strongest case; its argument is made by its next live wording", () => {
+  const s = snapshot();
+  s.versions = s.versions.map((v) => (v.id === "a2" ? { ...v, hidden: true, hiddenReason: "spam" } : v));
+
+  const items = strongestCase(openView(s), "yes").items;
+
+  expect(ids(items)).toContain("a:a1");
+  expect(ids(items)).not.toContain("a:a2");
 });

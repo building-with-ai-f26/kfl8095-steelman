@@ -49,6 +49,9 @@ export const reportInput = z
   .strictObject({ reason: z.enum(REPORT_REASONS), note: z.string().trim().max(500) })
   .refine(({ reason, note }) => reason !== "other" || note.length > 0, { message: "Say what's wrong with it.", path: ["note"] });
 
+/** A moderator hides a wording (J-02, M2-4), giving one of the report reasons. */
+export const hideInput = z.strictObject({ reason: z.enum(REPORT_REASONS) });
+
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 
@@ -114,7 +117,10 @@ export interface VersionRow {
   yes: number;
   no: number;
   deleted: boolean;
+  /** Hidden by a moderator (M2-4): its text then reaches only Editors and the Owner. */
   hidden: boolean;
+  /** Why, for everyone: "Removed by a moderator · Spam". Null unless hidden. */
+  hiddenReason: ReportReason | null;
   changedSeq: number;
   myVote: 1 | -1 | null;
   /** The reader's assessment of the current revision. */

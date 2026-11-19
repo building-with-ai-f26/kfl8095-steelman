@@ -75,7 +75,10 @@ export function leaveOut(view: ReaderView, versionIds: readonly string[]): Reade
 
 /** The number on the pill: moves to the newest order, plus each change still marked in place. */
 export function pillCount(view: ReaderView): number {
-  return staleCount(view.shown, view.published, markedChanges(view));
+  // The shared order leaves out what a moderator hid, which keeps its place on screen (M2-4): it isn't a move.
+  const kept = (id: string) => view.rows.versions[id]?.hidden === true && !view.rows.versions[id]?.deleted;
+  const versions = Object.fromEntries(Object.entries(view.shown.versions).map(([argumentId, ids]) => [argumentId, ids.filter((id) => !kept(id))]));
+  return staleCount({ ...view.shown, versions }, view.published, markedChanges(view));
 }
 
 /**
@@ -90,7 +93,11 @@ function markedChanges(view: ReaderView): number {
   }
   for (const [argumentId, versionIds] of Object.entries(view.shown.versions)) {
     if (!isLive(view.rows.arguments[argumentId])) continue;
-    for (const id of versionIds) if (!isLiveVersion(view.rows.versions[id])) marked++;
+    // A wording a moderator hid keeps its place after Update too (layout), so it isn't waiting for one (M2-4).
+    for (const id of versionIds) {
+      const version = view.rows.versions[id];
+      if (!isLiveVersion(version) && !(version?.hidden && !version.deleted)) marked++;
+    }
   }
   return marked;
 }
@@ -123,7 +130,10 @@ function layout(rows: BoardRows, order: BoardOrder): BoardOrder {
     shown.arguments[option.id] = argumentIds;
     for (const argumentId of argumentIds) {
       const versions = Object.values(rows.versions).filter((version) => version.argumentId === argumentId && isLiveVersion(version));
-      shown.versions[argumentId] = inOrder(order.versions[argumentId] ?? [], versions);
+      // A wording a moderator hid keeps a place, after the live ones (the shared order leaves it out), as "Removed by a
+      // moderator · Spam": a link to it lands there, and an Editor finds it there to restore it (M2-4, invariant 6).
+      const hidden = Object.values(rows.versions).filter((version) => version.argumentId === argumentId && version.hidden && !version.deleted).sort(byAdded);
+      shown.versions[argumentId] = [...inOrder(order.versions[argumentId] ?? [], versions), ...hidden.map((version) => version.id)];
     }
   }
   return shown;

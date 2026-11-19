@@ -124,6 +124,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     no: number;
     deleted: boolean;
     hidden: boolean;
+    hidden_reason: string | null;
     changed_seq: string;
     my_vote: number | null;
     my_assessment: boolean | null;
@@ -135,7 +136,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
            coalesce((select array_agg(c.source_id order by c.source_id) from revision_source c
                      where c.version_id = v.id and c.rev = v.current_rev), '{}') as source_ids,
            v.articulation, v.articulation_voters, v.yes, v.no,
-           v.deleted_at is not null as deleted, v.hidden_at is not null as hidden, v.changed_seq,
+           v.deleted_at is not null as deleted, v.hidden_at is not null as hidden, v.hidden_reason, v.changed_seq,
            my_vote.value as my_vote, my_assessment.supported as my_assessment, my_report.reason as my_report,
            -- Open reports by reason, for an Editor or the Owner only, and never who made them (M2-3).
            case when ${moderator} then (select jsonb_object_agg(reason, n) from (
@@ -165,17 +166,19 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     authorName: row.author_name,
     createdSeq: Number(row.created_seq),
     rev: row.rev,
-    // A moderator's hidden wording isn't shown to readers (no moderators in M0).
-    wording: row.hidden ? null : row.wording,
-    context: row.hidden ? null : row.context,
-    previousWording: row.hidden ? null : row.previous_wording,
-    sourceIds: row.source_ids,
+    // A hidden wording's text reaches only an Editor or the Owner, who may restore it (M2-4).
+    wording: row.hidden && !moderator ? null : row.wording,
+    context: row.hidden && !moderator ? null : row.context,
+    previousWording: row.hidden && !moderator ? null : row.previous_wording,
+    // A hidden wording's sources go with its text: spam's payload is often the link (M2-4).
+    sourceIds: row.hidden && !moderator ? [] : row.source_ids,
     articulation: row.articulation,
     articulationVoters: row.articulation_voters,
     yes: row.yes,
     no: row.no,
     deleted: row.deleted,
     hidden: row.hidden,
+    hiddenReason: row.hidden && (REPORT_REASONS as readonly string[]).includes(row.hidden_reason ?? "") ? (row.hidden_reason as ReportReason) : null,
     changedSeq: Number(row.changed_seq),
     myVote: vote(row.my_vote),
     myAssessment: row.my_assessment,

@@ -182,6 +182,13 @@ const ACTIONS: Action[] = [
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/versions/${others.version}/report`, { as, body: { reason: "spam", note: "" } }),
   },
+  // Hide and restore (M2-4): an Editor or the Owner, on anyone's wording.
+  {
+    name: "hide someone else's wording",
+    least: "editor",
+    write: true,
+    run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/versions/${others.version}/hidden`, { as, body: { reason: "spam" } }),
+  },
 ];
 
 /** What each persona should be answered. */

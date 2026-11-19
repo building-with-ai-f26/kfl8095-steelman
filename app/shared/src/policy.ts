@@ -3,7 +3,7 @@
 //
 // The roles, least to most: Viewer (reads), Voter (also votes and assesses),
 // Contributor (also writes), Editor (also takes a source off anyone's
-// wording; hiding and restoring come with it in M2-4), Owner (also decides
+// wording, and hides and restores wordings, M2-4), Owner (also decides
 // who can get in). Editing and deleting a wording stay its author's, for an
 // Editor too (Q28).
 
@@ -15,7 +15,7 @@ export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor
 /** The roles a board's link can give. Editor and Owner never come by the link. */
 export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "hide";
 
 interface Rule {
   /** The least role that may do it. */
@@ -43,6 +43,8 @@ export const POLICY: Record<Action, Rule> = {
   uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
   /** Reporting a wording, or withdrawing your report (J-01, M2-3): anyone who can read. */
   report: { least: "viewer", openBoard: true, authorOnly: false },
+  /** Hiding a wording with a reason, and restoring it (J-02, M2-4): an Editor's power, and the Owner's. */
+  hide: { least: "editor", openBoard: true, authorOnly: false },
   /** Changing the board's general access and its link role. */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };

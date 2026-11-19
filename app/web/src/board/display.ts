@@ -93,7 +93,7 @@ export function editShown(version: VersionRow, mine: readonly QueuedAction[]): V
 }
 
 /** What a version's ⋯ menu offers (A-12), in order: Copy link first and Delete last, as GitHub's comment menus put them. */
-export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport";
+export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport" | "hide" | "restore";
 
 /**
  * Only what the service would allow (the shared policy table): the author
@@ -118,8 +118,17 @@ export function versionMenu(version: VersionRow, reader: string | null, role: Ro
  * your report once they have; nothing for their own wording.
  */
 export function reportItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
-  if (reader === version.authorId || can(reader, role, "report", { closed: false }) !== null) return [];
+  if (version.hidden || reader === version.authorId || can(reader, role, "report", { closed: false }) !== null) return [];
   return [version.myReport ? "withdrawReport" : "report"];
+}
+
+/**
+ * An Editor's and the Owner's (M2-4): Hide on someone else's wording, Restore on one hidden; after Report, below the
+ * same rule. Not on their own, as the prototype's modItems: their own they edit or delete.
+ */
+export function moderationItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
+  if (version.deleted || reader === version.authorId || can(reader, role, "hide", { closed: false }) !== null) return [];
+  return [version.hidden ? "restore" : "hide"];
 }
 
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */
