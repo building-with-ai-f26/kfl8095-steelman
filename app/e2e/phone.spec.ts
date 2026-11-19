@@ -4,7 +4,7 @@
 
 import type { Page } from "@playwright/test";
 import { short } from "./support/screen.ts";
-import { test as boardTest } from "./support/board.ts";
+import { TEST_POSTHOG, test as boardTest } from "./support/board.ts";
 import { QUESTION, expect, test } from "./support/sign-in.ts";
 
 const NEW_QUESTION = "Should our school start an hour later?";
@@ -12,10 +12,24 @@ const ARGUMENT = "Teenagers sleep later, so first lessons are wasted.";
 const FAMILIES = "Families could visit together on the one day nobody has school or work.";
 const REVISED = "Sunday is the one day a whole family is free to come together.";
 
-/** The page is no wider than the screen: nothing scrolls sideways. */
+const SCREEN = 375;
+
+/**
+ * Nothing on the page reaches past the screen's 375 px: not the page itself (compared with the constant, since a
+ * phone may zoom out to fit a wide page, widening the window with it), and not anything fixed in place, such as the
+ * pill or the analytics notice, which the page's width doesn't count.
+ */
 async function expectNoSidewaysScroll(page: Page, where: string): Promise<void> {
-  const widths = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, screen: window.innerWidth }));
-  expect(widths.page, `${where}: the page is ${widths.page} px wide on a ${widths.screen} px screen`).toBeLessThanOrEqual(widths.screen);
+  const widths = await page.evaluate(() => ({
+    page: document.documentElement.scrollWidth,
+    window: window.innerWidth,
+    fixed: [...document.querySelectorAll("body *")]
+      .filter((element) => getComputedStyle(element).position === "fixed" && element.getClientRects().length > 0)
+      .map((element) => ({ name: element.className || element.tagName, right: Math.ceil(element.getBoundingClientRect().right) })),
+  }));
+  expect(widths.window, `${where}: the window is ${widths.window} px wide`).toBe(SCREEN);
+  expect(widths.page, `${where}: the page is ${widths.page} px wide`).toBeLessThanOrEqual(SCREEN);
+  expect(widths.fixed.filter((element) => element.right > SCREEN), `${where}: fixed in place past the screen's edge`).toEqual([]);
 }
 
 test("M-03, L-01, F-01, A-01, A-05, B-01, B-02, C-01, B-03, E-01: the core loop on a phone, by touch, with nothing scrolling sideways", async ({ site }) => {
@@ -79,8 +93,11 @@ test("M-03, L-01, F-01, A-01, A-05, B-01, B-02, C-01, B-03, E-01: the core loop 
   await expectNoSidewaysScroll(page, "An open card");
 
   // Strongest case.
-  await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Strongest case" }).tap();
-  await expect(page.getByText(REVISED).or(page.getByText(FAMILIES)).first()).toBeVisible();
+  const strongest = page.getByRole("group", { name: "View" }).getByRole("button", { name: "Strongest case" });
+  await strongest.tap();
+  await expect(strongest).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("region", { name: /^The case for / }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Your account" })).toBeInViewport();
   await expectNoSidewaysScroll(page, "Strongest case");
   await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Board" }).tap();
 
@@ -110,7 +127,7 @@ test("M-03, L-01, F-01, A-01, A-05, B-01, B-02, C-01, B-03, E-01: the core loop 
   await expectNoSidewaysScroll(page, "Privacy");
 });
 
-boardTest("M-03: at 375 px nothing scrolls sideways with Share open, a card's menu open, a deleted version's note, or a missing board", async ({ board }) => {
+boardTest("M-03: at 375 px wide (not emulating a phone) nothing scrolls sideways with Share open, a card's menu open, a deleted version's note, or a missing board", async ({ board }) => {
   const page = await board.open("maya.chen", { width: 375, missingBoards: true });
 
   await page.getByRole("button", { name: /^(Anyone with the link|Invited only)$/ }).click();
@@ -130,4 +147,16 @@ boardTest("M-03: at 375 px nothing scrolls sideways with Share open, a card's me
   await page.goto("/b/nosuchboard1");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("This steelman doesn’t exist");
   await expectNoSidewaysScroll(page, "A missing board");
+});
+
+boardTest.describe("with analytics", () => {
+  boardTest.use({ analytics: true });
+
+  boardTest("M-03, M-08: at 375 px wide the first-visit analytics notice stays within the screen", async ({ board }) => {
+    // PostHog's address can't exist; an empty script stands in for PostHog's, so loading it logs no error.
+    const page = await board.open("jordan_w", { width: SCREEN, prepare: (context) => context.route(`${TEST_POSTHOG.host}/**`, (route) => route.fulfill({ contentType: "text/javascript", body: "" })) });
+
+    await expect(page.getByRole("region", { name: "Analytics" }).getByRole("button", { name: "Turn off" })).toBeVisible();
+    await expectNoSidewaysScroll(page, "The analytics notice");
+  });
 });
