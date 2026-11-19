@@ -161,6 +161,22 @@ export interface BoardChanges {
   log: LogRow[];
 }
 
+/** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, and when it last changed. */
+export interface BoardListing {
+  id: string;
+  question: string;
+  options: { name: string; arguments: number }[];
+  role: Role;
+  /** The last write of any kind: a new argument or wording, an edit, a vote, an assessment, a change of sources or access. */
+  changedAt: string;
+}
+
+/** The list, most recently changed first, with the service's time now, so "3h ago" doesn't depend on the reader's clock. */
+export interface BoardList {
+  now: string;
+  boards: BoardListing[];
+}
+
 /**
  * Sent with the snapshot and with every answer about changes: who can get in
  * now, and the reader's own role now, since the owner can change either at

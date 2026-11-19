@@ -111,3 +111,18 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+
+/* The list (E-03). The prototype's feed sits between the spaces sidebar and a rail; neither exists yet, so the
+   feed stands alone, centred. Its posts drop the activity column (no score yet), so the question leads, and the
+   question's link covers the whole post, as the prototype's click anywhere on it does. */
+#steelman-study .sm-home.sm-home-alone { grid-template-columns:minmax(0,1fr); justify-items:center; }
+#steelman-study .sm-feed .sm-post { position:relative; grid-template-columns:minmax(0,1fr) 172px; padding-left:18px; }
+#steelman-study .sm-post h2 a { color:inherit; text-decoration:none; }
+#steelman-study .sm-post h2 a::after { content:""; position:absolute; inset:0; border-radius:inherit; }
+#steelman-study .sm-post h2 a:focus-visible { outline:none; }
+#steelman-study .sm-post:has(h2 a:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
+#steelman-study .sm-feed-empty { display:grid; justify-items:center; gap:14px; }
+#steelman-study .sm-feed-empty p { margin:0; }
+@media(max-width:640px) {
+  #steelman-study .sm-feed .sm-post { grid-template-columns:minmax(0,1fr); padding-left:14px; }
+}

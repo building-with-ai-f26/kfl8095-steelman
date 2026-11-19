@@ -5,7 +5,8 @@ import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
 import { Board } from "./board/Board.tsx";
 import type { Zoom } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
-import { readLink } from "./links.ts";
+import { Home } from "./Home.tsx";
+import { NEW_PATH, readLink } from "./links.ts";
 import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
@@ -20,8 +21,8 @@ import type { TestUser } from "./testUser.ts";
 
 /**
  * Links look like /b/<board ID>, or /b/<board ID>/v/<version ID> (links.ts).
- * Anything outside /b/ is the home page, which in M1 is New steelman (F-01):
- * there's no list of boards yet, so people come back to a board by its link.
+ * Anything outside /b/ is the home page, the list of your steelmen (E-03),
+ * except New steelman's sheet (F-01), at /new.
  */
 export function App({ path = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
   const link = readLink(path);
@@ -53,8 +54,8 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
               {wordmark}
               <div className="sm-site-tools">
                 {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={setZoom} /> : null}
-                {signedIn && board ? (
-                  <a className="sm-share-button cursor-interaction" href="/" aria-label="New steelman">
+                {signedIn && (board || link.kind === "home") ? (
+                  <a className="sm-share-button cursor-interaction" href={NEW_PATH} aria-label="New steelman">
                     <Icon name="plus" size={14} />
                     <span>New steelman</span>
                   </a>
@@ -75,8 +76,10 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
             <Account />
           ) : link.kind === "unknown" ? (
             <NotFound />
-          ) : (
+          ) : link.kind === "new" ? (
             <NewSteelman />
+          ) : (
+            <Home />
           )}
         </SignedIn>
       )}
