@@ -148,3 +148,19 @@ test("E-03: signed out, the list is refused", async () => {
   expect(status).toBe(401);
   expect(body).toEqual({ status: "refused", reason: "signed_out" });
 });
+
+test("E-03: a membership with a role the service doesn't know gives no place in the list, as it gives no way in", async () => {
+  const odd = await addAccount(db.client, ids, "odd", { confirmed: true });
+  await db.client.query("insert into board_member (board_id, account_id, role, joined_via, joined_at) values ($1, $2, 'admin', 'invite', $3)", [b.board, odd, api.clock.now()]);
+
+  expect((await list(odd)).boards).toEqual([]);
+});
+
+test("E-03: the options come in the board's order, not the order they were stored", async () => {
+  await write(db.client, b.board, async (seq) => {
+    await db.client.query("update option set position = 3, changed_seq = $2 where id = $1", [b.yes, seq]);
+    await db.client.query("update option set position = 1, changed_seq = $2 where id = $1", [b.no, seq]);
+  });
+
+  expect((await list(b.ben)).boards[0].options.map((o: { name: string }) => o.name)).toEqual(["No", "Yes"]);
+});

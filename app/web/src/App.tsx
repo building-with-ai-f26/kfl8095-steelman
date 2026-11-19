@@ -31,12 +31,13 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
   const [zoom, setZoom] = useState<Zoom>("read");
   /** The switch shows only while a board is on screen, not on its not-found or no-access page. */
   const [boardShown, setBoardShown] = useState(false);
+  // The wordmark leads home, to the list of your steelmen (E-03), as the prototype's does.
   const wordmark = (
-    <div className="sm-wordmark">
+    <a className="sm-wordmark" href="/" aria-label="steelman. Your steelmen">
       <Logo />
       {/* On a phone the prototype shows only the logo while a board is open, leaving room for the view switch. */}
       <span className="sm-wordmark-text">steelman.</span>
-    </div>
+    </a>
   );
   return (
     <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined}>

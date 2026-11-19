@@ -22,6 +22,14 @@ export function Home() {
     void listBoards().then(setList);
   }, []);
   useEffect(load, [load]);
+  // Back from a board can bring this page back as it was left (the browser's back/forward cache), so ask again.
+  useEffect(() => {
+    const restored = (event: PageTransitionEvent) => {
+      if (event.persisted) load();
+    };
+    window.addEventListener("pageshow", restored);
+    return () => window.removeEventListener("pageshow", restored);
+  }, [load]);
 
   if (list === null) return null;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;

@@ -127,8 +127,35 @@ siteTest("E-03: with no boards yet, the list says so and offers New steelman", a
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page.locator(".sm-feed-empty")).toContainText("No steelmen yet.");
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
   await page.locator(".sm-feed-empty").getByRole("link", { name: "New steelman" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
+});
+
+test("E-03: the wordmark leads back to the list from a board", async ({ board }) => {
+  const page = await board.open("jordan_w");
+
+  await page.getByRole("link", { name: /Your steelmen/ }).click();
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(questions(page)).toHaveText([QUESTION]);
+});
+
+test("E-03: when the list can't be loaded, it says so, and Try again loads it", async ({ board }) => {
+  const page = await board.open("jordan_w");
+  let fail = true;
+  await page.route("**/api/boards", (route) => (fail ? route.fulfill({ status: 500, body: "" }) : route.fallback()));
+  // The browser logs the 500 itself; this test expects it.
+  board.errors.length = 0;
+  await page.goto("/");
+
+  await expect(page.getByRole("alert")).toContainText("Couldn’t load your steelmen.");
+  board.errors.length = 0;
+  fail = false;
+  await page.getByRole("button", { name: "Try again" }).click();
+  await expect(questions(page)).toHaveText([QUESTION]);
+  board.errors.length = 0;
 });
 
 siteTest("E-03: someone who signs in from a board's link finds it in their list", async ({ site }) => {

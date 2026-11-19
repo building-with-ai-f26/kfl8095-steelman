@@ -112,6 +112,9 @@ body { margin:0; }
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
 
+/* The wordmark is a link home (E-03), drawn as before. */
+#steelman-study a.sm-wordmark { text-decoration:none; }
+
 /* The list (E-03). The prototype's feed sits between the spaces sidebar and a rail; neither exists yet, so the
    feed stands alone, centred. Its posts drop the activity column (no score yet), so the question leads, and the
    question's link covers the whole post, as the prototype's click anywhere on it does. */
@@ -120,6 +123,8 @@ body { margin:0; }
 #steelman-study .sm-post h2 a { color:inherit; text-decoration:none; }
 #steelman-study .sm-post h2 a::after { content:""; position:absolute; inset:0; border-radius:inherit; }
 #steelman-study .sm-post h2 a:focus-visible { outline:none; }
+/* The date and the counts stay above the link, so their tooltips (the full date; "3 arguments") still show. */
+#steelman-study .sm-post-meta time, #steelman-study .sm-post-options b { position:relative; z-index:1; }
 #steelman-study .sm-post:has(h2 a:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
 #steelman-study .sm-feed-empty { display:grid; justify-items:center; gap:14px; }
 #steelman-study .sm-feed-empty p { margin:0; }
