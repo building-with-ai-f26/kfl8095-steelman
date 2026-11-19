@@ -111,3 +111,9 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+
+/* Phones (M-03). The prototype hides your account button on a board at 480 px and below, to leave room for the
+   board's tools; then a phone has no way from a board to Your account. The top bar has room for it. */
+@media(max-width:480px) {
+  #steelman-study:is([data-zoom="read"],[data-zoom="case"]) a.sm-me { display:grid; }
+}
