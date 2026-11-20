@@ -109,13 +109,14 @@ export function editWording(
         .selectFrom("version as v")
         .innerJoin("version_revision as r", (join) => join.onRef("r.version_id", "=", "v.id").onRef("r.rev", "=", "v.current_rev"))
         .innerJoin("argument as a", "a.id", "v.argument_id")
-        .select(["v.author_id", "v.current_rev", "v.deleted_at", "v.articulation_voters", "a.importance_voters", "r.wording", "r.context"])
+        .select(["v.author_id", "v.current_rev", "v.deleted_at", "v.hidden_at", "v.articulation_voters", "a.importance_voters", "r.wording", "r.context"])
         .where("v.id", "=", versionId)
         .where("v.board_id", "=", boardId)
         .executeTakeFirst()) ?? null,
     authorOf: (version) => version.author_id,
     stale: async (trx, version): Promise<Outcome | null> => {
-      if (version.deleted_at) return { refused: "version_deleted" };
+      // A wording a moderator hid is gone for its author too, as for votes: an edit would change what the moderator reviewed (M2-4).
+      if (version.deleted_at || version.hidden_at) return { refused: "version_deleted" };
       const changed = async (): Promise<Outcome> => {
         const [current] = await versionRows(trx, boardId, person, { ids: [versionId] });
         return current ? { refused: "revision_changed", current } : { refused: "revision_changed" };

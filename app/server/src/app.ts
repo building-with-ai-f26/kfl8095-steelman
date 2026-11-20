@@ -3,6 +3,7 @@ import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from
 import {
   accessInput,
   reportInput,
+  hideInput,
   memberRoleInput,
   assessmentInput,
   can,
@@ -32,6 +33,7 @@ import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
+import { hideWording, restoreWording } from "./moderation.ts";
 import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -354,6 +356,17 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
 
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/report", async (request, reply) =>
     answer(reply, await withdrawReport(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Hide and restore (M2-4): an Editor or the Owner.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/hidden", async (request, reply) => {
+    const body = hideInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await hideWording(services, request.params.board, request.person, request.params.id, body.data.reason));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/hidden", async (request, reply) =>
+    answer(reply, await restoreWording(services, request.params.board, request.person, request.params.id)),
   );
 
   // Share's people list (M2-2b): anyone who can read sees it; only the owner sets roles.

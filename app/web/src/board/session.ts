@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardSnapshot, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, readBoard, readChanges, readPeople, send, setAccess, setReport, setRole } from "../api.ts";
+import { Unreachable, readBoard, readChanges, readPeople, send, setAccess, setHidden, setReport, setRole } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -259,10 +259,24 @@ export class BoardSession {
     return this.sendReport(versionId, null, "Report withdrawn.");
   }
 
-  private async sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<void> {
+  /** An Editor or the Owner hides a wording (M2-4), in the prototype's words. Not queued, like a report. */
+  hide(versionId: string, reason: ReportReason): Promise<void> {
+    return this.moderate(() => setHidden(this.board, versionId, reason), "Hidden.");
+  }
+
+  restore(versionId: string): Promise<void> {
+    return this.moderate(() => setHidden(this.board, versionId, null), "Restored.");
+  }
+
+  private sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<void> {
+    return this.moderate(() => setReport(this.board, versionId, report), done);
+  }
+
+  /** Sends a report or a moderator's action, says how it went, and asks for changes. */
+  private async moderate(request: () => Promise<Answer>, done: string): Promise<void> {
     let answer: Answer;
     try {
-      answer = await setReport(this.board, versionId, report);
+      answer = await request();
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
       return this.announce("Couldn’t reach Steelman. Try again.");

@@ -94,6 +94,16 @@ export async function setReport(board: string, version: string, report: { reason
   return (await response.json()) as Answer;
 }
 
+/** An Editor or the Owner hides a wording with a reason (M2-4), or with `null` restores it. Not queued. */
+export async function setHidden(board: string, version: string, reason: ReportReason | null): Promise<Answer> {
+  const path = `boards/${board}/versions/${encodeURIComponent(version)}/hidden`;
+  const response = reason ? await call("PUT", path, { reason }) : await call("DELETE", path);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
 /** Everyone on the board, for Share's people list (M2-2b), or null when it can't be read now. */
 export async function readPeople(board: string): Promise<Person[] | null> {
   try {
