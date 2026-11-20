@@ -26,7 +26,7 @@ import { StrongestCase } from "./StrongestCase.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { WHY, columns, importanceShown, isLive, isLiveVersion, short, versionMenu, whyNot } from "./display.ts";
+import { WHY, columns, importanceShown, isLive, isLiveVersion, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 
@@ -115,7 +115,9 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   }, [mayWrite]);
 
   const menu: CardMenu = {
-    items: (version) => versionMenu(version, reader, state.role, liveIn(version.argumentId).length <= 1),
+    items: (version) => [...versionMenu(version, reader, state.role, liveIn(version.argumentId).length <= 1), ...reportItem(version, reader, state.role)],
+    report: (version, reason, note) => void session.report(version.id, { reason, note }),
+    withdrawReport: (version) => void session.withdrawReport(version.id),
     editing: writing?.kind === "edit" ? writing.versionId : null,
     edit: (versionId) => setWriting({ kind: "edit", versionId }),
     save(version, draft) {

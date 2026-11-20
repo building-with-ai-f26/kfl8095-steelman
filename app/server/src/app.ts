@@ -2,6 +2,7 @@ import Fastify, { LogController } from "fastify";
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   accessInput,
+  reportInput,
   memberRoleInput,
   assessmentInput,
   can,
@@ -30,6 +31,7 @@ import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
+import { setReport, withdrawReport } from "./reports.ts";
 import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -321,7 +323,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
     await publishOrderIfDue(db, clock, request.params.board);
-    const snapshot = await readSnapshot(db, request.params.board, request.person);
+    const snapshot = await readSnapshot(db, request.params.board, request.person, moderates(role));
     const access = await accessOf(db, request.params.board);
     return snapshot && access ? { ...snapshot, access, role } : reply.code(404).send({ reason: "not_found" });
   });
@@ -332,7 +334,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
     await publishOrderIfDue(db, clock, request.params.board);
-    const changes = await readChanges(db, request.params.board, request.person, query.data.after);
+    const changes = await readChanges(db, request.params.board, request.person, query.data.after, moderates(role));
     const access = await accessOf(db, request.params.board);
     return changes && access ? { ...changes, access, role } : reply.code(404).send({ reason: "not_found" });
   });
@@ -342,6 +344,17 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAccess(services, request.params.board, request.person, body.data));
   });
+
+  // Report (M2-3): anyone who can read reports a wording, or withdraws their report.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/report", { config: { limit: "report" } }, async (request, reply) => {
+    const body = reportInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setReport(services, request.params.board, request.person, request.params.id, body.data));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/report", async (request, reply) =>
+    answer(reply, await withdrawReport(services, request.params.board, request.person, request.params.id)),
+  );
 
   // Share's people list (M2-2b): anyone who can read sees it; only the owner sets roles.
   app.get<{ Params: { board: string } }>("/api/boards/:board/people", async (request, reply) => {
@@ -418,6 +431,11 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   });
 
   return app;
+}
+
+/** Whether a role sees a wording's open reports: an Editor's and the Owner's (M2-3). */
+function moderates(role: Role): boolean {
+  return role === "editor" || role === "owner";
 }
 
 /** A Fastify request's headers, as the web's Headers that Better Auth takes. */

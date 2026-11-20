@@ -7,15 +7,16 @@
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { webLink } from "@steelman/shared";
-import type { ArgumentRow, BoardChanges, BoardOrder, BoardSnapshot, LogRow, OptionRow, SourceRow, VersionRow } from "@steelman/shared";
+import { REPORT_REASONS, webLink } from "@steelman/shared";
+import type { ReportReason, ArgumentRow, BoardChanges, BoardOrder, BoardSnapshot, LogRow, OptionRow, SourceRow, VersionRow } from "@steelman/shared";
 import type { Database, Db } from "./db/database.ts";
 
 type Reader = Kysely<Database>;
 
 const vote = (value: number | null): 1 | -1 | null => (value === 1 ? 1 : value === -1 ? -1 : null);
 
-export async function readSnapshot(db: Db, boardId: string, person: string | null): Promise<BoardSnapshot | null> {
+/** @param moderator Whether the reader is an Editor or the Owner, who see a wording's open reports (M2-3). */
+export async function readSnapshot(db: Db, boardId: string, person: string | null, moderator = false): Promise<BoardSnapshot | null> {
   return db
     .transaction()
     .setIsolationLevel("repeatable read")
@@ -27,14 +28,14 @@ export async function readSnapshot(db: Db, boardId: string, person: string | nul
         board: { id: board.id, question: board.question, closed: board.closed_at !== null, seq: Number(board.last_seq) },
         options: await optionRows(trx, boardId, 0),
         arguments: await argumentRows(trx, boardId, person, 0),
-        versions: await versionRows(trx, boardId, person, { after: 0 }),
+        versions: await versionRows(trx, boardId, person, { after: 0 }, moderator),
         sources: await sourceRows(trx, boardId, 0),
         order: order ? { arguments: order.arguments, versions: order.versions } as BoardOrder : { arguments: {}, versions: {} },
       };
     });
 }
 
-export async function readChanges(db: Db, boardId: string, person: string | null, after: number): Promise<BoardChanges | null> {
+export async function readChanges(db: Db, boardId: string, person: string | null, after: number, moderator = false): Promise<BoardChanges | null> {
   return db
     .transaction()
     .setIsolationLevel("repeatable read")
@@ -54,7 +55,7 @@ export async function readChanges(db: Db, boardId: string, person: string | null
         seq,
         options: await optionRows(trx, boardId, after),
         arguments: await argumentRows(trx, boardId, person, after),
-        versions: await versionRows(trx, boardId, person, { after }),
+        versions: await versionRows(trx, boardId, person, { after }, moderator),
         sources: await sourceRows(trx, boardId, after),
         order: order ? ({ arguments: order.arguments, versions: order.versions } as BoardOrder) : null,
         log: await logRows(trx, boardId, after),
@@ -97,9 +98,15 @@ async function argumentRows(db: Reader, boardId: string, person: string | null, 
 }
 
 /** Wordings as the reader sees them: rows stamped after `after`, or just the ones named in `ids`. */
-export async function versionRows(db: Reader, boardId: string, person: string | null, which: { after: number } | { ids: string[] }): Promise<VersionRow[]> {
+export async function versionRows(db: Reader, boardId: string, person: string | null, which: { after: number } | { ids: string[] }, moderator = false): Promise<VersionRow[]> {
   const me = person ?? "";
-  const filter = "ids" in which ? sql`v.id = any(${which.ids})` : sql`v.changed_seq > ${which.after}`;
+  // Reports stamp themselves, not the wording (reports.ts): a moderator also gets each wording whose reports changed,
+  // and anyone else each wording their own report on changed, so their menu offers Withdraw.
+  const reported = moderator ? sql`true` : sql`r.reporter_id = ${me}`;
+  const filter =
+    "ids" in which
+      ? sql`v.id = any(${which.ids})`
+      : sql`(v.changed_seq > ${which.after} or exists (select 1 from report r where r.board_id = v.board_id and r.version_id = v.id and r.changed_seq > ${which.after} and ${reported}))`;
   const result = await sql<{
     id: string;
     argument_id: string;
@@ -122,6 +129,9 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     changed_seq: string;
     my_vote: number | null;
     my_assessment: boolean | null;
+    my_report: string | null;
+    report_reasons: Record<string, number> | null;
+    report_notes: string[] | null;
   }>`
     select v.id, v.argument_id, v.author_id, author.username as author_name, v.created_seq,
            v.current_rev as rev, now_rev.wording, now_rev.context, before_rev.wording as previous_wording,
@@ -130,7 +140,16 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
                      where c.version_id = v.id and c.rev = v.current_rev), '{}') as source_ids,
            v.articulation, v.articulation_voters, v.yes, v.no,
            v.deleted_at is not null as deleted, v.hidden_at is not null as hidden, v.changed_seq,
-           my_vote.value as my_vote, my_assessment.supported as my_assessment
+           my_vote.value as my_vote, my_assessment.supported as my_assessment, my_report.reason as my_report,
+           -- Open reports by reason, for an Editor or the Owner only, and never who made them (M2-3).
+           case when ${moderator} then (select jsonb_object_agg(reason, n) from (
+             select r.reason, count(*)::int as n from report r
+             where r.version_id = v.id and r.withdrawn_at is null and r.resolved_at is null group by r.reason) open_reports)
+           end as report_reasons,
+           -- And what was written for Something else, oldest first: all of a report but who (the builder, Nov 20).
+           case when ${moderator} then (select array_agg(r.note order by r.reported_at) from report r
+             where r.version_id = v.id and r.withdrawn_at is null and r.resolved_at is null and r.reason = 'other' and r.note <> '')
+           end as report_notes
     from version v
     join account author on author.id = v.author_id
     join version_revision now_rev on now_rev.version_id = v.id and now_rev.rev = v.current_rev
@@ -143,6 +162,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
       order by edit.rev desc limit 1
     ) before_rev on true
     left join articulation_vote my_vote on my_vote.version_id = v.id and my_vote.account_id = ${me}
+    left join report my_report on my_report.version_id = v.id and my_report.reporter_id = ${me} and my_report.withdrawn_at is null and my_report.resolved_at is null
     left join assessment my_assessment on my_assessment.version_id = v.id and my_assessment.rev = v.current_rev and my_assessment.account_id = ${me}
     where v.board_id = ${boardId} and ${filter}
     order by v.created_seq, v.id`.execute(db);
@@ -173,7 +193,17 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     changedSeq: Number(row.changed_seq),
     myVote: vote(row.my_vote),
     myAssessment: row.my_assessment,
+    myReport: (REPORT_REASONS as readonly string[]).includes(row.my_report ?? "") ? (row.my_report as ReportReason) : null,
+    reports: row.report_reasons ? reportTally(row.report_reasons, row.report_notes ?? []) : null,
   }));
+}
+
+/** Open reports by reason, and what was written for Something else, as an Editor sees them: only reasons the service knows. */
+function reportTally(byReason: Record<string, number>, notes: string[]): VersionRow["reports"] {
+  const reasons: Partial<Record<ReportReason, number>> = {};
+  for (const reason of REPORT_REASONS) if (byReason[reason]) reasons[reason] = byReason[reason];
+  const count = Object.values(reasons).reduce((sum, n) => sum + n, 0);
+  return count > 0 ? { count, reasons, notes } : null;
 }
 
 async function sourceRows(db: Reader, boardId: string, after: number): Promise<SourceRow[]> {

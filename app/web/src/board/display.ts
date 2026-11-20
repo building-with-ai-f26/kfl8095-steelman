@@ -94,12 +94,13 @@ export function editShown(version: VersionRow, mine: readonly QueuedAction[]): V
 }
 
 /** What a version's ⋯ menu offers (A-12), in order: Copy link first and Delete last, as GitHub's comment menus put them. */
-export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument";
+export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport";
 
 /**
  * Only what the service would allow (the shared policy table): the author
  * edits and deletes; anyone else who may write suggests a revised version.
- * Combine, separate, report, and the AI actions come in later milestones.
+ * Report is reportItem's (M2-3). Combine, separate, and the AI actions come
+ * in later milestones.
  *
  * @param lastWording Whether it's its row's only live wording, so deleting it deletes the argument.
  */
@@ -110,6 +111,16 @@ export function versionMenu(version: VersionRow, reader: string | null, role: Ro
   else if (can(reader, role, "add", board) === null) items.push("suggest");
   if (can(reader, role, "delete", board, version.authorId) === null) items.push(lastWording ? "deleteArgument" : "deleteVersion");
   return items;
+}
+
+/**
+ * What the menu offers last, below a rule, as the prototype's moderation items
+ * (M2-3): Report, to anyone who can read someone else's wording, or Withdraw
+ * your report once they have; nothing for their own wording.
+ */
+export function reportItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
+  if (reader === version.authorId || can(reader, role, "report", { closed: false }) !== null) return [];
+  return [version.myReport ? "withdrawReport" : "report"];
 }
 
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */

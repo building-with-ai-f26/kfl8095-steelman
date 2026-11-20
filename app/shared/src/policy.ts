@@ -15,7 +15,7 @@ export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor
 /** The roles a board's link can give. Editor and Owner never come by the link. */
 export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report";
 
 interface Rule {
   /** The least role that may do it. */
@@ -41,6 +41,8 @@ export const POLICY: Record<Action, Rule> = {
    * builder, Nov 14; the Editor since M2-1).
    */
   uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
+  /** Reporting a wording, or withdrawing your report (J-01, M2-3): anyone who can read. */
+  report: { least: "viewer", openBoard: true, authorOnly: false },
   /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };

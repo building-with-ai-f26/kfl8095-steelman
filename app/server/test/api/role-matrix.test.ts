@@ -175,6 +175,13 @@ const ACTIONS: Action[] = [
     write: true,
     run: ({ b }, as) => api.put(`/api/boards/${b.board}/access`, { as, body: { general: "link", linkRole: "voter" } }),
   },
+  // Report (M2-3): anyone who can read, on someone else's wording.
+  {
+    name: "report someone else's wording",
+    least: "viewer",
+    write: true,
+    run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/versions/${others.version}/report`, { as, body: { reason: "spam", note: "" } }),
+  },
   // Share's people list (M2-2b, Q27).
   { name: "see who's on the board", least: "viewer", write: false, run: ({ b }, as) => api.get(`/api/boards/${b.board}/people`, { as }) },
   {

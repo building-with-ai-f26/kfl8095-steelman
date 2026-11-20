@@ -40,6 +40,8 @@ const version = (id: string, argumentId: string, createdSeq: number, extra: Part
   changedSeq: createdSeq,
   myVote: null,
   myAssessment: null,
+  myReport: null,
+  reports: null,
   ...extra,
 });
 

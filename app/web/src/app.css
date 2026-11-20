@@ -127,7 +127,16 @@ body { margin:0; }
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
 
-/* "edited" (M2-5): under the earlier wording, the votes it had just before the edit. */
+/* Report (M2-3): Something else asks what's wrong, in the menu's place. */
+#steelman-study .sm-report-note { display:grid; gap:6px; }
+#steelman-study .sm-report-note textarea { margin:0 4px; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; font:400 13px/1.4 var(--sm-sans); resize:vertical; }
+#steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); outline:0; }
+#steelman-study .sm-report-actions { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:2px 4px 2px; }
+
+/* The reporter's own report (M2-3), where an Editor sees the red flag: quiet, since it asks nothing of them. */
+#steelman-study .sm-reported-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px solid var(--sm-line); border-radius:999px; background:#fff; color:var(--sm-muted); font:500 11px/1 var(--sm-sans); white-space:nowrap; }
+#steelman-study .sm-reported-tag svg { width:12px; height:12px; }
+
 /* "edited" opens the wording as it was (A-06): a panel inside the card, a warm light gray for the past, with a small
    label, the wording struck through, and the votes it had then, their numbers in the serif (the builder, Nov 20). */
 #steelman-study .sm-prev { margin:2px 18px 12px; padding:9px 12px 10px; border:1px solid #e4e0d6; border-radius:6px; background:#f3f1ec; font-size:12px; line-height:1.45; color:var(--sm-muted); }
