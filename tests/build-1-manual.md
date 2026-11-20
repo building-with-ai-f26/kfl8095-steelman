@@ -1458,6 +1458,21 @@ PR 71's check (Nov 18, embedded-offline) failed in the simulation, though the pu
 | `npm run check` | On Node 22: types, lint, all 733 unit, API, database, and simulation tests (1 new), including both planted-bug tests, and all 181 browser tests pass; no saved screenshot changed |
 | Second reader | A fresh agent found nothing blocking, and confirmed the sequence produces each refusal whatever the order on screen (every target is reached, and the offline queue merges none of them). Fixed: fast-check counts the fixed sequence among the runs, so there had been 299 random sequences, not 300 (now one more run); the new test also requires the refusal for an assessment without evidence. The planted skipped-stamp bug is now caught by the fixed sequence, and still shrinks to a one-step example |
 
+## November 19 — Phones (M-03)
+
+Build plan M2-10. The core loop on an emulated phone, and what it found.
+
+| Check | Observed result |
+| --- | --- |
+| The core loop | `e2e/phone.spec.ts`, as Chrome on an Android phone (375 × 812, touch, a phone's user agent), every press a tap. It signs in by code from a board's link and picks a username. On that board it marks an argument more important, suggests a new wording from the card's menu, rates the new wording better articulated, opens it, adds a source, and says the evidence backs it. Then it switches to Strongest case and back, makes a New steelman from the top bar, and adds an argument and switches sides there. Last come Your account and the privacy page |
+| Nothing scrolls sideways | Checked after each screen: the page against a fixed 375 px, and every element fixed in place (the pill, the analytics notice) against the screen's edge. Seen to fail with a 400 px element added, once in the page and once fixed in place. A second test does Share, a card's menu, a deleted version's note, and a missing board at 375 px wide (not phone emulation); a third, the first-visit analytics notice |
+| Found and fixed | The prototype hides your account button on a board at 480 px and below, so a phone had no way from a board to Your account. It now shows, in the board and Strongest case views. The test failed there first. The top bar still fits at 375 px with the development-only "Acting as" switch; production has no switch, so more room. The saved 375 px screenshots still pass within their 1% tolerance but don't show the button; retake them if they should |
+| Adding an option | The other known gap doesn't apply yet: the app can't add an option to a board after it's made (only New steelman's sheet has options) |
+| Second reader | A fresh agent found nothing blocking. Fixed: Strongest case is now checked by its pressed switch and its columns, not by text the board also shows; the width check compares with 375 px, not the window, which a phone may widen by zooming out, and now sees elements fixed in place; the test that isn't emulating a phone says so; the analytics notice is checked |
+| `npm run check` | On Node 22: types, lint, all 733 unit, API, database, and simulation tests, and all 183 browser tests pass (2 new); no saved screenshot changed. After the second reader's changes, which touch only `phone.spec.ts`: types, lint, and its 3 tests pass |
+| Known limitations | Emulated, not a real phone (the milestone's person check). Not checked on a phone: sign-in errors, Delete account's confirmation, and the list (PR 78, not merged) |
+| After the builder's review, Nov 20 | The builder found an unfolded row odd on a phone: its next wording spilled past the column's side. Now, while a row is unfolded, its column opens to the screen's right edge: the gray panel runs off the page with no side or corners there, and the row's wordings scroll on inside it. A new test checks the panel and the row reach the screen's edge only while unfolded, with nothing scrolling sideways, and saves `row-open-375`. The builder also saw General access wrap in Share on a phone, and couldn't leave New steelman: both are fixed where that code changes, in PR 74 (Share's people list) and PR 78 (Cancel back to the list). Types, lint, and all 185 browser tests pass; no other saved screenshot changed |
+
 ## November 19 — The list (E-03, F-01)
 
 Build plan M2-7. The home page becomes the list of your steelmen, from the prototype's feed (renderHome and post); New steelman's sheet moves to `/new`.

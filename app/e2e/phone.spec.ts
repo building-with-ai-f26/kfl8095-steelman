@@ -1,0 +1,187 @@
+// Phones (M-03, M2-10): the core loop at 375 px with a phone's touch and user
+// agent, from signing in to Strongest case, tapping as a person would. After
+// each screen, nothing scrolls sideways.
+
+import type { Page } from "@playwright/test";
+import { row, short } from "./support/screen.ts";
+import { TEST_POSTHOG, test as boardTest } from "./support/board.ts";
+import { QUESTION, expect, test } from "./support/sign-in.ts";
+
+const NEW_QUESTION = "Should our school start an hour later?";
+const ARGUMENT = "Teenagers sleep later, so first lessons are wasted.";
+const FAMILIES = "Families could visit together on the one day nobody has school or work.";
+const REVISED = "Sunday is the one day a whole family is free to come together.";
+
+const SCREEN = 375;
+
+/**
+ * Nothing on the page reaches past the screen's 375 px: not the page itself (compared with the constant, since a
+ * phone may zoom out to fit a wide page, widening the window with it), and not anything fixed in place, such as the
+ * pill or the analytics notice, which the page's width doesn't count.
+ */
+async function expectNoSidewaysScroll(page: Page, where: string): Promise<void> {
+  const widths = await page.evaluate(() => ({
+    page: document.documentElement.scrollWidth,
+    window: window.innerWidth,
+    fixed: [...document.querySelectorAll("body *")]
+      .filter((element) => getComputedStyle(element).position === "fixed" && element.getClientRects().length > 0)
+      .map((element) => ({ name: element.className || element.tagName, right: Math.ceil(element.getBoundingClientRect().right) })),
+  }));
+  expect(widths.window, `${where}: the window is ${widths.window} px wide`).toBe(SCREEN);
+  expect(widths.page, `${where}: the page is ${widths.page} px wide`).toBeLessThanOrEqual(SCREEN);
+  expect(widths.fixed.filter((element) => element.right > SCREEN), `${where}: fixed in place past the screen's edge`).toEqual([]);
+}
+
+test("M-03, L-01, F-01, A-01, A-05, B-01, B-02, C-01, B-03, E-01: the core loop on a phone, by touch, with nothing scrolling sideways", async ({ site }) => {
+  const page = await site.browse({ phone: true });
+
+  // Sign in, from a board's link.
+  await page.goto(site.boardPath);
+  await expectNoSidewaysScroll(page, "Sign in");
+  await page.getByLabel("Email").fill("pat.phone@example.test");
+  await page.getByRole("button", { name: "Email me a code" }).tap();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your email");
+  await expectNoSidewaysScroll(page, "Check your email");
+  await page.getByLabel("Code").fill(site.codeFor("pat.phone@example.test"));
+  await page.getByRole("button", { name: "Sign in" }).tap();
+  await page.getByLabel("Username").fill("pat_phone");
+  await expectNoSidewaysScroll(page, "Choose a username");
+  await page.getByRole("button", { name: "Continue" }).tap();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
+  await expectNoSidewaysScroll(page, "The board");
+
+  // The account button is within reach on a board.
+  await expect(page.getByRole("link", { name: "Your account" })).toBeInViewport();
+
+  // Importance, on someone else's argument.
+  const importance = page.getByRole("group", { name: `Importance: ${short(FAMILIES)}` });
+  await importance.getByRole("button", { name: "More important if true" }).tap();
+  await expect(importance.getByRole("button", { name: "More important if true" })).toHaveAttribute("aria-pressed", "true");
+
+  // A wording of it, from its card's menu.
+  const families = page.locator(".sm-card", { has: page.locator(".sm-claim", { hasText: FAMILIES }) }).first();
+  await families.getByRole("button", { name: "Options for this version" }).tap();
+  await page.getByRole("menuitem", { name: "Suggest a revised version" }).tap();
+  const draft = page.getByRole("form", { name: "Suggest a version" });
+  await draft.getByLabel("Your version", { exact: true }).fill(REVISED);
+  await draft.getByLabel("What your version improves").fill("Says why Sunday.");
+  await expectNoSidewaysScroll(page, "Suggesting a version");
+  await draft.getByRole("button", { name: "Add your version" }).tap();
+  const revised = page.locator(".sm-track .sm-card", { has: page.locator(".sm-claim", { hasText: REVISED }) });
+  await expect(revised).toBeVisible();
+  await expectNoSidewaysScroll(page, "A row of two wordings");
+
+  // Articulation, on the new wording.
+  const articulation = page.getByRole("group", { name: `Articulation: ${short(REVISED)}` });
+  await articulation.getByRole("button", { name: "Better articulated" }).tap();
+  await expect(articulation.getByRole("button", { name: "Better articulated" })).toHaveAttribute("aria-pressed", "true");
+
+  // A source, then an assessment.
+  await revised.getByRole("button", { name: REVISED }).tap();
+  const evidence = revised.getByRole("region", { name: "Evidence and its assessment" });
+  await evidence.getByRole("button", { name: "Add a source" }).tap();
+  const form = page.getByRole("form", { name: /source$/ });
+  await form.getByLabel("Link").fill("https://example.org/family-time");
+  await form.getByLabel("Title").fill("Family time survey, 2024");
+  await form.getByLabel(/^Description/).fill("Most parents say Sunday is the only day the whole family is free.");
+  await expectNoSidewaysScroll(page, "Adding a source");
+  await form.getByRole("button", { name: "Add source" }).tap();
+  await expect(evidence.getByText("Family time survey, 2024")).toBeVisible();
+  const backs = evidence.getByRole("group", { name: "Does the evidence back this wording?" });
+  await backs.getByRole("button", { name: "Yes" }).tap();
+  await expect(backs.getByRole("button", { name: "Yes" })).toHaveAttribute("aria-pressed", "true");
+  await expectNoSidewaysScroll(page, "An open card");
+
+  // Strongest case.
+  const strongest = page.getByRole("group", { name: "View" }).getByRole("button", { name: "Strongest case" });
+  await strongest.tap();
+  await expect(strongest).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("region", { name: /^The case for / }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Your account" })).toBeInViewport();
+  await expectNoSidewaysScroll(page, "Strongest case");
+  await page.getByRole("group", { name: "View" }).getByRole("button", { name: "Board" }).tap();
+
+  // New steelman, from the top bar, and an argument on it.
+  await page.getByRole("link", { name: "New steelman" }).tap();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
+  await expectNoSidewaysScroll(page, "New steelman");
+  await page.getByRole("textbox", { name: "Question" }).fill(NEW_QUESTION);
+  await page.getByRole("textbox", { name: "Option 1" }).fill("Start later");
+  await page.getByRole("textbox", { name: "Option 2" }).fill("Keep the time");
+  await page.getByRole("button", { name: "Create steelman" }).tap();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(NEW_QUESTION);
+  await expectNoSidewaysScroll(page, "The new board");
+  await page.getByRole("button", { name: "Add an argument for Start later" }).tap();
+  await page.getByRole("textbox", { name: "Your argument", exact: true }).fill(ARGUMENT);
+  await expectNoSidewaysScroll(page, "Adding an argument");
+  await page.getByRole("button", { name: "Add your argument" }).tap();
+  await expect(page.locator(".sm-card .sm-claim", { hasText: ARGUMENT })).toBeVisible();
+  await page.getByRole("tab", { name: /^Keep the time/ }).tap();
+  await expect(page.getByRole("button", { name: "Add an argument for Keep the time" })).toBeVisible();
+
+  // Your account, and the privacy page.
+  await page.getByRole("link", { name: "Your account" }).tap();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your account");
+  await expectNoSidewaysScroll(page, "Your account");
+  await page.goto("/privacy");
+  await expectNoSidewaysScroll(page, "Privacy");
+});
+
+boardTest("M-03: at 375 px wide (not emulating a phone) nothing scrolls sideways with Share open, a card's menu open, a deleted version's note, or a missing board", async ({ board }) => {
+  const page = await board.open("maya.chen", { width: 375, missingBoards: true });
+
+  await page.getByRole("button", { name: /^(Anyone with the link|Invited only)$/ }).click();
+  await expect(page.getByRole("combobox", { name: "General access" })).toBeVisible();
+  await expectNoSidewaysScroll(page, "Share");
+  await page.keyboard.press("Escape");
+
+  await page.getByRole("button", { name: "Options for this version" }).first().click();
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expectNoSidewaysScroll(page, "A card's menu");
+  await page.keyboard.press("Escape");
+
+  await page.goto(`/b/${board.demo.board}/v/nosuchversion`);
+  await expect(page.locator(".sm-link-note")).toHaveText(/That version was deleted\./);
+  await expectNoSidewaysScroll(page, "A deleted version's note");
+
+  await page.goto("/b/nosuchboard1");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("This steelman doesn’t exist");
+  await expectNoSidewaysScroll(page, "A missing board");
+});
+
+boardTest.describe("with analytics", () => {
+  boardTest.use({ analytics: true });
+
+  boardTest("M-03, M-08: at 375 px wide the first-visit analytics notice stays within the screen", async ({ board }) => {
+    // PostHog's address can't exist; an empty script stands in for PostHog's, so loading it logs no error.
+    const page = await board.open("jordan_w", { width: SCREEN, prepare: (context) => context.route(`${TEST_POSTHOG.host}/**`, (route) => route.fulfill({ contentType: "text/javascript", body: "" })) });
+
+    await expect(page.getByRole("region", { name: "Analytics" }).getByRole("button", { name: "Turn off" })).toBeVisible();
+    await expectNoSidewaysScroll(page, "The analytics notice");
+  });
+});
+
+boardTest("M-03, A-05: on a phone, an unfolded row opens its column to the screen's edge, so its wordings run on inside it rather than past its side", async ({ board }) => {
+  const page = await board.open("lin.zhao", { width: SCREEN });
+  const lead = row(page, "Sunday is the only free day for many people who work weekdays.");
+  const panelRight = () =>
+    lead.evaluate((idea) => {
+      const column = idea.closest(".sm-column")!;
+      return Math.round(column.getBoundingClientRect().right + parseFloat(getComputedStyle(column, "::before").right) * -1);
+    });
+  expect(await panelRight()).toBeLessThan(SCREEN);
+
+  await lead.getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
+  const track = lead.locator(".sm-track");
+  await expect(track).toBeVisible();
+
+  expect(await panelRight()).toBe(SCREEN);
+  expect(await track.evaluate((element) => Math.round(element.getBoundingClientRect().right))).toBe(SCREEN);
+  await expectNoSidewaysScroll(page, "An unfolded row");
+  await page.clock.runFor(1000);
+  await expect(page).toHaveScreenshot("row-open-375.png");
+
+  await lead.getByRole("button", { name: "Fold versions back into the stack" }).click();
+  await expect(track).toHaveCount(0);
+  expect(await panelRight()).toBeLessThan(SCREEN);
+});

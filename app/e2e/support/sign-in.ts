@@ -26,6 +26,15 @@ const NOON = new Date("2026-11-16T12:00:00Z");
 /** The demo board's question (server/src/demo-board.ts). */
 export const QUESTION = "Should our library open on Sundays?";
 
+/** A phone, as Chrome on Android reports one: 375 px wide, touch, a phone's user agent (M-03). */
+export const PHONE = {
+  viewport: { width: 375, height: 812 },
+  deviceScaleFactor: 3,
+  isMobile: true,
+  hasTouch: true,
+  userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+};
+
 export interface SignInSite {
   /** Where the site is, such as http://127.0.0.1:51234. */
   origin: string;
@@ -41,8 +50,8 @@ export interface SignInSite {
   expireCodes(): Promise<void>;
   /** Runs SQL on the site's database, as its owner: for setting up what the app can't do yet, such as inviting someone (H-01). */
   sql(text: string, values?: unknown[]): Promise<void>;
-  /** A new browser session, signed out, at this width. */
-  browse(options?: { width?: number }): Promise<Page>;
+  /** A new browser session, signed out, at this width; or, with `phone`, as a phone: 375 px, touch, and a phone's user agent (M-03). */
+  browse(options?: { width?: number; phone?: true }): Promise<Page>;
   /** Every unexpected console error and uncaught exception so far. */
   errors: string[];
 }
@@ -109,8 +118,8 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined }
           await client.end();
         }
       },
-      async browse({ width = 1280 } = {}) {
-        const context = await browser.newContext({ baseURL: origin, viewport: { width, height: 900 } });
+      async browse({ width = 1280, phone } = {}) {
+        const context = await browser.newContext(phone ? { baseURL: origin, ...PHONE } : { baseURL: origin, viewport: { width, height: 900 } });
         const page = await context.newPage();
         page.on("console", (message) => {
           if (message.type() === "error" && !isRefusedSignIn(message.text(), message.location().url)) errors.push(message.text());

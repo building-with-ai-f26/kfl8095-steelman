@@ -127,6 +127,20 @@ body { margin:0; }
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
 
+/* Phones (M-03). The prototype hides your account button on a board at 480 px and below, to leave room for the
+   board's tools; then a phone has no way from a board to Your account. The top bar has room for it. */
+@media(max-width:480px) {
+  #steelman-study:is([data-zoom="read"],[data-zoom="case"]) a.sm-me { display:grid; }
+}
+
+/* Phones (M-03): while a row is unfolded, its column opens to the screen's right edge, its panel running off the
+   page with no side or corners there, so the row's wordings scroll on inside the column instead of spilling past
+   its side (the builder, Nov 20). The track reaches past its row by the board's side padding (10 px, .sm-scene)
+   and the column's (8 px). */
+@media(max-width:640px) {
+  #steelman-study .sm-column:has(.sm-idea.sm-open)::before { right:-10px; border-right:0; border-radius:10px 0 0 10px; }
+  #steelman-study .sm-column .sm-idea.sm-open .sm-track { margin-right:calc(-8px - 10px); }
+}
 /* The wordmark is a link home (E-03), drawn as before. */
 #steelman-study a.sm-wordmark { text-decoration:none; }
 
