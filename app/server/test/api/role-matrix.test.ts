@@ -34,7 +34,7 @@ interface Cast {
   /** A wording each persona wrote, for the actions only an author may take. Signed out wrote none. */
   own: Record<Persona, string | undefined>;
   /** A wording by another contributor, Cara, citing a source she added. No persona wrote either. */
-  others: { version: string; source: string };
+  others: { version: string; source: string; cara: string };
 }
 
 /** An invited-only board with one of each persona, and Cara, a contributor who isn't one of them. */
@@ -64,7 +64,7 @@ async function castBoard(): Promise<Cast> {
       [source, b.board, cara, seq],
     );
     await db.client.query("insert into revision_source (version_id, rev, source_id, board_id) values ($1, 1, $2, $3)", [version, source, b.board]);
-    return { version, source };
+    return { version, source, cara };
   });
   return { b, person, own, others };
 }
@@ -188,6 +188,14 @@ const ACTIONS: Action[] = [
     least: "editor",
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/versions/${others.version}/hidden`, { as, body: { reason: "spam" } }),
+  },
+  // Share's people list (M2-2b, Q27).
+  { name: "see who's on the board", least: "viewer", write: false, run: ({ b }, as) => api.get(`/api/boards/${b.board}/people`, { as }) },
+  {
+    name: "set someone's role",
+    least: "owner",
+    write: true,
+    run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/people/${others.cara}`, { as, body: { role: "voter" } }),
   },
 ];
 

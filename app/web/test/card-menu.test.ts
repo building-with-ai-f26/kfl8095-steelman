@@ -16,6 +16,7 @@ const version = (extra: Partial<VersionRow> = {}): VersionRow => ({
   wording: "Sunday is the only free day.",
   context: "Many work weekdays.",
   previousWording: null,
+  votesBefore: null,
   sourceIds: ["s1"],
   articulation: 2,
   articulationVoters: 2,
@@ -98,4 +99,10 @@ test("M2-4, J-02: an Editor and the Owner may hide someone else's wording, or re
 
 test("M2-4, J-01: nobody is offered Report on a hidden wording", () => {
   expect(reportItem(version({ hidden: true, hiddenReason: "spam" }), "ben", "voter")).toEqual([]);
+});
+
+test("M2-5, A-06: the reader's own edit shows no vote counts from before it until the service has the edit, which says them", () => {
+  const edit = { kind: "edit" as const, versionId: "v1", baseRev: 3, wording: "Sunday is the one free day.", context: "" };
+
+  expect(editShown(version({ previousWording: "First wording.", votesBefore: { importance: 4, articulation: 2 } }), [edit]).votesBefore).toBeNull();
 });

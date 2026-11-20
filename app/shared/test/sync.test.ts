@@ -30,6 +30,7 @@ const version = (id: string, argumentId: string, createdSeq: number, extra: Part
   wording: `Wording ${id}`,
   context: "",
   previousWording: null,
+  votesBefore: null,
   sourceIds: [],
   articulation: 0,
   articulationVoters: 0,

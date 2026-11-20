@@ -5,8 +5,8 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardSnapshot, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, readBoard, readChanges, send, setAccess, setHidden, setReport } from "../api.ts";
+import type { Access, BoardSnapshot, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, readBoard, readChanges, readPeople, send, setAccess, setHidden, setReport, setRole } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -287,6 +287,29 @@ export class BoardSession {
     await this.poll();
   }
 
+  /** Everyone on the board, for Share's people list, or null when it can't be read now. */
+  people(): Promise<Person[] | null> {
+    return readPeople(this.board);
+  }
+
+  /** The owner sets someone's role (M2-2b). Answers whether the service took it. */
+  async setRole(person: Person, role: Exclude<Role, "owner">): Promise<boolean> {
+    let answer: Answer;
+    try {
+      answer = await setRole(this.board, person.id, role);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      this.announce("Couldn’t reach Steelman. Try again.");
+      return false;
+    }
+    if (answer.status !== "done" && answer.status !== "already_done") {
+      this.announce(answer.status === "not_found" ? `${person.name ?? "They"} is no longer on this board.` : refusalNote(answer));
+      return false;
+    }
+    this.announce(`${person.name ?? "They"} ${MEMBER_CAN[role]}.`);
+    return true;
+  }
+
   private stopSharing(status: string): void {
     this.wanted = null;
     this.set({ access: this.accepted, status });
@@ -431,6 +454,9 @@ export class BoardSession {
 
 /** Whether a role sees a wording's open reports (M2-3). */
 const moderates = (role: Role | null) => role === "editor" || role === "owner";
+
+/** What a role lets someone do, as the announcement after setting it says. */
+const MEMBER_CAN = { viewer: "can view", voter: "can vote", contributor: "can contribute", editor: "can edit" } as const;
 
 /** What the reader is told when the service refuses something they did. */
 function refusalNote(answer: Answer): string {

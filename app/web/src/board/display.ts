@@ -87,7 +87,8 @@ export function editShown(version: VersionRow, mine: readonly QueuedAction[]): V
   // `mine` is newest first; edits made one after another each start from the one before.
   for (const action of [...mine].reverse()) {
     if (action.kind !== "edit" || action.versionId !== version.id || action.baseRev !== shown.rev) continue;
-    shown = { ...shown, rev: shown.rev + 1, wording: action.wording, context: action.context, previousWording: shown.wording, yes: 0, no: 0, myAssessment: null };
+    // The counts from before it are the service's to say (M2-5): none are shown until it has the edit.
+    shown = { ...shown, rev: shown.rev + 1, wording: action.wording, context: action.context, previousWording: shown.wording, votesBefore: null, yes: 0, no: 0, myAssessment: null };
   }
   return shown;
 }

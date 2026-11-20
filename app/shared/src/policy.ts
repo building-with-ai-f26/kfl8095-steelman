@@ -45,7 +45,7 @@ export const POLICY: Record<Action, Rule> = {
   report: { least: "viewer", openBoard: true, authorOnly: false },
   /** Hiding a wording with a reason, and restoring it (J-02, M2-4): an Editor's power, and the Owner's. */
   hide: { least: "editor", openBoard: true, authorOnly: false },
-  /** Changing the board's general access and its link role. */
+  /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };
 

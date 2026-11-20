@@ -52,6 +52,20 @@ export const reportInput = z
 /** A moderator hides a wording (J-02, M2-4), giving one of the report reasons. */
 export const hideInput = z.strictObject({ reason: z.enum(REPORT_REASONS) });
 
+/** The roles the owner may give someone on Share's people list (M2-2b, Q27): any but Owner. */
+export const MEMBER_ROLES = ["viewer", "voter", "contributor", "editor"] as const satisfies readonly Role[];
+
+/** The owner sets someone's role on the board. */
+export const memberRoleInput = z.strictObject({ role: z.enum(MEMBER_ROLES) });
+
+/** Someone on the board, as Share's people list shows them: by username, never by email. */
+export interface Person {
+  id: string;
+  /** Null until they've chosen a username. */
+  name: string | null;
+  role: Role;
+}
+
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 
@@ -110,6 +124,8 @@ export interface VersionRow {
   context: string | null;
   /** The wording before the latest edit, for the "edited" mark; null if never edited. */
   previousWording: string | null;
+  /** How many importance and articulation votes it had just before its latest edit, for the "edited" mark (Q22); null if never edited. */
+  votesBefore: { importance: number; articulation: number } | null;
   sourceIds: string[];
   articulation: number;
   articulationVoters: number;

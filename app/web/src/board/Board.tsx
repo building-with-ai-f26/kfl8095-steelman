@@ -109,6 +109,16 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const isLast = (version: VersionRow) =>
     (view.shown.versions[version.argumentId] ?? []).filter((id) => id !== version.id && !view.rows.versions[id]?.deleted && (view.rows.versions[id]?.hidden || isLiveVersion(view.rows.versions[id]))).length === 0;
 
+  // When the owner lowers the reader's role below writing, an open draft or edit closes, as the prototype's role
+  // switch does, so they don't go on typing something the service would refuse (M2-2b). Kept drafts stay kept.
+  const mayWrite = whyNot(reader, state.role, "add") === null;
+  useEffect(() => {
+    if (!mayWrite && writing !== null) {
+      setWriting(null);
+      session.announce("Your role on this board changed: you can no longer write here.");
+    }
+  }, [mayWrite]);
+
   const menu: CardMenu = {
     items: (version) =>
       version.hidden
@@ -318,7 +328,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
-          {state.access && state.role ? <Sharing access={state.access} role={state.role} session={session} /> : null}
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
