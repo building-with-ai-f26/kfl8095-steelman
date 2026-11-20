@@ -41,7 +41,7 @@ export const POLICY: Record<Action, Rule> = {
    * builder, Nov 14; the Editor since M2-1).
    */
   uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
-  /** Changing the board's general access and its link role. */
+  /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };
 

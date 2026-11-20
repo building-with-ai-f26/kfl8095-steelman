@@ -27,7 +27,7 @@ export interface Entry {
 const NO_ROLE: Entry = { role: null, joiningByLink: false };
 
 /** A role as stored. Anything the service doesn't know gives no role, so an unknown word can't grant access. */
-function asRole(stored: string): Role | null {
+export function asRole(stored: string): Role | null {
   return (ROLES as readonly string[]).includes(stored) ? (stored as Role) : null;
 }
 
