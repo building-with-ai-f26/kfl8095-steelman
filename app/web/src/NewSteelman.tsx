@@ -191,6 +191,10 @@ export function NewSteelman() {
                 {error}
               </span>
             ) : null}
+            {/* The prototype's Cancel, back to the list. */}
+            <a className="sm-link-button cursor-interaction" href="/">
+              Cancel
+            </a>
             <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
               <Icon name="plus" size={14} />
               Create steelman

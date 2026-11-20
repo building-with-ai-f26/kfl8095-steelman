@@ -161,12 +161,14 @@ export interface BoardChanges {
   log: LogRow[];
 }
 
-/** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, and when it last changed. */
+/** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its owner, and when it last changed. */
 export interface BoardListing {
   id: string;
   question: string;
   options: { name: string; arguments: number }[];
   role: Role;
+  /** The owner's username, as Google Drive's list shows each file's owner. */
+  owner: string;
   /** The last write of any kind: a new argument or wording, an edit, a vote, an assessment, a change of sources or access. */
   changedAt: string;
 }

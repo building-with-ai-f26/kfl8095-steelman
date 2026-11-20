@@ -14,8 +14,8 @@ import type { BoardListing, Clock, Role } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 
 export async function listBoards(db: Db, clock: Clock, person: string): Promise<{ now: string; boards: BoardListing[] }> {
-  const boards = await sql<{ id: string; question: string; role: string; changed_at: Date }>`
-    select b.id, b.question, m.role,
+  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date }>`
+    select b.id, b.question, m.role, owner.username as owner,
       greatest(
         b.created_at,
         (select max(at) from change where board_id = b.id),
@@ -27,6 +27,8 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
       ) as changed_at
     from board_member m
     join board b on b.id = m.board_id
+    -- Its owner: the maker, or whoever it was handed to when they deleted their account (M-07).
+    join account owner on owner.id = b.created_by
     where m.account_id = ${person}
       and b.deleted_at is null
       and m.role = any(${[...ROLES]})
@@ -53,6 +55,7 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
       question: board.question,
       options: options.filter((option) => option.board_id === board.id).map((option) => ({ name: option.name, arguments: Number(option.arguments) })),
       role: board.role as Role,
+      owner: board.owner,
       changedAt: new Date(board.changed_at).toISOString(),
     })),
   };

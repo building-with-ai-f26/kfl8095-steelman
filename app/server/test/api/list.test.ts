@@ -35,6 +35,7 @@ test("E-03: each board you're on shows its question, its options with how many a
         { name: "No", arguments: 1 },
       ],
       role: "contributor",
+      owner: expect.stringMatching(/^ana_/),
       changedAt: expect.any(String),
     },
   ]);

@@ -1,20 +1,17 @@
 // The list (E-03, M2-7): the home page, from the prototype's feed (renderHome
 // and post in docs/prototype/source/steelman-refined.html). It lists the
-// boards you're on, the most recently changed first; each shows your role,
+// boards you're on, the most recently changed first; each shows who owns it,
 // how long ago it changed, its question (a link to the board), its options
 // with how many arguments each has, and a miniature of the board's shape.
 // Spaces, sorting, the activity score, comments, and who's here come with
 // spaces and comments (T3, T4), so they don't appear.
 
 import { useCallback, useEffect, useState } from "react";
-import type { BoardList, BoardListing, Role } from "@steelman/shared";
+import type { BoardList, BoardListing } from "@steelman/shared";
 import { listBoards } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import { NEW_PATH, boardPath } from "./links.ts";
 import { ago, fullDate } from "./when.ts";
-
-/** Each role in Share's words. */
-const ROLE: Record<Role, string> = { owner: "Owner", editor: "can edit", contributor: "can contribute", voter: "can vote", viewer: "can view" };
 
 export function Home() {
   const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(null);
@@ -71,7 +68,9 @@ function Post({ board, now }: { board: BoardListing; now: string }) {
     <li className="sm-post">
       <div className="sm-post-body">
         <div className="sm-post-meta">
-          <span className="sm-tag">{ROLE[board.role]}</span>
+          {/* Who owns it, as Google Drive's list shows ("me" there, "You" here); the prototype's author goes here. */}
+          <span className="sm-post-owner ph-no-capture">{board.role === "owner" ? "You" : board.owner}</span>
+          <span className="sm-dot" />
           <time dateTime={board.changedAt} title={fullDate(board.changedAt)}>
             Updated {ago(board.changedAt, now)}
           </time>

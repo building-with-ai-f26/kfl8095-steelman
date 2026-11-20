@@ -36,14 +36,15 @@ async function makeBoard(board: TestBoard, person: Parameters<TestBoard["open"]>
   return answer.board;
 }
 
-test("E-03: the home page lists the boards you're on: the question, each option with how many arguments it has, your role, and how long ago it changed", async ({ board }) => {
+test("E-03: the home page lists the boards you're on: who owns it, how long ago it changed, the question, and each option with how many arguments it has", async ({ board }) => {
   board.clock.advance(3 * HOUR);
   const page = await home(board);
 
   await expect(questions(page)).toHaveText([QUESTION]);
   const post = posts(page).first();
   await expect(post.getByRole("list", { name: "Options and how many arguments each has" }).getByRole("listitem")).toHaveText(["Yes3", "No3"]);
-  await expect(post.locator(".sm-post-meta .sm-tag")).toHaveText("can contribute");
+  await expect(post.locator(".sm-post-meta .sm-post-owner")).toHaveText("maya.chen");
+  await expect(post.locator(".sm-post-meta .sm-tag")).toHaveCount(0);
   await expect(post.locator("time")).toHaveText("Updated 3h ago");
 });
 
@@ -56,12 +57,12 @@ test("E-03: the board's question is a link that opens it", async ({ board }) => 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
 });
 
-test("E-03: the Owner sees Owner, and the most recently changed board comes first: a vote moves a board to the top", async ({ board }) => {
+test("E-03: the owner sees You as its owner, and the most recently changed board comes first: a vote moves a board to the top", async ({ board }) => {
   board.clock.advance(HOUR);
   await makeBoard(board, "maya.chen", "Should the café stay open late?");
   const page = await home(board, "maya.chen");
   await expect(questions(page)).toHaveText(["Should the café stay open late?", QUESTION]);
-  await expect(posts(page).locator(".sm-post-meta .sm-tag")).toHaveText(["Owner", "Owner"]);
+  await expect(posts(page).locator(".sm-post-meta .sm-post-owner")).toHaveText(["You", "You"]);
 
   board.clock.advance(HOUR);
   const snapshot = await board.api("tess.b").snapshot();
@@ -112,7 +113,18 @@ test("E-03, F-01: New steelman is a button in the top bar of the list; it opens 
   await page.goBack();
   await page.goBack();
   await expect(questions(page)).toHaveText(["Should our school start an hour later?", QUESTION]);
-  await expect(posts(page).first().locator(".sm-post-meta .sm-tag")).toHaveText("Owner");
+  await expect(posts(page).first().locator(".sm-post-meta .sm-post-owner")).toHaveText("You");
+});
+
+test("E-03, F-01: Cancel on New steelman leads back to the list", async ({ board }) => {
+  const page = await home(board);
+  await page.getByRole("link", { name: "New steelman" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
+
+  await page.getByRole("link", { name: "Cancel" }).click();
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(questions(page)).toHaveText([QUESTION]);
 });
 
 siteTest("E-03: with no boards yet, the list says so and offers New steelman", async ({ site }) => {
@@ -165,7 +177,7 @@ siteTest("E-03: someone who signs in from a board's link finds it in their list"
   await page.goto("/");
 
   await expect(questions(page)).toHaveText([QUESTION]);
-  await expect(posts(page).locator(".sm-post-meta .sm-tag")).toHaveText("can contribute");
+  await expect(posts(page).locator(".sm-post-meta .sm-post-owner")).toHaveText("maya.chen");
 });
 
 for (const size of SIZES) {

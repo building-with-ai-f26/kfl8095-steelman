@@ -131,3 +131,6 @@ body { margin:0; }
 @media(max-width:640px) {
   #steelman-study .sm-feed .sm-post { grid-template-columns:minmax(0,1fr); padding-left:14px; }
 }
+/* New steelman's Cancel is a link home, drawn as the prototype's link button. */
+#steelman-study a.sm-link-button { text-decoration:none; }
+#steelman-study a.sm-link-button:hover { text-decoration:underline; }
