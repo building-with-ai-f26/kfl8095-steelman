@@ -36,6 +36,8 @@ export type {
   Access,
   ArgumentRow,
   BoardChanges,
+  BoardList,
+  BoardListing,
   BoardSnapshot,
   LogRow,
   NewBoard,

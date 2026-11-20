@@ -30,6 +30,7 @@ import type { Db } from "./db/database.ts";
 import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
+import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
@@ -289,6 +290,12 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (outcome === "wrong_username") return reply.code(400).send({ status: "refused", reason: "wrong_username" });
     if (outcome === "not_found") return reply.code(401).send({ status: "refused", reason: "signed_out" });
     return { status: "done" };
+  });
+
+  // The list (E-03): the boards you're a member of, most recently changed first.
+  app.get("/api/boards", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return listBoards(db, clock, request.person);
   });
 
   // A new board (F-01). Anyone signed in may make one; they become its Owner.

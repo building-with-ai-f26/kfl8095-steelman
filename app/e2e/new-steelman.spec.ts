@@ -1,4 +1,4 @@
-// New steelman (F-01), in the browser: the home page is the sheet, and
+// New steelman (F-01), in the browser: the sheet, at /new, and
 // making a board opens it, owned by its maker and open to anyone with the link.
 
 import AxeBuilder from "@axe-core/playwright";
@@ -11,10 +11,10 @@ const SIZES = [
   { name: "375", width: 375 },
 ] as const;
 
-/** A test account's browser on the home page. */
+/** A test account's browser on New steelman's sheet. */
 async function home(board: TestBoard, width = 1280): Promise<Page> {
   const page = await board.open("lin.zhao", { width });
-  await page.goto("/");
+  await page.goto("/new");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
   return page;
 }
@@ -23,7 +23,7 @@ const question = (page: Page) => page.getByRole("textbox", { name: "Question" })
 const option = (page: Page, n: number) => page.getByRole("textbox", { name: `Option ${n}` });
 const create = (page: Page) => page.getByRole("button", { name: "Create steelman" });
 
-test("F-01: the home page is New steelman, with the cursor in the question", async ({ board }) => {
+test("F-01: New steelman opens with the cursor in the question", async ({ board }) => {
   const page = await home(board);
 
   await expect(question(page)).toBeFocused();
@@ -128,7 +128,7 @@ test("F-01: the sheet says what's missing, and puts the cursor there", async ({ 
   // Typing clears the message; nothing was made.
   await option(page, 2).fill("Keep the time");
   await expect(error).toHaveCount(0);
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/new$/);
 });
 
 for (const size of SIZES) {

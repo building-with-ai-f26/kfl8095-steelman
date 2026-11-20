@@ -3,8 +3,8 @@
 // Nov 14: white, with the options side by side like the board's columns
 // (scrolling sideways on a phone), and the settings under them, each an icon
 // and a name. Permissions works (H-02); Space and Collaboration rules (the
-// prototype's "How it runs") are shown where they'll be, marked Later. M1 has no list of boards, so the sheet is the home page, and making
-// a board opens it.
+// prototype's "How it runs") are shown where they'll be, marked Later. The sheet is at /new, a button on the list (E-03), and making a
+// board opens it.
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -191,6 +191,10 @@ export function NewSteelman() {
                 {error}
               </span>
             ) : null}
+            {/* The prototype's Cancel, back to the list. */}
+            <a className="sm-link-button cursor-interaction" href="/">
+              Cancel
+            </a>
             <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
               <Icon name="plus" size={14} />
               Create steelman

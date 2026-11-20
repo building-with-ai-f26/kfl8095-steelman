@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardSnapshot, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardList, BoardSnapshot, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
@@ -61,6 +61,17 @@ export async function readChanges(board: string, after: number): Promise<(BoardC
 }
 
 /** Makes a board (F-01). Answers its ID, or what to tell the person. */
+/** The boards this person is on (E-03), or why not: signed out, or the service can't be reached. */
+export async function listBoards(): Promise<BoardList | "signed_out" | "failed"> {
+  try {
+    const response = await call("GET", "boards");
+    if (response.status === 401) return "signed_out";
+    return response.ok ? ((await response.json()) as BoardList) : "failed";
+  } catch {
+    return "failed";
+  }
+}
+
 export async function createBoard(board: NewBoard): Promise<string | { problem: string }> {
   let response: Response;
   try {
