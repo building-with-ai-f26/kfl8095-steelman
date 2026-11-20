@@ -40,8 +40,8 @@ test("M2-3, J-01: a Viewer reports a wording; an Editor and the Owner see one re
   const { status } = await report(val, { reason: "spam" });
 
   expect(status).toBe(200);
-  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { spam: 1 } });
-  expect((await seen(b.ana)).reports).toEqual({ count: 1, reasons: { spam: 1 } });
+  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { spam: 1 }, notes: [] });
+  expect((await seen(b.ana)).reports).toEqual({ count: 1, reasons: { spam: 1 }, notes: [] });
 });
 
 test("M2-3, J-01, H-03: a Voter and a Contributor see no reports at all", async () => {
@@ -66,7 +66,7 @@ test("M2-3, J-01: reporting twice is once; a second reason replaces the first", 
   expect(await boardSeq()).toBe(seq);
   await report(vic, { reason: "abuse" });
 
-  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { abuse: 1 } });
+  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { abuse: 1 }, notes: [] });
 });
 
 test("M2-3, J-01: withdrawing takes it out of the count, and withdrawing again changes nothing", async () => {
@@ -74,7 +74,7 @@ test("M2-3, J-01: withdrawing takes it out of the count, and withdrawing again c
   await report(val, { reason: "spam" });
 
   expect((await withdraw(vic)).status).toBe(200);
-  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { spam: 1 } });
+  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { spam: 1 }, notes: [] });
   expect((await seen(vic)).myReport).toBeNull();
   const seq = await boardSeq();
   expect((await withdraw(vic)).body.status).toBe("already_done");
@@ -91,7 +91,7 @@ test("M2-3, J-01: Something else needs a note; the other reasons don't", async (
   expect((await report(vic, { reason: "nonsense" })).status).toBe(400);
 });
 
-test("M2-3, J-01: the reporter's name and ID are never in an answer to anyone else", async () => {
+test("M2-3, J-01: the reporter's name and ID are never in an answer to anyone else, and their note reaches only an Editor and the Owner", async () => {
   await report(vic, { reason: "other", note: "It names a student." });
   const name = await username(vic);
 
@@ -101,9 +101,23 @@ test("M2-3, J-01: the reporter's name and ID are never in an answer to anyone el
     for (const answer of [board, changes]) {
       expect(answer).not.toContain(vic);
       expect(answer).not.toContain(name);
-      expect(answer).not.toContain("It names a student.");
+      if (as === b.ben || as === val) expect(answer).not.toContain("It names a student.");
     }
   }
+});
+
+test("M2-3, J-01: an Editor and the Owner see what was written for Something else, as they see every reason (the builder, Nov 20: all of a report but who, or none of it)", async () => {
+  await report(vic, { reason: "other", note: "It names a student." });
+  await report(val, { reason: "spam" });
+
+  for (const as of [eve, b.ana]) expect((await seen(as)).reports).toEqual({ count: 2, reasons: { spam: 1, other: 1 }, notes: ["It names a student."] });
+});
+
+test("M2-3, J-01: a withdrawn report's note goes with it", async () => {
+  await report(vic, { reason: "other", note: "It names a student." });
+  await withdraw(vic);
+
+  expect((await seen(eve)).reports).toBeNull();
 });
 
 test("M2-3, J-01: an Editor's open board learns of a new report with its next request for changes", async () => {
@@ -112,7 +126,7 @@ test("M2-3, J-01: an Editor's open board learns of a new report with its next re
   await report(vic, { reason: "abuse" });
 
   const { body } = await api.get(`/api/boards/${b.board}/changes?after=${seq}`, { as: eve });
-  expect(body.versions.find((v: { id: string }) => v.id === b.version).reports).toEqual({ count: 1, reasons: { abuse: 1 } });
+  expect(body.versions.find((v: { id: string }) => v.id === b.version).reports).toEqual({ count: 1, reasons: { abuse: 1 }, notes: [] });
 });
 
 test("M2-3, J-01: a deleted wording can't be reported", async () => {
@@ -145,7 +159,7 @@ test("M2-3, M-07: deleting an account deletes its reports, and an Editor's open 
 
   expect((await db.client.query("select count(*)::int as n from report where reporter_id = $1", [vic])).rows[0].n).toBe(0);
   const { body } = await api.get(`/api/boards/${b.board}/changes?after=${seq}`, { as: eve });
-  expect(body.versions.find((v: { id: string }) => v.id === b.version).reports).toEqual({ count: 1, reasons: { abuse: 1 } });
+  expect(body.versions.find((v: { id: string }) => v.id === b.version).reports).toEqual({ count: 1, reasons: { abuse: 1 }, notes: [] });
 });
 
 test("M2-3, J-01: a report doesn't show itself to anyone but an Editor, the Owner, and the reporter: someone else's request for changes doesn't send the wording again", async () => {
@@ -173,7 +187,7 @@ test("M2-3, J-01: a report withdrawn and made again counts again", async () => {
   await withdraw(vic);
 
   expect((await report(vic, { reason: "offtopic" })).body.status).toBe("done");
-  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { offtopic: 1 } });
+  expect((await seen(eve)).reports).toEqual({ count: 1, reasons: { offtopic: 1 }, notes: [] });
 });
 
 test("M2-3, J-01: a report on a wording deleted since can still be withdrawn", async () => {

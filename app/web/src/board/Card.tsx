@@ -89,7 +89,15 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
   };
   return (
     <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}`} data-card={version.id}>
-      {shown.reports ? <ReportFlag reports={shown.reports} /> : null}
+      {shown.reports ? (
+        <ReportFlag reports={shown.reports} />
+      ) : shown.myReport ? (
+        // The reporter's own confirmation, as the prototype's "Reported · Undo" on a comment: Withdraw is in the menu (the builder, Nov 20).
+        <span className="sm-reported-tag">
+          <Icon name="flag" />
+          You reported this
+        </span>
+      ) : null}
       <button
         ref={menuButton}
         type="button"
@@ -189,17 +197,20 @@ export const REASONS: Record<ReportReason, { icon: IconName; label: string }> = 
   other: { icon: "circle-help", label: "Something else" },
 };
 
-/** "Spam ×2, Abusive", as the prototype's reasonsOf says them. */
-export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>): string {
+/** "Spam ×2, Something else: “It names a student.”", as the prototype's reasonsOf says them, with what was written for Something else. */
+export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>, notes: string[] = []): string {
   return (Object.keys(REASONS) as ReportReason[])
     .filter((reason) => (reasons[reason] ?? 0) > 0)
-    .map((reason) => REASONS[reason].label + (reasons[reason]! > 1 ? ` ×${reasons[reason]}` : ""))
+    .map((reason) => {
+      const said = REASONS[reason].label + (reasons[reason]! > 1 ? ` ×${reasons[reason]}` : "");
+      return reason === "other" && notes.length > 0 ? `${said}: ${notes.map((note) => `“${note}”`).join(" ")}` : said;
+    })
     .join(", ");
 }
 
 /** For an Editor or the Owner: a red flag with how many open reports a wording has; its reasons on hover or focus. Never who. */
 function ReportFlag({ reports }: { reports: NonNullable<VersionRow["reports"]> }) {
-  const why = reasonsSaid(reports.reasons);
+  const why = reasonsSaid(reports.reasons, reports.notes);
   return (
     <span className="sm-flag-tag" role="img" tabIndex={0} aria-label={`${reports.count} ${reports.count === 1 ? "report" : "reports"}: ${why}`} data-tooltip={why}>
       <Icon name="flag" />

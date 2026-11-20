@@ -68,14 +68,14 @@ test.describe("what the menu offers", () => {
     expect(await items(page)).toEqual(["Copy link", "Edit wording and context", "Delete argument"]);
   });
 
-  test("A-12: someone else's menu has Copy link and Suggest a revised version, and nothing of combining, separating, reporting, or AI", async ({ board }) => {
-    // Maya owns the board, and still can't edit or delete what someone else wrote.
+  test("A-12, J-01: someone else's menu has Copy link, Suggest a revised version, and Report, and nothing of combining, separating, or AI", async ({ board }) => {
+    // Maya owns the board, and still can't edit or delete what someone else wrote. Report came with M2-3 (the builder approved this change, Nov 20).
     for (const person of ["jordan_w", "maya.chen"] as const) {
       const page = await board.open(person);
       await openMenu(page, person === "maya.chen" ? BUDGET : LEAD);
 
-      expect(await items(page), person).toEqual(["Copy link", "Suggest a revised version"]);
-      await expect(menu(page).getByText(/combine|separate|report|AI/i)).toHaveCount(0);
+      expect(await items(page), person).toEqual(["Copy link", "Suggest a revised version", "Report"]);
+      await expect(menu(page).getByText(/combine|separate|AI/i)).toHaveCount(0);
     }
   });
 
