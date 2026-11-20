@@ -84,6 +84,12 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     setFocus(null);
   }, [focus]);
 
+  // A source form closes when the owner lowers the reader's role below writing (M2-2b), as Board.tsx's drafts do.
+  const mayWrite = can(reader, board.role, "add", { closed: false }) !== "not_allowed";
+  useEffect(() => {
+    if (!mayWrite) setForm(null);
+  }, [mayWrite]);
+
   useEffect(() => {
     if (!added || !version.sourceIds.includes(added)) return;
     setOpened((all) => ({ ...all, [added]: true }));

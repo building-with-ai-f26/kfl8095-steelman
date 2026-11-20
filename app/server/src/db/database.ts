@@ -92,6 +92,19 @@ export interface Database {
     created_at: Date;
   };
   revision_source: { version_id: string; rev: number; source_id: string; board_id: string };
+  report: {
+    board_id: string;
+    version_id: string;
+    reporter_id: string;
+    reason: string;
+    note: string;
+    reported_at: Date;
+    withdrawn_at: Date | null;
+    resolved_at: Date | null;
+    resolved_by: string | null;
+    resolved_how: string | null;
+    changed_seq: BigIntColumn;
+  };
   source: {
     id: string;
     board_id: string;

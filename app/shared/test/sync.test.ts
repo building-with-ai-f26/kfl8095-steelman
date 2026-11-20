@@ -30,6 +30,7 @@ const version = (id: string, argumentId: string, createdSeq: number, extra: Part
   wording: `Wording ${id}`,
   context: "",
   previousWording: null,
+  votesBefore: null,
   sourceIds: [],
   articulation: 0,
   articulationVoters: 0,
@@ -37,9 +38,12 @@ const version = (id: string, argumentId: string, createdSeq: number, extra: Part
   no: 0,
   deleted: false,
   hidden: false,
+  hiddenReason: null,
   changedSeq: createdSeq,
   myVote: null,
   myAssessment: null,
+  myReport: null,
+  reports: null,
   ...extra,
 });
 
@@ -223,4 +227,27 @@ describe("the reader's own deletions", () => {
     expect(leaveOut(view, ["a2"]).shown.arguments.yes).toEqual(["b", "c"]);
     expect(leaveOut(view, [])).toBe(view);
   });
+});
+
+test("M2-4, J-02: a wording a moderator hid keeps a place in its row, after the live ones; a deleted one doesn't", () => {
+  const s = snapshot();
+  s.versions = s.versions.map((v) => (v.id === "a2" ? { ...v, hidden: true, hiddenReason: "spam", wording: null } : v));
+  s.versions.push(version("a3", "a", 4, { deleted: true }));
+
+  expect(openView(s).shown.versions.a).toEqual(["a1", "a2"]);
+  // Nothing is waiting for Update: a kept place isn't a change.
+  expect(pillCount(openView(s))).toBe(0);
+  expect(pillCount(pressUpdate(openView(s)))).toBe(0);
+});
+
+test("M2-4, J-02: a wording hidden while on screen stays where it is, and after Update nothing waits", () => {
+  const s = snapshot();
+  const hiddenNow = { ...s.versions.find((v) => v.id === "a2")!, hidden: true, hiddenReason: "spam" as const, wording: null, changedSeq: 6 };
+
+  const view = receive(openView(s), { ...nothing(6), versions: [hiddenNow] });
+
+  expect(view.shown.versions.a).toEqual(["a2", "a1"]);
+  const updated = pressUpdate(view);
+  expect(updated.shown.versions.a).toEqual(["a1", "a2"]);
+  expect(pillCount(updated)).toBe(0);
 });

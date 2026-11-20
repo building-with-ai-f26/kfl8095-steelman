@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardList, BoardSnapshot, NewBoard, PublicConfig, QueuedAction, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardList, BoardSnapshot, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { chosenTestUser } from "./testUser.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
@@ -89,6 +89,46 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
 /** The owner changes who can get in. Not queued: it needs the service there to answer. */
 export async function setAccess(board: string, access: Access): Promise<Answer> {
   const response = await call("PUT", `boards/${board}/access`, access);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
+/** Reports a wording (M2-3), or with `null` withdraws the reader's report. Not queued, like setAccess. */
+export async function setReport(board: string, version: string, report: { reason: ReportReason; note: string } | null): Promise<Answer> {
+  const path = `boards/${board}/versions/${encodeURIComponent(version)}/report`;
+  const response = report ? await call("PUT", path, report) : await call("DELETE", path);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
+/** An Editor or the Owner hides a wording with a reason (M2-4), or with `null` restores it. Not queued. */
+export async function setHidden(board: string, version: string, reason: ReportReason | null): Promise<Answer> {
+  const path = `boards/${board}/versions/${encodeURIComponent(version)}/hidden`;
+  const response = reason ? await call("PUT", path, { reason }) : await call("DELETE", path);
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
+/** Everyone on the board, for Share's people list (M2-2b), or null when it can't be read now. */
+export async function readPeople(board: string): Promise<Person[] | null> {
+  try {
+    const response = await call("GET", `boards/${board}/people`);
+    return response.ok ? ((await response.json()) as { people: Person[] }).people : null;
+  } catch (error) {
+    if (error instanceof Unreachable) return null;
+    throw error;
+  }
+}
+
+/** The owner sets someone's role. Not queued, like setAccess. */
+export async function setRole(board: string, account: string, role: Exclude<Person["role"], "owner">): Promise<Answer> {
+  const response = await call("PUT", `boards/${board}/people/${encodeURIComponent(account)}`, { role });
   if (response.status === 404) return { status: "not_found" };
   if (response.status === 400) return { status: "invalid" };
   if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);

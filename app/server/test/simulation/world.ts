@@ -1,7 +1,7 @@
 // The simulation (plans/architecture.md §8): the real write path and the
 // browser's real sync rules, run together in one process against a real
 // database, with a fake clock. fast-check invents a board's worth of random
-// sequences of actions by three readers; after every step, the nine
+// sequences of actions by three readers; after every step, the ten
 // "always true" checks below must hold. When one fails, fast-check shrinks
 // the sequence to the shortest one that still fails and prints it.
 
@@ -17,6 +17,7 @@ import type * as ReadModule from "../../src/read.ts";
 import type * as VotesModule from "../../src/votes.ts";
 import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
+import * as realModeration from "../../src/moderation.ts";
 import { NOON, addAccount, addMember, seedBoard } from "../support/board.ts";
 
 /** The server code under test. Normally the real modules; a planted-bug test hands in altered copies. */
@@ -25,6 +26,8 @@ export interface ServerCode {
   writing: typeof WritingModule;
   read: typeof ReadModule;
   order: typeof OrderModule;
+  /** Hide and restore (M2-4). Left out, the real module. */
+  moderation?: typeof realModeration;
 }
 
 /** One step of a sequence. Targets are positions in what the acting reader sees, wrapped to fit. */
@@ -36,6 +39,9 @@ export type Step =
   | { kind: "addWording"; reader: number; target: number }
   | { kind: "edit"; reader: number; target: number }
   | { kind: "delete"; reader: number; target: number }
+  /** A moderator's (M2-4): only Ana, the owner, may; anyone else is refused. Not queued: moderation needs the service there. */
+  | { kind: "hide"; reader: number; target: number }
+  | { kind: "restore"; reader: number; target: number }
   | { kind: "minutePasses" }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
@@ -58,6 +64,8 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("addWording" as const), reader, target }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("edit" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("delete" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("hide" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("restore" as const), reader, target }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("minutePasses" as const) }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
@@ -101,10 +109,13 @@ export interface Tally {
   queuedOffline: number;
   updatesCompared: number;
   ordersPublished: number;
+  /** Wordings hidden and restored (M2-4). */
+  hidden: number;
+  restored: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -141,11 +152,23 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
   await addMember(client, b.board, cy, "contributor");
   const people = [b.ana, b.ben, cy];
   const options = [b.yes, b.no];
+  const moderation = code.moderation ?? realModeration;
+  /** Ana owns the board, so she sees hidden wordings' text and may hide and restore (M2-4). */
+  const moderates = (person: string) => person === b.ana;
+
+  /** Check 10: no hidden wording's text reaches anyone but a moderator. */
+  const noHiddenText = (person: string, rows: { id: string; hidden: boolean; wording: string | null; context: string | null; previousWording: string | null }[]) => {
+    if (moderates(person)) return;
+    for (const row of rows) {
+      if (row.hidden) check(row.wording === null && row.context === null && row.previousWording === null, "10. No hidden text reaches anyone but an Editor or the Owner", { person, row });
+    }
+  };
 
   const snapshot = async (person: string) => {
     await code.order.publishOrderIfDue(db, clock, b.board);
-    const s = await code.read.readSnapshot(db, b.board, person);
+    const s = await code.read.readSnapshot(db, b.board, person, moderates(person));
     if (!s) throw new Error("board vanished");
+    noHiddenText(person, s.versions);
     return s;
   };
   // Each reader has written a wording, so any of them can edit or delete one.
@@ -194,8 +217,9 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     const savedBefore = await savedOrder(client, b.board);
     const counts = await countsNow(client, b.board);
     await code.order.publishOrderIfDue(db, clock, b.board);
-    const changes = await code.read.readChanges(db, b.board, r.person, held);
+    const changes = await code.read.readChanges(db, b.board, r.person, held, moderates(r.person));
     if (!changes) throw new Error("board vanished");
+    noHiddenText(r.person, changes.versions);
 
     // Check 4: no reader is ever handed a change number at or below the one they hold.
     check(changes.seq >= held, "4. No reader is handed a change number below the one they hold", { held, seq: changes.seq });
@@ -253,6 +277,30 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           r.queue = [];
           await poll(r);
           break;
+        case "hide":
+        case "restore": {
+          if (!r.online) break;
+          // Hide picks among the wordings the reader sees, restore among the hidden ones.
+          const candidates = Object.values(r.view.shown.versions)
+            .flat()
+            .filter((id) => r.view.rows.versions[id] && !r.view.rows.versions[id]!.deleted && r.view.rows.versions[id]!.hidden === (step.kind === "restore"));
+          const versionId = candidates.length === 0 ? undefined : candidates[step.target % candidates.length];
+          if (!versionId) break;
+          // From the database, not the reader's view, which may be out of date: a wording deleted since can't be hidden.
+          const gone = (await client.query("select deleted_at from version where id = $1", [versionId])).rows[0].deleted_at !== null;
+          const result =
+            step.kind === "hide" ? await moderation.hideWording(services, b.board, r.person, versionId, "spam") : await moderation.restoreWording(services, b.board, r.person, versionId);
+          // Check 9, for moderation: only a moderator may, and a hide or restore of a wording deleted since is refused as stale.
+          if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may hide or restore", { step, result });
+          else if (gone) check(result.status === "refused" && result.reason === "version_deleted", "9. A hide or restore of a wording deleted since is refused", { step, result });
+          else check(result.status === "done" || result.status === "already_done", "9. A moderator's hide or restore of a wording that's there is done", { step, result });
+          if (result.status === "done") {
+            if (step.kind === "hide") tally.hidden++;
+            else tally.restored++;
+            await poll(r);
+          }
+          break;
+        }
         default:
           await act(r, chooseAction(step, r, options, ids, step.kind === "edit" ? clock.now().getTime() : 0));
       }
@@ -336,11 +384,14 @@ async function expectedRefusal(client: pg.Client, person: string, action: Queued
   switch (action.kind) {
     case "importance":
       return (await one("select deleted_at from argument where id = $1", [action.argumentId])).deleted_at ? "argument_deleted" : null;
-    case "articulation":
-      return (await one("select deleted_at from version where id = $1", [action.versionId])).deleted_at ? "version_deleted" : null;
+    case "articulation": {
+      // A hidden wording is dropped as a deleted one is (M2-4).
+      const v = await one("select deleted_at, hidden_at from version where id = $1", [action.versionId]);
+      return v.deleted_at || v.hidden_at ? "version_deleted" : null;
+    }
     case "assess": {
-      const v = await one("select deleted_at, current_rev from version where id = $1", [action.versionId]);
-      if (v.deleted_at) return "version_deleted";
+      const v = await one("select deleted_at, hidden_at, current_rev from version where id = $1", [action.versionId]);
+      if (v.deleted_at || v.hidden_at) return "version_deleted";
       if (v.current_rev !== action.rev) return "revision_changed";
       if (action.supported !== true) return null;
       const evidence = await one(
@@ -355,11 +406,12 @@ async function expectedRefusal(client: pg.Client, person: string, action: Queued
       return (await one("select deleted_at from argument where id = $1", [action.argumentId])).deleted_at ? "argument_deleted" : null;
     case "edit": {
       const v = await one(
-        "select v.author_id, v.deleted_at, v.current_rev, r.wording, r.created_by from version v join version_revision r on r.version_id = v.id and r.rev = v.current_rev where v.id = $1",
+        "select v.author_id, v.deleted_at, v.hidden_at, v.current_rev, r.wording, r.created_by from version v join version_revision r on r.version_id = v.id and r.rev = v.current_rev where v.id = $1",
         [action.versionId],
       );
       if (v.author_id !== person) return "not_author";
-      if (v.deleted_at) return "version_deleted";
+      // A hidden wording is gone for its author's edits too (M2-4).
+      if (v.deleted_at || v.hidden_at) return "version_deleted";
       const alreadySaved = action.baseRev === v.current_rev - 1 && v.wording === action.wording && v.created_by === person;
       return action.baseRev === v.current_rev || alreadySaved ? null : "revision_changed";
     }
