@@ -69,7 +69,7 @@ test.describe("no new boards", () => {
 
   test("M-12: New steelman past the limit says how long to wait, and makes nothing", async ({ board }) => {
     const page = await board.open("lin.zhao");
-    await page.goto("/");
+    await page.goto("/new");
     await page.getByRole("textbox", { name: "Question" }).fill("Should our school start an hour later?");
     await page.getByRole("textbox", { name: "Option 1" }).fill("Start later");
     await page.getByRole("textbox", { name: "Option 2" }).fill("Keep the time");
@@ -77,7 +77,7 @@ test.describe("no new boards", () => {
     await page.getByRole("button", { name: "Create steelman" }).click();
 
     await expect(page.getByText("Too many in a row. Try again in 60 minutes.")).toBeVisible();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/new$/);
     expect(board.errors.splice(0)).toEqual(["lin.zhao: Failed to load resource: the server responded with a status of 429 (Too Many Requests)"]);
   });
 });

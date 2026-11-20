@@ -154,7 +154,7 @@ test("M-06: on a phone, a version's link shows its option's column", async ({ bo
 
 test("M-06: reload keeps the open version, and Back and Forward move between pages", async ({ board }) => {
   const page = await board.open("jordan_w");
-  await page.goto("/");
+  await page.goto("/new");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
   await page.goto(`/b/${board.demo.board}`);
   await claim(page, LEAD).click();
@@ -165,7 +165,7 @@ test("M-06: reload keeps the open version, and Back and Forward move between pag
 
   await page.goBack();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("New steelman");
-  expect(path(page)).toBe("/");
+  expect(path(page)).toBe("/new");
 
   await page.goForward();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
