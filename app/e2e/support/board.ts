@@ -54,6 +54,8 @@ export interface OpenOptions {
   missingBoards?: true;
   /** Sets up the browser session before the board opens: answering an outside address, or changing what the browser says about itself. */
   prepare?: (context: BrowserContext) => Promise<unknown>;
+  /** Opens this address instead of the demo board, such as another board's (and doesn't wait for the demo board's question). */
+  at?: string;
 }
 
 export interface Caller {
@@ -66,17 +68,21 @@ export interface Caller {
   delete(path: string): Promise<unknown>;
 }
 
-export const test = base.extend<{ board: TestBoard; analytics: boolean; limits: Limits | undefined }>({
+export const test = base.extend<{ board: TestBoard; analytics: boolean; limits: Limits | undefined; tour: boolean }>({
   // `test.use({ analytics: true })` gives the service a PostHog key (M-08). Without it, as when deployed without one, analytics are off.
   analytics: [false, { option: true }],
   // `test.use({ limits })` gives the service its own rate limits, small enough to reach (M-12). Without it, the class trial's.
   limits: [undefined, { option: true }],
-  board: async ({ browser, playwright, analytics, limits }, use) => {
+  // `test.use({ tour: true })` leaves the demo people never shown the tour (L-02), so it opens on their first board.
+  // Without it they've been shown it, so it doesn't cover the board a test is about.
+  tour: [false, { option: true }],
+  board: async ({ browser, playwright, analytics, limits, tour }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(7);
     const db = createDatabase(databaseUrl.href);
     const demo = await seedDemoBoard(db, clock, ids);
+    if (!tour) await db.updateTable("account").set({ tour_seen_at: NOON }).execute();
     await db.destroy();
 
     const app = buildApp({ clock, ids, database: createDatabase(databaseUrl.href), mode: "test", ...(analytics ? { analytics: TEST_POSTHOG } : {}), ...(limits ? { limits } : {}) });
@@ -146,6 +152,10 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
   page.on("pageerror", (error) => errors.push(`${person}: ${error.message}`));
   // Time runs as usual, but a test can move it on to the next poll.
   await page.clock.install();
+  if (options.at) {
+    await page.goto(options.at);
+    return page;
+  }
   await page.goto(`/b/${demo.board}`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Should our library open on Sundays?");
   return page;
