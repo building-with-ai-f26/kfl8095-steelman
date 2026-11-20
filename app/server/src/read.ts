@@ -130,6 +130,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     my_assessment: boolean | null;
     my_report: string | null;
     report_reasons: Record<string, number> | null;
+    report_notes: string[] | null;
   }>`
     select v.id, v.argument_id, v.author_id, author.username as author_name, v.created_seq,
            v.current_rev as rev, now_rev.wording, now_rev.context, before_rev.wording as previous_wording,
@@ -142,7 +143,11 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
            case when ${moderator} then (select jsonb_object_agg(reason, n) from (
              select r.reason, count(*)::int as n from report r
              where r.version_id = v.id and r.withdrawn_at is null and r.resolved_at is null group by r.reason) open_reports)
-           end as report_reasons
+           end as report_reasons,
+           -- And what was written for Something else, oldest first: all of a report but who (the builder, Nov 20).
+           case when ${moderator} then (select array_agg(r.note order by r.reported_at) from report r
+             where r.version_id = v.id and r.withdrawn_at is null and r.resolved_at is null and r.reason = 'other' and r.note <> '')
+           end as report_notes
     from version v
     join account author on author.id = v.author_id
     join version_revision now_rev on now_rev.version_id = v.id and now_rev.rev = v.current_rev
@@ -183,16 +188,16 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     myVote: vote(row.my_vote),
     myAssessment: row.my_assessment,
     myReport: (REPORT_REASONS as readonly string[]).includes(row.my_report ?? "") ? (row.my_report as ReportReason) : null,
-    reports: row.report_reasons ? reportTally(row.report_reasons) : null,
+    reports: row.report_reasons ? reportTally(row.report_reasons, row.report_notes ?? []) : null,
   }));
 }
 
-/** Open reports by reason, as an Editor sees them: only reasons the service knows. */
-function reportTally(byReason: Record<string, number>): VersionRow["reports"] {
+/** Open reports by reason, and what was written for Something else, as an Editor sees them: only reasons the service knows. */
+function reportTally(byReason: Record<string, number>, notes: string[]): VersionRow["reports"] {
   const reasons: Partial<Record<ReportReason, number>> = {};
   for (const reason of REPORT_REASONS) if (byReason[reason]) reasons[reason] = byReason[reason];
   const count = Object.values(reasons).reduce((sum, n) => sum + n, 0);
-  return count > 0 ? { count, reasons } : null;
+  return count > 0 ? { count, reasons, notes } : null;
 }
 
 async function sourceRows(db: Reader, boardId: string, after: number): Promise<SourceRow[]> {

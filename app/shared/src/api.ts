@@ -128,7 +128,7 @@ export interface VersionRow {
   /** The reader's own open report on it (M2-3), so they can withdraw it. */
   myReport: ReportReason | null;
   /** Its open reports, by reason: only for an Editor or the Owner, and null when there are none. Never who made them. */
-  reports: { count: number; reasons: Partial<Record<ReportReason, number>> } | null;
+  reports: { count: number; reasons: Partial<Record<ReportReason, number>>; notes: string[] } | null;
 }
 
 export interface SourceRow {

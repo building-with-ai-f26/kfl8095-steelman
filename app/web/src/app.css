@@ -117,3 +117,7 @@ body { margin:0; }
 #steelman-study .sm-report-note textarea { margin:0 4px; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; font:400 13px/1.4 var(--sm-sans); resize:vertical; }
 #steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); outline:0; }
 #steelman-study .sm-report-actions { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:2px 4px 2px; }
+
+/* The reporter's own report (M2-3), where an Editor sees the red flag: quiet, since it asks nothing of them. */
+#steelman-study .sm-reported-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px solid var(--sm-line); border-radius:999px; background:#fff; color:var(--sm-muted); font:500 11px/1 var(--sm-sans); white-space:nowrap; }
+#steelman-study .sm-reported-tag svg { width:12px; height:12px; }

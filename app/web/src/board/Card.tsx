@@ -157,6 +157,12 @@ export function Card({ version, opening, inTrack = false }: { version: VersionRo
               : null
           }
         />
+      ) : shown.myReport ? (
+        // The reporter's own confirmation, as the prototype's "Reported · Undo" on a comment: Withdraw is in the menu (the builder, Nov 20).
+        <span className="sm-reported-tag">
+          <Icon name="flag" />
+          You reported this
+        </span>
       ) : null}
       <button
         ref={menuButton}
@@ -270,11 +276,14 @@ export const REASONS: Record<ReportReason, { icon: IconName; label: string }> = 
   other: { icon: "circle-help", label: "Something else" },
 };
 
-/** "Spam ×2, Abusive", as the prototype's reasonsOf says them. */
-export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>): string {
+/** "Spam ×2, Something else: “It names a student.”", as the prototype's reasonsOf says them, with what was written for Something else. */
+export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>, notes: string[] = []): string {
   return (Object.keys(REASONS) as ReportReason[])
     .filter((reason) => (reasons[reason] ?? 0) > 0)
-    .map((reason) => REASONS[reason].label + (reasons[reason]! > 1 ? ` ×${reasons[reason]}` : ""))
+    .map((reason) => {
+      const said = REASONS[reason].label + (reasons[reason]! > 1 ? ` ×${reasons[reason]}` : "");
+      return reason === "other" && notes.length > 0 ? `${said}: ${notes.map((note) => `“${note}”`).join(" ")}` : said;
+    })
     .join(", ");
 }
 
@@ -283,7 +292,7 @@ export function reasonsSaid(reasons: Partial<Record<ReportReason, number>>): str
  * Never who. Pressing it opens the menu at Hide's reasons (M2-4).
  */
 function ReportFlag({ reports, onOpen }: { reports: NonNullable<VersionRow["reports"]>; onOpen: (() => void) | null }) {
-  const why = reasonsSaid(reports.reasons);
+  const why = reasonsSaid(reports.reasons, reports.notes);
   const said = `${reports.count} ${reports.count === 1 ? "report" : "reports"}: ${why}`;
   if (!onOpen) {
     return (
