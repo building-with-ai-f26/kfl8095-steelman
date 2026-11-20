@@ -31,17 +31,21 @@ export type { SourceInput } from "./inputs.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
 export { posthogAssetsHost, tooManyMessage } from "./api.ts";
-export { accessInput, assessmentInput, deleteAccountInput, changesQuery, editInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, voteInput } from "./api.ts";
+export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuery, deleteAccountInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newSourceInput, newWordingInput, reportInput, voteInput } from "./api.ts";
 export type {
   Access,
   ArgumentRow,
   BoardChanges,
+  BoardList,
+  BoardListing,
   BoardSnapshot,
   LogRow,
   NewBoard,
   OptionRow,
+  Person,
   PublicConfig,
   RefusalReason,
+  ReportReason,
   SourceRow,
   Standing,
   VersionRow,

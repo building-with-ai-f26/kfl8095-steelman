@@ -29,12 +29,27 @@ body { margin:0; }
 #steelman-study button.sm-meta-pill:hover, #steelman-study button.sm-meta-pill[aria-expanded="true"] { border-color:#ffffff80; color:#fff; }
 #steelman-study .sm-head .sm-share { top:calc(100% + 8px); left:24px; right:auto; color:var(--sm-ink); text-align:left; }
 #steelman-study .sm-head:has(.sm-share) { z-index:50; }
+/* The panel hangs from the question's list of facts, whose items are spaced and divided by a rule; the people
+   list's rows are list items too, so they get the prototype's own spacing back, and no rule. */
+#steelman-study .sm-share .sm-person { display:flex; gap:10px; }
+#steelman-study .sm-share .sm-person::before { content:none; }
+/* A person's row keeps its name and role on one line, and so does General access (below). */
+#steelman-study .sm-head .sm-share .sm-person { flex-wrap:nowrap; }
+#steelman-study .sm-head .sm-share .sm-people .sm-person > span:nth-child(2) { flex:1 1 0; }
 @media(max-width:640px) {
   #steelman-study .sm-head .sm-share { left:0; right:0; width:auto; max-width:none; grid-template-columns:minmax(0, 1fr); }
   #steelman-study .sm-head .sm-share-body { grid-template-columns:minmax(0, 1fr); }
-  #steelman-study .sm-head .sm-share .sm-person { flex-wrap:wrap; }
-  #steelman-study .sm-head .sm-share .sm-person > span:nth-child(2) { flex:0 0 auto; }
-  #steelman-study .sm-head .sm-share .sm-person > select { margin-left:32px; }
+  /* General access stays on one line, as in the people list above it: who can get in, then their role at the
+     right. Wrapped, the role dropped under the first choice, out of line with it (the builder, Nov 20). On a
+     narrower phone the first choice gives way first. */
+  #steelman-study .sm-head .sm-share .sm-person > span:nth-child(2) { flex:1 1 auto; min-width:0; }
+  #steelman-study .sm-head .sm-share .sm-person > span:nth-child(2) select { max-width:100%; }
+}
+/* At 400 px and below that row's globe or lock gives way instead, so "Anyone with the link" isn't cut short: the
+   choice's own words say who can get in. */
+@media(max-width:400px) {
+  #steelman-study .sm-head .sm-share [aria-labelledby="sm-general-title"] .sm-person > .sm-access { display:none; }
+  #steelman-study .sm-head .sm-share [aria-labelledby="sm-general-title"] .sm-access-hint { margin-left:6px; }
 }
 
 /* New steelman is the home page in M1, so the prototype's sheet sits on the page instead of over a board: no
@@ -126,3 +141,43 @@ body { margin:0; }
   #steelman-study .sm-column:has(.sm-idea.sm-open)::before { right:-10px; border-right:0; border-radius:10px 0 0 10px; }
   #steelman-study .sm-column .sm-idea.sm-open .sm-track { margin-right:calc(-8px - 10px); }
 }
+/* The wordmark is a link home (E-03), drawn as before. */
+#steelman-study a.sm-wordmark { text-decoration:none; }
+
+/* The list (E-03). The prototype's feed sits between the spaces sidebar and a rail; neither exists yet, so the
+   feed stands alone, centred. Its posts drop the activity column (no score yet), so the question leads, and the
+   question's link covers the whole post, as the prototype's click anywhere on it does. */
+#steelman-study .sm-home.sm-home-alone { grid-template-columns:minmax(0,1fr); justify-items:center; }
+#steelman-study .sm-feed .sm-post { position:relative; grid-template-columns:minmax(0,1fr) 172px; padding-left:18px; }
+#steelman-study .sm-post h2 a { color:inherit; text-decoration:none; }
+#steelman-study .sm-post h2 a::after { content:""; position:absolute; inset:0; border-radius:inherit; }
+#steelman-study .sm-post h2 a:focus-visible { outline:none; }
+/* The date and the counts stay above the link, so their tooltips (the full date; "3 arguments") still show. */
+#steelman-study .sm-post-meta time, #steelman-study .sm-post-options b { position:relative; z-index:1; }
+#steelman-study .sm-post:has(h2 a:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
+#steelman-study .sm-feed-empty { display:grid; justify-items:center; gap:14px; }
+#steelman-study .sm-feed-empty p { margin:0; }
+@media(max-width:640px) {
+  #steelman-study .sm-feed .sm-post { grid-template-columns:minmax(0,1fr); padding-left:14px; }
+}
+/* New steelman's Cancel is a link home, drawn as the prototype's link button. */
+#steelman-study a.sm-link-button { text-decoration:none; }
+#steelman-study a.sm-link-button:hover { text-decoration:underline; }
+
+/* Report (M2-3): Something else asks what's wrong, in the menu's place. */
+#steelman-study .sm-report-note { display:grid; gap:6px; }
+#steelman-study .sm-report-note textarea { margin:0 4px; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; font:400 13px/1.4 var(--sm-sans); resize:vertical; }
+#steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); outline:0; }
+#steelman-study .sm-report-actions { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:2px 4px 2px; }
+
+/* The reporter's own report (M2-3), where an Editor sees the red flag: quiet, since it asks nothing of them. */
+#steelman-study .sm-reported-tag { position:absolute; top:-10px; left:14px; z-index:3; display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 8px 0 6px; border:1px solid var(--sm-line); border-radius:999px; background:#fff; color:var(--sm-muted); font:500 11px/1 var(--sm-sans); white-space:nowrap; }
+#steelman-study .sm-reported-tag svg { width:12px; height:12px; }
+
+/* "edited" opens the wording as it was (A-06): a panel inside the card, a warm light gray for the past, with a small
+   label, the wording struck through, and the votes it had then, their numbers in the serif (the builder, Nov 20). */
+#steelman-study .sm-prev { margin:2px 18px 12px; padding:9px 12px 10px; border:1px solid #e4e0d6; border-radius:6px; background:#f3f1ec; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+#steelman-study .sm-prev .sm-prev-label { margin:0 0 3px; font:600 10px/1.3 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; color:var(--sm-quiet); }
+#steelman-study .sm-prev del { text-decoration-color:#a8a39a; }
+#steelman-study .sm-prev .sm-prev-votes { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding-top:7px; border-top:1px solid #e4e0d6; font:400 11px/1.3 var(--sm-sans); }
+#steelman-study .sm-prev .sm-prev-votes b { margin-right:2px; font:600 15px/1 var(--sm-serif); font-variant-numeric:tabular-nums; color:var(--sm-ink); }

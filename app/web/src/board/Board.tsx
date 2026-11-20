@@ -12,7 +12,7 @@
 
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { leaveOut } from "@steelman/shared";
-import type { ArgumentRow, CaseItem, OptionRow, ReaderView } from "@steelman/shared";
+import type { ArgumentRow, CaseItem, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NotFound } from "../NotFound.tsx";
 import { useReader } from "../reader.ts";
@@ -26,7 +26,7 @@ import { StrongestCase } from "./StrongestCase.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { WHY, columns, importanceShown, isLive, isLiveVersion, short, versionMenu, whyNot } from "./display.ts";
+import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 
@@ -102,10 +102,32 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   }, [focusTo]);
   const cardControl = (versionId: string, control: "claim" | "menu") => `[data-card="${CSS.escape(versionId)}"] .${control === "claim" ? "sm-claim-button" : "sm-card-menu-button"}`;
   /** The row's wordings that are still there. */
-  const liveIn = (argumentId: string) => (view.shown.versions[argumentId] ?? []).filter((id) => isLiveVersion(view.rows.versions[id]));
+  /**
+   * Whether deleting this wording deletes its argument: only when no other wording is left, counting one a moderator
+   * hid, which keeps the argument on the service (writing.ts) and can be restored (M2-4).
+   */
+  const isLast = (version: VersionRow) =>
+    (view.shown.versions[version.argumentId] ?? []).filter((id) => id !== version.id && !view.rows.versions[id]?.deleted && (view.rows.versions[id]?.hidden || isLiveVersion(view.rows.versions[id]))).length === 0;
+
+  // When the owner lowers the reader's role below writing, an open draft or edit closes, as the prototype's role
+  // switch does, so they don't go on typing something the service would refuse (M2-2b). Kept drafts stay kept.
+  const mayWrite = whyNot(reader, state.role, "add") === null;
+  useEffect(() => {
+    if (!mayWrite && writing !== null) {
+      setWriting(null);
+      session.announce("Your role on this board changed: you can no longer write here.");
+    }
+  }, [mayWrite]);
 
   const menu: CardMenu = {
-    items: (version) => versionMenu(version, reader, state.role, liveIn(version.argumentId).length <= 1),
+    items: (version) =>
+      version.hidden
+        ? ["copyLink", ...moderationItem(version, reader, state.role)]
+        : [...versionMenu(version, reader, state.role, isLast(version)), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
+    hide: (version, reason) => void session.hide(version.id, reason),
+    restore: (version) => void session.restore(version.id),
+    report: (version, reason, note) => void session.report(version.id, { reason, note }),
+    withdrawReport: (version) => void session.withdrawReport(version.id),
     editing: writing?.kind === "edit" ? writing.versionId : null,
     edit: (versionId) => setWriting({ kind: "edit", versionId }),
     save(version, draft) {
@@ -133,7 +155,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     },
     remove(version) {
       const optionId = view.rows.arguments[version.argumentId]!.optionId;
-      const last = liveIn(version.argumentId).length <= 1;
+      const last = isLast(version);
       const rowsHere = view.shown.arguments[optionId] ?? [];
       // The Undo bar sits under the row, or where the row was: under the one above it.
       const after = last ? (rowsHere[rowsHere.indexOf(version.argumentId) - 1] ?? null) : version.argumentId;
@@ -306,7 +328,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
-          {state.access && state.role ? <Sharing access={state.access} role={state.role} session={session} /> : null}
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
@@ -411,7 +433,8 @@ function arrivalFor(view: ReaderView, versionId: string | null): Arrival {
   const version = view.rows.versions[versionId];
   const argument = version ? view.rows.arguments[version.argumentId] : undefined;
   const at = argument ? (view.shown.versions[argument.id] ?? []).indexOf(versionId) : -1;
-  if (!argument || !isLive(argument) || !isLiveVersion(version) || at < 0) return { ...none, note: "That version was deleted." };
+  // A hidden wording keeps its place, saying "Removed by a moderator" (M2-4): the link lands there.
+  if (!argument || !isLive(argument) || !version || version.deleted || at < 0) return { ...none, note: "That version was deleted." };
   return { side: argument.optionId, row: at > 0 ? argument.id : null, version: versionId, note: "" };
 }
 
@@ -584,7 +607,7 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
   const versions = versionIds.map((id) => view.rows.versions[id]).filter((version) => version !== undefined);
   const lead = versions[0];
   if (!lead) return null;
-  const label = short(lead.wording ?? `Deleted by ${lead.authorName}`);
+  const label = short(lead.wording ?? (lead.hidden && !lead.deleted ? "Removed by a moderator" : `Deleted by ${lead.authorName}`));
   const { vote, score } = importanceShown(argument, state.mine);
   const count = versionIds.length;
   const [at, setAt] = useState(0);

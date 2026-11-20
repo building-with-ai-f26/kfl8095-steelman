@@ -40,6 +40,32 @@ export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.s
 export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
 
+/** Why someone reports a wording (J-01), as the prototype's REASONS. */
+export const REPORT_REASONS = ["spam", "abuse", "offtopic", "other"] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+/** A report: its reason, and a note, which Something else needs. */
+export const reportInput = z
+  .strictObject({ reason: z.enum(REPORT_REASONS), note: z.string().trim().max(500) })
+  .refine(({ reason, note }) => reason !== "other" || note.length > 0, { message: "Say what's wrong with it.", path: ["note"] });
+
+/** A moderator hides a wording (J-02, M2-4), giving one of the report reasons. */
+export const hideInput = z.strictObject({ reason: z.enum(REPORT_REASONS) });
+
+/** The roles the owner may give someone on Share's people list (M2-2b, Q27): any but Owner. */
+export const MEMBER_ROLES = ["viewer", "voter", "contributor", "editor"] as const satisfies readonly Role[];
+
+/** The owner sets someone's role on the board. */
+export const memberRoleInput = z.strictObject({ role: z.enum(MEMBER_ROLES) });
+
+/** Someone on the board, as Share's people list shows them: by username, never by email. */
+export interface Person {
+  id: string;
+  /** Null until they've chosen a username. */
+  name: string | null;
+  role: Role;
+}
+
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 
@@ -98,6 +124,8 @@ export interface VersionRow {
   context: string | null;
   /** The wording before the latest edit, for the "edited" mark; null if never edited. */
   previousWording: string | null;
+  /** How many importance and articulation votes it had just before its latest edit, for the "edited" mark (Q22); null if never edited. */
+  votesBefore: { importance: number; articulation: number } | null;
   sourceIds: string[];
   articulation: number;
   articulationVoters: number;
@@ -105,11 +133,18 @@ export interface VersionRow {
   yes: number;
   no: number;
   deleted: boolean;
+  /** Hidden by a moderator (M2-4): its text then reaches only Editors and the Owner. */
   hidden: boolean;
+  /** Why, for everyone: "Removed by a moderator · Spam". Null unless hidden. */
+  hiddenReason: ReportReason | null;
   changedSeq: number;
   myVote: 1 | -1 | null;
   /** The reader's assessment of the current revision. */
   myAssessment: boolean | null;
+  /** The reader's own open report on it (M2-3), so they can withdraw it. */
+  myReport: ReportReason | null;
+  /** Its open reports, by reason: only for an Editor or the Owner, and null when there are none. Never who made them. */
+  reports: { count: number; reasons: Partial<Record<ReportReason, number>>; notes: string[] } | null;
 }
 
 export interface SourceRow {
@@ -159,6 +194,24 @@ export interface BoardChanges {
   /** A newer published order, if there is one. */
   order: BoardOrder | null;
   log: LogRow[];
+}
+
+/** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its owner, and when it last changed. */
+export interface BoardListing {
+  id: string;
+  question: string;
+  options: { name: string; arguments: number }[];
+  role: Role;
+  /** The owner's username, as Google Drive's list shows each file's owner. */
+  owner: string;
+  /** The last write of any kind: a new argument or wording, an edit, a vote, an assessment, a change of sources or access. */
+  changedAt: string;
+}
+
+/** The list, most recently changed first, with the service's time now, so "3h ago" doesn't depend on the reader's clock. */
+export interface BoardList {
+  now: string;
+  boards: BoardListing[];
 }
 
 /**

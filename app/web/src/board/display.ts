@@ -87,18 +87,20 @@ export function editShown(version: VersionRow, mine: readonly QueuedAction[]): V
   // `mine` is newest first; edits made one after another each start from the one before.
   for (const action of [...mine].reverse()) {
     if (action.kind !== "edit" || action.versionId !== version.id || action.baseRev !== shown.rev) continue;
-    shown = { ...shown, rev: shown.rev + 1, wording: action.wording, context: action.context, previousWording: shown.wording, yes: 0, no: 0, myAssessment: null };
+    // The counts from before it are the service's to say (M2-5): none are shown until it has the edit.
+    shown = { ...shown, rev: shown.rev + 1, wording: action.wording, context: action.context, previousWording: shown.wording, votesBefore: null, yes: 0, no: 0, myAssessment: null };
   }
   return shown;
 }
 
 /** What a version's ⋯ menu offers (A-12), in order: Copy link first and Delete last, as GitHub's comment menus put them. */
-export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument";
+export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport" | "hide" | "restore";
 
 /**
  * Only what the service would allow (the shared policy table): the author
  * edits and deletes; anyone else who may write suggests a revised version.
- * Combine, separate, report, and the AI actions come in later milestones.
+ * Report is reportItem's (M2-3). Combine, separate, and the AI actions come
+ * in later milestones.
  *
  * @param lastWording Whether it's its row's only live wording, so deleting it deletes the argument.
  */
@@ -109,6 +111,25 @@ export function versionMenu(version: VersionRow, reader: string | null, role: Ro
   else if (can(reader, role, "add", board) === null) items.push("suggest");
   if (can(reader, role, "delete", board, version.authorId) === null) items.push(lastWording ? "deleteArgument" : "deleteVersion");
   return items;
+}
+
+/**
+ * What the menu offers last, below a rule, as the prototype's moderation items
+ * (M2-3): Report, to anyone who can read someone else's wording, or Withdraw
+ * your report once they have; nothing for their own wording.
+ */
+export function reportItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
+  if (version.hidden || reader === version.authorId || can(reader, role, "report", { closed: false }) !== null) return [];
+  return [version.myReport ? "withdrawReport" : "report"];
+}
+
+/**
+ * An Editor's and the Owner's (M2-4): Hide on someone else's wording, Restore on one hidden; after Report, below the
+ * same rule. Not on their own, as the prototype's modItems: their own they edit or delete.
+ */
+export function moderationItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
+  if (version.deleted || reader === version.authorId || can(reader, role, "hide", { closed: false }) !== null) return [];
+  return [version.hidden ? "restore" : "hide"];
 }
 
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */

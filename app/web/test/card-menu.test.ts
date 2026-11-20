@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { VersionRow } from "@steelman/shared";
-import { editShown, versionMenu } from "../src/board/display.ts";
+import { editShown, moderationItem, reportItem, versionMenu } from "../src/board/display.ts";
 
 // What a version's ⋯ menu offers (A-12), by the reader's role and whether
 // they wrote it, and how the reader's own edit shows before it's back (A-06).
@@ -16,6 +16,7 @@ const version = (extra: Partial<VersionRow> = {}): VersionRow => ({
   wording: "Sunday is the only free day.",
   context: "Many work weekdays.",
   previousWording: null,
+  votesBefore: null,
   sourceIds: ["s1"],
   articulation: 2,
   articulationVoters: 2,
@@ -23,9 +24,12 @@ const version = (extra: Partial<VersionRow> = {}): VersionRow => ({
   no: 1,
   deleted: false,
   hidden: false,
+  hiddenReason: null,
   changedSeq: 1,
   myVote: null,
   myAssessment: true,
+  myReport: null,
+  reports: null,
   ...extra,
 });
 
@@ -71,4 +75,34 @@ test("A-06: once the edit is back, or for another version, the version shows as 
 
   expect(editShown(back, [edit])).toBe(back);
   expect(editShown(version({ id: "v2" }), [edit]).wording).toBe("Sunday is the only free day.");
+});
+
+test("M2-3, J-01: anyone who can read may report someone else's wording; nobody reports their own", () => {
+  expect(reportItem(version(), "ben", "viewer")).toEqual(["report"]);
+  expect(reportItem(version(), "ben", "editor")).toEqual(["report"]);
+  expect(reportItem(version(), "ana", "contributor")).toEqual([]);
+  expect(reportItem(version(), null, null)).toEqual([]);
+});
+
+test("M2-3, J-01: with their report open, the reader is offered Withdraw your report instead", () => {
+  expect(reportItem(version({ myReport: "spam" }), "ben", "voter")).toEqual(["withdrawReport"]);
+});
+
+test("M2-4, J-02: an Editor and the Owner may hide someone else's wording, or restore a hidden one; nobody else, nothing deleted, and not their own", () => {
+  expect(moderationItem(version(), "ben", "editor")).toEqual(["hide"]);
+  expect(moderationItem(version({ authorId: "cy" }), "ana", "owner")).toEqual(["hide"]);
+  expect(moderationItem(version(), "ana", "owner")).toEqual([]);
+  expect(moderationItem(version({ hidden: true, hiddenReason: "spam" }), "ben", "editor")).toEqual(["restore"]);
+  expect(moderationItem(version(), "ben", "contributor")).toEqual([]);
+  expect(moderationItem(version({ deleted: true }), "ben", "editor")).toEqual([]);
+});
+
+test("M2-4, J-01: nobody is offered Report on a hidden wording", () => {
+  expect(reportItem(version({ hidden: true, hiddenReason: "spam" }), "ben", "voter")).toEqual([]);
+});
+
+test("M2-5, A-06: the reader's own edit shows no vote counts from before it until the service has the edit, which says them", () => {
+  const edit = { kind: "edit" as const, versionId: "v1", baseRev: 3, wording: "Sunday is the one free day.", context: "" };
+
+  expect(editShown(version({ previousWording: "First wording.", votesBefore: { importance: 4, articulation: 2 } }), [edit]).votesBefore).toBeNull();
 });
