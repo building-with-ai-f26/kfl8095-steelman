@@ -110,6 +110,8 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     wording: string | null;
     context: string | null;
     previous_wording: string | null;
+    importance_before: number | null;
+    articulation_before: number | null;
     source_ids: string[];
     articulation: number;
     articulation_voters: number;
@@ -123,6 +125,7 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
   }>`
     select v.id, v.argument_id, v.author_id, author.username as author_name, v.created_seq,
            v.current_rev as rev, now_rev.wording, now_rev.context, before_rev.wording as previous_wording,
+           before_rev.importance_votes_before as importance_before, before_rev.articulation_votes_before as articulation_before,
            coalesce((select array_agg(c.source_id order by c.source_id) from revision_source c
                      where c.version_id = v.id and c.rev = v.current_rev), '{}') as source_ids,
            v.articulation, v.articulation_voters, v.yes, v.no,
@@ -131,9 +134,10 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     from version v
     join account author on author.id = v.author_id
     join version_revision now_rev on now_rev.version_id = v.id and now_rev.rev = v.current_rev
-    -- The wording before the latest edit. Not simply the revision before this one: a change of sources saves a revision with the same text.
+    -- The wording before the latest edit, and the vote counts it had just before it (Q22). Not simply the revision
+    -- before this one: a change of sources saves a revision with the same text.
     left join lateral (
-      select replaced.wording from version_revision edit
+      select replaced.wording, edit.importance_votes_before, edit.articulation_votes_before from version_revision edit
       join version_revision replaced on replaced.version_id = edit.version_id and replaced.rev = edit.rev - 1
       where edit.version_id = v.id and edit.why = 'edited'
       order by edit.rev desc limit 1
@@ -154,6 +158,11 @@ export async function versionRows(db: Reader, boardId: string, person: string | 
     wording: row.hidden ? null : row.wording,
     context: row.hidden ? null : row.context,
     previousWording: row.hidden ? null : row.previous_wording,
+    // Erased with the text when deleted: there's no "edited" mark to explain.
+    votesBefore:
+      row.hidden || row.deleted || row.previous_wording === null || row.importance_before === null || row.articulation_before === null
+        ? null
+        : { importance: row.importance_before, articulation: row.articulation_before },
     sourceIds: row.source_ids,
     articulation: row.articulation,
     articulationVoters: row.articulation_voters,
