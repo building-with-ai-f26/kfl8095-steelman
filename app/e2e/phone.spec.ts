@@ -3,7 +3,7 @@
 // each screen, nothing scrolls sideways.
 
 import type { Page } from "@playwright/test";
-import { short } from "./support/screen.ts";
+import { row, short } from "./support/screen.ts";
 import { TEST_POSTHOG, test as boardTest } from "./support/board.ts";
 import { QUESTION, expect, test } from "./support/sign-in.ts";
 
@@ -159,4 +159,29 @@ boardTest.describe("with analytics", () => {
     await expect(page.getByRole("region", { name: "Analytics" }).getByRole("button", { name: "Turn off" })).toBeVisible();
     await expectNoSidewaysScroll(page, "The analytics notice");
   });
+});
+
+boardTest("M-03, A-05: on a phone, an unfolded row opens its column to the screen's edge, so its wordings run on inside it rather than past its side", async ({ board }) => {
+  const page = await board.open("lin.zhao", { width: SCREEN });
+  const lead = row(page, "Sunday is the only free day for many people who work weekdays.");
+  const panelRight = () =>
+    lead.evaluate((idea) => {
+      const column = idea.closest(".sm-column")!;
+      return Math.round(column.getBoundingClientRect().right + parseFloat(getComputedStyle(column, "::before").right) * -1);
+    });
+  expect(await panelRight()).toBeLessThan(SCREEN);
+
+  await lead.getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
+  const track = lead.locator(".sm-track");
+  await expect(track).toBeVisible();
+
+  expect(await panelRight()).toBe(SCREEN);
+  expect(await track.evaluate((element) => Math.round(element.getBoundingClientRect().right))).toBe(SCREEN);
+  await expectNoSidewaysScroll(page, "An unfolded row");
+  await page.clock.runFor(1000);
+  await expect(page).toHaveScreenshot("row-open-375.png");
+
+  await lead.getByRole("button", { name: "Fold versions back into the stack" }).click();
+  await expect(track).toHaveCount(0);
+  expect(await panelRight()).toBeLessThan(SCREEN);
 });

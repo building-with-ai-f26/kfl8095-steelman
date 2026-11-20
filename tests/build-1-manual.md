@@ -1471,6 +1471,8 @@ Build plan M2-10. The core loop on an emulated phone, and what it found.
 | Second reader | A fresh agent found nothing blocking. Fixed: Strongest case is now checked by its pressed switch and its columns, not by text the board also shows; the width check compares with 375 px, not the window, which a phone may widen by zooming out, and now sees elements fixed in place; the test that isn't emulating a phone says so; the analytics notice is checked |
 | `npm run check` | On Node 22: types, lint, all 733 unit, API, database, and simulation tests, and all 183 browser tests pass (2 new); no saved screenshot changed. After the second reader's changes, which touch only `phone.spec.ts`: types, lint, and its 3 tests pass |
 | Known limitations | Emulated, not a real phone (the milestone's person check). Not checked on a phone: sign-in errors, Delete account's confirmation, and the list (PR 78, not merged) |
+| After the builder's review, Nov 20 | The builder found an unfolded row odd on a phone: its next wording spilled past the column's side. Now, while a row is unfolded, its column opens to the screen's right edge: the gray panel runs off the page with no side or corners there, and the row's wordings scroll on inside it. A new test checks the panel and the row reach the screen's edge only while unfolded, with nothing scrolling sideways, and saves `row-open-375`. The builder also saw General access wrap in Share on a phone, and couldn't leave New steelman: both are fixed where that code changes, in PR 74 (Share's people list) and PR 78 (Cancel back to the list). Types, lint, and all 185 browser tests pass; no other saved screenshot changed |
+
 
 ## Limits
 
