@@ -309,16 +309,28 @@ function Byline({ version }: { version: VersionRow }) {
         )}
       </p>
       {shown && version.previousWording !== null && (
+        // The past, set apart in its own panel (the builder, Nov 20): the wording struck through, and its counts in the serif.
         <div className="sm-prev">
+          <p className="sm-prev-label">Before this edit</p>
           <del>{version.previousWording}</del>
-          {before ? <p className="sm-prev-votes">{`Before this edit: ${votes(before.importance, "importance")} · ${votes(before.articulation, "articulation")}`}</p> : null}
+          {before ? (
+            <p className="sm-prev-votes">
+              <Count n={before.importance} kind="importance" /> <Count n={before.articulation} kind="articulation" />
+            </p>
+          ) : null}
         </div>
       )}
     </div>
   );
 }
 
-const votes = (count: number, kind: string) => `${count} ${kind} ${count === 1 ? "vote" : "votes"}`;
+function Count({ n, kind }: { n: number; kind: string }) {
+  return (
+    <span>
+      <b>{n}</b> {kind} {n === 1 ? "vote" : "votes"}
+    </span>
+  );
+}
 
 /** Four segments, one filled per quarter of assessments that support the wording; dashed under five; empty gray when unreviewed. */
 export function Meter(counts: { yes: number; no: number }) {

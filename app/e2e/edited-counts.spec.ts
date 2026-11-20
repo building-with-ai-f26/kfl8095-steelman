@@ -28,7 +28,7 @@ async function editAfterVotes(board: TestBoard): Promise<{ importance: number; a
 }
 
 const said = (counts: { importance: number; articulation: number }) =>
-  `Before this edit: ${counts.importance} importance ${counts.importance === 1 ? "vote" : "votes"} · ${counts.articulation} articulation ${counts.articulation === 1 ? "vote" : "votes"}`;
+  `${counts.importance} importance ${counts.importance === 1 ? "vote" : "votes"} ${counts.articulation} articulation ${counts.articulation === 1 ? "vote" : "votes"}`;
 
 test("M2-5, A-06: hovering edited shows the earlier wording and the votes it had just before the edit; moving away hides them", async ({ board }) => {
   const counts = await editAfterVotes(board);
@@ -37,6 +37,7 @@ test("M2-5, A-06: hovering edited shows the earlier wording and the votes it had
 
   await edited.hover();
 
+  await expect(card(reader, EDITED).locator(".sm-prev-label")).toHaveText("Before this edit");
   await expect(card(reader, EDITED).locator(".sm-prev del")).toHaveText(LEAD);
   await expect(card(reader, EDITED).locator(".sm-prev-votes")).toHaveText(said(counts));
   await expect(edited).toHaveAttribute("aria-expanded", "true");
