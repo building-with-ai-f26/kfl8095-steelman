@@ -21,7 +21,7 @@ import {
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
-import { accountSummary, deleteAccount, exportData } from "./account.ts";
+import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
 import { serveWebApp } from "./web.ts";
 import { createBoard } from "./boards.ts";
 import { LIMITS, createLimiter } from "./limits.ts";
@@ -280,6 +280,17 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const data = request.person === null ? null : await exportData(db, clock, request.person);
     if (!data) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     return reply.header("content-disposition", 'attachment; filename="steelman-data.json"').send(data);
+  });
+
+  // The tour (L-02): whether this account has been shown it, and, when the board shows it, saying so.
+  app.get("/api/account/tour", async (request, reply) => {
+    const seen = request.person === null ? null : await tourSeen(db, request.person);
+    return seen === null ? reply.code(401).send({ status: "refused", reason: "signed_out" }) : { seen };
+  });
+
+  app.put("/api/account/tour", async (request, reply) => {
+    if (request.person === null || !(await markTourSeen(db, clock, request.person))) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return { status: "done" };
   });
 
   app.post("/api/account/delete", async (request, reply) => {

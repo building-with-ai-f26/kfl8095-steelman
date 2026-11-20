@@ -23,6 +23,10 @@ import type { CardMenu, Opening } from "./Card.tsx";
 import { ArgumentSlot, EMPTY_DRAFT, cleanDraft } from "./Forms.tsx";
 import { Sharing } from "./Sharing.tsx";
 import { StrongestCase } from "./StrongestCase.tsx";
+import { Tour } from "./Tour.tsx";
+import { tourSteps } from "./tour-steps.ts";
+import type { TourStep } from "./tour-steps.ts";
+import { markTourSeen, readTour } from "../api.ts";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
@@ -235,6 +239,58 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     // Once, when the board first shows.
   }, []);
   const question = useRef<HTMLHeadingElement>(null);
+
+  // The tour (L-02): on the account's first board with something to point at, once, on any device; or again when
+  // Your account's Take it opens the board with ?tour. Each step unfolds the row it needs, or none, and shows its
+  // column (on a phone, the only one shown); when it ends, the board is as it was.
+  const [retake] = useState(() => new URLSearchParams(window.location.search).has("tour"));
+  const [tour, setTour] = useState<{ steps: TourStep[]; at: number; was: { open: string | null; expanded: string | null } } | null>(null);
+  const latest = useRef({ view, open, expanded });
+  latest.current = { view, open, expanded };
+  const showStep = (step: TourStep) => {
+    setOpen(step.kind === "articulation" ? step.argumentId : null);
+    setExpanded(null);
+    setSide(step.optionId);
+  };
+  useEffect(() => {
+    if (retake) {
+      const address = new URL(window.location.href);
+      address.searchParams.delete("tour");
+      window.history.replaceState(window.history.state, "", address.pathname + address.search + address.hash);
+    }
+    let gone = false;
+    void readTour().then((seen) => {
+      if (gone || seen === null || (seen && !retake)) return;
+      const steps = tourSteps(latest.current.view);
+      // An empty board has nothing to point at: the tour waits for one that has.
+      if (steps.length === 0) return;
+      // A page load opens on the board view; this only makes sure.
+      onZoom("read");
+      setTour({ steps, at: 0, was: { open: latest.current.open, expanded: latest.current.expanded } });
+      showStep(steps[0]!);
+      session.announce("Tour: the three votes.");
+      // Shown counts as seen, even if the tab closes before the last step.
+      if (!seen) void markTourSeen();
+    });
+    return () => {
+      gone = true;
+    };
+    // Once, when the board first shows.
+  }, []);
+  const tourTo = (at: number) => {
+    if (!tour) return;
+    setTour({ ...tour, at });
+    showStep(tour.steps[at]!);
+  };
+  const endTour = (finished: boolean) => {
+    if (!tour) return;
+    setOpen(tour.was.open);
+    setExpanded(tour.was.expanded);
+    setTour(null);
+    session.announce(finished ? "Tour done. Vote on any card." : "Tour skipped. Take it again from Your account.");
+    setFocusTo(".sm-head h1");
+  };
+
   /** The version open, if it's in this column. */
   const versionIn = (optionId: string) => openVersion !== null && view.rows.arguments[view.rows.versions[openVersion]!.argumentId]?.optionId === optionId;
   const openOption = open ? view.rows.arguments[open]?.optionId : undefined;
@@ -407,7 +463,17 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         </main>
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
-      <Pill state={state} count={zoom === "case" ? 0 : session.pillCount()} onUpdate={update} />
+      {/* The pill sits above everything, so it waits for the tour: Update would move the cards the tour points at. */}
+      {tour ? null : <Pill state={state} count={zoom === "case" ? 0 : session.pillCount()} onUpdate={update} />}
+      {tour && zoom === "read" ? (
+        <Tour
+          steps={tour.steps}
+          at={tour.at}
+          onNext={() => (tour.at === tour.steps.length - 1 ? endTour(true) : tourTo(tour.at + 1))}
+          onBack={() => tourTo(tour.at - 1)}
+          onSkip={() => endTour(false)}
+        />
+      ) : null}
       <div id="sm-status" className="sm-live" role="status" aria-live="polite">
         {state.status}
       </div>

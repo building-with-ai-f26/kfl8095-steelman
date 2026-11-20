@@ -5,8 +5,9 @@
 // confirm a deletion is GitHub's way too (checked on docs.github.com).
 
 import { useEffect, useId, useRef, useState } from "react";
-import { deleteMyAccount, downloadMyData, readMyAccount } from "./api.ts";
+import { deleteMyAccount, downloadMyData, listBoards, readMyAccount } from "./api.ts";
 import type { MyAccount } from "./api.ts";
+import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
 
 const DELETED = "deleted_account";
@@ -16,10 +17,16 @@ export function Account() {
   const [status, setStatus] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  /** Where Take it opens the tour (L-02): the most recently changed board with arguments to point at, as the prototype's opens the last board. */
+  const [tourBoard, setTourBoard] = useState<string | null>(null);
   const deleteLink = useRef<HTMLButtonElement>(null);
   const wasDeleting = useRef(false);
   useEffect(() => {
     void readMyAccount().then(setAccount);
+    void listBoards().then((list) => {
+      if (typeof list === "string") return;
+      setTourBoard(list.boards.find((board) => board.options.some((option) => option.arguments > 0))?.id ?? null);
+    });
   }, []);
   // Cancel puts the cursor back on Delete account.
   useEffect(() => {
@@ -56,6 +63,18 @@ export function Account() {
               {account.signIn.map((method) => (
                 <Row key={method} label={method} />
               ))}
+            </div>
+          )}
+          {/* Only once there's a board with something to point at: before then, the tour hasn't shown either. */}
+          {tourBoard && (
+            <div className="sm-rgroup">
+              <Row label="Tour" hint="The three votes, on a board">
+                <span className="sm-rrow-control">
+                  <a className="sm-button cursor-interaction" href={`${boardPath(tourBoard)}?tour`}>
+                    Take it
+                  </a>
+                </span>
+              </Row>
             </div>
           )}
           <div className="sm-rgroup">

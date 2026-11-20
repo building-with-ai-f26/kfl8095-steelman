@@ -46,6 +46,18 @@ export async function accountSummary(db: Db, person: string): Promise<AccountSum
   };
 }
 
+/** Whether the account has been shown the tour (L-02), or null when there's no such account. */
+export async function tourSeen(db: Db, person: string): Promise<boolean | null> {
+  const account = await db.selectFrom("account").select("tour_seen_at").where("id", "=", person).where("deleted_at", "is", null).executeTakeFirst();
+  return account ? account.tour_seen_at !== null : null;
+}
+
+/** Records that the account has been shown the tour. Taken again, it keeps when it was first shown. */
+export async function markTourSeen(db: Db, clock: Clock, person: string): Promise<boolean> {
+  await db.updateTable("account").set({ tour_seen_at: clock.now() }).where("id", "=", person).where("deleted_at", "is", null).where("tour_seen_at", "is", null).execute();
+  return (await tourSeen(db, person)) !== null;
+}
+
 /**
  * Download your data: the prototype's steelman-data.json, from the tables.
  * Everything the person wrote, and their votes and assessments by ID, and
