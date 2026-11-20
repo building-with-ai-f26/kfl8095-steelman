@@ -126,3 +126,12 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+
+/* "edited" (M2-5): under the earlier wording, the votes it had just before the edit. */
+/* "edited" opens the wording as it was (A-06): a panel inside the card, a warm light gray for the past, with a small
+   label, the wording struck through, and the votes it had then, their numbers in the serif (the builder, Nov 20). */
+#steelman-study .sm-prev { margin:2px 18px 12px; padding:9px 12px 10px; border:1px solid #e4e0d6; border-radius:6px; background:#f3f1ec; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+#steelman-study .sm-prev .sm-prev-label { margin:0 0 3px; font:600 10px/1.3 var(--sm-sans); letter-spacing:.11em; text-transform:uppercase; color:var(--sm-quiet); }
+#steelman-study .sm-prev del { text-decoration-color:#a8a39a; }
+#steelman-study .sm-prev .sm-prev-votes { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding-top:7px; border-top:1px solid #e4e0d6; font:400 11px/1.3 var(--sm-sans); }
+#steelman-study .sm-prev .sm-prev-votes b { margin-right:2px; font:600 15px/1 var(--sm-serif); font-variant-numeric:tabular-nums; color:var(--sm-ink); }

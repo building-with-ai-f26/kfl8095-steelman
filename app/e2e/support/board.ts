@@ -46,6 +46,8 @@ export interface TestBoard {
 
 export interface OpenOptions {
   width?: number;
+  /** A touch screen, so `tap()` works, as on a phone. */
+  touch?: true;
   /** Makes the browser's navigator.onLine say false, as it does on a machine with only the loopback network. */
   onLine?: false;
   /** Expects links to a board that doesn't exist, so their 404 isn't counted as a console error (M-06). */
@@ -132,7 +134,7 @@ export { expect };
 
 /** Opens the board in a new browser session, as the given test user. */
 async function openAs(browser: Browser, origin: string, demo: DemoBoard, person: DemoPerson, errors: string[], options: OpenOptions = {}): Promise<Page> {
-  const context = await browser.newContext({ baseURL: origin, viewport: { width: options.width ?? 1280, height: 900 } });
+  const context = await browser.newContext({ baseURL: origin, viewport: { width: options.width ?? 1280, height: 900 }, hasTouch: options.touch ?? false });
   // The switch keeps the choice per tab, in sessionStorage (web/src/testUser.ts).
   await context.addInitScript((id) => sessionStorage.setItem("steelman.testUser", id), demo.people[person]);
   if (options.onLine === false) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, "onLine", { get: () => false }));
