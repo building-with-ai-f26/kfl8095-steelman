@@ -43,7 +43,7 @@ export const POLICY: Record<Action, Rule> = {
   uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
   /** Reporting a wording, or withdrawing your report (J-01, M2-3): anyone who can read. */
   report: { least: "viewer", openBoard: true, authorOnly: false },
-  /** Changing the board's general access and its link role. */
+  /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };
 

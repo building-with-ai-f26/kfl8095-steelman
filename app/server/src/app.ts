@@ -3,6 +3,7 @@ import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from
 import {
   accessInput,
   reportInput,
+  memberRoleInput,
   assessmentInput,
   can,
   deleteAccountInput,
@@ -29,7 +30,7 @@ import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { readChanges, readSnapshot } from "./read.ts";
-import { setAccess } from "./sharing.ts";
+import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
@@ -354,6 +355,19 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/report", async (request, reply) =>
     answer(reply, await withdrawReport(services, request.params.board, request.person, request.params.id)),
   );
+
+  // Share's people list (M2-2b): anyone who can read sees it; only the owner sets roles.
+  app.get<{ Params: { board: string } }>("/api/boards/:board/people", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    return { people: await listPeople(db, request.params.board) };
+  });
+
+  app.put<{ Params: { board: string; account: string } }>("/api/boards/:board/people/:account", async (request, reply) => {
+    const body = memberRoleInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setRole(services, request.params.board, request.person, request.params.account, body.data.role));
+  });
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);
