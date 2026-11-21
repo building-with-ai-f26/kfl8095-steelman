@@ -1,7 +1,7 @@
 // The tour (L-02): the prototype's tour of the three votes, on the real
 // board's cards (positionTour and tourNote in
 // docs/prototype/source/steelman-refined.html). The page dims around the
-// cards a step points at, with a short note beside them: Skip tour, Back, and
+// vote a step points at, with a short note beside it: Skip tour, Back, and
 // Next or Done; the right and left arrows go on and back, and Escape skips.
 // While it's open, the board under it waits: the note is a modal dialog, so
 // Tab stays in it and a click elsewhere does nothing. The board decides which
@@ -139,17 +139,15 @@ export function Tour({ steps, at, onNext, onBack, onSkip }: TourProps) {
   );
 }
 
-/** What a step frames, as the prototype's tourTargets: the vote and the card it's about, or for evidence the vote alone. */
+/** What a step frames: the vote it's about, and not the card, which left it unclear what was meant (the builder's review). */
 function targets(step: TourStep, narrow: boolean): Element[] {
   const find = (selector: string) => document.querySelector(selector);
-  const card = (id: string) => find(`.sm-card[data-card="${CSS.escape(id)}"]`);
   const vote = (id: string) => find(`[data-vote-for="${CSS.escape(id)}"]`);
   const row = `[data-node="${CSS.escape(step.argumentId)}"]`;
   const found = (() => {
-    if (step.kind === "importance") return [find(`${row} > .sm-vote`), card(step.versionId)];
-    // On a phone an unfolded row shows one wording at a time, so the step frames just the leader and its vote.
-    if (step.kind === "articulation") return narrow ? [vote(step.versionId), card(step.versionId)] : [find(`${row} .sm-axis[data-axis]`), vote(step.versionId), card(step.versionId), vote(step.nextId), card(step.nextId)];
-    // Just the evidence vote: framing the whole card left it unclear what the step was about.
+    if (step.kind === "importance") return [find(`${row} > .sm-vote`)];
+    // On a phone an unfolded row shows one wording at a time, so the step frames just the leader's vote.
+    if (step.kind === "articulation") return narrow ? [vote(step.versionId)] : [vote(step.versionId), vote(step.nextId)];
     return [find(`.sm-card[data-card="${CSS.escape(step.versionId)}"] .sm-cred-group`)];
   })();
   return found.filter((element): element is Element => element !== null);

@@ -47,33 +47,31 @@ async function expectFramed(page: Page, target: Locator) {
     .toBe(true);
 }
 
-/** Waits until the spotlight's hole has settled away from the element: it frames something smaller. */
+/** Once the spotlight has settled on something else, checks it doesn't frame this element too: only the vote is framed, not the card. */
 async function expectNotFramed(page: Page, target: Locator) {
-  await expect
-    .poll(async () => {
-      const hole = await page.locator(".sm-tour-hole").boundingBox();
-      const box = await target.boundingBox();
-      if (!hole || !box) return false;
-      return hole.y > box.y + box.height - 1 || hole.y + hole.height < box.y + 1;
-    })
-    .toBe(true);
+  const hole = (await page.locator(".sm-tour-hole").boundingBox())!;
+  const box = (await target.boundingBox())!;
+  expect(hole.x <= box.x + 1 && hole.y <= box.y + 1 && hole.x + hole.width >= box.x + box.width - 1 && hole.y + hole.height >= box.y + box.height - 1).toBe(false);
 }
 
-test("L-02: on a first board, the tour points at the real cards: importance, articulation with the row unfolded, then evidence; Done ends it", async ({ board }) => {
+test("L-02: on a first board, the tour frames each vote on the real cards: importance, articulation with the row unfolded, then evidence; Done ends it", async ({ board }) => {
   const page = await board.open("tess.b");
 
   await expect(note(page)).toHaveAccessibleName("Importance");
   await expect(note(page)).toContainText("Step 1 of 3");
   await expect(note(page)).toContainText("Vote on how much this argument matters, assuming it's true.");
   await expect(status(page)).toHaveText("The tour has started.");
-  await expectFramed(page, card(page, TOP));
+  await expectFramed(page, page.getByRole("group", { name: `Importance: ${TOP.slice(0, 40)}` }));
+  await expectNotFramed(page, card(page, TOP).locator(".sm-claim"));
   await expect(note(page).getByRole("button", { name: "Next" })).toBeFocused();
 
   await note(page).getByRole("button", { name: "Next" }).click();
   await expect(note(page)).toHaveAccessibleName("Articulation");
   await expect(note(page)).toContainText("Vote on which wording states this argument best.");
   await expect(page.locator(".sm-idea.sm-open .sm-claim")).toHaveText([TOP, SECOND]);
+  await expectFramed(page, page.locator(".sm-idea.sm-open [data-vote-for]").first());
   await expectFramed(page, page.locator(".sm-idea.sm-open [data-vote-for]").nth(1));
+  await expectNotFramed(page, card(page, TOP).locator(".sm-claim"));
 
   await note(page).getByRole("button", { name: "Next" }).click();
   await expect(note(page)).toHaveAccessibleName("Evidence");
@@ -233,7 +231,7 @@ for (const width of [1280, 375]) {
   test(`L-02, M-04: no accessibility violations with the tour open, at ${width} px`, async ({ board }) => {
     const page = await board.open("tess.b", width === 375 ? { width, touch: true } : { width });
     await expect(note(page)).toHaveAccessibleName("Importance");
-    await expectFramed(page, card(page, TOP));
+    await expectFramed(page, page.getByRole("group", { name: `Importance: ${TOP.slice(0, 40)}` }));
 
     const results = await new AxeBuilder({ page }).analyze();
 
@@ -242,7 +240,7 @@ for (const width of [1280, 375]) {
   });
 }
 
-test("L-02, M-03: on a phone, the articulation step frames the leading wording and its vote", async ({ board }) => {
+test("L-02, M-03: on a phone, the articulation step frames the leading wording's vote, not its card", async ({ board }) => {
   const page = await board.open("tess.b", { width: 375, touch: true });
   await expect(note(page)).toBeVisible();
 
@@ -250,6 +248,7 @@ test("L-02, M-03: on a phone, the articulation step frames the leading wording a
 
   await expect(note(page)).toHaveAccessibleName("Articulation");
   await expectFramed(page, page.locator(".sm-idea.sm-open [data-vote-for]").first());
+  await expectNotFramed(page, card(page, TOP).locator(".sm-claim"));
   const box = (await note(page).boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(375);
