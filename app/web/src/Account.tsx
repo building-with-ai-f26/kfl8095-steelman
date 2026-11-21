@@ -17,7 +17,7 @@ export function Account() {
   const [status, setStatus] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
-  /** Where Take it opens the tour (L-02): the most recently changed board with arguments to point at, as the prototype's opens the last board. */
+  /** Where Start opens the tour (L-02): the most recently changed board with arguments to point at, as the prototype's opens the last board. */
   const [tourBoard, setTourBoard] = useState<string | null>(null);
   const deleteLink = useRef<HTMLButtonElement>(null);
   const wasDeleting = useRef(false);
@@ -68,10 +68,10 @@ export function Account() {
           {/* Only once there's a board with something to point at: before then, the tour hasn't shown either. */}
           {tourBoard && (
             <div className="sm-rgroup">
-              <Row label="Tour" hint="The three votes, on a board">
+              <Row label="Tour" hint="Learn how voting works on a board.">
                 <span className="sm-rrow-control">
                   <a className="sm-button cursor-interaction" href={`${boardPath(tourBoard)}?tour`}>
-                    Take it
+                    Start
                   </a>
                 </span>
               </Row>

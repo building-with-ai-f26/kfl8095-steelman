@@ -47,44 +47,56 @@ async function expectFramed(page: Page, target: Locator) {
     .toBe(true);
 }
 
+/** Waits until the spotlight's hole has settled away from the element: it frames something smaller. */
+async function expectNotFramed(page: Page, target: Locator) {
+  await expect
+    .poll(async () => {
+      const hole = await page.locator(".sm-tour-hole").boundingBox();
+      const box = await target.boundingBox();
+      if (!hole || !box) return false;
+      return hole.y > box.y + box.height - 1 || hole.y + hole.height < box.y + 1;
+    })
+    .toBe(true);
+}
+
 test("L-02: on a first board, the tour points at the real cards: importance, articulation with the row unfolded, then evidence; Done ends it", async ({ board }) => {
   const page = await board.open("tess.b");
 
   await expect(note(page)).toHaveAccessibleName("Importance");
   await expect(note(page)).toContainText("Step 1 of 3");
-  await expect(note(page)).toContainText("How much it matters, if true. This one ranks first in Yes.");
-  await expect(status(page)).toHaveText("Tour: the three votes.");
+  await expect(note(page)).toContainText("Vote on how much this argument matters, assuming it's true.");
+  await expect(status(page)).toHaveText("The tour has started.");
   await expectFramed(page, card(page, TOP));
   await expect(note(page).getByRole("button", { name: "Next" })).toBeFocused();
 
   await note(page).getByRole("button", { name: "Next" }).click();
   await expect(note(page)).toHaveAccessibleName("Articulation");
-  await expect(note(page)).toContainText("Which wording puts it best. 2 wordings of this argument; the best-put leads.");
+  await expect(note(page)).toContainText("Vote on which wording states this argument best.");
   await expect(page.locator(".sm-idea.sm-open .sm-claim")).toHaveText([TOP, SECOND]);
   await expectFramed(page, page.locator(".sm-idea.sm-open [data-vote-for]").nth(1));
 
   await note(page).getByRole("button", { name: "Next" }).click();
   await expect(note(page)).toHaveAccessibleName("Evidence");
-  await expect(note(page)).toContainText("Whether its sources back it. No one has assessed this wording yet.");
+  await expect(note(page)).toContainText("Vote on whether the linked sources support this specific wording.");
   await expect(page.locator(".sm-idea.sm-open")).toHaveCount(0);
   await expectFramed(page, card(page, TOP).locator(".sm-cred-group"));
+  await expectNotFramed(page, card(page, TOP).locator(".sm-claim"));
 
   await note(page).getByRole("button", { name: "Done" }).click();
   await expect(note(page)).toHaveCount(0);
   await expect(page.locator(".sm-tour")).toBeHidden();
-  await expect(status(page)).toHaveText("Tour done. Vote on any card.");
+  await expect(status(page)).toHaveText("You finished the tour.");
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
 });
 
-test("L-02: the evidence step says how its wording's assessments came out", async ({ board }) => {
-  const leadOf = async () => (await board.api("maya.chen").snapshot()).versions.find((v: { wording: string }) => v.wording === TOP);
-  await board.api("maya.chen").post(`versions/${(await leadOf()).id}/sources`, { id: board.ids.itemId(), name: "Library visitor survey, 2025", locator: "", finding: "Most weekday workers said Sunday was their only free day.", backsUp: "", limits: "" });
+test("L-02: the evidence step points at the wording with the most assessments, and frames only its evidence vote", async ({ board }) => {
+  const OTHER = "Staff need a guaranteed day off.";
+  const versionOf = async () => (await board.api("omar_h").snapshot()).versions.find((v: { wording: string }) => v.wording === OTHER);
+  await board.api("omar_h").post(`versions/${(await versionOf()).id}/sources`, { id: board.ids.itemId(), name: "Staff rota, 2025", locator: "", finding: "Every current shift pattern gives each person one fixed day off.", backsUp: "", limits: "" });
   // Citing a source makes a new revision, which is the one assessed.
-  const lead = await leadOf();
-  await board.api("jordan_w").put(`versions/${lead.id}/assessment`, { rev: lead.rev, supported: true });
-  await board.api("lin.zhao").put(`versions/${lead.id}/assessment`, { rev: lead.rev, supported: true });
-  await board.api("omar_h").put(`versions/${lead.id}/assessment`, { rev: lead.rev, supported: false });
-  await board.api("maya.chen").put(`versions/${lead.id}/assessment`, { rev: lead.rev, supported: true });
+  const other = await versionOf();
+  await board.api("jordan_w").put(`versions/${other.id}/assessment`, { rev: other.rev, supported: true });
+  await board.api("lin.zhao").put(`versions/${other.id}/assessment`, { rev: other.rev, supported: false });
   const page = await board.open("tess.b");
   await expect(note(page)).toHaveAccessibleName("Importance");
 
@@ -93,7 +105,8 @@ test("L-02: the evidence step says how its wording's assessments came out", asyn
   await page.keyboard.press("ArrowRight");
 
   await expect(note(page)).toHaveAccessibleName("Evidence");
-  await expect(note(page)).toContainText("Whether its sources back it. 75% of 4 assessments find this wording supported.");
+  await expectFramed(page, card(page, OTHER).locator(".sm-cred-group"));
+  await expectNotFramed(page, card(page, OTHER).locator(".sm-claim"));
 });
 
 test("L-02: Back returns to the step before, and the first step has none", async ({ board }) => {
@@ -126,7 +139,7 @@ test("L-02, M-04: the right arrow goes on, the left goes back, Escape skips, and
 
   await page.keyboard.press("Escape");
   await expect(note(page)).toHaveCount(0);
-  await expect(status(page)).toHaveText("Tour skipped. Take it again from Your account.");
+  await expect(status(page)).toHaveText("You closed the tour. You can start it again from Your account.");
   await expect(page.locator(".sm-idea.sm-open")).toHaveCount(0);
 });
 
@@ -174,7 +187,7 @@ test("L-02: a board with nothing to point at shows no tour, and the account stil
   await expect(note(page)).toHaveAccessibleName("Importance");
 });
 
-test("L-02: Your account's Take it opens the tour again on your most recently changed board that has arguments", async ({ board }) => {
+test("L-02: Your account's Start opens the tour again on your most recently changed board that has arguments", async ({ board }) => {
   const page = await board.open("tess.b");
   await note(page).getByRole("button", { name: "Skip tour" }).click();
   // A newer board with an argument, then a newer one still with none.
@@ -187,8 +200,8 @@ test("L-02: Your account's Take it opens the tour again on your most recently ch
   await tess.post("../../boards", { question: "Should the gym open earlier?", options: ["Yes", "No"] });
 
   await page.goto("/account");
-  await expect(page.locator(".sm-rrow", { hasText: "Tour" })).toContainText("The three votes, on a board");
-  await page.getByRole("link", { name: "Take it" }).click();
+  await expect(page.locator(".sm-rrow", { hasText: "Tour" })).toContainText("Learn how voting works on a board.");
+  await page.getByRole("link", { name: "Start" }).click();
 
   await expect(page).toHaveURL(`/b/${newer}`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Should the café stay open late?");

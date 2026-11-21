@@ -241,7 +241,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const question = useRef<HTMLHeadingElement>(null);
 
   // The tour (L-02): on the account's first board with something to point at, once, on any device; or again when
-  // Your account's Take it opens the board with ?tour. Each step unfolds the row it needs, or none, and shows its
+  // Your account's Start opens the board with ?tour. Each step unfolds the row it needs, or none, and shows its
   // column (on a phone, the only one shown); when it ends, the board is as it was.
   const [retake] = useState(() => new URLSearchParams(window.location.search).has("tour"));
   const [tour, setTour] = useState<{ steps: TourStep[]; at: number; was: { open: string | null; expanded: string | null } } | null>(null);
@@ -268,7 +268,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
       onZoom("read");
       setTour({ steps, at: 0, was: { open: latest.current.open, expanded: latest.current.expanded } });
       showStep(steps[0]!);
-      session.announce("Tour: the three votes.");
+      session.announce("The tour has started.");
       // Shown counts as seen, even if the tab closes before the last step.
       if (!seen) void markTourSeen();
     });
@@ -287,7 +287,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     setOpen(tour.was.open);
     setExpanded(tour.was.expanded);
     setTour(null);
-    session.announce(finished ? "Tour done. Vote on any card." : "Tour skipped. Take it again from Your account.");
+    session.announce(finished ? "You finished the tour." : "You closed the tour. You can start it again from Your account.");
     setFocusTo(".sm-head h1");
   };
 

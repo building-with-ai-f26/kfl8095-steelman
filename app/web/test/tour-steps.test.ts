@@ -76,9 +76,9 @@ test("L-02: on a board with every kind of example, the tour has three steps, in 
   });
 
   expect(tourSteps(view)).toEqual([
-    { kind: "importance", argumentId: "a1", optionId: "yes", versionId: "v1", optionName: "Yes" },
-    { kind: "articulation", argumentId: "a2", optionId: "yes", versionId: "v2", nextId: "v3", wordings: 2 },
-    { kind: "evidence", argumentId: "a3", optionId: "no", versionId: "v4", yes: 3, no: 1 },
+    { kind: "importance", argumentId: "a1", optionId: "yes", versionId: "v1" },
+    { kind: "articulation", argumentId: "a2", optionId: "yes", versionId: "v2", nextId: "v3" },
+    { kind: "evidence", argumentId: "a3", optionId: "no", versionId: "v4" },
   ]);
 });
 
@@ -99,8 +99,8 @@ test("L-02: an argument whose leading wording was hidden or deleted is never an 
   });
 
   expect(tourSteps(view)).toEqual([
-    { kind: "importance", argumentId: "a3", optionId: "yes", versionId: "v3", optionName: "Yes" },
-    { kind: "evidence", argumentId: "a3", optionId: "yes", versionId: "v3", yes: 0, no: 0 },
+    { kind: "importance", argumentId: "a3", optionId: "yes", versionId: "v3" },
+    { kind: "evidence", argumentId: "a3", optionId: "yes", versionId: "v3" },
   ]);
 });
 

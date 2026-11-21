@@ -119,11 +119,7 @@ export function Tour({ steps, at, onNext, onBack, onSkip }: TourProps) {
           <Icon name={icon} size={16} />
           {title}
         </h2>
-        <p id={lineId}>
-          {line[0]}
-          {line[1] ? <strong>{line[1]}</strong> : null}
-          {line[2]}
-        </p>
+        <p id={lineId}>{line}</p>
         <footer>
           <button type="button" className="sm-link-button cursor-interaction" onClick={onSkip}>
             Skip tour
@@ -143,7 +139,7 @@ export function Tour({ steps, at, onNext, onBack, onSkip }: TourProps) {
   );
 }
 
-/** What a step frames, as the prototype's tourTargets: the vote and the card it's about. */
+/** What a step frames, as the prototype's tourTargets: the vote and the card it's about, or for evidence the vote alone. */
 function targets(step: TourStep, narrow: boolean): Element[] {
   const find = (selector: string) => document.querySelector(selector);
   const card = (id: string) => find(`.sm-card[data-card="${CSS.escape(id)}"]`);
@@ -153,7 +149,8 @@ function targets(step: TourStep, narrow: boolean): Element[] {
     if (step.kind === "importance") return [find(`${row} > .sm-vote`), card(step.versionId)];
     // On a phone an unfolded row shows one wording at a time, so the step frames just the leader and its vote.
     if (step.kind === "articulation") return narrow ? [vote(step.versionId), card(step.versionId)] : [find(`${row} .sm-axis[data-axis]`), vote(step.versionId), card(step.versionId), vote(step.nextId), card(step.nextId)];
-    return [find(`.sm-card[data-card="${CSS.escape(step.versionId)}"] .sm-cred-group`), card(step.versionId)];
+    // Just the evidence vote: framing the whole card left it unclear what the step was about.
+    return [find(`.sm-card[data-card="${CSS.escape(step.versionId)}"] .sm-cred-group`)];
   })();
   return found.filter((element): element is Element => element !== null);
 }
