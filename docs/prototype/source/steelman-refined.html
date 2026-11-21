@@ -955,7 +955,12 @@
   #steelman-study .sm-code:focus-within .sm-code-box[data-next] { border-color:var(--sm-ink); box-shadow:0 0 0 1px var(--sm-ink); }
   #steelman-study .sm-code:has([aria-invalid="true"]) .sm-code-box { border-color:#b4434f; }
   #steelman-study .sm-code:has([aria-invalid="true"]):focus-within .sm-code-box[data-next] { box-shadow:0 0 0 1px #b4434f; }
-  #steelman-study .sm-landing-auth .sm-field input.sm-code-input, #steelman-study .sm-landing-auth .sm-field input.sm-code-input:is(:focus,:focus-visible,:hover,[aria-invalid="true"]) { position:absolute; inset:0; width:100%; height:100%; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:transparent; caret-color:transparent; font-size:16px; outline:none; box-shadow:none; }
+  #steelman-study .sm-landing-auth .sm-field input.sm-code-input, #steelman-study .sm-landing-auth .sm-field input.sm-code-input:is(:focus,:focus-visible,:hover,[aria-invalid="true"]), #steelman-study .sm-pw-form .sm-code input.sm-code-input, #steelman-study .sm-pw-form .sm-code input.sm-code-input:is(:focus,:focus-visible,:hover,[aria-invalid="true"]) { position:absolute; inset:0; width:100%; height:100%; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:transparent; caret-color:transparent; font-size:16px; outline:none; box-shadow:none; }
+  #steelman-study .sm-rgroup .sm-email-confirm h3 { margin:0; padding:0; border:0; font:600 15px/1.3 var(--sm-serif); letter-spacing:0; text-transform:none; color:var(--sm-ink); }
+  #steelman-study .sm-email-confirm p { margin:0; font-size:13px; line-height:1.5; }
+  #steelman-study .sm-email-confirm .sm-code { grid-template-columns:repeat(6,minmax(0,44px)); gap:6px; }
+  #steelman-study .sm-email-confirm .sm-code-box { height:48px; font-size:20px; }
+  #steelman-study .sm-email-confirm .sm-auth-links { display:flex; justify-content:flex-start; }
   #steelman-study .sm-code-shown { font-weight:600; letter-spacing:.1em; font-variant-numeric:tabular-nums; }
   #steelman-study .sm-signout { justify-self:stretch; height:36px; font-size:13px; }
   #steelman-study .sm-user-link { padding:0; border:0; background:none; font:inherit; color:inherit; text-align:inherit; cursor:pointer; }
@@ -1378,7 +1383,7 @@
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
     'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','decision-option':'owner','decision-arg':'owner','decision-edit':'owner','decision-cancel':'owner','decision-save':'owner','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     inbox:'view','note-open':'view','note-read':'view','notes-read-all':'view','space-new':'view','space-create':'view','space-settings':'admin','space-canvas':'admin','space-kind':'admin','space-invite':'admin','space-invite-cancel':'admin','space-remove':'admin','space-approve':'admin','space-decline':'admin','space-rule-add':'admin','space-rule-remove':'admin','space-ai':'admin','space-mode':'admin',
-    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-open':'view','profile-google':'view','profile-analytics':'view','profile-privacy':'view','profile-download':'view','profile-delete':'view','profile-delete-cancel':'view','profile-delete-confirm':'view','sign-out':'view',
+    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-confirm':'view','profile-email-expire':'view','profile-email-taken':'view','profile-google':'view','profile-analytics':'view','profile-privacy':'view','profile-download':'view','profile-delete':'view','profile-delete-cancel':'view','profile-delete-confirm':'view','sign-out':'view',
     settings:'owner'};
   const WHY = {admin:'Space admins only.',view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -2686,16 +2691,22 @@
         +(usage.length?`<div class="sm-rgroup sm-usage"><h3>Recent usage</h3>${usage.map((u,i)=>`<button type="button" class="sm-rrow sm-rrow-button cursor-interaction" data-action="profile-board" data-id="${u.board}" data-key="usage-${i}"><span class="sm-rrow-label">${icon('bot')}<span>${u.kind==='draft'?'Draft arguments':u.n===1?'Evidence check':`Evidence checks · ${u.n}`}</span><small>${escape(docs[u.board].question.text)}</small></span><span class="sm-rrow-value"><b>−${u.n}</b><time datetime="${u.at}" title="${fullDate(u.at)}">${ago(u.at)}</time></span></button>`).join('')}</div>`:'')
         +`</section>`;
       const row=(label,value)=>`<div class="sm-rrow"><span class="sm-rrow-label">${label}</span>${value}</div>`;
-      // Email changes take effect once the new address confirms them; sign-in is Google and/or an email link (no password).
+      // Email changes take effect once a 6-digit code sent to the new address is entered (Q21, as sign-in's codes:
+      // ten minutes, five wrong tries, a new code cancels the old). Sign-in is Google and/or an email code (no password).
       const ae=state.acct||{};
-      const emailEdit=ae.editing?`<div class="sm-pw-form" role="group" aria-label="Change email"><label>New email<input id="sm-email-new" type="email" autocomplete="email" data-key="email-new" value="${escape(ae.draft||'')}" ${ae.error?'aria-invalid="true" aria-describedby="sm-email-error"':''}></label>${ae.error?`<p class="sm-field-error" id="sm-email-error">${escape(ae.error)}</p>`:''}<div>${button('profile-email-cancel','Cancel','data-key="email-cancel"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-email-save" data-key="email-save">Send link</button></div></div>`:'';
-      const pending=ae.pending?`<div class="sm-rrow sm-pending"><span class="sm-rrow-label">Confirming<small>${escape(ae.pending)}</small></span><span class="sm-rrow-control">${button('profile-email-resend',ae.resent?'Sent again':'Resend','data-key="email-resend"')}${button('profile-email-drop','Cancel','data-key="email-drop"')}</span></div><div class="sm-auth-sim"><span>Simulate</span><button type="button" class="sm-link-button cursor-interaction" data-action="profile-email-open" data-key="email-open">Open the link</button></div>`:'';
+      const emailEdit=ae.editing?`<div class="sm-pw-form" role="group" aria-label="Change email"><label>New email<input id="sm-email-new" type="email" autocomplete="email" data-key="email-new" value="${escape(ae.draft||'')}" ${ae.error?'aria-invalid="true" aria-describedby="sm-email-error"':''}></label>${ae.error?`<p class="sm-field-error" id="sm-email-error">${escape(ae.error)}</p>`:''}<div>${button('profile-email-cancel','Cancel','data-key="email-cancel"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-email-save" data-key="email-save">Send code</button></div></div>`:'';
+      const pending=ae.pending?`<div class="sm-pw-form sm-email-confirm" role="group" aria-labelledby="sm-email-confirm-title"><h3 id="sm-email-confirm-title">Confirm your new email</h3>`
+        +`<p>We sent a code to <strong>${escape(ae.pending)}</strong>. Your email changes when you enter it.</p>`
+        +`<label class="sm-field"><span>Code</span><span class="sm-code">${codeBoxes(ae.typed)}<input id="sm-email-code" class="sm-code-input" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" data-key="email-code" value="${escape(ae.typed||'')}" ${ae.error?'aria-invalid="true" aria-describedby="sm-email-error"':''}></span></label>${ae.error?`<p class="sm-field-error" id="sm-email-error">${escape(ae.error)}</p>`:''}`
+        +`<div class="sm-auth-links"><button type="button" class="sm-link-button cursor-interaction" data-action="profile-email-resend" data-key="email-resend">Send a new code</button></div>`
+        +`<div>${button('profile-email-drop','Cancel','data-key="email-drop"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-email-confirm" data-key="email-confirm">Change email</button></div></div>`
+        +`<div class="sm-auth-sim"><span>Simulate</span><span class="sm-auth-sim-note">The code is <b class="sm-code-shown">${ae.code}</b>.</span><button type="button" class="sm-link-button cursor-interaction" data-action="profile-email-expire" data-key="email-expire">Wait 10 minutes</button><button type="button" class="sm-link-button cursor-interaction" data-action="profile-email-taken" data-key="email-taken">Another account uses it</button></div>`:'';
       const account=`<section class="sm-rail-card sm-account" aria-labelledby="sm-account-title"><h2 id="sm-account-title">Account</h2><div class="sm-rgroup">`
         +row('Username',`<span class="sm-rrow-value">${escape(ME)}</span>`)
         +row('Email',ae.editing?'':`<span class="sm-rrow-control"><span class="sm-rrow-value">${escape(state.myEmail)}</span>${ae.pending?'':button('profile-email','Change','data-key="email-open-edit"')}</span>`)+emailEdit+pending+`</div>`
         +`<div class="sm-rgroup"><h3>Sign in with</h3>`
         +row(`Google<small>${state.google?escape(state.myEmail):'Not connected'}</small>`,`<span class="sm-rrow-control">${button('profile-google',state.google?'Disconnect':'Connect','data-key="google"')}</span>`)
-        +row('Email link<small>Always on</small>','')
+        +row('Email code<small>We email you a code each time you sign in.</small>','')
         +`</div><div class="sm-rgroup">`+row('Tour<small>The three votes, on a board</small>',`<span class="sm-rrow-control">${button('tour-start','Take it','data-key="tour-start"')}</span>`)+`</div>`
         +privacyGroup()
         +`<button type="button" class="sm-button sm-signout cursor-interaction" data-action="sign-out" data-key="sign-out">${icon('log-out')}Sign out</button>`
@@ -3423,7 +3434,7 @@
     renderFresh();syncAddress();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-open','profile-google','profile-analytics','profile-privacy','profile-download','profile-delete','profile-delete-cancel','profile-delete-confirm','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
+  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-confirm','profile-email-expire','profile-email-taken','profile-google','profile-analytics','profile-privacy','profile-download','profile-delete','profile-delete-cancel','profile-delete-confirm','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
@@ -3489,11 +3500,24 @@
       const next=(root.querySelector('#sm-email-new')?.value||'').trim();acct.draft=next;
       acct.error=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next)?'That doesn’t look like an email address.':next.toLowerCase()===state.myEmail?'That’s already your email.':'';
       if(acct.error){renderHome();focusOn('email-new');announce(acct.error);return;}
-      Object.assign(acct,{editing:false,pending:next,resent:false});renderHome();focusOn('email-resend');announce(`Link sent to ${next}. Your email changes when you open it.`);return;
+      Object.assign(acct,newCode(),{editing:false,pending:next,error:'',taken:false});renderHome();focusOn('email-code');announce(`We sent a code to ${next}.`);return;
     }
-    if(action==='profile-email-resend') {acct.resent=true;renderHome();focusOn('email-resend');announce(`Sent again to ${acct.pending}.`);return;}
-    if(action==='profile-email-drop') {acct.pending='';renderHome();focusOn('email-open-edit');announce('Email change cancelled.');return;}
-    if(action==='profile-email-open') {state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}.`);return;}
+    if(action==='profile-email-resend') {Object.assign(acct,newCode(),{error:''});renderHome();focusOn('email-code');announce(`We sent a new code to ${acct.pending}. The earlier code no longer works.`);return;}
+    if(action==='profile-email-drop') {Object.assign(acct,{pending:'',error:''});renderHome();focusOn('email-open-edit');announce('Your email hasn’t changed.');return;}
+    // The code's checks are sign-in's (auth-code); whether another account has the address is said only after the code
+    // proves this person holds it, so the form can't be used to find out who has an account.
+    if(action==='profile-email-confirm') {
+      acct.typed=(root.querySelector('#sm-email-code')?.value||'').replace(/\s/g,'');
+      acct.error=!/^\d{6}$/.test(acct.typed)?'Enter the 6-digit code.'
+        :acct.expired?'That code has expired. Send a new code.'
+        :acct.tries>=5?'Too many wrong tries. Send a new code.'
+        :acct.typed!==acct.code?(++acct.tries>=5?'Too many wrong tries. Send a new code.':'That code isn’t right.')
+        :acct.taken?'Another account already uses this email.':'';
+      if(acct.error){renderHome();focusOn('email-code');announce(acct.error);return;}
+      state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}.`);return;
+    }
+    if(action==='profile-email-expire') {acct.expired=true;announce('Ten minutes passed (simulated).');return;}
+    if(action==='profile-email-taken') {acct.taken=true;announce('Another account now uses this email (simulated).');return;}
     if(action==='profile-analytics') {const a=analytics();if(a){a.set(!a.enabled());renderHome();focusOn('analytics');announce(a.enabled()?'Usage analytics on.':'Usage analytics off. Nothing more is sent from this browser.');}return;}
     if(action==='profile-privacy') {openPrivacy();return;}
     if(action==='profile-download') {announce(downloadData()?'Downloaded steelman-data.json.':'Couldn’t start the download here.');return;}
@@ -3505,7 +3529,7 @@
       state.acct={};state.profile=null;state.profileFrom=null;setPersona('out');state.deletedNotice=true;renderView('deleted-done');root.scrollIntoView({block:'start'});
       announce('Account deleted (simulated).');return;
     }
-    if(action==='profile-google') {state.google=!state.google;renderHome();focusOn('google');announce(state.google?'Google connected (simulated).':'Google disconnected. You can still sign in with an email link.');return;}
+    if(action==='profile-google') {state.google=!state.google;renderHome();focusOn('google');announce(state.google?'Google connected (simulated).':'Google disconnected. You can still sign in with a code sent to your email.');return;}
     if(action==='sign-out') {state.profile=null;state.profileFrom=null;setPersona('out');focusOn('sign-in');announce('Signed out (simulated). Preview as is now Signed out.');}
   }
   // After anything renders, controls your role can't use are marked unavailable, with the reason as their tooltip.
@@ -3636,7 +3660,7 @@
       if(el.value!==el.value.toLowerCase()){el.value=el.value.toLowerCase();el.setSelectionRange(at,at);}
       return;
     }
-    if(event.target.id==='sm-auth-code') {
+    if(event.target.id==='sm-auth-code'||event.target.id==='sm-email-code') {
       const el=event.target,digits=el.value.replace(/\D/g,'').slice(0,6);
       if(el.value!==digits) el.value=digits;
       el.closest('.sm-code').querySelectorAll('.sm-code-box').forEach((box,i)=>{box.textContent=digits[i]||'';box.toggleAttribute('data-next',i===Math.min(digits.length,5));});
@@ -4214,6 +4238,7 @@
     if(event.key==='Escape'&&state.navOpen){event.preventDefault();state.navOpen=false;renderSite();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});root.querySelector('[data-key="nav-toggle"]')?.focus();return;}
     if(state.tour&&['Escape','ArrowRight','ArrowLeft'].includes(event.key)&&!event.target.closest?.('input,textarea,select')){event.preventDefault();tourAction(event.key==='Escape'?'tour-skip':event.key==='ArrowRight'?'tour-next':'tour-back');save();return;}
     if(event.key==='Enter'&&event.target.id?.startsWith('sm-auth-')){event.preventDefault();root.querySelector('.sm-landing-auth [data-primary]')?.click();return;}
+    if(event.key==='Enter'&&(event.target.id==='sm-email-new'||event.target.id==='sm-email-code')){event.preventDefault();root.querySelector(event.target.id==='sm-email-new'?'[data-key="email-save"]':'[data-key="email-confirm"]')?.click();return;}
     if(event.key==='Escape'&&state.inbox){event.preventDefault();state.inbox=false;renderSite();root.querySelector('[data-key="inbox"]')?.focus();announce('Notifications closed.');save();return;}
     if(event.key==='Enter'&&event.target.id==='sm-space-invite'){event.preventDefault();root.querySelector('[data-key="space-invite-send"]')?.click();return;}
     if(event.key==='Enter'&&event.target.id==='sm-space-name'&&state.spaceEdit==='new'){event.preventDefault();root.querySelector('[data-key="space-create"]')?.click();return;}

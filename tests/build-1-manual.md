@@ -1549,6 +1549,19 @@ Build plan M2-5, with Q22 (Nov 11): the "edited" mark explains itself on hover, 
 | After the builder's review, Nov 20 | The builder asked for the earlier wording to look designed: inset from the card's edges, a background that says it's the past, and the votes in a different type from the text. It's now a panel inside the card, 18 px from its sides, warm light gray (#f3f1ec) with a hairline border; a small "Before this edit" label in the board's tracked capitals; the wording struck through; and, under a rule, each count in the serif with its words in small sans. The test's expected text changed with it (new in this pull request). Types, lint, and the edited-counts and menu browser tests pass |
 
 
+## November 21 — Changing your email, by code: the design (L-04)
+
+Build plan M2-8c, drafted in the prototype for the builder's review before it's built (the plan: "The design of the email-change screens, shown before it's built"). The prototype confirmed a new email by a link; the real product confirms with a 6-digit code (Q21).
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | From memory: GitHub adds a new email and sends a link to verify it, keeping the old one until then; Google sends a code to the new address before switching. Taken: the old email stays until the code is entered; the code form is the sign-in screen's (six boxes over one input, Send a new code) |
+| The steps | Email's Change opens "New email" with Cancel and Send code. Send code shows "Confirm your new email": "We sent a code to x. Your email changes when you enter it.", the code boxes, Send a new code, Cancel, and Change email. Enter submits each step. Success: "Your email is now x." on the Email row |
+| Errors | As sign-in's code: "Enter the 6-digit code.", "That code isn’t right.", "That code has expired. Send a new code." (ten minutes), "Too many wrong tries. Send a new code." (five). "Another account already uses this email." is said only once the code is right, so the form can't be used to find out who has an account. A new code cancels the old: "We sent a new code to x. The earlier code no longer works." Cancel: "Your email hasn’t changed." |
+| Also reworded | "Email link · Always on" is now "Email code · We email you a code each time you sign in.", and Google's Disconnect says "You can still sign in with a code sent to your email." |
+| Checked | In the prototype at 1280 and 375 px: wrong code, another account, Cancel (focus back on Change), and success; no sideways scroll at 375 px |
+| Open questions for the builder | Whether to email the old address when the email changes (GitHub and Google do); whether the person must have signed in recently to change it |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
