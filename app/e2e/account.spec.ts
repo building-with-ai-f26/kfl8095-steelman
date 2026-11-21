@@ -28,7 +28,7 @@ test("M-07 The header's account button opens Your account: username, how you sig
   await expect(page).toHaveURL("/account");
   const card = page.getByRole("region", { name: "Your account" });
   await expect(card.locator(".sm-rrow", { hasText: "Username" })).toContainText("omar_h");
-  await expect(card.locator(".sm-rrow", { hasText: "Your data" })).toContainText("What you wrote, voted, and assessed");
+  await expect(card.locator(".sm-rrow", { hasText: "Your data" })).toContainText("Download a copy of everything you wrote, voted on, and assessed.");
   await expect(card.getByRole("button", { name: "Download" })).toBeVisible();
   await expect(card.getByRole("button", { name: "Delete account" })).toBeVisible();
   await expectNoAxeViolations(page);

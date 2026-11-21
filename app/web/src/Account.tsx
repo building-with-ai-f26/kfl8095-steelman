@@ -103,7 +103,7 @@ export function Account() {
           <div className="sm-rgroup">
             <h2>Privacy</h2>
             <AnalyticsRow onChange={setStatus} />
-            <Row label="Your data" hint="What you wrote, voted, and assessed">
+            <Row label="Your data" hint="Download a copy of everything you wrote, voted on, and assessed.">
               <span className="sm-rrow-control">
                 <button type="button" className="sm-button cursor-interaction" onClick={() => void download()}>
                   Download
@@ -172,7 +172,7 @@ function AnalyticsRow({ onChange }: { onChange(status: string): void }) {
     toggle.current?.focus();
   };
   return (
-    <Row label="Usage analytics" hint="Sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.">
+    <Row label="Usage analytics" hint="Steelman sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.">
       <span className="sm-rrow-control">
         <span className="sm-rrow-value">{status === "on" ? "On" : "Off"}</span>
         <button ref={toggle} type="button" className="sm-button cursor-interaction" aria-label={status === "on" ? "Turn off usage analytics" : "Turn on usage analytics"} onClick={() => void change()}>

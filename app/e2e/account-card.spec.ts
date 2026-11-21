@@ -20,7 +20,7 @@ test.describe("with a PostHog key", () => {
     const page = await board.open("maya.chen", { prepare: quietPostHog });
     await page.goto("/account");
 
-    await expect(analyticsRow(page)).toContainText("Sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.");
+    await expect(analyticsRow(page)).toContainText("Steelman sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.");
     await expect(analyticsRow(page)).toContainText("On");
     await analyticsRow(page).getByRole("button", { name: "Turn off" }).click();
 
