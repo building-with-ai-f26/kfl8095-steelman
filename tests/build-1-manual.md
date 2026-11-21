@@ -1566,6 +1566,20 @@ Build plan M2-5, with Q22 (Nov 11): the "edited" mark explains itself on hover, 
 | After the builder's review, Nov 20 | The builder asked for the earlier wording to look designed: inset from the card's edges, a background that says it's the past, and the votes in a different type from the text. It's now a panel inside the card, 18 px from its sides, warm light gray (#f3f1ec) with a hairline border; a small "Before this edit" label in the board's tracked capitals; the wording struck through; and, under a rule, each count in the serif with its words in small sans. The test's expected text changed with it (new in this pull request). Types, lint, and the edited-counts and menu browser tests pass |
 
 
+## November 21 — Sign out and the analytics switch on Your account (L-04, M-08)
+
+Build plan M2-8a, the first part of the account card (M2-8, split Nov 21: a, Sign out and the analytics switch; b, Google Connect and Disconnect; c, changing your email, whose design is shown before it's built). Both are in the prototype's Account card (profileMarkup and privacyGroup); the wording follows the builder's Nov 21 review of the tour: plain full sentences.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | From memory: GitHub and Google keep Sign out last in the account menu, a plain button; GitHub's settings and Google's My Ad Center show a setting's current state beside its switch. Taken: Sign out at the foot of the card above Delete account, as the prototype has it; "On" or "Off" beside Turn off or Turn on |
+| Usage analytics | A row in Privacy: "Sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden." with On and Turn off, or Off and Turn on. It changes the same choice as the first-visit notice and the privacy page (kept in this browser), so the notice goes and the privacy page agrees. It says "Usage analytics are off. Nothing more is sent from this browser." or "Usage analytics are on.", and the cursor stays on the button. With Global Privacy Control or Do Not Track: Off, "Your browser asks sites not to track you.", and no button. With no PostHog key (as locally), no row |
+| Sign out | A button with the log-out icon above Delete account. It ends the session on the service (Better Auth's sign-out, already let through), forgets the tab's test account in development, and opens the home page, which shows Sign in. A reload stays signed out; the old session cookie, sent again from another browser, is refused (401), so the session is ended on the service and not only forgotten here; the next sign-in reaches the same account. If the service can't be reached: "Couldn’t sign you out. Try again." |
+| Layout | A long hint squeezed the row's value to "O." and wrapped Turn off; on Your account a row's value and buttons now keep their width and the hint wraps instead. Checked at 1280 and 375 px |
+| Second reader | A fresh agent found nothing blocking. Taken from its points: the sign-out test now replays the old cookie; a missing sign-out route counts as signed out only when acting as a test account; the row follows a choice made on the first-visit notice; the cursor returns to Sign out if it fails; the switch is named "Turn off usage analytics"; the hint says it goes to PostHog; Turn off is checked to reach PostHog as opt_out_capturing; M-07's audit row updated |
+| Tests first | `e2e/account-card.spec.ts` (4, a fifth after the second reader, plus 2 accessibility scans) and `e2e/sign-out.spec.ts` (2), seen to fail first (the no-key test passed from the start, since there was no row) |
+| Known limitations | The analytics choice is still per browser, not per account. Signing out ends this browser's session only, not others' |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
