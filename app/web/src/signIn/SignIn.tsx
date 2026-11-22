@@ -8,6 +8,7 @@ import type { FormEvent } from "react";
 import { tooManyMessage } from "@steelman/shared";
 import { emailCode, googleAddress, signInWithCode } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
+import { CodeBoxes } from "./CodeBoxes.tsx";
 
 const MESSAGES = {
   noEmail: "Enter your email.",
@@ -135,28 +136,16 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
           </p>
           <label className="sm-field">
             <span>Code</span>
-            <span className="sm-code">
-              {Array.from({ length: 6 }, (_, i) => (
-                <span key={i} className="sm-code-box" aria-hidden="true" data-next={i === Math.min(code.length, 5) ? "" : undefined}>
-                  {code[i] ?? ""}
-                </span>
-              ))}
-              <input
-                ref={field}
-                className="sm-code-input"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                spellCheck={false}
-                value={code}
-                onChange={(event) => {
-                  setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
-                  setError("");
-                }}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? "sm-auth-sent sm-auth-error" : "sm-auth-sent"}
-              />
-            </span>
+            <CodeBoxes
+              value={code}
+              inputRef={field}
+              onChange={(typed) => {
+                setCode(typed);
+                setError("");
+              }}
+              invalid={Boolean(error)}
+              describedBy={error ? "sm-auth-sent sm-auth-error" : "sm-auth-sent"}
+            />
           </label>
           {errorLine}
           <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>

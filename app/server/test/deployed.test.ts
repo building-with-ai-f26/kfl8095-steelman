@@ -94,6 +94,56 @@ describe("sign-in codes by email, through Resend", () => {
   });
 });
 
+describe("changing your email, through Resend (M2-8c)", () => {
+  /** A Resend stand-in that keeps what it's sent. */
+  function resend(): { email: ReturnType<typeof resendEmail>; bodies: () => { to: string[]; subject: string; text: string }[] } {
+    const sent: RequestInit[] = [];
+    const fakeFetch = async (_url: string | URL | Request, init?: RequestInit) => {
+      sent.push(init!);
+      return new Response(JSON.stringify({ id: "email-1" }), { status: 200 });
+    };
+    return { email: resendEmail({ apiKey: "re_test", from: "Steelman <sign-in@send.steelman-argument.test>", fetch: fakeFetch }), bodies: () => sent.map((init) => JSON.parse(String(init.body))) };
+  }
+
+  test("M2-8c, L-04: the code for a new email says what it's for and how long it works", async () => {
+    const { email, bodies } = resend();
+    await email.sendEmailChangeCode("new@example.test", "654321");
+    expect(bodies()[0]).toMatchObject({ to: ["new@example.test"], subject: "Your code to confirm your new Steelman email: 654321" });
+    expect(bodies()[0]!.text).toBe(
+      "Enter 654321 on Steelman to make this your account’s email.\n\nIt works for 10 minutes. If you didn’t ask for it, you can ignore this email: no account’s email changes without the code.\n",
+    );
+  });
+
+  test("M2-8c, L-04: an address another account uses is told so, with no code", async () => {
+    const { email, bodies } = resend();
+    await email.sendEmailInUse("taken@example.test");
+    expect(bodies()[0]).toMatchObject({ to: ["taken@example.test"], subject: "You already have a Steelman account with this email" });
+    expect(bodies()[0]!.text).toBe(
+      "Someone asked to change their Steelman account’s email to this one, but this email already has its own Steelman account. If that was you, sign in with this email instead. If it wasn’t, you can ignore this email.\n",
+    );
+  });
+
+  test("M2-8c, L-04: the old address is told the email changed, as Notion does", async () => {
+    const { email, bodies } = resend();
+    await email.sendEmailChanged("old@example.test", "new@example.test");
+    expect(bodies()[0]).toMatchObject({ to: ["old@example.test"], subject: "Your Steelman email changed" });
+    expect(bodies()[0]!.text).toBe("The email for your Steelman account is now new@example.test. If you didn’t make this change, reply to this email.\n");
+  });
+
+  test("M2-8c: a refusal names neither address nor code", async () => {
+    const email = resendEmail({ apiKey: "re_test", from: "x@y.test", fetch: async () => new Response("{}", { status: 422 }) });
+    const failures = await Promise.all(
+      [email.sendEmailChangeCode("a@example.test", "123456"), email.sendEmailInUse("a@example.test"), email.sendEmailChanged("a@example.test", "b@example.test")].map((sending) =>
+        sending.then(
+          () => null,
+          (error: Error) => error.message,
+        ),
+      ),
+    );
+    expect(failures).toEqual(["Resend refused the email: 422", "Resend refused the email: 422", "Resend refused the email: 422"]);
+  });
+});
+
 describe("logs", () => {
   /** The app as deployed, writing its log lines into `lines`. */
   function logged(): { app: ReturnType<typeof buildApp>; lines: string[] } {

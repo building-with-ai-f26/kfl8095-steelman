@@ -575,7 +575,7 @@ The prototype already has the rule book: a map from every action to the least ro
 | What | Counted by | Limit | Why this number |
 |---|---|---|---|
 | Sign-in emails to one address | the address (Postgres, hashed) | 5 an hour | Built (M1-4, M2-6a) |
-| Asking for a sign-in code, any address | network address | 30 an hour | A class signing in together from one school network, with a few asking for a second code. Stops one machine cycling through addresses, which the per-address limit can't. Resend's free plan sends 100 a day, so one network can still use a third of a day's emails, or all of them across three instances (see below) |
+| Asking for a sign-in code, or a code for a new email (M2-8c, which shares the count), any address | network address | 30 an hour | A class signing in together from one school network, with a few asking for a second code. Stops one machine cycling through addresses, which the per-address limit can't. Resend's free plan sends 100 a day, so one network can still use a third of a day's emails, or all of them across three instances (see below) |
 | New boards | account | 20 an hour | A person trying the app makes a handful |
 | Writing: new arguments, new wordings, edits, and sources added | account | 60 an hour | Was 30 for arguments and wordings alone; edits and sources weren't counted, and a busy classmate adds both |
 | Voting: importance, articulation, and assessments | account | 300 a minute | Unchanged. The board's offline queue keeps only the latest choice per item, so coming back online sends at most one per item |

@@ -21,7 +21,7 @@ const STATE: Record<AnalyticsStatus, string> = {
 export function Privacy() {
   return (
     <main className="sm-privacy">
-      <p className="sm-privacy-date">Updated November 21, 2026</p>
+      <p className="sm-privacy-date">Updated November 22, 2026</p>
       <h1>Privacy</h1>
       <p className="sm-privacy-lede">Steelman is a class project. This page says what it keeps about you, who can see it, how long it’s kept, and what you can do about it.</p>
 
@@ -60,7 +60,7 @@ export function Privacy() {
           <b>Google</b>, if you sign in with Google: it tells us your email.
         </li>
         <li>
-          <b>Resend</b> sends sign-in codes by email.
+          <b>Resend</b> sends the codes you use to sign in or to change your email. When your email changes, it also sends a note to your old address. If you ask to change to an email another account already uses, it tells that address instead of sending a code.
         </li>
         <li>
           <b>PostHog</b> records usage analytics, in the US.
@@ -90,7 +90,7 @@ export function Privacy() {
 
       <h2>How long we keep it</h2>
       <ul>
-        <li>Sign-in codes: they work for 10 minutes, and unused ones are deleted each day.</li>
+        <li>Codes for signing in or for a new email: they work for 10 minutes, and unused ones are deleted each day.</li>
         <li>Being signed in: until 30 days after you last use Steelman.</li>
         <li>Request logs (your IP address and browser), kept by Google Cloud: 30 days.</li>
         <li>What you write, and the record of changes to a board: for as long as the board exists.</li>

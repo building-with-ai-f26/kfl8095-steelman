@@ -9,6 +9,7 @@ import type { AppDependencies } from "../../src/app.ts";
 import { createDatabase } from "../../src/db/database.ts";
 import { smokeTest } from "../../src/smoke.ts";
 import { useTestDatabase } from "../support/database.ts";
+import { outboxEmail } from "../support/outbox.ts";
 
 // The smoke test after each deploy (M1-14c; plans/architecture.md §6). The
 // builder's decision, Nov 17: signed out for now, so it needs no way in that
@@ -40,7 +41,7 @@ async function serve(options: Partial<AppDependencies> = {}): Promise<string> {
   return `http://127.0.0.1:${address.port}`;
 }
 
-const signIn = (origin: string): AppDependencies["signIn"] => ({ origin, secret: "a-test-secret-that-is-long-enough-0123456789", email: { sendSignInCode: async () => {} } });
+const signIn = (origin: string): AppDependencies["signIn"] => ({ origin, secret: "a-test-secret-that-is-long-enough-0123456789", email: outboxEmail([]) });
 
 describe("the smoke test", () => {
   test("M-06: passes against the service as deployed, signed out", async () => {

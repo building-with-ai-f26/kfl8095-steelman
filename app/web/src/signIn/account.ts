@@ -73,6 +73,33 @@ export async function signInWithCode(email: string, code: string): Promise<CodeA
   }
 }
 
+/** Asks for a code at a new email (M2-8c), which cancels any code sent before it. "too_many": that address's five an hour. */
+export async function emailChangeCode(newEmail: string): Promise<"sent" | "too_many" | "failed"> {
+  const reply = await post("email-otp/request-email-change", { newEmail });
+  if (reply?.status === 200) return "sent";
+  if (reply?.status === 429) return "too_many";
+  return "failed";
+}
+
+export type ChangeAnswer = "changed" | "wrong" | "expired" | "too_many_tries" | "taken" | "failed";
+
+/** Makes `newEmail` the account's email, if `code` is the one sent to it. "taken": another account got it first. */
+export async function changeEmail(newEmail: string, code: string): Promise<ChangeAnswer> {
+  const reply = await post("email-otp/change-email", { newEmail, otp: code });
+  if (reply?.status === 200) return "changed";
+  switch (reply?.body?.code) {
+    case "INVALID_OTP":
+      return "wrong";
+    case "OTP_EXPIRED":
+      return "expired";
+    case "TOO_MANY_ATTEMPTS":
+      return "too_many_tries";
+  }
+  // Better Auth says this one only in words, once the code has proved the person holds the address.
+  if (reply?.body?.message === "Email already in use") return "taken";
+  return "failed";
+}
+
 /**
  * Where to send the browser to sign in with Google, or null if Google isn't
  * available. Google sends it back to `returnTo`, signed in, or with ?error=…

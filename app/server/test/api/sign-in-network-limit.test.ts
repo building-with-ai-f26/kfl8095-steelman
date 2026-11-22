@@ -41,6 +41,20 @@ describe("asking for sign-in codes from one network", () => {
     expect((await deployed.requestCode(newAddress(), { forwardedFor: network })).status).toBe(200);
   });
 
+  test("M-12 M2-8c: codes for a new email count against the same limit, so one account can't email address after address", async () => {
+    const cookie = await deployed.signedIn(newAddress(), `limit_${n}`);
+    const network = "203.0.113.99";
+    const ask = () => deployed.request("POST", "/api/auth/email-otp/request-email-change", { cookie, forwardedFor: network, body: { newEmail: newAddress() } });
+    for (let i = 0; i < MOST; i++) expect((await ask()).status, `request ${i + 1}`).toBe(200);
+    const sent = deployed.outbox.length;
+
+    const over = await ask();
+
+    expect(over.status).toBe(429);
+    expect(over.body).toMatchObject({ code: "TOO_MANY_REQUESTS" });
+    expect(deployed.outbox).toHaveLength(sent);
+  });
+
   test("M-12: a made-up X-Forwarded-For can't dodge the limit: only the entry Cloud Run adds counts", async () => {
     const network = "203.0.113.20";
     for (let i = 0; i < MOST; i++) {
