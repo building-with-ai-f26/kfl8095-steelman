@@ -20,6 +20,8 @@ import {
   tooManyMessage,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
+import { createEvents } from "./events.ts";
+import type { ServerEvent } from "./events.ts";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
 import { serveWebApp } from "./web.ts";
@@ -73,6 +75,8 @@ export interface AppDependencies {
   behindProxy?: boolean;
   /** The rate limits (architecture §7); the class trial's unless a test sets its own. */
   limits?: Limits;
+  /** Where server events go (M2-12). Only the tests change it; otherwise they're posted to PostHog when there's a key. */
+  sendEvent?: (event: ServerEvent) => Promise<void>;
 }
 
 /**
@@ -150,7 +154,7 @@ declare module "fastify" {
  * Builds the Steelman service without starting it, so tests can call its
  * routes directly and main.ts can listen on a port.
  */
-export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics, webDirectory, logs, behindProxy = false, limits = LIMITS }: AppDependencies): FastifyInstance {
+export function buildApp({ clock, ids, database, mode = "production", signIn: signInDependencies, analytics, webDirectory, logs, behindProxy = false, limits = LIMITS, sendEvent }: AppDependencies): FastifyInstance {
   // Fastify's own per-request lines are off (they hold the address and the IP); ours are below.
   const app = Fastify({ logger: logs ? cloudLogging(logs, clock) : false, logController: new LogController({ disableRequestLogging: true }) });
   if (logs) {
@@ -169,6 +173,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     });
   }
   const policy = contentSecurityPolicy(analytics);
+  const saved = createEvents(analytics, sendEvent);
   app.addHook("onSend", async (_request, reply) => {
     reply.header("content-security-policy", policy);
     reply.header("x-content-type-options", "nosniff");
@@ -403,37 +408,37 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await setImportance(services, request.params.board, request.person, request.params.id, body.data.value));
+    return answer(reply, await setImportance(services, request.params.board, request.person, request.params.id, body.data.value), () => saved(request, "vote_importance"));
   });
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/articulation", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await setArticulation(services, request.params.board, request.person, request.params.id, body.data.value));
+    return answer(reply, await setArticulation(services, request.params.board, request.person, request.params.id, body.data.value), () => saved(request, "vote_articulation"));
   });
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/assessment", { config: { limit: "voting" } }, async (request, reply) => {
     const body = assessmentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data));
+    return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "assess"));
   });
 
   app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newArgumentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await addArgument(services, request.params.board, request.person, body.data));
+    return answer(reply, await addArgument(services, request.params.board, request.person, body.data), () => saved(request, "write_argument"));
   });
 
   app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/versions", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newWordingInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await addWording(services, request.params.board, request.person, request.params.id, body.data));
+    return answer(reply, await addWording(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "write_wording"));
   });
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", { config: { limit: "writing" } }, async (request, reply) => {
     const body = editInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await editWording(services, request.params.board, request.person, request.params.id, body.data));
+    return answer(reply, await editWording(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "edit_wording"));
   });
 
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) =>
@@ -444,7 +449,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/sources", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newSourceInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await addSource(services, request.params.board, request.person, request.params.id, body.data));
+    return answer(reply, await addSource(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "add_source"));
   });
 
   app.put<{ Params: { board: string; id: string; source: string } }>("/api/boards/:board/versions/:id/sources/:source", { config: { limit: "writing" } }, async (request, reply) =>
@@ -505,8 +510,10 @@ export function networkOf(address: string): string {
 
 /** Sends a write's answer with the matching HTTP status. */
 
-function answer(reply: FastifyReply, result: WriteResult): FastifyReply {
+/** @param onSaved Told when the write was saved, not when it was already done or refused (server events, M2-12). */
+function answer(reply: FastifyReply, result: WriteResult, onSaved?: () => void): FastifyReply {
   if (result.status === "not_found") return reply.code(404).send({ reason: "not_found" });
   if (result.status === "refused") return reply.code(STATUS_FOR[result.reason]).send(result);
+  if (result.status === "done") onSaved?.();
   return reply.code(200).send(result);
 }
