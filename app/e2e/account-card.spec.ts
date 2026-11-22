@@ -95,3 +95,10 @@ test("M2-8a, L-04, M-08: with no PostHog key, Your account has no analytics row"
   await expect(page.getByRole("button", { name: "Download" })).toBeVisible();
   await expect(analyticsRow(page)).toHaveCount(0);
 });
+
+test("M2-8b, L-04: the demo's test people, who have no email and can't sign in, see no ways in on Your account", async ({ board }) => {
+  const page = await board.open("maya.chen");
+  await page.goto("/account");
+  await expect(page.getByRole("heading", { name: "Your account", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in with" })).toHaveCount(0);
+});
