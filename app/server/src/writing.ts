@@ -24,9 +24,9 @@ interface NewArgument {
 export function addArgument({ db, clock }: Services, boardId: string, person: string | null, input: NewArgument): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
     action: "add",
-    load: async (trx) =>
-      (await trx.selectFrom("option").select(["id", "deleted_at"]).where("id", "=", input.optionId).where("board_id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst()) ??
-      null,
+    load: async (trx) => (await trx.selectFrom("option").select(["id", "deleted_at"]).where("id", "=", input.optionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null,
+    // Queued offline for an option that was deleted meanwhile (M3a-2): refused, and the reader is told why.
+    stale: async (_trx, option) => (option.deleted_at ? { refused: "option_deleted" } : null),
     change: async (trx, _option, seq) => {
       const existing = await trx.selectFrom("argument").select(["board_id", "option_id", "created_by"]).where("id", "=", input.id).executeTakeFirst();
       if (existing) {

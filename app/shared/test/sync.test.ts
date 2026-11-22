@@ -146,6 +146,37 @@ describe("receiving changes", () => {
     expect(pillCount(after)).toBe(1);
   });
 
+  test("A-07: an option deleted while on screen leaves at once; it was empty, so nothing else moves, and the pill doesn't count it", () => {
+    const s = snapshot();
+    s.options.push(option("winter", 3));
+    const view = openView(s);
+    expect(Object.keys(view.shown.arguments)).toEqual(["yes", "no", "winter"]);
+
+    const after = receive(view, { ...nothing(6), options: [option("winter", 3, { deleted: true, changedSeq: 6 })] });
+
+    expect(Object.keys(after.shown.arguments)).toEqual(["yes", "no"]);
+    expect(after.shown.arguments.yes).toEqual(view.shown.arguments.yes);
+    expect(pillCount(after)).toBe(0);
+  });
+
+  test("A-07: an option deleted after its last argument was deleted goes with that argument, and the pill counts neither", () => {
+    const s = snapshot();
+    s.options.push(option("winter", 3));
+    s.arguments.push(argument("w", "winter", 4));
+    s.versions.push(version("w1", "w", 4));
+    const view = receive(openView(s), {
+      ...nothing(6),
+      arguments: [argument("w", "winter", 4, { deleted: true, changedSeq: 6 })],
+      versions: [version("w1", "w", 4, { deleted: true, wording: null, changedSeq: 6 })],
+    });
+    expect(pillCount(view)).toBe(1);
+
+    const after = receive(view, { ...nothing(7), options: [option("winter", 3, { deleted: true, changedSeq: 7 })] });
+
+    expect(after.shown.arguments.winter).toBeUndefined();
+    expect(pillCount(after)).toBe(0);
+  });
+
   test("M-02: receiving the same changes twice is the same as once", () => {
     const changes = { ...nothing(6), arguments: [argument("z", "no", 6)], versions: [version("z1", "z", 6)] };
     const once = receive(openView(snapshot()), changes);

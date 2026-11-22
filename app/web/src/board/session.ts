@@ -57,8 +57,10 @@ export interface SessionState {
   leftOut: readonly string[];
   /** The delete Undo can still take back. */
   undo: Held | null;
-  /** An option the reader deleted, off the screen and held for Undo (M3a-2), or null. */
+  /** An option the reader deleted, held for Undo (M3a-2), or null. */
   optionGone: { id: string; name: string } | null;
+  /** Options the reader deleted, kept off the screen: held for Undo, or sent and not yet answered. */
+  optionsLeftOut: readonly string[];
 }
 
 export class BoardSession {
@@ -78,6 +80,7 @@ export class BoardSession {
     leftOut: [],
     undo: null,
     optionGone: null,
+    optionsLeftOut: [],
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -188,6 +191,7 @@ export class BoardSession {
    */
   hold(held: Held): void {
     this.sendHeld();
+    this.sendHeldOption();
     const { action } = held;
     this.set({ undo: held, status: `${held.label} Undo is available for ten seconds.`, ...(action.kind === "delete" ? { leftOut: [...this.state.leftOut, action.versionId] } : {}) });
     this.undoTimer = window.setTimeout(() => this.sendHeld(), UNDO_MS);
@@ -298,24 +302,34 @@ export class BoardSession {
 
   /** Deletes an empty option: off the screen at once and held ten seconds for Undo, like deleting a wording. */
   holdOptionDelete(option: { id: string; name: string }): void {
+    this.sendHeld();
     this.sendHeldOption();
-    this.set({ optionGone: option, status: "You deleted the option. Undo is available for ten seconds." });
+    this.set({ optionGone: option, optionsLeftOut: [...this.state.optionsLeftOut, option.id], status: "You deleted the option. Undo is available for ten seconds." });
     this.optionTimer = window.setTimeout(() => this.sendHeldOption(), UNDO_MS);
   }
 
   undoOptionDelete(): void {
-    if (!this.state.optionGone) return;
+    const gone = this.state.optionGone;
+    if (!gone) return;
     window.clearTimeout(this.optionTimer);
-    this.set({ optionGone: null, status: "The option is back." });
+    this.set({ optionGone: null, optionsLeftOut: this.state.optionsLeftOut.filter((id) => id !== gone.id), status: "The option is back." });
   }
 
+  /**
+   * Sends the held option delete. The option stays off the screen until the
+   * service answers: once it's gone from the rows too, or back, with the
+   * reason, if it was refused or couldn't be sent.
+   */
   private sendHeldOption(closing = false): void {
     const gone = this.state.optionGone;
     if (!gone) return;
     window.clearTimeout(this.optionTimer);
     this.set({ optionGone: null });
-    if (closing) void deleteOption(this.board, gone.id, true).catch(() => undefined);
-    else void this.moderate(() => deleteOption(this.board, gone.id), "");
+    if (closing) {
+      void deleteOption(this.board, gone.id, true).catch(() => undefined);
+      return;
+    }
+    void this.moderate(() => deleteOption(this.board, gone.id), "").then(() => this.set({ optionsLeftOut: this.state.optionsLeftOut.filter((id) => id !== gone.id) }));
   }
 
   /** Sends a report or a moderator's action, says how it went (unless `done` is empty), and asks for changes. Answers whether it was taken. */
@@ -370,7 +384,7 @@ export class BoardSession {
   }
 
   pillCount(): number {
-    return this.state.view ? pillCount(leaveOut(this.state.view, this.state.leftOut)) : 0;
+    return this.state.view ? pillCount(leaveOptionsOut(leaveOut(this.state.view, this.state.leftOut), this.state.optionsLeftOut)) : 0;
   }
 
   // ── Sending ──
@@ -492,18 +506,27 @@ export class BoardSession {
     else void this.poll();
   };
 
-  /** The tab is going: a delete Undo was holding is sent at once (§2). */
-  private readonly pageHide = () => this.sendHeld(true);
+  /** The tab is going: a delete Undo was holding, of a wording or an option, is sent at once (§2). */
+  private readonly pageHide = () => {
+    this.sendHeld(true);
+    this.sendHeldOption(true);
+  };
 
   /**
    * The queue lives only in this tab (Q20), so leaving with actions waiting asks first. A held delete
    * doesn't ask: it's sent, unless the tab is offline, when sending it would fail.
    */
   private readonly beforeUnload = (event: BeforeUnloadEvent) => {
-    if (this.queue.length === 0 && !(this.state.undo && this.state.offline)) return;
+    if (this.queue.length === 0 && !((this.state.undo || this.state.optionGone) && this.state.offline)) return;
     event.preventDefault();
     event.returnValue = "";
   };
+}
+
+/** What's on screen without the options the reader deleted (M3a-2). They're empty, so nothing else moves. */
+export function leaveOptionsOut(view: ReaderView, optionIds: readonly string[]): ReaderView {
+  if (optionIds.length === 0) return view;
+  return { ...view, shown: { ...view.shown, arguments: Object.fromEntries(Object.entries(view.shown.arguments).filter(([id]) => !optionIds.includes(id))) } };
 }
 
 /** Whether a role sees a wording's open reports (M2-3). */
@@ -536,7 +559,7 @@ function refusalNote(answer: Answer): string {
       case "no_access":
         return "You no longer have access to this board.";
       case "option_deleted":
-        return "That option was deleted.";
+        return "1 action couldn't be sent: that option was deleted.";
       case "option_not_empty":
         return "That option has arguments now, so it wasn’t deleted.";
       case "too_few_options":

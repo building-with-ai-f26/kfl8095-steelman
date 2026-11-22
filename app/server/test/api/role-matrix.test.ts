@@ -35,6 +35,8 @@ interface Cast {
   own: Record<Persona, string | undefined>;
   /** A wording by another contributor, Cara, citing a source she added. No persona wrote either. */
   others: { version: string; source: string; cara: string };
+  /** A third option with no arguments, so one may be deleted (M3a-2). */
+  empty: string;
 }
 
 /** An invited-only board with one of each persona, and Cara, a contributor who isn't one of them. */
@@ -66,7 +68,11 @@ async function castBoard(): Promise<Cast> {
     await db.client.query("insert into revision_source (version_id, rev, source_id, board_id) values ($1, 1, $2, $3)", [version, source, b.board]);
     return { version, source, cara };
   });
-  return { b, person, own, others };
+  const empty = ids.itemId();
+  await write(db.client, b.board, (seq) =>
+    db.client.query("insert into option (id, board_id, name, position, created_at, changed_seq) values ($1, $2, 'Only in winter', 3, now(), $3)", [empty, b.board, seq]),
+  );
+  return { b, person, own, others, empty };
 }
 
 type Do = (cast: Cast, as: string | undefined, persona: Persona) => Promise<{ status: number; body: { reason?: string } }>;
@@ -197,6 +203,10 @@ const ACTIONS: Action[] = [
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/people/${others.cara}`, { as, body: { role: "voter" } }),
   },
+  // Options (M3a-2, A-07): the structure action, an Editor's and the Owner's (permissions.md).
+  { name: "add an option", least: "editor", write: true, run: ({ b }, as) => api.post(`/api/boards/${b.board}/options`, { as, body: { id: ids.itemId(), name: "Only in summer" } }) },
+  { name: "rename an option", least: "editor", write: true, run: ({ b }, as) => api.put(`/api/boards/${b.board}/options/${b.no}`, { as, body: { name: "No, never" } }) },
+  { name: "delete an empty option", least: "editor", write: true, run: ({ empty, b }, as) => api.delete(`/api/boards/${b.board}/options/${empty}`, { as }) },
 ];
 
 /** What each persona should be answered. */

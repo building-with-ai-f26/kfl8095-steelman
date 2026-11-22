@@ -31,7 +31,7 @@ import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
 import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
-import { BoardSession } from "./session.ts";
+import { BoardSession, leaveOptionsOut } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
 import { OptionMenu } from "./OptionMenu.tsx";
@@ -58,8 +58,8 @@ export function Board({ boardId, version = null, zoom = "read", onZoom = () => {
     return () => session.stop();
   }, [session]);
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
-  // The reader's own deletions are off the screen at once.
-  const view = useMemo(() => (state.view ? leaveOut(state.view, state.leftOut) : null), [state.view, state.leftOut]);
+  // The reader's own deletions are off the screen at once: wordings, and options (M3a-2).
+  const view = useMemo(() => (state.view ? leaveOptionsOut(leaveOut(state.view, state.leftOut), state.optionsLeftOut) : null), [state.view, state.leftOut, state.optionsLeftOut]);
 
   if (state.phase === "missing") return <NotFound />;
   if (state.phase === "no_access")
@@ -89,12 +89,13 @@ interface BoardViewProps {
 }
 
 function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
-  // An option the reader just deleted is off the screen while Undo can bring it back (M3a-2).
-  const options = columns(view).filter((option) => option.id !== state.optionGone?.id);
+  const options = columns(view);
   // The importance axis only means something once a column has two arguments to rank.
   const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
   const [arrival] = useState(() => arrivalFor(view, linked));
-  const [side, setSide] = useState(arrival.side ?? options[0]?.id);
+  const [chosenSide, setSide] = useState(arrival.side ?? options[0]?.id);
+  // The side shown on a phone: the one chosen, or the first while that one is deleted (M3a-2).
+  const side = options.some((option) => option.id === chosenSide) ? chosenSide : options[0]?.id;
   /** The row unfolded to compare its wordings: one at a time. */
   const [open, setOpen] = useState<string | null>(arrival.row);
   /** The version opened by its wording, one at a time. It counts as open only while it's on screen. */
@@ -112,29 +113,31 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const mayStructure = can(reader, state.role, "structure", { closed: false }) === null;
   /** The ID of a new option being named, before it's sent; null otherwise. */
   const [naming, setNaming] = useState<string | null>(null);
-  /** A new option's name, once added, so its first "Add an argument" gets the cursor when it arrives. */
+  /** A new option's ID, once added by Enter, so its "Add an argument" gets the cursor when it arrives. */
   const [added, setAdded] = useState<string | null>(null);
   const addButton = useRef<HTMLButtonElement>(null);
-  const undoOption = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (!added || !options.some((option) => option.name === added)) return;
-    document.querySelector<HTMLElement>(`[aria-label="Add an argument for ${CSS.escape(added)}"]`)?.focus();
+    if (!added || !options.some((option) => option.id === added)) return;
+    document.querySelector<HTMLElement>(`#sm-col-${CSS.escape(added)} .sm-add-idea`)?.focus();
     setAdded(null);
   }, [added, options]);
-  useEffect(() => {
-    if (state.optionGone) undoOption.current?.focus();
-  }, [state.optionGone]);
-  const addColumn = mayStructure && zoom !== "case" && (naming !== null || options.length < OPTIONS_PER_BOARD.max);
-  const nameNew = async (name: string) => {
+  // An option held for Undo still counts toward the four: Undo brings it back.
+  const addColumn = mayStructure && zoom !== "case" && (naming !== null || options.length + state.optionsLeftOut.length < OPTIONS_PER_BOARD.max);
+  /** Names the new option. Only Enter or Escape moves the cursor; leaving the field leaves it where it went. */
+  const nameNew = async (name: string, by: Finish) => {
     const id = naming;
     setNaming(null);
     if (!id) return;
     if (!name) {
+      if (by === "enter") session.announce("An option needs a name, so none was added.");
       // Back on "Add an option", once it's drawn again.
-      window.setTimeout(() => addButton.current?.focus());
+      if (by !== "blur") window.setTimeout(() => addButton.current?.focus());
       return;
     }
-    if (await session.addOption(id, name)) setAdded(name);
+    if (!(await session.addOption(id, name))) return;
+    // On a phone the new option's column is the one shown.
+    setSide(id);
+    if (by === "enter") setAdded(id);
   };
   /** Where the cursor goes once the screen has changed: after an edit, a delete, or Undo. */
   const [focusTo, setFocusTo] = useState<string | null>(null);
@@ -143,6 +146,22 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     document.querySelector<HTMLElement>(focusTo)?.focus();
     setFocusTo(null);
   }, [focusTo]);
+  // An option delete held for Undo (M3a-2): the cursor goes to its Undo; after Undo, to the option's ⋯; once it's
+  // sent with the cursor still on Undo, to Add an option, or the first option's ⋯, or in Strongest case the switch.
+  const lastGone = useRef<SessionState["optionGone"]>(null);
+  useLayoutEffect(() => {
+    const was = lastGone.current;
+    lastGone.current = state.optionGone;
+    if (state.optionGone) return void document.querySelector<HTMLElement>(".sm-option-undo button")?.focus();
+    if (!was || (document.activeElement && document.activeElement !== document.body)) return;
+    if (zoom === "case") return void document.querySelector<HTMLElement>(".sm-zoom [aria-pressed='true']")?.focus();
+    (addButton.current ?? document.querySelector<HTMLElement>(".sm-column-tools button"))?.focus();
+  }, [state.optionGone]);
+  const undoOptionDelete = () => {
+    const gone = state.optionGone;
+    session.undoOptionDelete();
+    if (gone && zoom !== "case") setFocusTo(`#sm-col-${CSS.escape(gone.id)} .sm-column-tools button`);
+  };
   const cardControl = (versionId: string, control: "claim" | "menu") => `[data-card="${CSS.escape(versionId)}"] .${control === "claim" ? "sm-claim-button" : "sm-card-menu-button"}`;
   /** The row's wordings that are still there. */
   /**
@@ -452,20 +471,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   <UndoBar held={state.undo} onUndo={undo} />
                 </div>
               )}
+              {state.optionGone && <OptionUndoBar onUndo={undoOptionDelete} />}
               <StrongestCase view={view} leftOut={state.leftOut} mine={state.mine} onOpen={openFromCase} />
             </div>
           ) : (
             <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption, addColumn ? (naming ? "naming" : "add") : null) } as React.CSSProperties}>
-              {state.optionGone && (
-                <div className="sm-board-undo">
-                  <div className="sm-undo">
-                    <span>You deleted the option.</span>
-                    <button ref={undoOption} type="button" className="sm-link-button cursor-interaction" onClick={() => session.undoOptionDelete()}>
-                      Undo
-                    </button>
-                  </div>
-                </div>
-              )}
+              {state.optionGone && <OptionUndoBar onUndo={undoOptionDelete} />}
               <div className="sm-sides" role="tablist" aria-label="Sides">
                 {options.map((option) => (
                   <button
@@ -517,7 +528,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   {naming ? (
                     <section className="sm-column sm-side-on" aria-label="New option">
                       <div className="sm-column-head">
-                        <OptionName initial="" onDone={(name) => void nameNew(name)} onCancel={() => void nameNew("")} />
+                        <OptionName initial="" onDone={(name, by) => void nameNew(name, by)} onCancel={() => void nameNew("", "escape")} />
                       </div>
                     </section>
                   ) : (
@@ -781,7 +792,6 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
   );
 }
 
-/** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
 /**
  * An option's header (M3a-2, A-07): its name, and for an Editor or the Owner
  * the prototype's ⋯, "Options for …", with Rename option and Delete option.
@@ -798,9 +808,10 @@ function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: 
       {renaming ? (
         <OptionName
           initial={option.name}
-          onDone={(name) => {
+          onDone={(name, by) => {
             setRenaming(false);
-            back();
+            // Only Enter puts the cursor back on ⋯: leaving the field leaves it where it went.
+            if (by === "enter") back();
             if (!name) session.announce("An option needs a name, so the old name stays.");
             else if (name !== option.name) void session.renameOption(option.id, name);
           }}
@@ -847,8 +858,11 @@ function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: 
   );
 }
 
+/** How a name field was left: by Enter, by Escape, or by the cursor going elsewhere. */
+type Finish = "enter" | "escape" | "blur";
+
 /** The name field in an option's header, as the prototype's: Enter or leaving it keeps the name, Escape doesn't. */
-function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(name: string): void; onCancel(): void }) {
+function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(name: string, by: Finish): void; onCancel(): void }) {
   const [draft, setDraft] = useState(initial);
   const field = useRef<HTMLInputElement>(null);
   const finished = useRef(false);
@@ -856,11 +870,11 @@ function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(nam
     field.current?.focus();
     field.current?.select();
   }, []);
-  const finish = (keep: boolean) => {
+  const finish = (by: Finish) => {
     if (finished.current) return;
     finished.current = true;
-    if (keep) onDone(cleanText(draft).slice(0, 80));
-    else onCancel();
+    if (by === "escape") onCancel();
+    else onDone(cleanText(draft).slice(0, 80), by);
   };
   return (
     <input
@@ -873,14 +887,29 @@ function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(nam
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
       onKeyDown={(event) => {
-        if (event.key === "Enter") finish(true);
-        if (event.key === "Escape") finish(false);
+        if (event.key === "Enter") finish("enter");
+        if (event.key === "Escape") finish("escape");
       }}
-      onBlur={() => finish(true)}
+      onBlur={() => finish("blur")}
     />
   );
 }
 
+/** "You deleted the option. Undo", above the board, for ten seconds (M3a-2). The status line announces it. */
+function OptionUndoBar({ onUndo }: { onUndo(): void }) {
+  return (
+    <div className="sm-board-undo sm-option-undo">
+      <div className="sm-undo">
+        <span>You deleted the option.</span>
+        <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
+          Undo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
 function UndoBar({ held, onUndo }: { held: Held; onUndo(): void }) {
   return (
     <div className="sm-undo">

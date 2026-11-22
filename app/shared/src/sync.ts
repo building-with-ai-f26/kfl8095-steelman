@@ -147,9 +147,19 @@ function inOrder(ordered: string[], live: { id: string; createdSeq: number }[]):
   return [...first, ...live.filter((item) => !placed.has(item.id)).sort(byAdded).map((item) => item.id)];
 }
 
-/** What's on screen after new rows arrive: everything stays where it is, and new things join the end. */
+/**
+ * What's on screen after new rows arrive: everything stays where it is, and
+ * new things join the end. A deleted option leaves at once (A-07): only an
+ * empty one can be deleted, so nothing else moves, and any of its arguments
+ * still shown, marked deleted, go with it.
+ */
 function holdStill(shown: BoardOrder, rows: BoardRows): BoardOrder {
   const next: BoardOrder = { arguments: { ...shown.arguments }, versions: { ...shown.versions } };
+  for (const [optionId, argumentIds] of Object.entries(shown.arguments)) {
+    if (!rows.options[optionId]?.deleted) continue;
+    delete next.arguments[optionId];
+    for (const argumentId of argumentIds) delete next.versions[argumentId];
+  }
   const options = Object.values(rows.options).filter((option) => !option.deleted).sort((a, b) => a.position - b.position);
   for (const option of options) {
     const held = next.arguments[option.id] ?? [];

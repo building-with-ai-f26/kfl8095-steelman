@@ -1,9 +1,10 @@
 // An option header's ⋯ menu (M3a-2, A-07), as the prototype's: Rename
 // option, and Delete option, which says why when it can't be used ("Move or
-// delete its arguments first."). It hangs from the board's main region and
-// moves and closes like a version's ⋯ menu (Card.tsx): the arrow keys, Home,
-// and End move between items; Escape closes it and puts the cursor back on ⋯;
-// Tab or a click elsewhere closes it.
+// delete its arguments first.") and, when it can, that the option is empty.
+// It hangs from the board's main region and moves and closes like a version's
+// ⋯ menu (Card.tsx): the arrow keys, Home, and End move between items; Escape
+// closes it and puts the cursor back on ⋯; Tab, a click elsewhere, or a scroll
+// of something holding ⋯ closes it.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { RefObject } from "react";
@@ -55,12 +56,19 @@ export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose
       const target = event.target as Node;
       if (!menu.current?.contains(target) && !trigger.current?.contains(target)) onClose();
     };
+    // A scroll of anything holding ⋯, other than the page itself, moves ⋯ out from under the menu.
+    const onScroll = (event: Event) => {
+      const scrolled = event.target;
+      if (scrolled instanceof Element && scrolled.contains(trigger.current)) onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onClose);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onClose);
     };
   }, [trigger, onClose]);
@@ -85,7 +93,7 @@ export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose
         <Icon name="trash-2" />
         <span>
           Delete option
-          {deleteBlocked ? <small>{deleteBlocked}</small> : null}
+          <small>{deleteBlocked ?? "It has no arguments."}</small>
         </span>
       </button>
     </div>,
