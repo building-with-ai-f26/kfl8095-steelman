@@ -300,6 +300,7 @@ Conflicts are rare by design: **nobody overwrites anybody.** A better wording is
 | Credibility assessment | The wording or its sources changed | Refuses it: you judged an earlier revision | "This wording changed; take another look." on the card |
 | New wording on an argument | It was combined into another | Adds it to the argument it was combined into (drafts follow their argument) | It appears there |
 | New wording on an argument | It was deleted | Refuses it | Your text comes back as a draft in **Add an argument** in the same column (the prototype's behavior) |
+| New argument in an option | It was deleted (M3a-2; only an empty option can be) | Refuses it | "1 action couldn't be sent: that option was deleted." Your text is lost, since its column is gone |
 | Edit of your own wording | (only you can edit it) | Applies it, unless your queue holds an earlier edit that failed; then it refuses | Your text comes back in the edit form |
 | Anything | The board was closed, or your access changed | Refuses it | "This board closed while you were away", or the access message |
 
