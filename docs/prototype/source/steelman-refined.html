@@ -800,6 +800,7 @@
   #steelman-study .sm-rrow-label { display:flex; flex-direction:column; gap:2px; min-width:0; font-weight:500; }
   #steelman-study .sm-rrow-label small { font-size:11px; font-weight:400; color:var(--sm-muted); }
   #steelman-study .sm-rrow-control { display:flex; align-items:center; gap:6px; min-width:0; }
+  #steelman-study .sm-account .sm-rrow-control { flex:none; }
   #steelman-study .sm-rrow-stack { flex-direction:column; align-items:stretch; gap:8px; }
   #steelman-study .sm-rules .sm-rselect, #steelman-study .sm-create .sm-rselect { width:auto; line-height:1.3; max-width:100%; padding:4px 2px; border:0; border-radius:4px; background:transparent; color:var(--sm-ink); font:500 13px var(--sm-sans); text-align:right; text-align-last:right; cursor:pointer; }
   #steelman-study .sm-rules .sm-rselect:hover, #steelman-study .sm-create .sm-rselect:hover { background:var(--sm-soft); }
@@ -1383,7 +1384,7 @@
     compose:'contribute','compose-idea':'contribute',add:'contribute','add-idea':'contribute','revise-card':'contribute','edit-card':'contribute','save-edit':'contribute','delete-card':'contribute','split-card':'contribute','move-card':'contribute','move-here':'contribute',
     'add-source':'contribute','save-source':'contribute','edit-source':'contribute','remove-source':'contribute','held-accept':'edit','held-decline':'edit','held-decline-confirm':'edit','review-next':'edit','decision-option':'owner','decision-arg':'owner','decision-edit':'owner','decision-cancel':'owner','decision-save':'owner','report-open':'view','report-card':'view','report-withdraw':'view','hide-open':'edit','hide-card':'edit','restore-card':'edit','reports-dismiss':'edit','comment-report-open':'view','comment-report':'view','comment-report-withdraw':'view','comment-hide-open':'edit','comment-hide':'edit','comment-restore':'edit','ai-recheck':'contribute','held-withdraw':'view','held-dismiss':'view','add-option':'structure','rename-option':'structure','delete-option':'structure','suggest-accept':'contribute',
     inbox:'view','note-open':'view','note-read':'view','notes-read-all':'view','space-new':'view','space-create':'view','space-settings':'admin','space-canvas':'admin','space-kind':'admin','space-invite':'admin','space-invite-cancel':'admin','space-remove':'admin','space-approve':'admin','space-decline':'admin','space-rule-add':'admin','space-rule-remove':'admin','space-ai':'admin','space-mode':'admin',
-    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-confirm':'view','profile-email-expire':'view','profile-email-taken':'view','profile-google':'view','profile-analytics':'view','profile-privacy':'view','profile-download':'view','profile-delete':'view','profile-delete-cancel':'view','profile-delete-confirm':'view','sign-out':'view',
+    'profile-email':'view','profile-email-save':'view','profile-email-cancel':'view','profile-email-resend':'view','profile-email-drop':'view','profile-email-confirm':'view','profile-email-expire':'view','profile-email-taken':'view','profile-analytics':'view','profile-privacy':'view','profile-download':'view','profile-delete':'view','profile-delete-cancel':'view','profile-delete-confirm':'view','sign-out':'view',
     settings:'owner'};
   const WHY = {admin:'Space admins only.',view:'Sign in to do this.',vote:'Voting and assessing evidence need “can vote” access.',contribute:'Writing and editing need “can contribute” access.',edit:'Editors only.',owner:'Only the board’s owner can change its settings.',structure:'Editors only.'};
   const YOU_CAN = {out:'You’re signed out: you can read.',view:'You can read and comment.',vote:'You can read, comment, and vote.',contribute:'You can read, comment, vote, and write.',edit:'You can write, review, and reorganize.',owner:'You own this board.'};
@@ -2692,7 +2693,10 @@
         +`</section>`;
       const row=(label,value)=>`<div class="sm-rrow"><span class="sm-rrow-label">${label}</span>${value}</div>`;
       // Email changes take effect once a 6-digit code sent to the new address is entered (Q21, as sign-in's codes:
-      // ten minutes, five wrong tries, a new code cancels the old). Sign-in is Google and/or an email code (no password).
+      // ten minutes, five wrong tries, a new code cancels the old). Sign-in is an email code, or Google when the Google
+      // account uses this email; there's nothing to connect or disconnect (as Notion). When the email changes, the old
+      // address gets a note (as Notion): "Your Steelman email changed. The email for your Steelman account is now
+      // <new>. If you didn't make this change, reply to this email." Google then signs in only with the new address.
       const ae=state.acct||{};
       const emailEdit=ae.editing?`<div class="sm-pw-form" role="group" aria-label="Change email"><label>New email<input id="sm-email-new" type="email" autocomplete="email" data-key="email-new" value="${escape(ae.draft||'')}" ${ae.error?'aria-invalid="true" aria-describedby="sm-email-error"':''}></label>${ae.error?`<p class="sm-field-error" id="sm-email-error">${escape(ae.error)}</p>`:''}<div>${button('profile-email-cancel','Cancel','data-key="email-cancel"')}<button type="button" class="sm-button sm-solid cursor-interaction" data-action="profile-email-save" data-key="email-save">Send code</button></div></div>`:'';
       const pending=ae.pending?`<div class="sm-pw-form sm-email-confirm" role="group" aria-labelledby="sm-email-confirm-title"><h3 id="sm-email-confirm-title">Confirm your new email</h3>`
@@ -2705,9 +2709,9 @@
         +row('Username',`<span class="sm-rrow-value">${escape(ME)}</span>`)
         +row('Email',ae.editing?'':`<span class="sm-rrow-control"><span class="sm-rrow-value">${escape(state.myEmail)}</span>${ae.pending?'':button('profile-email','Change','data-key="email-open-edit"')}</span>`)+emailEdit+pending+`</div>`
         +`<div class="sm-rgroup"><h3>Sign in with</h3>`
-        +row(`Google<small>${state.google?escape(state.myEmail):'Not connected'}</small>`,`<span class="sm-rrow-control">${button('profile-google',state.google?'Disconnect':'Connect','data-key="google"')}</span>`)
         +row('Email code<small>We email you a code each time you sign in.</small>','')
-        +`</div><div class="sm-rgroup">`+row('Tour<small>The three votes, on a board</small>',`<span class="sm-rrow-control">${button('tour-start','Take it','data-key="tour-start"')}</span>`)+`</div>`
+        +row('Google<small>You can sign in with Google if your Google account uses this email.</small>','')
+        +`</div><div class="sm-rgroup">`+row('Tour<small>Learn how voting works on a board.</small>',`<span class="sm-rrow-control">${button('tour-start','Start','data-key="tour-start"')}</span>`)+`</div>`
         +privacyGroup()
         +`<button type="button" class="sm-button sm-signout cursor-interaction" data-action="sign-out" data-key="sign-out">${icon('log-out')}Sign out</button>`
         +(state.acct?.deleting?deleteForm():`<button type="button" class="sm-link-button sm-delete-link cursor-interaction" data-action="profile-delete" data-key="delete-open">Delete account</button>`)+`</section>`;
@@ -2808,11 +2812,11 @@
   function openPrivacy() { try { const w=hostWindow();w.open(new URL('../privacy.html',w.location.href).href,'_blank','noopener'); } catch {} }
   function privacyGroup() {
     const a=analytics(),on=a?.enabled();
-    const value=!a?'<span class="sm-rrow-value">Not running here</span>':a.signal?'<span class="sm-rrow-value">Off · browser signal</span>'
+    const value=!a?'<span class="sm-rrow-value">Not running here</span>':a.signal?'<span class="sm-rrow-value">Off</span>'
       :`<span class="sm-rrow-control"><span class="sm-rrow-value">${on?'On':'Off'}</span>${button('profile-analytics',on?'Turn off':'Turn on','data-key="analytics"')}</span>`;
     return `<div class="sm-rgroup"><h3>Privacy</h3>`
-      +`<div class="sm-rrow"><span class="sm-rrow-label">Usage analytics<small>Clicks and screen replays; typed text is hidden</small></span>${value}</div>`
-      +`<div class="sm-rrow"><span class="sm-rrow-label">Your data<small>What you wrote, voted, and assessed</small></span><span class="sm-rrow-control">${button('profile-download','Download','data-key="download"')}</span></div>`
+      +`<div class="sm-rrow"><span class="sm-rrow-label">Usage analytics<small>${a?.signal?'Your browser asks sites not to track you.':'Steelman sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.'}</small></span>${value}</div>`
+      +`<div class="sm-rrow"><span class="sm-rrow-label">Your data<small>Download a copy of everything you wrote, voted on, and assessed.</small></span><span class="sm-rrow-control">${button('profile-download','Download','data-key="download"')}</span></div>`
       +`<div class="sm-rrow"><span class="sm-rrow-label">Privacy notice</span><span class="sm-rrow-control">${button('profile-privacy','Read','data-key="privacy"')}</span></div></div>`;
   }
   const DELETED = 'deleted_account';
@@ -2827,7 +2831,7 @@
     const mine=Object.values(docs).map(d=>({board:d.question.text,
       wrote:Object.values(d.cards).filter(c=>c.by==='you').map(c=>({wording:c.claim,context:c.explanation||'',option:d.options.find(o=>o.id===d.ideas.find(i=>i.id===c.idea)?.option)?.name||'',at:c.at})),
       comments:(d.comments||[]).filter(c=>c.by==='you'&&!c.deleted).map(c=>({text:c.text,at:c.at}))})).filter(b=>b.wrote.length||b.comments.length);
-    const data={exported:new Date().toISOString(),account:{username:ME,email:state.myEmail,signIn:[...(state.google?['Google']:[]),'Email link']},
+    const data={exported:new Date().toISOString(),account:{username:ME,email:state.myEmail,signIn:['Email code',...(state.google?['Google']:[])]},
       votes:{importance:state.importance,articulation:state.preference,evidence:state.assessments},boards:mine};
     try {
       const w=hostWindow(),a=w.document.createElement('a');
@@ -3434,7 +3438,7 @@
     renderFresh();syncAddress();
     if(focusKey) root.querySelector(`[data-key="${focusKey}"]`)?.focus({preventScroll:true});
   }
-  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-confirm','profile-email-expire','profile-email-taken','profile-google','profile-analytics','profile-privacy','profile-download','profile-delete','profile-delete-cancel','profile-delete-confirm','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
+  const HOME_ACTIONS=new Set(['space-new','space-settings','space-back','space-create','space-canvas','space-kind','space-invite','space-invite-cancel','space-remove','space-approve','space-decline','space-rule-add','space-rule-remove','space-ai','space-mode','profile','profile-back','profile-tab','profile-card','profile-board','profile-email','profile-email-cancel','profile-email-save','profile-email-resend','profile-email-drop','profile-email-confirm','profile-email-expire','profile-email-taken','profile-analytics','profile-privacy','profile-download','profile-delete','profile-delete-cancel','profile-delete-confirm','sign-out','space','sort','join','open-board','browse','nav-toggle','create-open','create-close','create-add-option','create-remove-option','create-rules','create-submit']);
   function homeAction(action,id,trigger) {
     if(action==='browse') {announce('Browsing public communities is coming soon.');return;}
     if(action==='create-open') {
@@ -3514,7 +3518,7 @@
         :acct.typed!==acct.code?(++acct.tries>=5?'Too many wrong tries. Send a new code.':'That code isn’t right.')
         :acct.taken?'Another account already uses this email.':'';
       if(acct.error){renderHome();focusOn('email-code');announce(acct.error);return;}
-      state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}.`);return;
+      state.myEmail=acct.pending.toLowerCase();acct.pending='';renderHome();focusOn('email-open-edit');announce(`Your email is now ${state.myEmail}. We sent a note to your old email.`);return;
     }
     if(action==='profile-email-expire') {acct.expired=true;announce('Ten minutes passed (simulated).');return;}
     if(action==='profile-email-taken') {acct.taken=true;announce('Another account now uses this email (simulated).');return;}
@@ -3529,7 +3533,6 @@
       state.acct={};state.profile=null;state.profileFrom=null;setPersona('out');state.deletedNotice=true;renderView('deleted-done');root.scrollIntoView({block:'start'});
       announce('Account deleted (simulated).');return;
     }
-    if(action==='profile-google') {state.google=!state.google;renderHome();focusOn('google');announce(state.google?'Google connected (simulated).':'Google disconnected. You can still sign in with a code sent to your email.');return;}
     if(action==='sign-out') {state.profile=null;state.profileFrom=null;setPersona('out');focusOn('sign-in');announce('Signed out (simulated). Preview as is now Signed out.');}
   }
   // After anything renders, controls your role can't use are marked unavailable, with the reason as their tooltip.
