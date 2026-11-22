@@ -1623,6 +1623,17 @@ Build plan M2-8c, drafted in the prototype for the builder's review before it's 
 | Checked | In the prototype at 1280 and 375 px: wrong code, another account, Cancel (focus back on Change), and success; no sideways scroll at 375 px |
 | Settled (builder, Nov 22: "follow best practices", as one credible company) | The old address is told of the change, and no recent sign-in is required, as Notion |
 
+## November 22 — "edited" stays open when clicked after hovering (A-06)
+
+A bug fix in M2-5's "edited" (the wording it replaced and the votes before). Found as a flaky browser test: `e2e/edited-counts.spec.ts`'s "with a mouse, a click keeps it open…" failed about 2 runs in 10, on its own branch as well as others.
+
+| Check | Observed result |
+| --- | --- |
+| The bug | A click set the panel to stay open only if it wasn't already showing. With a real mouse, hovering shows it before the click, so the click closed it. The test passed only when its click came before the page caught up with the hover |
+| The fix | A click goes by whether the panel is held open, not whether it's showing: the first click holds open what hovering showed (or opens it, on a phone), and a second click closes it |
+| Tests first | A new test hovers, waits for the panel, then clicks and moves away; it failed 3 runs in 3 before the fix. After: the five tests in `e2e/edited-counts.spec.ts` passed 50 runs in 50. The existing test is unchanged. A sixth, after the second reader: Enter opens it and Enter again closes it |
+| Second reader | A fresh agent found nothing blocking. Taken: the new test also checks aria-expanded after the second click; the keyboard test |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
