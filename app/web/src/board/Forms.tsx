@@ -134,9 +134,10 @@ export function WordingSlot({ open, draft, onOpen, onChange, onClose, onAdd }: S
 }
 
 /** The last row of a column: a new argument for this option. */
-export function ArgumentSlot({ optionName, open, draft, onOpen, onChange, onClose, onAdd, blocked }: SlotProps & { optionName: string; blocked: Blocked | null }) {
+/** @param dropLabel While a wording is dragged that may become its own argument here (M3a-7), what a drop does. */
+export function ArgumentSlot({ optionName, open, draft, onOpen, onChange, onClose, onAdd, blocked, dropLabel }: SlotProps & { optionName: string; blocked: Blocked | null; dropLabel?: string }) {
   return (
-    <div className="sm-new-idea">
+    <div className={`sm-new-idea${dropLabel ? " sm-drop-target sm-drop-split" : ""}`} data-drop-label={dropLabel}>
       <span aria-hidden="true" />
       {open ? (
         <DraftCard

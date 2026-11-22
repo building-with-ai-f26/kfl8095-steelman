@@ -212,3 +212,8 @@ body { margin:0; }
 #steelman-study .sm-history-day { display:grid; gap:10px; }
 #steelman-study .sm-history-day h3 { margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
 #steelman-study .sm-history .sm-link-button { margin-top:4px; }
+
+/* Combine and separate (M3a-7): the prototype's dialog sits over the board, in the middle of the window, rather than
+   placed beside the argument by script, so on a phone its buttons are never below the fold. */
+#steelman-study .sm-preview-scrim { position:fixed; }
+#steelman-study .sm-preview { position:fixed; top:50%; transform:translate(-50%,-50%); max-height:calc(100vh - 32px); overflow:auto; }

@@ -190,3 +190,45 @@ function holdStill(shown: BoardOrder, rows: BoardRows): BoardOrder {
   }
   return next;
 }
+
+/**
+ * The reader's own combine or separation, shown at once (M3a-7), as their own
+ * deletion is: the wording leaves where it's shown and joins its argument
+ * now, at the place the newest shared order gives it; that argument joins its
+ * option the same way if it isn't shown yet. An argument left with nothing
+ * shown leaves too. Nothing else moves.
+ */
+export function showMoved(view: ReaderView, versionId: string): ReaderView {
+  const version = view.rows.versions[versionId];
+  const argument = version ? view.rows.arguments[version.argumentId] : undefined;
+  if (!version || !argument) return view;
+  const versions: Record<string, string[]> = {};
+  const emptied = new Set<string>();
+  for (const [argumentId, ids] of Object.entries(view.shown.versions)) {
+    const kept = ids.filter((id) => id !== versionId);
+    if (kept.length === 0 && ids.length > 0 && argumentId !== argument.id) emptied.add(argumentId);
+    else versions[argumentId] = kept;
+  }
+  versions[argument.id] = insertInOrder(versions[argument.id] ?? [], versionId, view.published.versions[argument.id]);
+  const args: Record<string, string[]> = {};
+  for (const [optionId, ids] of Object.entries(view.shown.arguments)) args[optionId] = ids.filter((id) => !emptied.has(id));
+  const column = args[argument.optionId] ?? [];
+  if (!column.includes(argument.id)) args[argument.optionId] = insertInOrder(column, argument.id, view.published.arguments[argument.optionId]);
+  return { ...view, shown: { arguments: args, versions } };
+}
+
+/**
+ * Undo of the reader's own combine or separation (M3a-7): the board as it was
+ * on screen before it, with anything new since added as a poll adds it.
+ */
+export function putBack(view: ReaderView, shown: BoardOrder): ReaderView {
+  return { ...view, shown: holdStill(shown, view.rows) };
+}
+
+/** Puts `id` among `ids` where `order` ranks it, or at the end when it doesn't. */
+function insertInOrder(ids: string[], id: string, order: readonly string[] | undefined): string[] {
+  const rank = order?.indexOf(id) ?? -1;
+  if (rank < 0) return [...ids, id];
+  const at = ids.findIndex((other) => (order!.indexOf(other) ?? -1) > rank);
+  return at < 0 ? [...ids, id] : [...ids.slice(0, at), id, ...ids.slice(at)];
+}

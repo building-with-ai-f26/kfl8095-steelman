@@ -32,10 +32,12 @@ import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
 import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession, leaveOptionsOut } from "./session.ts";
-import type { Held, SessionState } from "./session.ts";
+import type { Held, Restructured, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
 import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
+import { RestructureDialog } from "./Restructure.tsx";
+import type { Asking } from "./Restructure.tsx";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -163,6 +165,13 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     session.undoOptionDelete();
     if (gone && zoom !== "case") setFocusTo(`#sm-col-${CSS.escape(gone.id)} .sm-column-tools button`);
   };
+  /** Brings an argument into view, with the cursor on its leading wording: from a row combined into it. */
+  const goTo = (argumentId: string) => {
+    const optionId = view.rows.arguments[argumentId]?.optionId;
+    if (optionId) setSide(optionId);
+    document.querySelector(`[data-node="${CSS.escape(argumentId)}"]`)?.scrollIntoView({ block: "center", inline: "nearest" });
+    setFocusTo(`[data-node="${CSS.escape(argumentId)}"] .sm-claim-button`);
+  };
   const cardControl = (versionId: string, control: "claim" | "menu") => `[data-card="${CSS.escape(versionId)}"] .${control === "claim" ? "sm-claim-button" : "sm-card-menu-button"}`;
   /** The row's wordings that are still there. */
   /**
@@ -182,11 +191,124 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     }
   }, [mayWrite]);
 
+  // Combine and separate (M3a-7): a wording being placed by picking (its menu, or a press on its handle) or by a drag,
+  // and the dialog that confirms it.
+  const [moving, setMoving] = useState<Moving | null>(null);
+  const [dragging, setDragging] = useState<Moving | null>(null);
+  const [asking, setAsking] = useState<(Asking & { returnTo: string }) | null>(null);
+  /** Whether a wording's option has another live argument it could join. */
+  const others = (version: VersionRow) => {
+    const optionId = view.rows.arguments[version.argumentId]?.optionId;
+    return optionId !== undefined && (view.shown.arguments[optionId] ?? []).some((id) => id !== version.argumentId && isLive(view.rows.arguments[id]));
+  };
+  const placing = (version: VersionRow, returnTo: string): Moving => ({
+    versionId: version.id,
+    wording: version.wording ?? "",
+    from: version.argumentId,
+    optionId: view.rows.arguments[version.argumentId]!.optionId,
+    last: isLast(version),
+    returnTo,
+  });
+  /** The wording an argument leads with on screen, for "Combine here" and the dialog. */
+  const leadOf = (argumentId: string) => view.rows.versions[(view.shown.versions[argumentId] ?? [])[0] ?? ""]?.wording ?? "";
+  const askCombine = (from: Moving, intoId: string) => {
+    setMoving(null);
+    setAsking({ kind: "combine", versionId: from.versionId, wording: from.wording, intoId, intoWording: leadOf(intoId), last: from.last, returnTo: from.returnTo });
+  };
+  const askSeparate = (from: Moving) => setAsking({ kind: "separate", versionId: from.versionId, wording: from.wording, returnTo: from.returnTo });
+  const cancelMove = () => {
+    if (!moving) return;
+    setMoving(null);
+    setFocusTo(moving.returnTo);
+    session.announce("Combining was cancelled.");
+  };
+  useEffect(() => {
+    if (!moving) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cancelMove();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [moving]);
+  const confirmAsking = () => {
+    const was = asking;
+    setAsking(null);
+    if (!was) return;
+    const done = was.kind === "combine" ? session.combine(was.versionId, was.intoId, was.last) : session.separate(was.versionId);
+    void done.then((ok) => setFocusTo(ok ? ".sm-undo button" : was.returnTo));
+  };
+  const cancelAsking = () => {
+    const was = asking;
+    setAsking(null);
+    if (was) setFocusTo(was.returnTo);
+  };
+  const undoRestructure = () => {
+    const held = state.restructured;
+    void session.undoRestructure().then((ok) => ok && held && setFocusTo(cardControl(held.versionId, "claim")));
+  };
+  // When the Undo bar leaves after its ten seconds with the cursor on it, the cursor goes to the wording that moved.
+  const lastRestructured = useRef<Restructured | null>(null);
+  useLayoutEffect(() => {
+    const was = lastRestructured.current;
+    lastRestructured.current = state.restructured;
+    if (!was || state.restructured || (document.activeElement && document.activeElement !== document.body)) return;
+    document.querySelector<HTMLElement>(cardControl(was.versionId, "claim"))?.focus();
+  }, [state.restructured]);
+  const structure: Structure = {
+    picking: moving,
+    dragging,
+    restructured: state.restructured,
+    pick: (argumentId) => moving && askCombine(moving, argumentId),
+    cancel: cancelMove,
+    drop(target) {
+      const from = dragging;
+      setDragging(null);
+      if (!from) return;
+      if (target === "separate") askSeparate(from);
+      else askCombine(from, target);
+    },
+    undo: undoRestructure,
+  };
+
   const menu: CardMenu = {
     items: (version) =>
       version.hidden
         ? ["copyLink", ...moderationItem(version, reader, state.role)]
-        : [...versionMenu(version, reader, state.role, isLast(version)), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
+        : [...versionMenu(version, reader, state.role, isLast(version), { others: others(version) }), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
+    combine(version, via) {
+      const from = placing(version, via === "handle" ? `[data-card="${CSS.escape(version.id)}"] .sm-merge-handle` : cardControl(version.id, "menu"));
+      setMoving(from);
+      setFocusTo(`#sm-col-${CSS.escape(from.optionId)} .sm-move-here`);
+      session.announce("Choose the argument this wording repeats. Each one now has a Combine here button. Escape cancels.");
+    },
+    separate: (version) => askSeparate(placing(version, cardControl(version.id, "menu"))),
+    dragStart(version) {
+      setMoving(null);
+      setDragging(placing(version, `[data-card="${CSS.escape(version.id)}"] .sm-merge-handle`));
+      session.announce("Dragging. Drop it on the argument it makes the same point as.");
+    },
+    // A drop has already been handled by then; a drag that ends anywhere else changes nothing.
+    dragEnd: () => setDragging(null),
+    moved(version, row) {
+      if (version.argumentId === row || !isLiveVersion(version)) return null;
+      const into = finalArgument(view, version.argumentId);
+      const shownInto = Object.values(view.shown.arguments).some((ids) => ids.includes(into)) && into !== row;
+      const lead = shownInto ? leadOf(into) : "";
+      return (
+        <>
+          <p className="sm-removed-note">
+            <Icon name="merge" />
+            <span>{lead ? `This wording was combined with “${short(lead)}”.` : "This wording is now its own argument."}</span>
+          </p>
+          {lead ? (
+            <button type="button" className="sm-link-button sm-gone-link cursor-interaction" onClick={() => goTo(into)}>
+              Go to it
+            </button>
+          ) : null}
+        </>
+      );
+    },
+    goTo: (argumentId) => goTo(argumentId),
     hide: (version, reason) => void session.hide(version.id, reason),
     restore: (version) => void session.restore(version.id),
     report: (version, reason, note) => void session.report(version.id, { reason, note }),
@@ -569,6 +691,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   state={state}
                   session={session}
                   onUndo={undo}
+                  structure={structure}
                   mayStructure={mayStructure}
                   deleteBlocked={options.length <= OPTIONS_PER_BOARD.min ? "A question needs at least two options." : (view.shown.arguments[option.id] ?? []).some((id) => isLive(view.rows.arguments[id])) ? "Move or delete its arguments first." : null}
                 />
@@ -607,6 +730,14 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           onNext={() => (tour.at === tour.steps.length - 1 ? endTour(true) : tourTo(tour.at + 1))}
           onBack={() => tourTo(tour.at - 1)}
           onSkip={() => endTour(false)}
+        />
+      ) : null}
+      {asking ? (
+        <RestructureDialog
+          asking={asking}
+          loadPreview={() => (asking.kind === "combine" ? session.combinePreview(asking.versionId, asking.intoId) : Promise.resolve(null))}
+          onConfirm={confirmAsking}
+          onCancel={cancelAsking}
         />
       ) : null}
       <div id="sm-status" className="sm-live" role="status" aria-live="polite">
@@ -741,29 +872,86 @@ interface ColumnProps {
   state: SessionState;
   session: BoardSession;
   onUndo(): void;
+  /** Combining and separating, while a wording is being placed (M3a-7). */
+  structure: Structure;
   /** Whether this reader may add, rename, and delete options (M3a-2). */
   mayStructure: boolean;
   /** Why this option can't be deleted, or null when it can. */
   deleteBlocked: string | null;
 }
 
-function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, mayStructure, deleteBlocked }: ColumnProps) {
+/** A wording being placed: by picking (its menu, or a press on its handle) or by a drag (M3a-7). */
+interface Moving {
+  versionId: string;
+  wording: string;
+  /** The argument it's in, and that argument's option. */
+  from: string;
+  optionId: string;
+  /** Whether it's its argument's last wording, so combining makes the two arguments one. */
+  last: boolean;
+  /** Where the cursor goes back to if it's cancelled. */
+  returnTo: string;
+}
+
+/** What the columns and rows need for combining and separating (M3a-7). */
+interface Structure {
+  picking: Moving | null;
+  dragging: Moving | null;
+  restructured: Restructured | null;
+  pick(argumentId: string): void;
+  cancel(): void;
+  /** A drop on an argument, or on Add an argument to separate. */
+  drop(target: string | "separate"): void;
+  undo(): void;
+}
+
+function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, structure, mayStructure, deleteBlocked }: ColumnProps) {
   const reader = useReader();
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
   const held = state.undo?.optionId === option.id ? state.undo : null;
   // Under the row it was placed after; first in the column if that row has since gone (Update took it off).
   const barAfter = held?.after != null && argumentIds.includes(held.after) ? held.after : null;
+  const moved = structure.restructured?.optionId === option.id ? structure.restructured : null;
+  const movedAfter = moved?.after != null && argumentIds.includes(moved.after) ? moved.after : null;
+  const movedBar = moved ? <PlainUndoBar label={moved.label} onUndo={structure.undo} /> : null;
+  const dragging = structure.dragging?.optionId === option.id ? structure.dragging : null;
   return (
     <>
       {gap && <div className="sm-col-gap" aria-hidden="true" />}
-      <section className={`sm-column${first ? " sm-first" : ""}${on ? " sm-side-on" : ""}`} id={`sm-col-${option.id}`} data-option={option.id} aria-label={option.name}>
+      <section
+        className={`sm-column${first ? " sm-first" : ""}${on ? " sm-side-on" : ""}`}
+        id={`sm-col-${option.id}`}
+        data-option={option.id}
+        aria-label={option.name}
+        // A drop on a row combines; a drop on Add an argument separates (M3a-7), as the prototype's drag does.
+        onDragOver={(event) => {
+          if (dragging && (event.target as Element).closest?.(".sm-drop-target")) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          }
+        }}
+        onDrop={(event) => {
+          const target = (event.target as Element).closest?.<HTMLElement>(".sm-drop-target");
+          if (!dragging || !target) return;
+          event.preventDefault();
+          structure.drop(target.classList.contains("sm-drop-split") ? "separate" : target.dataset.node!);
+        }}
+      >
         {first && ranked && (
           <div className="sm-col-vaxis">
             <Axis kind="v" start="more important" end="less important" />
           </div>
         )}
         <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} />
+        {structure.picking?.optionId === option.id ? (
+          <div className="sm-move-banner" role="status">
+            <span>Pick the argument that makes the same point.</span>
+            <button type="button" className="sm-link-button cursor-interaction" onClick={structure.cancel}>
+              Cancel
+            </button>
+          </div>
+        ) : null}
         {argumentIds.length >= 2 && (
           <div className="sm-col-axis" aria-hidden="true">
             <Icon name="arrow-down" />
@@ -771,12 +959,14 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
           </div>
         )}
         {held && barAfter === null && <UndoBar held={held} onUndo={onUndo} />}
+        {moved && movedAfter === null && movedBar}
         {argumentIds.map((id) => {
           const argument = view.rows.arguments[id];
           return argument ? (
             <Fragment key={id}>
-              <Row argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} />
+              <Row argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} structure={structure} />
               {held && barAfter === id && <UndoBar held={held} onUndo={onUndo} />}
+              {moved && movedAfter === id && movedBar}
             </Fragment>
           ) : null;
         })}
@@ -789,6 +979,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
           onClose={writer.close}
           onAdd={(draft) => writer.addArgument(option.id, draft)}
           blocked={whyNot(reader, state.role, "add")}
+          dropLabel={dragging && !dragging.last ? "Make it a separate argument" : undefined}
         />
       </section>
     </>
@@ -804,9 +995,10 @@ interface RowProps {
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
+  structure: Structure;
 }
 
-function Row({ argument, open, onToggle, writer, opening, view, state, session }: RowProps) {
+function Row({ argument, open, onToggle, writer, opening, view, state, session, structure }: RowProps) {
   const reader = useReader();
   const versionIds = view.shown.versions[argument.id] ?? [];
   const versions = versionIds.map((id) => view.rows.versions[id]).filter((version) => version !== undefined);
@@ -816,8 +1008,18 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
   const { vote, score } = importanceShown(argument, state.mine);
   const count = versionIds.length;
   const [at, setAt] = useState(0);
+  if (argument.mergedInto !== null) return <MergedRow argument={argument} label={label} view={view} opening={opening} />;
+  // While a wording is being placed (M3a-7): the other live arguments in its option take it.
+  const placing = structure.picking ?? structure.dragging;
+  const source = placing?.from === argument.id;
+  const target = placing !== null && placing.optionId === argument.optionId && !source && isLive(argument);
   return (
-    <section className={`sm-idea${open ? " sm-open" : ""}${count < 2 ? " sm-single" : ""}`} data-node={argument.id} aria-label={label}>
+    <section
+      className={`sm-idea${open ? " sm-open" : ""}${count < 2 ? " sm-single" : ""}${source ? " sm-move-source" : ""}${target ? " sm-move-target" : ""}${target && structure.dragging ? " sm-drop-target" : ""}`}
+      data-node={argument.id}
+      data-drop-label={target && structure.dragging ? "Combine here" : undefined}
+      aria-label={label}
+    >
       {open && <TrackAxis count={count} at={at} onFold={onToggle} />}
       <VoteControl
         axis="v"
@@ -835,12 +1037,66 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
         ) : (
           <>
             <Stack count={count} onUnfold={onToggle} />
-            <Card version={lead} opening={opening} />
+            <Card version={lead} opening={opening} row={argument.id} />
           </>
         )}
+        {/* Asked again after a combine, when the reader's two votes disagreed (PRD §5), until they vote: the prototype's note. */}
+        {argument.askedAgain && vote === null ? (
+          <p className="sm-vote-again" role="note">
+            <Icon name="rotate-ccw" />
+            <span>Your votes on the two arguments disagreed, so vote again.</span>
+          </p>
+        ) : null}
+        {target && structure.picking ? (
+          <button type="button" className="sm-move-here cursor-interaction" aria-label={`Combine here: same point as “${label}”`} onClick={() => structure.pick(argument.id)}>
+            <span>
+              <Icon name="merge" />
+              Combine here
+            </span>
+          </button>
+        ) : null}
       </div>
     </section>
   );
+}
+
+/**
+ * An argument someone combined into another (M3a-7), in its place until
+ * Update, as the prototype's mergedRow: what it was combined with, and Go to
+ * it. Who did it is in History.
+ */
+function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; label: string; view: ReaderView; opening: Opening }) {
+  const into = finalArgument(view, argument.id);
+  const shown = Object.values(view.shown.arguments).some((ids) => ids.includes(into));
+  const lead = view.rows.versions[(view.shown.versions[into] ?? [])[0] ?? ""]?.wording ?? null;
+  return (
+    <section className="sm-idea sm-merged" data-node={argument.id} aria-label={label}>
+      <div className="sm-card-wrap">
+        <article className="sm-card sm-removed sm-gone">
+          <p className="sm-removed-note">
+            <Icon name="merge" />
+            <span>{lead ? `This was combined with “${short(lead)}”.` : "This was combined with another argument."}</span>
+          </p>
+          {shown ? (
+            <button type="button" className="sm-link-button sm-gone-link cursor-interaction" onClick={() => opening.menu.goTo(into)}>
+              Go to it
+            </button>
+          ) : null}
+        </article>
+      </div>
+    </section>
+  );
+}
+
+/** Where an argument's wordings are now: itself, or the argument it was combined into, followed through later combines. */
+function finalArgument(view: ReaderView, argumentId: string): string {
+  let id = argumentId;
+  for (let hops = 0; hops < 50; hops++) {
+    const next = view.rows.arguments[id]?.mergedInto;
+    if (!next) return id;
+    id = next;
+  }
+  return id;
 }
 
 /**
@@ -956,6 +1212,18 @@ function OptionUndoBar({ onUndo }: { onUndo(): void }) {
           Undo
         </button>
       </div>
+    </div>
+  );
+}
+
+/** "You combined the arguments. Undo", under the row it joined, for ten seconds (M3a-7). The status line announces it. */
+function PlainUndoBar({ label, onUndo }: { label: string; onUndo(): void }) {
+  return (
+    <div className="sm-undo">
+      <span>{label}</span>
+      <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
+        Undo
+      </button>
     </div>
   );
 }

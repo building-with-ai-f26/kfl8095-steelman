@@ -96,7 +96,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
                 />
               )}
             </div>
-            <Card version={version} opening={opening} inTrack />
+            <Card version={version} opening={opening} inTrack row={argumentId} />
           </Fragment>
         );
       })}

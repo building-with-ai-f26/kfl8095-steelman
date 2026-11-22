@@ -4,10 +4,11 @@
 // (`openView`, `receive`, `pressUpdate`, `pillCount`, `enqueue`); this only
 // runs them at the right moments and tells React when something changed.
 
-import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardSnapshot, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, citeSource, deleteOption, readBoard, readChanges, readHistory, readPeople, renameOption, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
+import type { Access, BoardOrder, BoardSnapshot, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
+import { browserIds } from "../system.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
 export const POLL_MS = 3_000;
@@ -29,6 +30,20 @@ export interface Held {
   label: string;
   optionId: string;
   after: string | null;
+}
+
+/** A combine or separation the reader just made (M3a-7): for ten seconds, Undo sends its undo. */
+export interface Restructured {
+  /** The change's number, which Undo names. */
+  seq: number;
+  label: string;
+  /** Where the Undo bar sits: under the row the wording is in now. */
+  optionId: string;
+  after: string | null;
+  /** What was on screen before, so Undo puts everything back where it was. */
+  before: BoardOrder;
+  /** The wording that moved, where the cursor goes after Undo. */
+  versionId: string;
 }
 
 export interface SessionState {
@@ -63,6 +78,8 @@ export interface SessionState {
   optionsLeftOut: readonly string[];
   /** The newest change-log row a poll has brought (History reads the log again when it moves, M3a-4); 0 before any. */
   logSeq: number;
+  /** The reader's own combine or separation, while its Undo lasts (M3a-7), or null. */
+  restructured: Restructured | null;
 }
 
 export class BoardSession {
@@ -84,6 +101,7 @@ export class BoardSession {
     optionGone: null,
     optionsLeftOut: [],
     logSeq: 0,
+    restructured: null,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -94,6 +112,7 @@ export class BoardSession {
   private backOnlineTimer: number | undefined;
   private undoTimer: number | undefined;
   private optionTimer: number | undefined;
+  private restructureTimer: number | undefined;
   private tooManyTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
@@ -166,6 +185,7 @@ export class BoardSession {
     window.clearTimeout(this.pollTimer);
     window.clearTimeout(this.backOnlineTimer);
     window.clearTimeout(this.tooManyTimer);
+    window.clearTimeout(this.restructureTimer);
     window.removeEventListener("online", this.cameOnline);
     window.removeEventListener("offline", this.wentOffline);
     window.removeEventListener("beforeunload", this.beforeUnload);
@@ -195,6 +215,7 @@ export class BoardSession {
   hold(held: Held): void {
     this.sendHeld();
     this.sendHeldOption();
+    this.endRestructured();
     const { action } = held;
     this.set({ undo: held, status: `${held.label} Undo is available for ten seconds.`, ...(action.kind === "delete" ? { leftOut: [...this.state.leftOut, action.versionId] } : {}) });
     this.undoTimer = window.setTimeout(() => this.sendHeld(), UNDO_MS);
@@ -325,6 +346,7 @@ export class BoardSession {
   holdOptionDelete(option: { id: string; name: string }): void {
     this.sendHeld();
     this.sendHeldOption();
+    this.endRestructured();
     this.set({ optionGone: option, optionsLeftOut: [...this.state.optionsLeftOut, option.id], status: "You deleted the option. Undo is available for ten seconds." });
     this.optionTimer = window.setTimeout(() => this.sendHeldOption(), UNDO_MS);
   }
@@ -358,26 +380,100 @@ export class BoardSession {
    * whether it was taken. `already` is said instead when someone else had already done it, if it reads differently.
    */
   private async moderate(request: () => Promise<Answer>, done: string, already = done): Promise<boolean> {
+    const answer = await this.ask(request);
+    if (!answer) return false;
+    const said = answer.status === "already_done" ? already : done;
+    if (said) this.announce(said);
+    await this.poll();
+    return true;
+  }
+
+  /** Sends a write that isn't queued. Answers what the service said when it was taken; otherwise says why not, and answers null. */
+  private async ask(request: () => Promise<Answer>): Promise<Extract<Answer, { status: "done" | "already_done" }> | null> {
     let answer: Answer;
     try {
       answer = await request();
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
       this.announce("Couldn’t reach Steelman. Try again.");
-      return false;
+      return null;
     }
     if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) {
       this.announce(tooManyMessage(answer.retryAfter));
-      return false;
+      return null;
     }
     if (answer.status !== "done" && answer.status !== "already_done") {
       this.announce(refusalNote(answer));
-      return false;
+      return null;
     }
-    const said = answer.status === "already_done" ? already : done;
-    if (said) this.announce(said);
+    return answer;
+  }
+
+  /**
+   * Combines a wording into another argument in its option (M3a-7, A-10). Not queued, like a moderator's action: it's
+   * sent now, and the wording moves on screen once the service has it. Ten seconds of Undo follow, which send its undo
+   * (J-05). `last`: it's its argument's last wording, so the two arguments become one.
+   */
+  combine(versionId: string, intoId: string, last: boolean): Promise<boolean> {
+    const words = last
+      ? { label: "You combined the arguments.", said: "The arguments are combined." }
+      : { label: "You combined the wording with that argument.", said: "The wording now sits with the other argument’s wordings." };
+    return this.restructure(() => combineWording(this.board, versionId, intoId), versionId, words);
+  }
+
+  /** Makes a wording its own argument, at the end of its option (M3a-7), with ten seconds of Undo. */
+  separate(versionId: string): Promise<boolean> {
+    return this.restructure(() => separateWording(this.board, versionId, browserIds.itemId()), versionId, {
+      label: "You made the wording its own argument.",
+      said: "The wording is now its own argument, at the end of this option.",
+    });
+  }
+
+  /** What combining would do, for its dialog: whether the arguments become one, and who'd be asked to vote again. */
+  combinePreview(versionId: string, intoId: string): Promise<CombinePreview | null> {
+    return readCombinePreview(this.board, versionId, intoId);
+  }
+
+  private async restructure(request: () => Promise<Answer>, versionId: string, words: { label: string; said: string }): Promise<boolean> {
+    this.sendHeld();
+    this.sendHeldOption();
+    this.endRestructured();
+    const before = this.state.view?.shown ?? null;
+    const answer = await this.ask(request);
+    if (!answer) return false;
     await this.poll();
+    const view = this.state.view;
+    if (!view) return true;
+    // The reader's own change shows at once, as their deletion does; others see it on their next Update.
+    const moved = showMoved(view, versionId);
+    const version = moved.rows.versions[versionId];
+    const argument = version ? moved.rows.arguments[version.argumentId] : undefined;
+    if (answer.status !== "done" || !before || !argument) {
+      this.set({ view: moved });
+      this.announce("That was already done.");
+      return true;
+    }
+    this.set({ view: moved, restructured: { seq: answer.seq, label: words.label, optionId: argument.optionId, after: argument.id, before, versionId }, status: `${words.said} Undo is available for ten seconds.` });
+    this.restructureTimer = window.setTimeout(() => this.endRestructured(), UNDO_MS);
     return true;
+  }
+
+  /** Undo for the reader's own combine or separation: sends its undo, and puts the board back as it was on screen. */
+  async undoRestructure(): Promise<boolean> {
+    const held = this.state.restructured;
+    if (!held) return false;
+    this.endRestructured();
+    const answer = await this.ask(() => undoChange(this.board, held.seq));
+    if (!answer) return false;
+    await this.poll();
+    if (this.state.view) this.set({ view: putBack(this.state.view, held.before) });
+    this.announce("The wording is back where it was.");
+    return true;
+  }
+
+  private endRestructured(): void {
+    window.clearTimeout(this.restructureTimer);
+    if (this.state.restructured) this.set({ restructured: null });
   }
 
   /** The board's History (M3a-4, J-03), newest first, or null when it can't be read now. */
@@ -612,6 +708,14 @@ function refusalNote(answer: Answer): string {
         return "A question needs at least two options.";
       case "too_many_options":
         return "A question can have at most four options.";
+      case "not_same_option":
+        return "A wording can only be combined with an argument in its own option.";
+      case "only_wording":
+        return "That argument has only that wording, so it can’t be separated.";
+      case "combined_since":
+        return "Something was combined or separated since, so this can’t be undone yet.";
+      case "cant_undo":
+        return "That change can’t be undone this way.";
       default:
         return "1 action couldn't be sent.";
     }

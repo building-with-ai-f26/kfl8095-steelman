@@ -94,21 +94,28 @@ export function editShown(version: VersionRow, mine: readonly QueuedAction[]): V
 }
 
 /** What a version's ⋯ menu offers (A-12), in order: Copy link first and Delete last, as GitHub's comment menus put them. */
-export type MenuItem = "edit" | "suggest" | "copyLink" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport" | "hide" | "restore";
+export type MenuItem = "edit" | "suggest" | "copyLink" | "combine" | "separate" | "deleteVersion" | "deleteArgument" | "report" | "withdrawReport" | "hide" | "restore";
 
 /**
  * Only what the service would allow (the shared policy table): the author
  * edits and deletes; anyone else who may write suggests a revised version.
- * Report is reportItem's (M2-3). Combine, separate, and the AI actions come
- * in later milestones.
+ * Report is reportItem's (M2-3). An Editor or the Owner also combines it with
+ * another argument in its option, and separates it when its row has another
+ * wording (M3a-7), in the prototype's order. The AI actions come later.
  *
  * @param lastWording Whether it's its row's only live wording, so deleting it deletes the argument.
+ * @param place Where it sits, when the menu is drawn on the board: whether its option has another argument it could
+ *   be combined with. Without it, the menu offers neither combining nor separating.
  */
-export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean): MenuItem[] {
+export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean, place?: { others: boolean }): MenuItem[] {
   const board = { closed: false };
   const items: MenuItem[] = ["copyLink"];
   if (can(reader, role, "edit", board, version.authorId) === null) items.push("edit");
   else if (can(reader, role, "add", board) === null) items.push("suggest");
+  if (place && can(reader, role, "structure", board) === null) {
+    if (place.others) items.push("combine");
+    if (!lastWording) items.push("separate");
+  }
   if (can(reader, role, "delete", board, version.authorId) === null) items.push(lastWording ? "deleteArgument" : "deleteVersion");
   return items;
 }

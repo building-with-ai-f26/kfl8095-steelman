@@ -21,6 +21,7 @@ import {
   voteInput,
   tooManyMessage,
   combineInput,
+  itemIdInput,
   separateInput,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
@@ -43,7 +44,7 @@ import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { readHistory } from "./history.ts";
-import { combineWording, separateWording, undoStructure } from "./structure.ts";
+import { combinePreview, combineWording, separateWording, undoStructure } from "./structure.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -474,6 +475,18 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = combineInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await combineWording(services, request.params.board, request.person, request.params.id, body.data.into));
+  });
+
+  // What a combine would do, for the dialog before it (M3a-7): read by whoever may combine.
+  app.get<{ Params: { board: string; id: string }; Querystring: { into?: string } }>("/api/boards/:board/versions/:id/combine", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    const refused = can(request.person, role, "structure", { closed: false });
+    if (refused) return reply.code(STATUS_FOR[refused]).send({ status: "refused", reason: refused });
+    const into = itemIdInput.safeParse(request.query.into);
+    if (!into.success) return reply.code(400).send({ reason: "invalid" });
+    const preview = await combinePreview(db, request.params.board, request.person, request.params.id, into.data);
+    return preview ?? reply.code(404).send({ reason: "not_found" });
   });
 
   app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/separate", { config: { limit: "writing" } }, async (request, reply) => {

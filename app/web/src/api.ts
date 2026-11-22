@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardList, BoardSnapshot, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 
@@ -174,6 +174,32 @@ export async function restoreOption(board: string, option: string): Promise<Answ
 /** Cites a source already on the board on a wording: from History, putting back one taken off (M3a-4). Not queued. */
 export async function citeSource(board: string, version: string, source: string): Promise<Answer> {
   return answerOf(await call("PUT", `boards/${board}/versions/${encodeURIComponent(version)}/sources/${encodeURIComponent(source)}`));
+}
+
+/** Combines a wording into another argument in its option (M3a-7, A-10). Not queued, like a moderator's action. */
+export async function combineWording(board: string, version: string, into: string): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/versions/${encodeURIComponent(version)}/combine`, { into }));
+}
+
+/** Makes a wording its own argument, with the ID the browser made for it (M3a-7). Not queued. */
+export async function separateWording(board: string, version: string, argumentId: string): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/versions/${encodeURIComponent(version)}/separate`, { argumentId }));
+}
+
+/** Undoes a combine or a separation by its change number (M3a-7, J-04). Not queued. */
+export async function undoChange(board: string, seq: number): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/changes/${seq}/undo`));
+}
+
+/** What combining a wording into an argument would do (M3a-7): whether the arguments become one, and who'd be asked to vote again. Null when it can't be read now. */
+export async function readCombinePreview(board: string, version: string, into: string): Promise<CombinePreview | null> {
+  try {
+    const response = await call("GET", `boards/${board}/versions/${encodeURIComponent(version)}/combine?into=${encodeURIComponent(into)}`);
+    return response.ok ? ((await response.json()) as CombinePreview) : null;
+  } catch (error) {
+    if (error instanceof Unreachable) return null;
+    throw error;
+  }
 }
 
 /** The owner sets someone's role. Not queued, like setAccess. */

@@ -28,6 +28,15 @@ export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionName
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
 /** Combining a wording into another argument (M3a-6): the one it goes into. */
 export const combineInput = z.strictObject({ into: itemIdInput });
+/**
+ * What combining a wording into an argument would do, for the dialog before it (M3a-7): whether the two arguments
+ * become one, and if so how many people would be asked to vote again, and whether the reader is one. Never who.
+ */
+export interface CombinePreview {
+  last: boolean;
+  asked: number;
+  you: boolean;
+}
 /** Separating a wording (M3a-6): the ID the browser made for its new argument. */
 export const separateInput = z.strictObject({ argumentId: itemIdInput });
 

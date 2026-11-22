@@ -22,6 +22,8 @@
 // argument combined again since, isn't undone, and says so.
 
 import { sql } from "kysely";
+import type { CombinePreview } from "@steelman/shared";
+import type { Db } from "./db/database.ts";
 import { idUsed } from "./options.ts";
 import { writeToBoard } from "./write-path.ts";
 import type { Services, Trx, WriteResult } from "./write-path.ts";
@@ -260,4 +262,27 @@ async function log(trx: Trx, at: Date, row: { boardId: string; seq: number; pers
     .insertInto("change")
     .values({ board_id: row.boardId, seq: row.seq, at, actor_id: row.person, kind: row.kind, subject_kind: row.subjectKind, subject_id: row.subjectId, after: JSON.stringify(row.after) })
     .execute();
+}
+
+/**
+ * What combining a wording into an argument would do, for the dialog before
+ * it (M3a-7): whether the two arguments become one, and if so how many people
+ * would be asked to vote again, and whether the reader is one. A count, never
+ * who (only the reader's own votes are theirs to see). Null when either isn't
+ * on this board.
+ */
+export async function combinePreview(db: Db, boardId: string, person: string | null, versionId: string, intoId: string): Promise<CombinePreview | null> {
+  const version = await db.selectFrom("version").select("argument_id").where("id", "=", versionId).where("board_id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst();
+  const into = await db.selectFrom("argument").select("id").where("id", "=", intoId).where("board_id", "=", boardId).executeTakeFirst();
+  if (!version || !into) return null;
+  const left = await db.selectFrom("version").select("id").where("argument_id", "=", version.argument_id).where("id", "!=", versionId).where("deleted_at", "is", null).executeTakeFirst();
+  if (left || version.argument_id === intoId) return { last: false, asked: 0, you: false };
+  const disagree = await db
+    .selectFrom("importance_vote as f")
+    .innerJoin("importance_vote as i", (join) => join.onRef("i.account_id", "=", "f.account_id").on("i.argument_id", "=", intoId))
+    .select("f.account_id")
+    .where("f.argument_id", "=", version.argument_id)
+    .whereRef("f.value", "!=", "i.value")
+    .execute();
+  return { last: true, asked: disagree.length, you: disagree.some((row) => row.account_id === person) };
 }
