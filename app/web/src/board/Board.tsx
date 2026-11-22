@@ -178,6 +178,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
    * Whether deleting this wording deletes its argument: only when no other wording is left, counting one a moderator
    * hid, which keeps the argument on the service (writing.ts) and can be restored (M2-4).
    */
+  /**
+   * Whether it's its argument's last wording on the service, which decides whether combining makes two arguments one
+   * and whether it can be separated (M3a-7): from the rows, not the screen, which may still show a wording someone
+   * moved or deleted. A hidden wording counts, as on the service.
+   */
+  const lastOnService = (version: VersionRow) => !Object.values(view.rows.versions).some((v) => v.argumentId === version.argumentId && v.id !== version.id && !v.deleted);
   const isLast = (version: VersionRow) =>
     (view.shown.versions[version.argumentId] ?? []).filter((id) => id !== version.id && !view.rows.versions[id]?.deleted && (view.rows.versions[id]?.hidden || isLiveVersion(view.rows.versions[id]))).length === 0;
 
@@ -206,7 +212,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     wording: version.wording ?? "",
     from: version.argumentId,
     optionId: view.rows.arguments[version.argumentId]!.optionId,
-    last: isLast(version),
+    last: lastOnService(version),
     returnTo,
   });
   /** The wording an argument leads with on screen, for "Combine here" and the dialog. */
@@ -234,8 +240,9 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     const was = asking;
     setAsking(null);
     if (!was) return;
-    const done = was.kind === "combine" ? session.combine(was.versionId, was.intoId, was.last) : session.separate(was.versionId);
-    void done.then((ok) => setFocusTo(ok ? ".sm-undo button" : was.returnTo));
+    const done = was.kind === "combine" ? session.combine(was.versionId, was.intoId) : session.separate(was.versionId);
+    // To Undo when there's a bar; back where it started when there isn't (refused, or already done).
+    void done.then((ok) => setFocusTo(ok && session.snapshot().restructured ? ".sm-undo button" : was.returnTo));
   };
   const cancelAsking = () => {
     const was = asking;
@@ -252,7 +259,8 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     const was = lastRestructured.current;
     lastRestructured.current = state.restructured;
     if (!was || state.restructured || (document.activeElement && document.activeElement !== document.body)) return;
-    document.querySelector<HTMLElement>(cardControl(was.versionId, "claim"))?.focus();
+    // The wording that moved, or, when it isn't drawn (a folded row shows only its lead), the row it joined.
+    (document.querySelector<HTMLElement>(cardControl(was.versionId, "claim")) ?? (was.after ? document.querySelector<HTMLElement>(`[data-node="${CSS.escape(was.after)}"] .sm-claim-button`) : null))?.focus();
   }, [state.restructured]);
   const structure: Structure = {
     picking: moving,
@@ -274,18 +282,18 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     items: (version) =>
       version.hidden
         ? ["copyLink", ...moderationItem(version, reader, state.role)]
-        : [...versionMenu(version, reader, state.role, isLast(version), { others: others(version) }), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
+        : [...versionMenu(version, reader, state.role, isLast(version), { others: others(version), last: lastOnService(version) }), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
     combine(version, via) {
       const from = placing(version, via === "handle" ? `[data-card="${CSS.escape(version.id)}"] .sm-merge-handle` : cardControl(version.id, "menu"));
       setMoving(from);
       setFocusTo(`#sm-col-${CSS.escape(from.optionId)} .sm-move-here`);
-      session.announce("Choose the argument this wording repeats. Each one now has a Combine here button. Escape cancels.");
+      session.announce("Pick the argument that makes the same point. Each one now has a Combine here button. Escape cancels.");
     },
     separate: (version) => askSeparate(placing(version, cardControl(version.id, "menu"))),
     dragStart(version) {
       setMoving(null);
       setDragging(placing(version, `[data-card="${CSS.escape(version.id)}"] .sm-merge-handle`));
-      session.announce("Dragging. Drop it on the argument it makes the same point as.");
+      session.announce("You are dragging the wording. Drop it on the argument that makes the same point.");
     },
     // A drop has already been handled by then; a drag that ends anywhere else changes nothing.
     dragEnd: () => setDragging(null),
@@ -298,7 +306,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         <>
           <p className="sm-removed-note">
             <Icon name="merge" />
-            <span>{lead ? `This wording was combined with “${short(lead)}”.` : "This wording is now its own argument."}</span>
+            <span>{lead ? `This wording was combined with “${short(lead)}”.` : "This wording moved to another argument."}</span>
           </p>
           {lead ? (
             <button type="button" className="sm-link-button sm-gone-link cursor-interaction" onClick={() => goTo(into)}>
@@ -945,7 +953,8 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
         )}
         <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} />
         {structure.picking?.optionId === option.id ? (
-          <div className="sm-move-banner" role="status">
+          // Not a live region: the cursor is already on the first Combine here, and the status line has said this.
+          <div className="sm-move-banner">
             <span>Pick the argument that makes the same point.</span>
             <button type="button" className="sm-link-button cursor-interaction" onClick={structure.cancel}>
               Cancel

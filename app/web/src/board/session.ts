@@ -414,19 +414,22 @@ export class BoardSession {
    * sent now, and the wording moves on screen once the service has it. Ten seconds of Undo follow, which send its undo
    * (J-05). `last`: it's its argument's last wording, so the two arguments become one.
    */
-  combine(versionId: string, intoId: string, last: boolean): Promise<boolean> {
-    const words = last
-      ? { label: "You combined the arguments.", said: "The arguments are combined." }
-      : { label: "You combined the wording with that argument.", said: "The wording now sits with the other argument’s wordings." };
+  combine(versionId: string, intoId: string): Promise<boolean> {
+    const from = this.state.view?.rows.versions[versionId]?.argumentId;
+    // What it says comes from what the service did: whether the argument it left became one with the other.
+    const words = (view: ReaderView) =>
+      from && view.rows.arguments[from]?.mergedInto
+        ? { label: "You combined the arguments.", said: "The arguments are combined." }
+        : { label: "You combined the wording with that argument.", said: "The wording now sits with the other argument’s wordings." };
     return this.restructure(() => combineWording(this.board, versionId, intoId), versionId, words);
   }
 
   /** Makes a wording its own argument, at the end of its option (M3a-7), with ten seconds of Undo. */
   separate(versionId: string): Promise<boolean> {
-    return this.restructure(() => separateWording(this.board, versionId, browserIds.itemId()), versionId, {
+    return this.restructure(() => separateWording(this.board, versionId, browserIds.itemId()), versionId, () => ({
       label: "You made the wording its own argument.",
       said: "The wording is now its own argument, at the end of this option.",
-    });
+    }));
   }
 
   /** What combining would do, for its dialog: whether the arguments become one, and who'd be asked to vote again. */
@@ -434,7 +437,7 @@ export class BoardSession {
     return readCombinePreview(this.board, versionId, intoId);
   }
 
-  private async restructure(request: () => Promise<Answer>, versionId: string, words: { label: string; said: string }): Promise<boolean> {
+  private async restructure(request: () => Promise<Answer>, versionId: string, wordsFor: (view: ReaderView) => { label: string; said: string }): Promise<boolean> {
     this.sendHeld();
     this.sendHeldOption();
     this.endRestructured();
@@ -448,9 +451,15 @@ export class BoardSession {
     const moved = showMoved(view, versionId);
     const version = moved.rows.versions[versionId];
     const argument = version ? moved.rows.arguments[version.argumentId] : undefined;
-    if (answer.status !== "done" || !before || !argument) {
+    if (answer.status !== "done") {
       this.set({ view: moved });
       this.announce("That was already done.");
+      return true;
+    }
+    const words = wordsFor(moved);
+    if (!before || !argument) {
+      this.set({ view: moved });
+      this.announce(words.said);
       return true;
     }
     this.set({ view: moved, restructured: { seq: answer.seq, label: words.label, optionId: argument.optionId, after: argument.id, before, versionId }, status: `${words.said} Undo is available for ten seconds.` });
@@ -464,7 +473,12 @@ export class BoardSession {
     if (!held) return false;
     this.endRestructured();
     const answer = await this.ask(() => undoChange(this.board, held.seq));
-    if (!answer) return false;
+    if (!answer) {
+      // Not taken: the bar comes back for another ten seconds, so there's still a way to try again.
+      this.set({ restructured: held });
+      this.restructureTimer = window.setTimeout(() => this.endRestructured(), UNDO_MS);
+      return false;
+    }
     await this.poll();
     if (this.state.view) this.set({ view: putBack(this.state.view, held.before) });
     this.announce("The wording is back where it was.");

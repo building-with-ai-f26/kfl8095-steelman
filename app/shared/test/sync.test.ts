@@ -381,4 +381,18 @@ describe("the reader's own combine and separation (M3a-7)", () => {
     expect(after.shown.versions.a).toEqual(before.shown.versions.a);
     expect(after.shown.versions.b).toEqual(["b1", "b9"]);
   });
+
+  test("A-10: the argument it left goes too when combined away, though it still shows a wording someone else moved out", () => {
+    // Someone moved a2 out of a; the reader still sees it there, marked. Then the reader combines a1, a's last.
+    const view = receive(openView(snapshot()), {
+      ...nothing(7),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 7 })],
+      versions: [version("a2", "c", 1, { changedSeq: 6 }), version("a1", "b", 1, { changedSeq: 7 })],
+    });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.arguments.yes).not.toContain("a");
+    expect(after.shown.versions.a).toBeUndefined();
+  });
 });

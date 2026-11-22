@@ -206,7 +206,10 @@ export function showMoved(view: ReaderView, versionId: string): ReaderView {
   const emptied = new Set<string>();
   for (const [argumentId, ids] of Object.entries(view.shown.versions)) {
     const kept = ids.filter((id) => id !== versionId);
-    if (kept.length === 0 && ids.length > 0 && argumentId !== argument.id) emptied.add(argumentId);
+    // The argument it left goes too when it has nothing left to show, or was combined away: a wording still shown
+    // there, marked, that someone deleted or moved, doesn't keep it (the service decides by the rows too).
+    const left = kept.length < ids.length && argumentId !== argument.id;
+    if (left && (kept.length === 0 || view.rows.arguments[argumentId]?.mergedInto)) emptied.add(argumentId);
     else versions[argumentId] = kept;
   }
   versions[argument.id] = insertInOrder(versions[argument.id] ?? [], versionId, view.published.versions[argument.id]);
@@ -229,6 +232,6 @@ export function putBack(view: ReaderView, shown: BoardOrder): ReaderView {
 function insertInOrder(ids: string[], id: string, order: readonly string[] | undefined): string[] {
   const rank = order?.indexOf(id) ?? -1;
   if (rank < 0) return [...ids, id];
-  const at = ids.findIndex((other) => (order!.indexOf(other) ?? -1) > rank);
+  const at = ids.findIndex((other) => order!.indexOf(other) > rank);
   return at < 0 ? [...ids, id] : [...ids.slice(0, at), id, ...ids.slice(at)];
 }

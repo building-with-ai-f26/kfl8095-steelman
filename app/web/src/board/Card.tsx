@@ -229,7 +229,7 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
                 className="sm-source-button sm-merge-handle cursor-interaction"
                 draggable
                 aria-label="Combine with another argument"
-                data-tooltip="Drag onto the argument it repeats"
+                data-tooltip="Drag it onto the argument it repeats, or press to pick one."
                 onClick={() => opening.menu.combine(shown, "handle")}
                 onDragStart={(event) => {
                   event.dataTransfer.effectAllowed = "move";

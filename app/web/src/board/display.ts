@@ -105,16 +105,17 @@ export type MenuItem = "edit" | "suggest" | "copyLink" | "combine" | "separate" 
  *
  * @param lastWording Whether it's its row's only live wording, so deleting it deletes the argument.
  * @param place Where it sits, when the menu is drawn on the board: whether its option has another argument it could
- *   be combined with. Without it, the menu offers neither combining nor separating.
+ *   be combined with, and whether it's its argument's last wording on the service (the screen may still show one
+ *   someone moved). Without it, the menu offers neither combining nor separating.
  */
-export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean, place?: { others: boolean }): MenuItem[] {
+export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean, place?: { others: boolean; last?: boolean }): MenuItem[] {
   const board = { closed: false };
   const items: MenuItem[] = ["copyLink"];
   if (can(reader, role, "edit", board, version.authorId) === null) items.push("edit");
   else if (can(reader, role, "add", board) === null) items.push("suggest");
   if (place && can(reader, role, "structure", board) === null) {
     if (place.others) items.push("combine");
-    if (!lastWording) items.push("separate");
+    if (!(place.last ?? lastWording)) items.push("separate");
   }
   if (can(reader, role, "delete", board, version.authorId) === null) items.push(lastWording ? "deleteArgument" : "deleteVersion");
   return items;
