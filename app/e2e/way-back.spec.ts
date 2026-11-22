@@ -63,8 +63,8 @@ test("M3a-1, M-13: the privacy page leads back to Your account, and New steelman
   await expect(page).toHaveURL(`/b/${board.demo.board}`);
 });
 
-test("M3a-1, M-13: a long question runs to … on one line, and the link's text is still the whole name", async ({ board }) => {
-  const page = await board.open("maya.chen");
+test("M3a-1, M-13: a long question runs to … on one line on a phone, and the link's text is still the whole name", async ({ board }) => {
+  const page = await board.open("maya.chen", { width: 375 });
   // From the privacy page, which isn't a place of its own, so leaving it doesn't replace what's set here.
   await page.goto("/privacy");
   await page.evaluate(() => sessionStorage.setItem("steelman-place", JSON.stringify({ path: "/b/x", name: "Should every public library in the county open on Sundays and on public holidays too?" })));
@@ -75,6 +75,7 @@ test("M3a-1, M-13: a long question runs to … on one line, and the link's text 
   // Cut by the stylesheet, on one line: the text is wider than the space it's drawn in.
   const span = back(page).locator("span");
   expect(await span.evaluate((element) => [getComputedStyle(element).textOverflow, element.scrollWidth > element.clientWidth])).toEqual(["ellipsis", true]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "no sideways scroll").toBe(true);
 });
 
 test("M3a-1, M-13: only a path on this site is followed back", async ({ board }) => {
