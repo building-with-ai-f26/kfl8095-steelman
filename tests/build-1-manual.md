@@ -1683,6 +1683,22 @@ Build plan M3a-1, at the builder's request: "there is no navigation back from se
 | Second reader | A fresh agent found nothing blocking in the code. Taken: paths are parsed as the browser would follow them, so "/\\elsewhere" can't lead off the site; the trail is forgotten when the person changes; the no-access message is in a landmark; these records corrected |
 | Known limitations | Coming back to a board opens its Board view, not Strongest case if that was on. A board itself has no back link; its wordmark leads to Your steelmen, as the prototype's does. The trail is one tab's: a new tab starts at Your steelmen |
 
+## November 22 — Options: add, rename, delete (A-07)
+
+Build plan M3a-2, as the prototype's option header ⋯ menu and dashed + Option have it.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | GitHub Projects, read live: a ⋯ menu beside each column's name and a "+" labelled "Add a new column to the board" after the last column. Notion, read live: "•••" to the right of a group's heading. Both delete a column with items in it, which then fall into an ungrouped column; Steelman refuses instead, since an argument has no column to fall into (plans/reviews/m3-design-audit.md) |
+| Who may | An Editor or the Owner: a new `structure` action in the policy table, as permissions.md's matrix has it ("Combine, separate, edit options": Editor and Owner; a Contributor suggests, which is A-11, later). A Contributor, Voter, or Viewer sees neither the ⋯ nor "Add an option", and the service refuses them. A closed board refuses everyone |
+| Rename | ⋯ "Options for Yes", then Rename option: the name becomes a field in the header. Enter or leaving it keeps the new name; Escape keeps the old. An empty name keeps the old one: "An option needs a name, so the old name stays." Done: "You renamed the option.", and the cursor goes back to ⋯ |
+| Add | The dashed "Add an option" after the last column opens a new column whose name field says "Name this option". Enter adds it: "You added the option “Only in winter”.", and the cursor goes to its "Add an argument". Escape, or an empty name, adds nothing. At four options the button goes |
+| Delete | Delete option, only for an empty option and never below two. Otherwise the item says why: "A question needs at least two options." or "Move or delete its arguments first." The column goes at once: "You deleted the option. Undo is available for ten seconds." Undo brings it back and sends nothing ("The option is back."); after ten seconds it's sent, as deleting a wording is |
+| Other readers | A new option or a new name shows on their next poll; a deleted option, empty by then, goes too |
+| Change log | option_added, option_renamed, option_deleted, each with who, for History (M3a-4) |
+| Tests first | `server/test/api/options.test.ts` (12) and `e2e/options.spec.ts` (8, with accessibility scans at 1280 and 375 px, the menu open and a new option being named), all seen to fail first except the Contributor case, which passed while there was nothing to see |
+| Known limitations | Options can't be reordered (the prototype has no way either). Deleting an option isn't yet restorable after its ten seconds; History's Restore (M3a-4) will do that |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

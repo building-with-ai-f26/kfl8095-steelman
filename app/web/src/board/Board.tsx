@@ -10,8 +10,8 @@
 // open. It changes in place (history.replaceState), as the prototype's
 // does, so Back leaves the board instead of closing cards one by one.
 
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { leaveOut } from "@steelman/shared";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { OPTIONS_PER_BOARD, can, cleanText, leaveOut } from "@steelman/shared";
 import type { ArgumentRow, CaseItem, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NotFound } from "../NotFound.tsx";
@@ -34,6 +34,7 @@ import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, r
 import { BoardSession } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
+import { OptionMenu } from "./OptionMenu.tsx";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -88,7 +89,8 @@ interface BoardViewProps {
 }
 
 function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
-  const options = columns(view);
+  // An option the reader just deleted is off the screen while Undo can bring it back (M3a-2).
+  const options = columns(view).filter((option) => option.id !== state.optionGone?.id);
   // The importance axis only means something once a column has two arguments to rank.
   const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
   const [arrival] = useState(() => arrivalFor(view, linked));
@@ -106,6 +108,34 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const [drafts, setDrafts] = useState<Record<string, DraftText>>({});
   const keep = (key: string, draft: DraftText) => setDrafts((all) => ({ ...all, [key]: draft }));
   const reader = useReader();
+  // Options (M3a-2): an Editor or the Owner may add, rename, and delete them.
+  const mayStructure = can(reader, state.role, "structure", { closed: false }) === null;
+  /** The ID of a new option being named, before it's sent; null otherwise. */
+  const [naming, setNaming] = useState<string | null>(null);
+  /** A new option's name, once added, so its first "Add an argument" gets the cursor when it arrives. */
+  const [added, setAdded] = useState<string | null>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const undoOption = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!added || !options.some((option) => option.name === added)) return;
+    document.querySelector<HTMLElement>(`[aria-label="Add an argument for ${CSS.escape(added)}"]`)?.focus();
+    setAdded(null);
+  }, [added, options]);
+  useEffect(() => {
+    if (state.optionGone) undoOption.current?.focus();
+  }, [state.optionGone]);
+  const addColumn = mayStructure && zoom !== "case" && (naming !== null || options.length < OPTIONS_PER_BOARD.max);
+  const nameNew = async (name: string) => {
+    const id = naming;
+    setNaming(null);
+    if (!id) return;
+    if (!name) {
+      // Back on "Add an option", once it's drawn again.
+      window.setTimeout(() => addButton.current?.focus());
+      return;
+    }
+    if (await session.addOption(id, name)) setAdded(name);
+  };
   /** Where the cursor goes once the screen has changed: after an edit, a delete, or Undo. */
   const [focusTo, setFocusTo] = useState<string | null>(null);
   useLayoutEffect(() => {
@@ -425,7 +455,17 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
               <StrongestCase view={view} leftOut={state.leftOut} mine={state.mine} onOpen={openFromCase} />
             </div>
           ) : (
-            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption) } as React.CSSProperties}>
+            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption, addColumn ? (naming ? "naming" : "add") : null) } as React.CSSProperties}>
+              {state.optionGone && (
+                <div className="sm-board-undo">
+                  <div className="sm-undo">
+                    <span>You deleted the option.</span>
+                    <button ref={undoOption} type="button" className="sm-link-button cursor-interaction" onClick={() => session.undoOptionDelete()}>
+                      Undo
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="sm-sides" role="tablist" aria-label="Sides">
                 {options.map((option) => (
                   <button
@@ -467,8 +507,30 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   state={state}
                   session={session}
                   onUndo={undo}
+                  mayStructure={mayStructure}
+                  deleteBlocked={options.length <= OPTIONS_PER_BOARD.min ? "A question needs at least two options." : (view.shown.arguments[option.id] ?? []).some((id) => isLive(view.rows.arguments[id])) ? "Move or delete its arguments first." : null}
                 />
               ))}
+              {addColumn && (
+                <>
+                  <div className="sm-col-gap" aria-hidden="true" />
+                  {naming ? (
+                    <section className="sm-column sm-side-on" aria-label="New option">
+                      <div className="sm-column-head">
+                        <OptionName initial="" onDone={(name) => void nameNew(name)} onCancel={() => void nameNew("")} />
+                      </div>
+                    </section>
+                  ) : (
+                    <div className="sm-add-option-col">
+                      <button ref={addButton} type="button" className="sm-add-option cursor-interaction" aria-label="Add an option" data-tooltip="Add an option" onClick={() => setNaming(browserIds.itemId())}>
+                        <Icon name="plus" />
+                        <span className="sm-add-short">Option</span>
+                        <span className="sm-add-long">Add an option</span>
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </main>
@@ -538,9 +600,11 @@ export interface Writer {
 }
 
 /** While a row is unfolded, its column takes most of the width, and the others keep a readable one. */
-function boardColumns(options: OptionRow[], wide: string | undefined): string {
+function boardColumns(options: OptionRow[], wide: string | undefined, extra: "add" | "naming" | null = null): string {
   const rest = wide ? `minmax(${options.length === 2 ? 260 : 200}px,1fr)` : "minmax(0,1fr)";
-  return options.map((option) => (option.id === wide ? "minmax(0,2.6fr)" : rest)).join(" 32px ");
+  const columns = options.map((option) => (option.id === wide ? "minmax(0,2.6fr)" : rest)).join(" 32px ");
+  // After the last option, the prototype's dashed "Add an option", or the new option being named (M3a-2).
+  return extra === "add" ? `${columns} 20px max-content` : extra === "naming" ? `${columns} 32px ${rest}` : columns;
 }
 
 /** The row Update keeps in place: the unfolded one, else the first at least partly in view. */
@@ -615,9 +679,13 @@ interface ColumnProps {
   state: SessionState;
   session: BoardSession;
   onUndo(): void;
+  /** Whether this reader may add, rename, and delete options (M3a-2). */
+  mayStructure: boolean;
+  /** Why this option can't be deleted, or null when it can. */
+  deleteBlocked: string | null;
 }
 
-function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo }: ColumnProps) {
+function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, mayStructure, deleteBlocked }: ColumnProps) {
   const reader = useReader();
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
@@ -633,9 +701,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
             <Axis kind="v" start="more important" end="less important" />
           </div>
         )}
-        <div className="sm-column-head">
-          <h2>{option.name}</h2>
-        </div>
+        <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} />
         {argumentIds.length >= 2 && (
           <div className="sm-col-axis" aria-hidden="true">
             <Icon name="arrow-down" />
@@ -716,6 +782,105 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session }
 }
 
 /** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
+/**
+ * An option's header (M3a-2, A-07): its name, and for an Editor or the Owner
+ * the prototype's ⋯, "Options for …", with Rename option and Delete option.
+ * Renaming happens in the header itself.
+ */
+function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: OptionRow; mayStructure: boolean; deleteBlocked: string | null; session: BoardSession }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const back = () => window.setTimeout(() => trigger.current?.focus());
+  const close = useCallback(() => setMenuOpen(false), []);
+  return (
+    <div className="sm-column-head">
+      {renaming ? (
+        <OptionName
+          initial={option.name}
+          onDone={(name) => {
+            setRenaming(false);
+            back();
+            if (!name) session.announce("An option needs a name, so the old name stays.");
+            else if (name !== option.name) void session.renameOption(option.id, name);
+          }}
+          onCancel={() => {
+            setRenaming(false);
+            back();
+          }}
+        />
+      ) : (
+        <h2>{option.name}</h2>
+      )}
+      {mayStructure && !renaming && (
+        <div className="sm-column-tools">
+          <button
+            ref={trigger}
+            type="button"
+            className="sm-head-button cursor-interaction"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-label={`Options for ${option.name}`}
+            data-tooltip="Option settings"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <Icon name="ellipsis" />
+          </button>
+          {menuOpen && (
+            <OptionMenu
+              trigger={trigger}
+              deleteBlocked={deleteBlocked}
+              onClose={close}
+              onRename={() => {
+                setMenuOpen(false);
+                setRenaming(true);
+              }}
+              onDelete={() => {
+                setMenuOpen(false);
+                session.holdOptionDelete({ id: option.id, name: option.name });
+              }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The name field in an option's header, as the prototype's: Enter or leaving it keeps the name, Escape doesn't. */
+function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(name: string): void; onCancel(): void }) {
+  const [draft, setDraft] = useState(initial);
+  const field = useRef<HTMLInputElement>(null);
+  const finished = useRef(false);
+  useEffect(() => {
+    field.current?.focus();
+    field.current?.select();
+  }, []);
+  const finish = (keep: boolean) => {
+    if (finished.current) return;
+    finished.current = true;
+    if (keep) onDone(cleanText(draft).slice(0, 80));
+    else onCancel();
+  };
+  return (
+    <input
+      ref={field}
+      className="sm-option-input"
+      type="text"
+      maxLength={80}
+      placeholder="Name this option"
+      aria-label="Option name"
+      value={draft}
+      onChange={(event) => setDraft(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") finish(true);
+        if (event.key === "Escape") finish(false);
+      }}
+      onBlur={() => finish(true)}
+    />
+  );
+}
+
 function UndoBar({ held, onUndo }: { held: Held; onUndo(): void }) {
   return (
     <div className="sm-undo">

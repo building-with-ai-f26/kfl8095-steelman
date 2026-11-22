@@ -12,6 +12,8 @@ import {
   changesQuery,
   editInput,
   newArgumentInput,
+  newOptionInput,
+  renameOptionInput,
   newBoardInput,
   newSourceInput,
   newWordingInput,
@@ -37,6 +39,7 @@ import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
+import { addOption, deleteOption, renameOption } from "./options.ts";
 import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -127,6 +130,10 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   not_author: 403,
   board_closed: 409,
   argument_deleted: 409,
+  option_deleted: 409,
+  option_not_empty: 409,
+  too_few_options: 409,
+  too_many_options: 409,
   version_deleted: 409,
   revision_changed: 409,
   needs_evidence: 409,
@@ -423,6 +430,23 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "assess"));
   });
+
+  // Options (M3a-2, A-07): add one at the end, rename one, or delete an empty one. An Editor's and the Owner's.
+  app.post<{ Params: { board: string } }>("/api/boards/:board/options", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = newOptionInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addOption(services, request.params.board, request.person, body.data));
+  });
+
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = renameOptionInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await renameOption(services, request.params.board, request.person, request.params.id, body.data.name));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id", async (request, reply) =>
+    answer(reply, await deleteOption(services, request.params.board, request.person, request.params.id)),
+  );
 
   app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newArgumentInput.safeParse(request.body);

@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardSnapshot, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, readBoard, readChanges, readPeople, send, setAccess, setHidden, setReport, setRole } from "../api.ts";
+import { Unreachable, addOption, deleteOption, readBoard, readChanges, readPeople, renameOption, send, setAccess, setHidden, setReport, setRole } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -57,6 +57,8 @@ export interface SessionState {
   leftOut: readonly string[];
   /** The delete Undo can still take back. */
   undo: Held | null;
+  /** An option the reader deleted, off the screen and held for Undo (M3a-2), or null. */
+  optionGone: { id: string; name: string } | null;
 }
 
 export class BoardSession {
@@ -75,6 +77,7 @@ export class BoardSession {
     stale: [],
     leftOut: [],
     undo: null,
+    optionGone: null,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -84,6 +87,7 @@ export class BoardSession {
   private pollTimer: number | undefined;
   private backOnlineTimer: number | undefined;
   private undoTimer: number | undefined;
+  private optionTimer: number | undefined;
   private tooManyTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
@@ -151,6 +155,7 @@ export class BoardSession {
   stop(): void {
     // Leaving the board sends what Undo was holding.
     this.sendHeld(true);
+    this.sendHeldOption(true);
     this.stopped = true;
     window.clearTimeout(this.pollTimer);
     window.clearTimeout(this.backOnlineTimer);
@@ -258,40 +263,82 @@ export class BoardSession {
   }
 
   /** Reports a wording (M2-3). Not queued: it needs the service there to answer. */
-  report(versionId: string, report: { reason: ReportReason; note: string }): Promise<void> {
+  report(versionId: string, report: { reason: ReportReason; note: string }): Promise<boolean> {
     return this.sendReport(versionId, report, "Reported. Editors will see it.");
   }
 
-  withdrawReport(versionId: string): Promise<void> {
+  withdrawReport(versionId: string): Promise<boolean> {
     return this.sendReport(versionId, null, "Report withdrawn.");
   }
 
   /** An Editor or the Owner hides a wording (M2-4), in the prototype's words. Not queued, like a report. */
-  hide(versionId: string, reason: ReportReason): Promise<void> {
+  hide(versionId: string, reason: ReportReason): Promise<boolean> {
     return this.moderate(() => setHidden(this.board, versionId, reason), "Hidden.");
   }
 
-  restore(versionId: string): Promise<void> {
+  restore(versionId: string): Promise<boolean> {
     return this.moderate(() => setHidden(this.board, versionId, null), "Restored.");
   }
 
-  private sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<void> {
+  private sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<boolean> {
     return this.moderate(() => setReport(this.board, versionId, report), done);
   }
 
-  /** Sends a report or a moderator's action, says how it went, and asks for changes. */
-  private async moderate(request: () => Promise<Answer>, done: string): Promise<void> {
+  /**
+   * Adds an option at the end (M3a-2), with the ID the browser made, and names
+   * it. Not queued, like a moderator's action. Answers whether it was added.
+   */
+  addOption(id: string, name: string): Promise<boolean> {
+    return this.moderate(() => addOption(this.board, { id, name }), `You added the option “${name}”.`);
+  }
+
+  renameOption(id: string, name: string): Promise<boolean> {
+    return this.moderate(() => renameOption(this.board, id, name), "You renamed the option.");
+  }
+
+  /** Deletes an empty option: off the screen at once and held ten seconds for Undo, like deleting a wording. */
+  holdOptionDelete(option: { id: string; name: string }): void {
+    this.sendHeldOption();
+    this.set({ optionGone: option, status: "You deleted the option. Undo is available for ten seconds." });
+    this.optionTimer = window.setTimeout(() => this.sendHeldOption(), UNDO_MS);
+  }
+
+  undoOptionDelete(): void {
+    if (!this.state.optionGone) return;
+    window.clearTimeout(this.optionTimer);
+    this.set({ optionGone: null, status: "The option is back." });
+  }
+
+  private sendHeldOption(closing = false): void {
+    const gone = this.state.optionGone;
+    if (!gone) return;
+    window.clearTimeout(this.optionTimer);
+    this.set({ optionGone: null });
+    if (closing) void deleteOption(this.board, gone.id, true).catch(() => undefined);
+    else void this.moderate(() => deleteOption(this.board, gone.id), "");
+  }
+
+  /** Sends a report or a moderator's action, says how it went (unless `done` is empty), and asks for changes. Answers whether it was taken. */
+  private async moderate(request: () => Promise<Answer>, done: string): Promise<boolean> {
     let answer: Answer;
     try {
       answer = await request();
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
-      return this.announce("Couldn’t reach Steelman. Try again.");
+      this.announce("Couldn’t reach Steelman. Try again.");
+      return false;
     }
-    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return this.announce(tooManyMessage(answer.retryAfter));
-    if (answer.status !== "done" && answer.status !== "already_done") return this.announce(refusalNote(answer));
-    this.announce(done);
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) {
+      this.announce(tooManyMessage(answer.retryAfter));
+      return false;
+    }
+    if (answer.status !== "done" && answer.status !== "already_done") {
+      this.announce(refusalNote(answer));
+      return false;
+    }
+    if (done) this.announce(done);
     await this.poll();
+    return true;
   }
 
   /** Everyone on the board, for Share's people list, or null when it can't be read now. */
@@ -488,6 +535,14 @@ function refusalNote(answer: Answer): string {
         return "Your role on this board doesn’t allow that.";
       case "no_access":
         return "You no longer have access to this board.";
+      case "option_deleted":
+        return "That option was deleted.";
+      case "option_not_empty":
+        return "That option has arguments now, so it wasn’t deleted.";
+      case "too_few_options":
+        return "A question needs at least two options.";
+      case "too_many_options":
+        return "A question can have at most four options.";
       default:
         return "1 action couldn't be sent.";
     }

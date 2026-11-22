@@ -23,6 +23,10 @@ export const newArgumentInput = z.strictObject({
   context: contextInput,
 });
 
+/** A new option, with the ID the browser made for it, and an option's new name (M3a-2, A-07). */
+export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionNameInput });
+export const renameOptionInput = z.strictObject({ name: optionNameInput });
+
 /** A new wording of an existing argument. */
 export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
 
@@ -249,6 +253,13 @@ export type RefusalReason =
   | "not_author"
   | "test_users_off"
   | "argument_deleted"
+  /** The option was deleted (M3a-2). */
+  | "option_deleted"
+  /** An option with arguments can't be deleted; they'd have nowhere to go (M3a-2). */
+  | "option_not_empty"
+  /** A board keeps at least two options, and at most four (OPTIONS_PER_BOARD). */
+  | "too_few_options"
+  | "too_many_options"
   | "version_deleted"
   | "revision_changed"
   | "needs_evidence"

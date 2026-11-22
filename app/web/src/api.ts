@@ -118,6 +118,27 @@ export async function setHidden(board: string, version: string, reason: ReportRe
   return (await response.json()) as Answer;
 }
 
+/** Options (M3a-2, A-07): an Editor or the Owner adds one with the ID the browser made, renames one, or deletes an empty one. Not queued. */
+export async function addOption(board: string, option: { id: string; name: string }): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/options`, option));
+}
+
+export async function renameOption(board: string, option: string, name: string): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/options/${encodeURIComponent(option)}`, { name }));
+}
+
+/** `keepalive`, when the tab is closing and the request must finish after the page is gone. */
+export async function deleteOption(board: string, option: string, keepalive = false): Promise<Answer> {
+  return answerOf(await call("DELETE", `boards/${board}/options/${encodeURIComponent(option)}`, undefined, keepalive));
+}
+
+async function answerOf(response: Response): Promise<Answer> {
+  if (response.status === 404) return { status: "not_found" };
+  if (response.status === 400) return { status: "invalid" };
+  if (response.status >= 500) throw new Unreachable(`The service answered ${response.status}`);
+  return (await response.json()) as Answer;
+}
+
 /** Everyone on the board, for Share's people list (M2-2b), or null when it can't be read now. */
 export async function readPeople(board: string): Promise<Person[] | null> {
   try {
