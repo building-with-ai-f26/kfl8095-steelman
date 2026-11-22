@@ -21,6 +21,8 @@ import { seedDemoBoard } from "../../server/src/demo-board.ts";
 import type { DemoBoard } from "../../server/src/demo-board.ts";
 import { startFakeGoogle } from "../../server/test/support/fake-google.ts";
 import type { FakeGoogle } from "../../server/test/support/fake-google.ts";
+import { outboxEmail } from "../../server/test/support/outbox.ts";
+import type { Sent } from "../../server/test/support/outbox.ts";
 import { copyTemplate, dropDatabase, serveWebApp } from "./board.ts";
 
 const NOON = new Date("2026-11-16T12:00:00Z");
@@ -45,8 +47,10 @@ export interface SignInSite {
   google: FakeGoogle;
   /** The latest code emailed to an address. */
   codeFor(email: string): string;
-  /** How many sign-in emails an address has been sent. */
+  /** How many emails an address has been sent: codes and notes. */
   sentTo(email: string): number;
+  /** Every email an address has been sent, oldest first. */
+  sentAll(email: string): Sent[];
   /** Ages every code waiting to be typed past its ten minutes. (Better Auth checks expiry on the real clock.) */
   expireCodes(): Promise<void>;
   /** Runs SQL on the site's database, as its owner: for setting up what the app can't do yet, such as inviting someone (H-01). */
@@ -84,7 +88,7 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
     // tests fake it with vi.useFakeTimers). With the test clock, every token expired once the real day passed
     // the test clock's hour plus one (13:00 UTC, November 16).
     const google = await startFakeGoogle({ now: () => new Date() });
-    const outbox: { to: string; code: string }[] = [];
+    const outbox: Sent[] = [];
     const app = buildApp({
       clock,
       ids,
@@ -95,7 +99,7 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
         origin,
         // Not a secret: it signs cookies in a throwaway test database only.
         secret: "e2e-only-signing-key-not-a-secret-000000000000",
-        email: { sendSignInCode: async (to, code) => void outbox.push({ to, code }) },
+        email: outboxEmail(outbox),
         google: { clientId: google.clientId, clientSecret: google.clientSecret, discoveryUrl: google.discoveryUrl },
       },
     });
@@ -110,13 +114,14 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
       google,
       errors,
       codeFor(email) {
-        const sent = outbox.filter((message) => message.to === email.toLowerCase()).at(-1);
+        const sent = outbox.filter((message) => message.to === email.toLowerCase() && message.code !== "").at(-1);
         if (!sent) throw new Error(`No code was emailed to ${email}`);
         return sent.code;
       },
       sentTo: (email) => outbox.filter((message) => message.to === email.toLowerCase()).length,
+      sentAll: (email) => outbox.filter((message) => message.to === email.toLowerCase()),
       async expireCodes() {
-        await site.sql("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%'");
+        await site.sql("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%' or identifier like 'change-email-otp-%'");
       },
       async sql(text, values) {
         const client = new pg.Client({ connectionString: databaseUrl.href });
@@ -166,15 +171,27 @@ function isRefusedSignIn(text: string, url: string): boolean {
   return (refused("[45]\\d\\d") && url.includes("/api/auth/")) || (refused("403") && BOARD_READ.test(new URL(url).pathname + new URL(url).search));
 }
 
+/**
+ * A port nothing is listening on, for the service to listen on next. It's
+ * chosen at random below the range the system hands out for outgoing
+ * connections (32768 and up on Linux, 49152 and up on macOS): a port from that
+ * range, freed here, could be taken by a connection before the service
+ * listens on it, which CI saw as EADDRINUSE. Below it, only another worker
+ * picking the same number at the same moment could, which is far rarer.
+ */
 async function freePort(): Promise<number> {
+  for (;;) {
+    const port = 20_000 + Math.floor(Math.random() * 12_000);
+    if (await canListen(port)) return port;
+  }
+}
+
+/** Whether the port is free. Only "in use" means try another; any other error (no loopback, too many open files) is the real one. */
+function canListen(port: number): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const server = createServer();
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      const port = typeof address === "object" && address ? address.port : 0;
-      server.close(() => resolve(port));
-    });
+    server.once("error", (error: NodeJS.ErrnoException) => (error.code === "EADDRINUSE" ? resolve(false) : reject(error)));
+    server.listen(port, "127.0.0.1", () => server.close(() => resolve(true)));
   });
 }
 

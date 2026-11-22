@@ -214,6 +214,8 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       const email = account.email.toLowerCase();
       // Better Auth names each code by its purpose and the address.
       const identifiers = ["sign-in-otp-", "email-verification-otp-", "forget-password-otp-"].map((purpose) => purpose + email);
+      // A code for a new email is stored under both addresses (M2-8c). starts_with, since _ in an email would be a LIKE wildcard.
+      await trx.deleteFrom("sign_in.sign_in_code").where(sql<boolean>`starts_with(lower(identifier), ${`change-email-otp-${email}-`})`).execute();
       await trx
         .deleteFrom("sign_in.sign_in_code")
         .where(sql<string>`lower(identifier)`, "in", identifiers)

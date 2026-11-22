@@ -1,4 +1,5 @@
-// Your account (M-07, M1-12, L-04): who you are, how you sign in, the
+// Your account (M-07, M1-12, L-04): who you are, changing your email (M2-8c,
+// in ChangeEmail.tsx), how you sign in, the
 // usage-analytics switch, Download your data, Sign out, and Delete account, in
 // the prototype's Account card (profileMarkup, privacyGroup, deleteForm, and
 // deletedMarkup in docs/prototype/source/steelman-refined.html). Typing your
@@ -13,6 +14,7 @@ import type { AnalyticsStatus } from "./analytics.ts";
 import { deleteMyAccount, downloadMyData, listBoards, readMyAccount } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import { signOut } from "./signIn/account.ts";
+import { ChangeEmail } from "./signIn/ChangeEmail.tsx";
 import type { MyAccount } from "./api.ts";
 import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
@@ -82,11 +84,7 @@ export function Account() {
             <Row label="Username">
               <span className="sm-rrow-value ph-no-capture">{account.username}</span>
             </Row>
-            {account.email && (
-              <Row label="Email">
-                <span className="sm-rrow-value ph-no-capture">{account.email}</span>
-              </Row>
-            )}
+            {account.email && <ChangeEmail email={account.email} onChanged={(email) => setAccount({ ...account, email })} onStatus={setStatus} />}
           </div>
           {/* As Notion: Google signs in to the account with the same email, so there's nothing to connect or
               disconnect (M2-8b). Accounts without an email are the demo's test people, who can't sign in. */}

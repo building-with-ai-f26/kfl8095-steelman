@@ -50,16 +50,20 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
   "POST /update-user",
   "GET /get-session",
   "POST /sign-out",
+  // Changing your email (M2-8c): a code to the new address, then the code.
+  "POST /email-otp/request-email-change",
+  "POST /email-otp/change-email",
   // Google: the browser asks to start, and Google sends it back here.
   "POST /sign-in/social",
   "GET /callback/google",
 ]);
 
 /**
- * The routes that store a sign-in code: asking for one, and signing in with a
- * wrong one, which puts the code back with one more try counted.
+ * The routes that store a code: asking for one, and using a wrong one, which
+ * puts the code back with one more try counted. For signing in, and for
+ * changing your email.
  */
-const CODE_ROUTES: ReadonlySet<string> = new Set(["/email-otp/send-verification-otp", "/sign-in/email-otp"]);
+const CODE_ROUTES: ReadonlySet<string> = new Set(["/email-otp/send-verification-otp", "/sign-in/email-otp", "/email-otp/request-email-change", "/email-otp/change-email"]);
 
 /** What a request to start a Google sign-in may carry: which provider, and where to send the browser afterwards. */
 const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackURL", "errorCallbackURL", "newUserCallbackURL"]);
@@ -91,6 +95,11 @@ export interface SignedIn {
 }
 
 export function createSignIn({ db, clock, ids, origin, secret, email, google }: SignInDependencies & { db: Db; clock: Clock; ids: IdSource }) {
+  /** Who is changing their email, by request, from before the change to after it. */
+  const changing = new WeakMap<Request, { id: string; email: string }>();
+  /** The account a request's session signs in, read before Better Auth answers it. */
+  const sessionOf = async (headers: Headers | undefined) => (headers ? await auth.api.getSession({ headers }) : null)?.user ?? null;
+
   const auth = betterAuth({
     appName: "Steelman",
     baseURL: origin,
@@ -183,11 +192,27 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
             throw new APIError("BAD_REQUEST", { code: "GOOGLE_START_FIELDS", message: "Start a Google sign-in with the provider and where to go afterwards, nothing else." });
           }
         }
+        if (ctx.path === "/email-otp/request-email-change") return beforeEmailChangeCode(ctx.headers, (ctx.body as { newEmail?: unknown } | undefined)?.newEmail);
+        if (ctx.path === "/email-otp/change-email") {
+          const person = await sessionOf(ctx.headers);
+          if (person && ctx.request) changing.set(ctx.request, { id: person.id, email: person.email });
+          return;
+        }
         if (ctx.path !== "/email-otp/send-verification-otp") return;
         const address = String((ctx.body as { email?: unknown } | undefined)?.email ?? "").toLowerCase();
         if (!(await mayEmail(db, clock, address))) {
           throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_EMAILS", message: "Too many sign-in emails to this address. Try again in an hour." });
         }
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/email-otp/change-email") return;
+        const before = ctx.request ? changing.get(ctx.request) : undefined;
+        // Only a change that happened: Better Auth answers { success: true }, and the account now has the new email.
+        // (A request it refuses before it starts, such as one with no code, isn't one of its own APIErrors.)
+        if (!before || (ctx.context.returned as { success?: unknown } | undefined)?.success !== true) return;
+        const now = await db.selectFrom("account").select("email").where("id", "=", before.id).executeTakeFirst();
+        if (!now?.email || now.email.toLowerCase() === before.email.toLowerCase()) return;
+        await afterEmailChanged(before, now.email.toLowerCase());
       }),
     },
     plugins: [
@@ -200,7 +225,10 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
         resendStrategy: "rotate",
         async sendVerificationOTP({ email: to, otp, type }) {
           if (type === "sign-in") await email.sendSignInCode(to, otp);
+          if (type === "change-email") await email.sendEmailChangeCode(to, otp);
         },
+        // A code to the new address is the check; no recent sign-in is asked for (as Notion, the builder's decision Nov 22).
+        changeEmail: { enabled: true, verifyCurrentEmail: false },
       }),
       username({
         minUsernameLength: USERNAME.min,
@@ -214,6 +242,45 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
       ...(google ? [googleSignIn(google)] : []),
     ],
   });
+
+  /**
+   * Before a code for a new email is sent: the new address's limit of five
+   * emails an hour, as for signing in. If another account already uses the
+   * address, Better Auth sends no code and still answers that it did, so the
+   * form can't be used to find out who has an account; the address is told
+   * instead, so its owner isn't left waiting for a code.
+   */
+  async function beforeEmailChangeCode(headers: Headers | undefined, newEmail: unknown): Promise<void> {
+    const person = await sessionOf(headers);
+    const address = typeof newEmail === "string" ? newEmail.trim().toLowerCase() : "";
+    // Better Auth refuses these itself: signed out, not an address, or the same email.
+    if (!person || !address.includes("@") || address === person.email.toLowerCase()) return;
+    if (!(await mayEmail(db, clock, address))) {
+      throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_EMAILS", message: "Too many emails to this address. Try again in an hour." });
+    }
+    // As Better Auth and the unique index compare them, in lower case. A deleted account's email is erased, so it doesn't count.
+    const other = await db.selectFrom("account").select("id").where(sql<string>`lower(email)`, "=", address).executeTakeFirst();
+    if (other) await email.sendEmailInUse(address);
+  }
+
+  /**
+   * Once the email has changed: Google signs in only with the new address, so
+   * a Google account joined through the old one is let go (it joins again if
+   * its email is the new one); and the old address is told, as Notion does.
+   */
+  async function afterEmailChanged(before: { id: string; email: string }, newEmail: string): Promise<void> {
+    // The email has changed either way, so neither failing turns the answer into an error. No address in the log.
+    try {
+      await db.deleteFrom("sign_in.sign_in_method").where("account_id", "=", before.id).where("provider", "=", "google").execute();
+    } catch {
+      console.error("sign-in error: couldn't let go of Google after an email change");
+    }
+    try {
+      await email.sendEmailChanged(before.email, newEmail);
+    } catch {
+      console.error("sign-in error: couldn't send the note to the old address after an email change");
+    }
+  }
 
   return {
     /** Answers a request to /api/auth/…, if it is one of SIGN_IN_ROUTES. */
