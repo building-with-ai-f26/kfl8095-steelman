@@ -4,6 +4,7 @@
 
 import { tooManyMessage } from "@steelman/shared";
 import type { Access, BoardChanges, BoardList, BoardSnapshot, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
@@ -15,6 +16,8 @@ export type Answer = WriteAnswer | { status: "not_found" } | { status: "invalid"
 async function call(method: string, path: string, body?: unknown, keepalive = false): Promise<Response> {
   const person = chosenTestUser();
   const headers: Record<string, string> = person ? { "x-steelman-test-user": person } : {};
+  // A write says when this browser's analytics are on, so the service may send its event (M2-12). Never on a read.
+  if (method !== "GET" && analyticsOn()) headers["x-steelman-analytics"] = "on";
   if (body !== undefined) headers["content-type"] = "application/json";
   try {
     return await fetch(`/api/${path}`, { method, headers, keepalive, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
