@@ -1,12 +1,20 @@
-// Your account (M-07, M1-12): who you are, how you sign in, Download your
-// data, and Delete account, in the prototype's Account card (profileMarkup,
-// privacyGroup, deleteForm, and deletedMarkup in
-// docs/prototype/source/steelman-refined.html). Typing your username to
-// confirm a deletion is GitHub's way too (checked on docs.github.com).
+// Your account (M-07, M1-12, L-04): who you are, how you sign in, the
+// usage-analytics switch, Download your data, Sign out, and Delete account, in
+// the prototype's Account card (profileMarkup, privacyGroup, deleteForm, and
+// deletedMarkup in docs/prototype/source/steelman-refined.html). Typing your
+// username to confirm a deletion is GitHub's way too (checked on
+// docs.github.com). Sign out sits at the foot of the card, above Delete
+// account, as in the prototype; GitHub and Google keep it last in the account
+// menu too (from memory).
 
 import { useEffect, useId, useRef, useState } from "react";
-import { deleteMyAccount, downloadMyData, readMyAccount } from "./api.ts";
+import { CHOSEN, analyticsStatus, chooseAnalytics, turnOnAnalytics } from "./analytics.ts";
+import type { AnalyticsStatus } from "./analytics.ts";
+import { deleteMyAccount, downloadMyData, listBoards, readMyAccount } from "./api.ts";
+import { Icon } from "./icons.tsx";
+import { signOut } from "./signIn/account.ts";
 import type { MyAccount } from "./api.ts";
+import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
 
 const DELETED = "deleted_account";
@@ -16,10 +24,18 @@ export function Account() {
   const [status, setStatus] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  /** Where Start opens the tour (L-02): the most recently changed board with arguments to point at, as the prototype's opens the last board. */
+  const [tourBoard, setTourBoard] = useState<string | null>(null);
   const deleteLink = useRef<HTMLButtonElement>(null);
+  const signOutButton = useRef<HTMLButtonElement>(null);
   const wasDeleting = useRef(false);
   useEffect(() => {
     void readMyAccount().then(setAccount);
+    void listBoards().then((list) => {
+      if (typeof list === "string") return;
+      setTourBoard(list.boards.find((board) => board.options.some((option) => option.arguments > 0))?.id ?? null);
+    });
   }, []);
   // Cancel puts the cursor back on Delete account.
   useEffect(() => {
@@ -32,6 +48,20 @@ export function Account() {
   if (account === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
 
   const download = async () => setStatus((await downloadMyData()) ? "Downloaded steelman-data.json." : "Couldn’t download your data. Try again.");
+  const leave = async () => {
+    setSigningOut(true);
+    const ended = await signOut();
+    setSigningOut(false);
+    if (!ended) {
+      setStatus("Couldn’t sign you out. Try again.");
+      // Re-enabled by now, so the keyboard's place is back on it.
+      window.setTimeout(() => signOutButton.current?.focus());
+      return;
+    }
+    forgetTestUser();
+    // A fresh page, so nothing of the account stays in memory; signed out, it shows Sign in.
+    window.location.assign("/");
+  };
   return (
     <main className="sm-landing" data-canvas="cool">
       <div className="sm-landing-inner">
@@ -50,17 +80,31 @@ export function Account() {
               </Row>
             )}
           </div>
-          {account.signIn.length > 0 && (
+          {/* As Notion: Google signs in to the account with the same email, so there's nothing to connect or
+              disconnect (M2-8b). Accounts without an email are the demo's test people, who can't sign in. */}
+          {account.email && (
             <div className="sm-rgroup">
               <h2>Sign in with</h2>
-              {account.signIn.map((method) => (
-                <Row key={method} label={method} />
-              ))}
+              <Row label="Email code" hint="We email you a code each time you sign in." />
+              <Row label="Google" hint="You can sign in with Google if your Google account uses this email." />
+            </div>
+          )}
+          {/* Only once there's a board with something to point at: before then, the tour hasn't shown either. */}
+          {tourBoard && (
+            <div className="sm-rgroup">
+              <Row label="Tour" hint="Learn how voting works on a board.">
+                <span className="sm-rrow-control">
+                  <a className="sm-button cursor-interaction" href={`${boardPath(tourBoard)}?tour`}>
+                    Start
+                  </a>
+                </span>
+              </Row>
             </div>
           )}
           <div className="sm-rgroup">
             <h2>Privacy</h2>
-            <Row label="Your data" hint="What you wrote, voted, and assessed">
+            <AnalyticsRow onChange={setStatus} />
+            <Row label="Your data" hint="Download a copy of everything you wrote, voted on, and assessed.">
               <span className="sm-rrow-control">
                 <button type="button" className="sm-button cursor-interaction" onClick={() => void download()}>
                   Download
@@ -75,6 +119,10 @@ export function Account() {
               </span>
             </Row>
           </div>
+          <button ref={signOutButton} type="button" className="sm-button sm-signout cursor-interaction" disabled={signingOut} onClick={() => void leave()}>
+            <Icon name="log-out" size={16} />
+            Sign out
+          </button>
           {deleting ? (
             <DeleteForm
               username={account.username ?? ""}
@@ -95,6 +143,44 @@ export function Account() {
         {status}
       </div>
     </main>
+  );
+}
+
+/** Usage analytics, as the prototype's privacyGroup has it: the same choice as the first-visit notice and the privacy page, kept in this browser. No row when analytics aren't running here. */
+function AnalyticsRow({ onChange }: { onChange(status: string): void }) {
+  const [status, setStatus] = useState<AnalyticsStatus | null>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const read = () => void analyticsStatus().then(setStatus);
+    read();
+    // The first-visit notice changes the same choice; the row follows it.
+    window.addEventListener(CHOSEN, read);
+    return () => window.removeEventListener(CHOSEN, read);
+  }, []);
+  if (status === null || status === "none") return null;
+  if (status === "signal")
+    return (
+      <Row label="Usage analytics" hint="Your browser asks sites not to track you.">
+        <span className="sm-rrow-value">Off</span>
+      </Row>
+    );
+  const change = async () => {
+    if (status === "off") await turnOnAnalytics();
+    else chooseAnalytics(false);
+    const now = await analyticsStatus();
+    setStatus(now);
+    onChange(now === "on" ? "Usage analytics are on." : "Usage analytics are off. Nothing more is sent from this browser.");
+    toggle.current?.focus();
+  };
+  return (
+    <Row label="Usage analytics" hint="Steelman sends PostHog the pages you visit, what you click, and replays of your screen. Anything you type is hidden.">
+      <span className="sm-rrow-control">
+        <span className="sm-rrow-value">{status === "on" ? "On" : "Off"}</span>
+        <button ref={toggle} type="button" className="sm-button cursor-interaction" aria-label={status === "on" ? "Turn off usage analytics" : "Turn on usage analytics"} onClick={() => void change()}>
+          {status === "on" ? "Turn off" : "Turn on"}
+        </button>
+      </span>
+    </Row>
   );
 }
 

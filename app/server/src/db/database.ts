@@ -23,6 +23,8 @@ export interface Database {
     created_at: Date;
     updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
     deleted_at: Date | null;
+    /** When the account was first shown the tour (L-02; migration 0011). Null until then. */
+    tour_seen_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
   };
   // Sign-in's own tables (migration 0007). Better Auth reads and writes
   // these; the service's own code uses only sent_email.

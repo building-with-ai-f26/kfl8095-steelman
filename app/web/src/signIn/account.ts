@@ -2,6 +2,8 @@
 // server/src/sign-in.ts lets through (SIGN_IN_ROUTES). Each call answers in
 // what the screens need to say, not in Better Auth's error codes.
 
+import { chosenTestUser } from "../testUser.ts";
+
 export interface Me {
   id: string;
   email: string;
@@ -88,4 +90,11 @@ export async function chooseUsername(username: string): Promise<NameAnswer> {
   if (reply?.body?.code === "USERNAME_IS_ALREADY_TAKEN") return "taken";
   if (reply?.status === 400) return "invalid";
   return "failed";
+}
+
+/** Ends this browser's session on the service. False when the service couldn't be reached or refused. */
+export async function signOut(): Promise<boolean> {
+  const reply = await post("sign-out", {});
+  // Acting as a test account (development and tests, sign-in off), there's no session to end, and the route isn't there.
+  return reply !== null && (reply.status === 200 || (reply.status === 404 && chosenTestUser() !== null));
 }

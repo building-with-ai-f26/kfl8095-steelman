@@ -31,7 +31,7 @@ const HEIRS = ["owner", "editor", "contributor"];
 export interface AccountSummary {
   username: string | null;
   email: string | null;
-  /** How they can sign in: "Email code" for anyone with an email, and "Google" if linked. */
+  /** How they have signed in: "Email code" for anyone with an email, and "Google" if linked. Used by Download your data; Your account lists both ways in for everyone (M2-8b). */
   signIn: string[];
 }
 
@@ -44,6 +44,18 @@ export async function accountSummary(db: Db, person: string): Promise<AccountSum
     email: account.email,
     signIn: [...(account.email ? ["Email code"] : []), ...methods.map((method) => (method.provider === "google" ? "Google" : method.provider))],
   };
+}
+
+/** Whether the account has been shown the tour (L-02), or null when there's no such account. */
+export async function tourSeen(db: Db, person: string): Promise<boolean | null> {
+  const account = await db.selectFrom("account").select("tour_seen_at").where("id", "=", person).where("deleted_at", "is", null).executeTakeFirst();
+  return account ? account.tour_seen_at !== null : null;
+}
+
+/** Records that the account has been shown the tour. Taken again, it keeps when it was first shown. */
+export async function markTourSeen(db: Db, clock: Clock, person: string): Promise<boolean> {
+  await db.updateTable("account").set({ tour_seen_at: clock.now() }).where("id", "=", person).where("deleted_at", "is", null).where("tour_seen_at", "is", null).execute();
+  return (await tourSeen(db, person)) !== null;
 }
 
 /**
