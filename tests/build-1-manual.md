@@ -1596,6 +1596,20 @@ Build plan M2-12, with Q29 (Nov 17): events from the service, anonymous like the
 | Tests first | `server/test/api/server-events.test.ts` (6) and `e2e/server-events.spec.ts` (4, a fourth after the second reader), seen to fail first (two browser tests passed from the start, since nothing sent the header yet) |
 | Known limitations | PostHog sees the service's address, not the person's, so the events have no location; with the browser's events off, nothing joins them to a visit. Not tested against PostHog itself (a stand-in receives them) |
 
+## November 22 — The ways in on Your account (L-04)
+
+Build plan M2-8b. The plan said Google Connect and Disconnect; the builder's decision (Nov 22) was to follow a credible product. Notion signs in the way Steelman does (an email code or Google, no password) and has neither button, so Steelman follows it.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | Notion's live help, checked Nov 22: Google sign-in works "as long as your Notion account email is the same as your Google email", and there's no Connect or Disconnect. Steelman already joins a Google sign-in to the account with the same email, so Connect would do nothing and Disconnect would be undone by the next Google sign-in. Taken: both ways in listed, with no buttons |
+| Sign in with | Two rows for anyone with an email: "Email code: We email you a code each time you sign in." and "Google: You can sign in with Google if your Google account uses this email." The same whether the person has used Google yet. Before, Google showed only once used, with no explanation. The demo's test people, who have no email, see no group, as before |
+| The prototype | The same rows arrive in the prototype's Account card with PR 82 (M2-8c's design), not merged yet; until then the prototype still shows Connect and Disconnect |
+| The architecture | `plans/architecture.md` F7 no longer says "connect or disconnect Google"; it records the builder's decision |
+| Second reader | A fresh agent found nothing blocking. Taken from its points: F7 updated; the group gets an accessibility scan; a test that the demo's test people (no email) see no group; each row's label and hint checked apart; the limitations below |
+| Tests first | `e2e/sign-in-methods.spec.ts` (2: signed in by code, and with Google), seen to fail first; the no-email test in `e2e/account-card.spec.ts` passed from the start, as before |
+| Known limitations | The Google row says what Google sign-in allows, with the sign-in page's own limits: while Google's consent screen is in Testing only listed test users can use it, a school's Google Workspace can block it, and locally without a Google client it isn't available. Once the email can change (M2-8c), Google must sign in only with the new address for the row to stay true; that's part of M2-8c's design |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

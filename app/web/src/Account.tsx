@@ -80,12 +80,13 @@ export function Account() {
               </Row>
             )}
           </div>
-          {account.signIn.length > 0 && (
+          {/* As Notion: Google signs in to the account with the same email, so there's nothing to connect or
+              disconnect (M2-8b). Accounts without an email are the demo's test people, who can't sign in. */}
+          {account.email && (
             <div className="sm-rgroup">
               <h2>Sign in with</h2>
-              {account.signIn.map((method) => (
-                <Row key={method} label={method} />
-              ))}
+              <Row label="Email code" hint="We email you a code each time you sign in." />
+              <Row label="Google" hint="You can sign in with Google if your Google account uses this email." />
             </div>
           )}
           {/* Only once there's a board with something to point at: before then, the tour hasn't shown either. */}
