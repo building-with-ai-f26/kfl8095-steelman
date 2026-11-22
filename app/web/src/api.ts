@@ -174,6 +174,25 @@ export async function send(board: string, action: QueuedAction, keepalive = fals
   return (await response.json()) as Answer;
 }
 
+/** Whether this account has been shown the tour (L-02), or null when the service can't say, and then it doesn't show. */
+export async function readTour(): Promise<boolean | null> {
+  try {
+    const response = await call("GET", "account/tour");
+    return response.ok ? ((await response.json()) as { seen: boolean }).seen : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Tells the service the tour has been shown, so it isn't shown again on any device. If this doesn't arrive, it shows once more. */
+export async function markTourSeen(): Promise<void> {
+  try {
+    await call("PUT", "account/tour");
+  } catch {
+    // Nothing to tell the reader: at worst the tour opens again on their next board.
+  }
+}
+
 /** Your account (M-07): who you are and how you sign in. */
 export interface MyAccount {
   username: string | null;

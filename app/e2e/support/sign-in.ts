@@ -11,6 +11,7 @@
 import { createServer } from "node:net";
 import { test as base, expect } from "@playwright/test";
 import pg from "pg";
+import { sql } from "kysely";
 import type { Page } from "@playwright/test";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import { buildApp } from "../../server/src/app.ts";
@@ -56,15 +57,23 @@ export interface SignInSite {
   errors: string[];
 }
 
-export const test = base.extend<{ site: SignInSite; limits: Limits | undefined }>({
+export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; tour: boolean }>({
   // `test.use({ limits })` gives the service its own rate limits, small enough to reach (M-12). Without it, the class trial's.
   limits: [undefined, { option: true }],
-  site: async ({ browser, limits }, use) => {
+  // `test.use({ tour: true })` leaves accounts never shown the tour (L-02), as on the real site. Without it, every
+  // account here, the ones signing in for the first time included, has been shown it, so it doesn't cover the board
+  // a test is about. Only in this test's own copy of the database.
+  tour: [false, { option: true }],
+  site: async ({ browser, limits, tour }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(11);
     const db = createDatabase(databaseUrl.href);
     const demo = await seedDemoBoard(db, clock, ids);
+    if (!tour) {
+      await db.updateTable("account").set({ tour_seen_at: NOON }).execute();
+      await sql`alter table account alter column tour_seen_at set default ${sql.lit(NOON.toISOString())}`.execute(db);
+    }
     await db.destroy();
 
     // Writes must come from the site's own origin, so the port is chosen before the service is built.
