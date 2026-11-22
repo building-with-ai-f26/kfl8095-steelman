@@ -21,6 +21,8 @@ import { seedDemoBoard } from "../../server/src/demo-board.ts";
 import type { DemoBoard } from "../../server/src/demo-board.ts";
 import { startFakeGoogle } from "../../server/test/support/fake-google.ts";
 import type { FakeGoogle } from "../../server/test/support/fake-google.ts";
+import { outboxEmail } from "../../server/test/support/outbox.ts";
+import type { Sent } from "../../server/test/support/outbox.ts";
 import { copyTemplate, dropDatabase, serveWebApp } from "./board.ts";
 
 const NOON = new Date("2026-11-16T12:00:00Z");
@@ -45,8 +47,10 @@ export interface SignInSite {
   google: FakeGoogle;
   /** The latest code emailed to an address. */
   codeFor(email: string): string;
-  /** How many sign-in emails an address has been sent. */
+  /** How many emails an address has been sent: codes and notes. */
   sentTo(email: string): number;
+  /** Every email an address has been sent, oldest first. */
+  sentAll(email: string): Sent[];
   /** Ages every code waiting to be typed past its ten minutes. (Better Auth checks expiry on the real clock.) */
   expireCodes(): Promise<void>;
   /** Runs SQL on the site's database, as its owner: for setting up what the app can't do yet, such as inviting someone (H-01). */
@@ -84,7 +88,7 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
     // tests fake it with vi.useFakeTimers). With the test clock, every token expired once the real day passed
     // the test clock's hour plus one (13:00 UTC, November 16).
     const google = await startFakeGoogle({ now: () => new Date() });
-    const outbox: { to: string; code: string }[] = [];
+    const outbox: Sent[] = [];
     const app = buildApp({
       clock,
       ids,
@@ -95,7 +99,7 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
         origin,
         // Not a secret: it signs cookies in a throwaway test database only.
         secret: "e2e-only-signing-key-not-a-secret-000000000000",
-        email: { sendSignInCode: async (to, code) => void outbox.push({ to, code }) },
+        email: outboxEmail(outbox),
         google: { clientId: google.clientId, clientSecret: google.clientSecret, discoveryUrl: google.discoveryUrl },
       },
     });
@@ -110,13 +114,14 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
       google,
       errors,
       codeFor(email) {
-        const sent = outbox.filter((message) => message.to === email.toLowerCase()).at(-1);
+        const sent = outbox.filter((message) => message.to === email.toLowerCase() && message.code !== "").at(-1);
         if (!sent) throw new Error(`No code was emailed to ${email}`);
         return sent.code;
       },
       sentTo: (email) => outbox.filter((message) => message.to === email.toLowerCase()).length,
+      sentAll: (email) => outbox.filter((message) => message.to === email.toLowerCase()),
       async expireCodes() {
-        await site.sql("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%'");
+        await site.sql("update sign_in.sign_in_code set expires_at = now() - interval '1 minute' where identifier like 'sign-in-otp-%' or identifier like 'change-email-otp-%'");
       },
       async sql(text, values) {
         const client = new pg.Client({ connectionString: databaseUrl.href });

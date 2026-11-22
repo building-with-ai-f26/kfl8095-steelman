@@ -18,14 +18,13 @@ import { NOON } from "./board.ts";
 import type { TestDatabase } from "./database.ts";
 import { startFakeGoogle } from "./fake-google.ts";
 import type { FakeGoogle, GoogleAccount } from "./fake-google.ts";
+import { outboxEmail } from "./outbox.ts";
+import type { Sent } from "./outbox.ts";
+
+export type { Sent };
 
 /** The site the tests pretend to be. https, so cookies are marked Secure as they are when deployed. */
 export const ORIGIN = "https://steelman.test";
-
-export interface Sent {
-  to: string;
-  code: string;
-}
 
 export interface Request {
   /** The session cookie to send, as `name=value`. */
@@ -130,7 +129,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
         origin: ORIGIN,
         // Not a secret: it signs cookies in a throwaway test database only.
         secret: "test-only-signing-key-not-a-secret-0000000000",
-        email: { sendSignInCode: async (to, code) => void outbox.push({ to, code }) },
+        email: outboxEmail(outbox),
         ...(google ? { google: { clientId: google.clientId, clientSecret: google.clientSecret, discoveryUrl: google.discoveryUrl } } : {}),
       },
     });
@@ -168,7 +167,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
   };
 
   const codeFor = (email: string) => {
-    const sent = outbox.filter((message) => message.to === email.toLowerCase()).at(-1);
+    const sent = outbox.filter((message) => message.to === email.toLowerCase() && message.code !== "").at(-1);
     if (!sent) throw new Error(`No code was emailed to ${email}`);
     return sent.code;
   };

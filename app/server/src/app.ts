@@ -244,8 +244,9 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
         const url = new URL(request.url, signInDependencies.origin);
         const route = `${request.method} ${url.pathname.slice("/api/auth".length)}`;
         if (!SIGN_IN_ROUTES.has(route)) return reply.code(404).send({ reason: "not_found" });
-        // Codes to any address from one network address (architecture §7); the per-address limit is sign-in's own.
-        if (route === "POST /email-otp/send-verification-otp") {
+        // Codes to any address from one network address (architecture §7), for signing in and for a new email;
+        // the per-address limit is sign-in's own.
+        if (route === "POST /email-otp/send-verification-otp" || route === "POST /email-otp/request-email-change") {
           const wait = limiter.take("signInCode", callerNetwork(request, behindProxy));
           if (wait !== null) {
             return reply.code(429).header("retry-after", String(wait)).send({ code: "TOO_MANY_REQUESTS", message: tooManyMessage(wait), retryAfter: wait });
