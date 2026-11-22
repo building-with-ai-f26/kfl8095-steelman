@@ -20,6 +20,8 @@ import {
   sourceInput,
   voteInput,
   tooManyMessage,
+  combineInput,
+  separateInput,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { createEvents } from "./events.ts";
@@ -41,6 +43,7 @@ import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { readHistory } from "./history.ts";
+import { combineArguments, separateWording, undoStructure } from "./structure.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -131,6 +134,10 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   not_author: 403,
   board_closed: 409,
   argument_deleted: 409,
+  not_same_option: 409,
+  only_wording: 409,
+  combined_since: 409,
+  cant_undo: 409,
   option_deleted: 409,
   option_not_empty: 409,
   too_few_options: 409,
@@ -461,6 +468,25 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id/restore", { config: { limit: "writing" } }, async (request, reply) =>
     answer(reply, await restoreOption(services, request.params.board, request.person, request.params.id)),
   );
+
+  // Combine and separate (M3a-6, A-10), and undoing either by its change number: an Editor's and the Owner's.
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/combine", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = combineInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await combineArguments(services, request.params.board, request.person, request.params.id, body.data.into));
+  });
+
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/separate", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = separateInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await separateWording(services, request.params.board, request.person, request.params.id, body.data.argumentId));
+  });
+
+  app.put<{ Params: { board: string; seq: string } }>("/api/boards/:board/changes/:seq/undo", { config: { limit: "writing" } }, async (request, reply) => {
+    const seq = Number(request.params.seq);
+    if (!Number.isSafeInteger(seq) || seq < 1) return reply.code(400).send({ reason: "invalid" });
+    return answer(reply, await undoStructure(services, request.params.board, request.person, seq));
+  });
 
   // History (M3a-4, J-03): the change log read back, for anyone who can read the board.
   app.get<{ Params: { board: string } }>("/api/boards/:board/history", async (request, reply) => {

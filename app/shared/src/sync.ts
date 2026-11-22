@@ -83,7 +83,8 @@ export function pillCount(view: ReaderView): number {
 
 /**
  * Things others removed that the reader still sees, marked, until Update. An
- * argument deleted along with its wordings counts once.
+ * argument deleted along with its wordings counts once, and so does one
+ * combined into another; a wording separated out counts once.
  */
 function markedChanges(view: ReaderView): number {
   let marked = 0;
@@ -97,6 +98,8 @@ function markedChanges(view: ReaderView): number {
     for (const id of versionIds) {
       const version = view.rows.versions[id];
       if (!isLiveVersion(version) && !(version?.hidden && !version.deleted)) marked++;
+      // A wording someone separated into its own argument, still shown where it was (M3a-6).
+      else if (version && version.argumentId !== argumentId) marked++;
     }
   }
   return marked;
@@ -160,17 +163,28 @@ function holdStill(shown: BoardOrder, rows: BoardRows): BoardOrder {
     delete next.arguments[optionId];
     for (const argumentId of argumentIds) delete next.versions[argumentId];
   }
+  // A wording that moved, by a combine or a separation (M3a-6), stays where the reader sees it until Update; it doesn't
+  // also join the argument it went into. A new argument made only of wordings shown elsewhere waits for Update too.
+  const shownAnywhere = new Set(Object.values(next.versions).flat());
+  const waiting = (argumentId: string) => {
+    const wordings = Object.values(rows.versions).filter((version) => version.argumentId === argumentId && isLiveVersion(version));
+    return wordings.length > 0 && wordings.every((version) => shownAnywhere.has(version.id));
+  };
   const options = Object.values(rows.options).filter((option) => !option.deleted).sort((a, b) => a.position - b.position);
   for (const option of options) {
     const held = next.arguments[option.id] ?? [];
-    const added = Object.values(rows.arguments).filter((argument) => argument.optionId === option.id && isLive(argument) && !held.includes(argument.id)).sort(byAdded);
+    const added = Object.values(rows.arguments)
+      .filter((argument) => argument.optionId === option.id && isLive(argument) && !held.includes(argument.id) && !waiting(argument.id))
+      .sort(byAdded);
     next.arguments[option.id] = [...held, ...added.map((argument) => argument.id)];
   }
   for (const argumentIds of Object.values(next.arguments)) {
     for (const argumentId of argumentIds) {
       if (!isLive(rows.arguments[argumentId]) && next.versions[argumentId] !== undefined) continue;
       const held = next.versions[argumentId] ?? [];
-      const added = Object.values(rows.versions).filter((version) => version.argumentId === argumentId && isLiveVersion(version) && !held.includes(version.id)).sort(byAdded);
+      const added = Object.values(rows.versions)
+        .filter((version) => version.argumentId === argumentId && isLiveVersion(version) && !held.includes(version.id) && !shownAnywhere.has(version.id))
+        .sort(byAdded);
       next.versions[argumentId] = [...held, ...added.map((version) => version.id)];
     }
   }

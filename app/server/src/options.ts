@@ -96,7 +96,7 @@ export function restoreOption({ db, clock }: Services, boardId: string, person: 
 }
 
 /** Whether an ID is already some other item's: an argument, a wording, or a source. */
-async function idUsed(trx: Trx, id: string): Promise<boolean> {
+export async function idUsed(trx: Trx, id: string): Promise<boolean> {
   const { rows } = await sql<{ used: boolean }>`
     select exists (select 1 from argument where id = ${id})
         or exists (select 1 from version where id = ${id})

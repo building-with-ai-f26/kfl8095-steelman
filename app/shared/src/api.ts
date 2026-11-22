@@ -26,6 +26,10 @@ export const newArgumentInput = z.strictObject({
 /** A new option, with the ID the browser made for it, and an option's new name (M3a-2, A-07). */
 export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionNameInput });
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
+/** Combining one argument into another (M3a-6): the one it goes into. */
+export const combineInput = z.strictObject({ into: itemIdInput });
+/** Separating a wording (M3a-6): the ID the browser made for its new argument. */
+export const separateInput = z.strictObject({ argumentId: itemIdInput });
 
 /** A new wording of an existing argument. */
 export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
@@ -114,6 +118,8 @@ export interface ArgumentRow {
   changedSeq: number;
   /** The reader's own importance vote. */
   myVote: 1 | -1 | null;
+  /** Present when the reader's two votes disagreed as this argument was combined, so they're asked to vote again (M3a-6, PRD §5). */
+  askedAgain?: true;
 }
 
 export interface VersionRow {
@@ -278,6 +284,14 @@ export type RefusalReason =
   | "not_author"
   | "test_users_off"
   | "argument_deleted"
+  /** Two arguments are combined only within one option, and never one into itself (M3a-6). */
+  | "not_same_option"
+  /** An argument's only wording can't be separated from it (M3a-6). */
+  | "only_wording"
+  /** A combine a later combine built on can't be undone (M3a-6, as Canny won't unmerge a post merged again). */
+  | "combined_since"
+  /** Only a combine or a separation can be undone this way (M3a-6). */
+  | "cant_undo"
   /** The option was deleted (M3a-2). */
   | "option_deleted"
   /** An option with arguments can't be deleted; they'd have nowhere to go (M3a-2). */

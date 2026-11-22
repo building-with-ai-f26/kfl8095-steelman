@@ -282,3 +282,52 @@ test("M2-4, J-02: a wording hidden while on screen stays where it is, and after 
   expect(updated.shown.versions.a).toEqual(["a1", "a2"]);
   expect(pillCount(updated)).toBe(0);
 });
+
+describe("combined and separated by someone else (M3a-6)", () => {
+  test("A-10, M-02: a combined argument stays where it is, marked, and its wordings don't also join the other until Update", () => {
+    const view = openView(snapshot());
+
+    const after = receive(view, {
+      ...nothing(6),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 6 }), argument("b", "yes", 2, { importance: 3, changedSeq: 6 })],
+      versions: [version("a1", "b", 1, { changedSeq: 6 }), version("a2", "b", 1, { changedSeq: 6 })],
+    });
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c"]);
+    expect(after.shown.versions.a).toEqual(["a2", "a1"]);
+    expect(after.shown.versions.b).toEqual(["b1"]);
+    expect(pillCount(after)).toBe(1);
+
+    const updated = pressUpdate(after);
+    expect(updated.shown.arguments.yes).not.toContain("a");
+    expect(updated.shown.versions.b).toEqual(expect.arrayContaining(["b1", "a1", "a2"]));
+  });
+
+  test("A-10, M-02: a wording added to the combined argument afterwards still joins its end", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 6 })],
+      versions: [version("a1", "b", 1, { changedSeq: 6 }), version("a2", "b", 1, { changedSeq: 6 })],
+    });
+
+    const after = receive(view, { ...nothing(7), versions: [version("b9", "b", 7)] });
+
+    expect(after.shown.versions.b).toEqual(["b1", "b9"]);
+  });
+
+  test("A-10, M-02: a separated wording stays where it is, marked; its new argument waits for Update", () => {
+    const view = openView(snapshot());
+
+    const after = receive(view, { ...nothing(6), arguments: [argument("z", "yes", 6)], versions: [version("a1", "z", 1, { changedSeq: 6 })] });
+
+    expect(after.shown.versions.a).toEqual(["a2", "a1"]);
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c"]);
+    expect(pillCount(after)).toBe(1);
+
+    const updated = pressUpdate(after);
+    expect(updated.shown.arguments.yes).toEqual(["b", "a", "c", "z"]);
+    expect(updated.shown.versions.a).toEqual(["a2"]);
+    expect(updated.shown.versions.z).toEqual(["a1"]);
+  });
+});
+

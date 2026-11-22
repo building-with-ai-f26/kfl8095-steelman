@@ -10,6 +10,7 @@
 import { sql } from "kysely";
 import type { Clock } from "@steelman/shared";
 import { versionRows } from "./read.ts";
+import { argumentNow } from "./votes.ts";
 import { writeToBoard } from "./write-path.ts";
 import type { Outcome, Services, Trx, WriteResult } from "./write-path.ts";
 
@@ -53,15 +54,17 @@ export function addWording(
 ): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
     action: "add",
-    load: async (trx) => (await trx.selectFrom("argument").select("deleted_at").where("id", "=", argumentId).where("board_id", "=", boardId).executeTakeFirst()) ?? null,
+    // A wording for an argument combined away is added to the one it went into: drafts follow their argument (M3a-6, §3).
+    load: (trx) => argumentNow(trx, boardId, argumentId),
     stale: async (_trx, argument) => (argument.deleted_at ? { refused: "argument_deleted" } : null),
-    change: async (trx, _argument, seq) => {
+    change: async (trx, argument, seq) => {
       const existing = await trx.selectFrom("version").select(["board_id", "argument_id", "author_id"]).where("id", "=", input.id).executeTakeFirst();
       if (existing) {
-        const same = existing.board_id === boardId && existing.argument_id === argumentId && existing.author_id === person;
+        // Sent again: to the argument named, or to the one that argument has since been combined into.
+        const same = existing.board_id === boardId && existing.author_id === person && (existing.argument_id === argumentId || existing.argument_id === argument.id);
         return same ? "already_done" : { refused: "id_taken" };
       }
-      await insertVersion(trx, clock, { boardId, argumentId, person: person!, seq, ...input });
+      await insertVersion(trx, clock, { boardId, argumentId: argument.id, person: person!, seq, ...input });
       return "done";
     },
   });

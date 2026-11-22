@@ -270,6 +270,8 @@ async function deleteReports(trx: Trx, boardId: string, person: string, seq: num
 }
 
 async function withdrawJudgments(trx: Trx, boardId: string, person: string, seq: number): Promise<void> {
+  // Votes a combine set aside, to put back if it's undone, are votes too (M3a-6).
+  await trx.deleteFrom("combine_vote").where("board_id", "=", boardId).where("account_id", "=", person).execute();
   const argumentIds = (await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).where("account_id", "=", person).returning("argument_id").execute()).map((row) => row.argument_id);
   if (argumentIds.length > 0) {
     await trx
@@ -347,6 +349,7 @@ async function deleteBoard(trx: Trx, boardId: string, now: Date, seq: number): P
   await trx.updateTable("version_revision").set({ wording: null, context: null }).where("board_id", "=", boardId).execute();
   await trx.updateTable("source").set({ name: "", locator: "", finding: "", backs_up: "", limits: "", changed_seq: seq }).where("board_id", "=", boardId).execute();
   await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).execute();
+  await trx.deleteFrom("combine_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("articulation_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("assessment").where("board_id", "=", boardId).execute();
   await trx.updateTable("argument").set({ importance: 0, importance_voters: 0, changed_seq: seq }).where("board_id", "=", boardId).execute();
