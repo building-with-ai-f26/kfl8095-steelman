@@ -31,10 +31,8 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
   // The board draws again on every poll; the dialog keeps its cursor where it is.
   const cancel = useRef(onCancel);
   cancel.current = onCancel;
-  const merges = asking.kind === "combine" && asking.last;
-
   useEffect(() => {
-    if (!merges) return;
+    if (asking.kind !== "combine") return;
     let current = true;
     void loadPreview().then((read) => current && setPreview(read));
     return () => {
@@ -65,14 +63,16 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
     return () => document.removeEventListener("keydown", onKey, true);
   }, []);
 
-  const title = asking.kind === "separate" ? "Make this wording its own argument?" : asking.last ? "Combine these arguments?" : "Combine this wording with that argument?";
-  const note = merges && preview && preview.last ? askedAgain(preview) : null;
+  // The service has the last word on whether the arguments become one: once it says, the title follows it.
+  const becomesOne = asking.kind === "combine" && (preview?.last ?? asking.last);
+  const title = asking.kind === "separate" ? "Make this wording its own argument?" : becomesOne ? "Combine these arguments?" : "Combine this wording with that argument?";
+  const note = preview?.last ? askedAgain(preview) : null;
   return (
     <>
       <div className="sm-preview-scrim" onClick={onCancel} />
-      <section ref={box} className="sm-preview" role="dialog" aria-modal="true" aria-labelledby="sm-preview-title">
+      <section ref={box} className="sm-preview" role="dialog" aria-modal="true" aria-labelledby="sm-preview-title" aria-describedby="sm-preview-what">
         <h2 id="sm-preview-title">{title}</h2>
-        <div className="sm-preview-pair">
+        <div className="sm-preview-pair" id="sm-preview-what">
           <blockquote className="ph-no-capture">{short(asking.wording)}</blockquote>
           {asking.kind === "combine" ? (
             <>
@@ -84,7 +84,10 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
             </>
           ) : null}
         </div>
-        {note ? <p className="sm-field-hint">{note}</p> : null}
+        {/* A live region, since it can arrive after the cursor is on Combine. */}
+        <p className={note ? "sm-field-hint" : "sm-sr"} role="status">
+          {note}
+        </p>
         <div className="sm-preview-actions">
           <button type="button" className="sm-button cursor-interaction" onClick={onCancel}>
             Cancel

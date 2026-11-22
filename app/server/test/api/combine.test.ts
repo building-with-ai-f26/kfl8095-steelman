@@ -366,8 +366,10 @@ describe("the dialog's preview (M3a-7)", () => {
     expect((await preview(eve, extra)).body).toEqual({ last: false, asked: 0, you: false });
   });
 
-  test("A-10, H-03: only someone who may combine reads it", async () => {
+  test("A-10, H-03: only someone who may combine reads it, and only for an argument on this board", async () => {
     expect((await preview(b.ben)).status).toBe(403);
+    expect((await preview(voters[0]!)).status).toBe(403);
+    expect((await api.get(`/api/boards/${b.board}/versions/${b.version}/combine?into=${ids.itemId()}`, { as: eve })).status).toBe(404);
   });
 });
 

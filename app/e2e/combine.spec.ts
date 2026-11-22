@@ -123,6 +123,7 @@ test("M3a-7, A-10: a wording is separated from its ⋯ menu, and by dropping it 
   await expect(status(page)).toHaveText("The wording is now its own argument, at the end of this option. Undo is available for ten seconds.");
   await expect(page.locator(".sm-undo")).toContainText("You made the wording its own argument.");
   expect((await rows(page, "Yes")).at(-1)).toBe(SHIFT);
+  await expect(pill(page)).toBeHidden();
   await page.locator(".sm-undo").getByRole("button", { name: "Undo" }).click();
   await expect(status(page)).toHaveText("The wording is back where it was.");
 
@@ -204,6 +205,31 @@ test("M3a-7, A-10: a wording can't be combined into the other option, and the dr
   await expect(row(page, STUDY)).toHaveAttribute("data-drop-label", "Combine here");
   await expect(row(page, STAFF)).not.toHaveAttribute("data-drop-label");
   await page.mouse.up();
+});
+
+test("M3a-7, A-10, M-02: another reader sees one wording moved out of a row they still see, saying where it went", async ({ board }) => {
+  const lead = await find(board, LEAD);
+  const study = await find(board, STUDY);
+  const other = await board.open("tess.b");
+  await row(other, LEAD).getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
+
+  await board.api("maya.chen").post(`versions/${lead.version}/combine`, { into: study.argument });
+  await poll(other);
+
+  await expect(cardOf(other, SHIFT)).toBeVisible();
+  await expect(column(other, "Yes").locator(".sm-removed-note", { hasText: `This wording was combined with “${short(STUDY)}”.` })).toBeVisible();
+  await expect(pill(other)).toContainText("1 change");
+});
+
+test("M3a-7, A-10: on a touch screen, tapping the handle picks, as the menu does", async ({ board }) => {
+  const page = await board.open("maya.chen", { width: 375, touch: true });
+
+  await handle(page, STUDY).tap();
+  await here(page, FAMILY).tap();
+  await expect(dialog(page)).toHaveAccessibleName("Combine these arguments?");
+  await dialog(page).getByRole("button", { name: "Combine" }).tap();
+
+  await expect(status(page)).toHaveText("The arguments are combined. Undo is available for ten seconds.");
 });
 
 for (const width of [1280, 375]) {
