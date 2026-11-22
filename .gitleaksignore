@@ -11,3 +11,7 @@
 
 # PostHog's public project key: it can only send events, and belongs in the page (AGENTS.md, Tech stack).
 af1582d51dcc6af9ae61760d792b0b38d8da6b66:docs/analytics.js:generic-api-key:5
+
+# The same made-up signing secret, on the line M2-8c changed when the email sender grew (PR 89). The builder
+# agreed, Nov 22.
+45a75a20199eaaeea3806719cb1a91bd157b1a30:app/server/test/api/smoke.test.ts:generic-api-key:44
