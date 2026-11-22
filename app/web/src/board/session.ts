@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardSnapshot, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, deleteOption, readBoard, readChanges, readPeople, renameOption, send, setAccess, setHidden, setReport, setRole } from "../api.ts";
+import { Unreachable, addOption, deleteOption, readBoard, readChanges, readPeople, renameOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -284,6 +284,24 @@ export class BoardSession {
     return this.moderate(() => setHidden(this.board, versionId, null), "Restored.");
   }
 
+  /** Reports that a source can't be opened (M3a-3, C-02). Not queued, like a report of a wording. */
+  reportSource(sourceId: string): Promise<boolean> {
+    return this.moderate(
+      () => setUnavailable(this.board, sourceId, true),
+      "You reported that this source can’t be opened. It shows as unavailable on every wording that cites it.",
+      "Someone already reported that this source can’t be opened.",
+    );
+  }
+
+  /** Takes back the reader's own report, or, for an Editor or the Owner, clears someone else's. */
+  clearSourceReport(sourceId: string, own: boolean): Promise<boolean> {
+    return this.moderate(
+      () => setUnavailable(this.board, sourceId, false),
+      own ? "You withdrew your report." : "You cleared the report, so the source shows as available.",
+      "The report was already cleared.",
+    );
+  }
+
   private sendReport(versionId: string, report: { reason: ReportReason; note: string } | null, done: string): Promise<boolean> {
     return this.moderate(() => setReport(this.board, versionId, report), done);
   }
@@ -332,8 +350,11 @@ export class BoardSession {
     void this.moderate(() => deleteOption(this.board, gone.id), "").then(() => this.set({ optionsLeftOut: this.state.optionsLeftOut.filter((id) => id !== gone.id) }));
   }
 
-  /** Sends a report or a moderator's action, says how it went (unless `done` is empty), and asks for changes. Answers whether it was taken. */
-  private async moderate(request: () => Promise<Answer>, done: string): Promise<boolean> {
+  /**
+   * Sends a report or a moderator's action, says how it went (unless `done` is empty), and asks for changes. Answers
+   * whether it was taken. `already` is said instead when someone else had already done it, if it reads differently.
+   */
+  private async moderate(request: () => Promise<Answer>, done: string, already = done): Promise<boolean> {
     let answer: Answer;
     try {
       answer = await request();
@@ -350,7 +371,8 @@ export class BoardSession {
       this.announce(refusalNote(answer));
       return false;
     }
-    if (done) this.announce(done);
+    const said = answer.status === "already_done" ? already : done;
+    if (said) this.announce(said);
     await this.poll();
     return true;
   }

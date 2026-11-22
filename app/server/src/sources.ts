@@ -149,6 +149,43 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
   });
 }
 
+/**
+ * "Can't open it?" (C-02, M3a-3): anyone who can read reports that a source
+ * can't be opened. The mark is the source's, so it shows on every wording
+ * that cites it, and while a wording cites no other source it can't be
+ * assessed as supported (votes.ts). It changes no revision: an unavailable
+ * source doesn't make the wording false, and its assessments stand.
+ * A second report, by anyone, changes nothing.
+ */
+export function reportUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
+  return writeToBoard(db, boardId, person, {
+    action: "report",
+    load: (trx) => sourceOnBoard(trx, boardId, sourceId),
+    change: async (trx, source, seq) => {
+      if (source.unavailable_at) return "already_done";
+      await trx.updateTable("source").set({ unavailable_at: clock.now(), unavailable_by: person!, changed_seq: seq }).where("id", "=", sourceId).execute();
+      await log(trx, clock, { boardId, seq, person: person!, kind: "source_unavailable", subjectKind: "source", subjectId: sourceId, after: {} });
+      return "done";
+    },
+  });
+}
+
+/** Clears the mark: the person who reported it withdraws it, or an Editor or the Owner clears it. Clearing an unmarked source changes nothing. */
+export function clearUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
+  return writeToBoard(db, boardId, person, {
+    action: "unreport",
+    load: (trx) => sourceOnBoard(trx, boardId, sourceId),
+    // Nothing to clear is nobody's report: whoever asks is told it's done already. A mark with no reporter is an Editor's to clear.
+    authorOf: (source) => (source.unavailable_at ? (source.unavailable_by ?? "") : (person ?? "")),
+    change: async (trx, source, seq) => {
+      if (!source.unavailable_at) return "already_done";
+      await trx.updateTable("source").set({ unavailable_at: null, unavailable_by: null, changed_seq: seq }).where("id", "=", sourceId).execute();
+      await log(trx, clock, { boardId, seq, person: person!, kind: "source_available", subjectKind: "source", subjectId: sourceId, after: {} });
+      return "done";
+    },
+  });
+}
+
 async function loadWording(trx: Trx, boardId: string, versionId: string): Promise<Wording | null> {
   const version = await trx
     .selectFrom("version")

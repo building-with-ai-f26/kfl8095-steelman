@@ -36,7 +36,7 @@ export function Privacy() {
           <b>What you write:</b> arguments, wordings, their context, and sources, on the boards you join.
         </li>
         <li>
-          <b>Your judgments:</b> your importance and wording votes, and whether a wording’s evidence holds up.
+          <b>Your judgments:</b> your importance and wording votes, whether a wording’s evidence holds up, and your reports.
         </li>
         <li>
           <b>Server logs:</b> your IP address and browser, with each request, for 30 days.
@@ -50,6 +50,7 @@ export function Privacy() {
       <ul>
         <li>What you write, and your username beside it, is seen by everyone who can open that board.</li>
         <li>Your votes and assessments count toward the totals everyone sees, but no one is shown which are yours.</li>
+        <li>When you report that a source can’t be opened, everyone who can open that board sees that you reported it. The board’s history keeps that you did, even after the report is cleared.</li>
         <li>Your email is seen by no one but you.</li>
       </ul>
 

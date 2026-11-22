@@ -122,6 +122,30 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("created_at")
     .orderBy("id")
     .execute();
+  // Every time they reported a source as one that can't be opened (C-02, M3a-3), from the change log, which keeps a
+  // report after it's cleared; and whether it still stands: the source's latest report, still credited to them.
+  const sourceReports = await db
+    .selectFrom("change as c")
+    .innerJoin("source as s", (join) => join.onRef("s.id", "=", "c.subject_id").onRef("s.board_id", "=", "c.board_id"))
+    .select((eb) => [
+      "c.board_id",
+      "c.subject_id",
+      "c.at",
+      "c.seq",
+      "s.unavailable_by",
+      "s.unavailable_at",
+      eb
+        .selectFrom("change as later")
+        .select((later) => later.fn.max("later.seq").as("seq"))
+        .whereRef("later.board_id", "=", "c.board_id")
+        .whereRef("later.subject_id", "=", "c.subject_id")
+        .where("later.kind", "=", "source_unavailable")
+        .as("latest"),
+    ])
+    .where("c.actor_id", "=", person)
+    .where("c.kind", "=", "source_unavailable")
+    .orderBy("c.seq")
+    .execute();
   const memberships = await db.selectFrom("board_member").select(["board_id", "role"]).where("account_id", "=", person).execute();
 
   const boardIds = [...new Set([...memberships.map((m) => m.board_id), ...wrote.map((w) => w.board_id), ...sources.map((s) => s.board_id)])];
@@ -139,6 +163,12 @@ export async function exportData(db: Db, clock: Clock, person: string) {
       evidence: evidence.map((v) => ({ board: v.board_id, version: v.version_id, rev: v.rev, supported: v.supported, at: v.assessed_at.toISOString() })),
     },
     reports: reports.map((r) => ({ board: r.board_id, version: r.version_id, reason: r.reason, note: r.note, at: r.reported_at.toISOString(), withdrawn: r.withdrawn_at?.toISOString() ?? null })),
+    sourceReports: sourceReports.map((r) => ({
+      board: r.board_id,
+      source: r.subject_id,
+      at: r.at.toISOString(),
+      standing: r.unavailable_at !== null && r.unavailable_by === person && String(r.latest) === String(r.seq),
+    })),
     boards: boards.map((board) => ({
       board: board.id,
       link: `/b/${board.id}`,

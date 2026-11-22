@@ -132,6 +132,11 @@ export async function deleteOption(board: string, option: string, keepalive = fa
   return answerOf(await call("DELETE", `boards/${board}/options/${encodeURIComponent(option)}`, undefined, keepalive));
 }
 
+/** Reports that a source can't be opened (M3a-3, C-02), or with `false` withdraws or clears the report. Not queued. */
+export async function setUnavailable(board: string, source: string, unavailable: boolean): Promise<Answer> {
+  return answerOf(await call(unavailable ? "PUT" : "DELETE", `boards/${board}/sources/${encodeURIComponent(source)}/unavailable`));
+}
+
 async function answerOf(response: Response): Promise<Answer> {
   if (response.status === 404) return { status: "not_found" };
   if (response.status === 400) return { status: "invalid" };

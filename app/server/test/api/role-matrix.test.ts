@@ -66,6 +66,8 @@ async function castBoard(): Promise<Cast> {
       [source, b.board, cara, seq],
     );
     await db.client.query("insert into revision_source (version_id, rev, source_id, board_id) values ($1, 1, $2, $3)", [version, source, b.board]);
+    // Cara reported that her own source can't be opened (M3a-3), so clearing it is clearing someone else's report.
+    await db.client.query("update source set unavailable_at = now(), unavailable_by = $2, changed_seq = $3 where id = $1", [source, cara, seq]);
     return { version, source, cara };
   });
   const empty = ids.itemId();
@@ -202,6 +204,15 @@ const ACTIONS: Action[] = [
     least: "owner",
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/people/${others.cara}`, { as, body: { role: "voter" } }),
+  },
+  // "Can't open it?" (M3a-3, C-02): anyone who can read reports a source; someone else's report is cleared by an Editor or the Owner.
+  { name: "report that a source can't be opened", least: "viewer", write: true, run: ({ b }, as) => api.put(`/api/boards/${b.board}/sources/${b.source}/unavailable`, { as }) },
+  {
+    name: "clear someone else's report that a source can't be opened",
+    least: "viewer",
+    othersFrom: "editor",
+    write: true,
+    run: ({ b, others }, as) => api.delete(`/api/boards/${b.board}/sources/${others.source}/unavailable`, { as }),
   },
   // Options (M3a-2, A-07): the structure action, an Editor's and the Owner's (permissions.md).
   { name: "add an option", least: "editor", write: true, run: ({ b }, as) => api.post(`/api/boards/${b.board}/options`, { as, body: { id: ids.itemId(), name: "Only in summer" } }) },

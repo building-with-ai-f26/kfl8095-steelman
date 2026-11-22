@@ -18,6 +18,13 @@
 // The service decides who may do what; the board offers Edit only on your own
 // source, and Remove to whoever added it, the wording's author, and the Owner.
 //
+// "Can't open it?" (C-02, M3a-3), as the prototype's source row has it:
+// anyone who can read reports that a source can't be opened, and it shows as
+// Unavailable on every wording that cites it. As Wikipedia handles a dead
+// link, the source stays usable: "Try an archived copy" opens the Wayback
+// Machine's copy of the address, and the note says who reported it and when.
+// The reporter has "Undo report"; an Editor or the Owner has "Clear report".
+//
 // Under the sources, the assessment (B-03): "Does the evidence back this
 // wording?", Yes or No, as a yes/no question is asked on GOV.UK. Yes needs a
 // source that can be opened. An assessment names the revision the reader saw;
@@ -29,6 +36,7 @@ import type { QueuedAction, Role, SourceRow, VersionRow } from "@steelman/shared
 import { Icon } from "../icons.tsx";
 import { useReader } from "../reader.ts";
 import { browserIds } from "../system.ts";
+import { shortDate } from "../when.ts";
 import { assessmentShown, blockedProps, isLiveVersion, whyNot } from "./display.ts";
 import type { Blocked } from "./display.ts";
 
@@ -45,6 +53,10 @@ export interface EvidenceBoard {
   removing: { versionId: string; sourceId: string } | null;
   /** Takes a source off the wording, held ten seconds for Undo (session.ts). */
   removeSource(version: VersionRow, sourceId: string, assessed: boolean): void;
+  /** Reports that a source can't be opened (C-02); answers whether it was taken. */
+  reportSource(sourceId: string): Promise<boolean>;
+  /** Withdraws the reader's own report (`own`), or clears someone else's. */
+  clearSourceReport(sourceId: string, own: boolean): Promise<boolean>;
   act(action: QueuedAction): void;
   announce(text: string): void;
 }
@@ -148,6 +160,12 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     setForm(null);
     board.removeSource(version, source.id, assessed);
   };
+  /** Reports it, or takes the report back; the cursor stays on the source, as in the prototype. */
+  const markUnavailable = async (source: SourceRow, unavailable: boolean) => {
+    if (unavailable) await board.reportSource(source.id);
+    else await board.clearSourceReport(source.id, source.report?.by === reader);
+    setFocus(`src-${source.id}`);
+  };
   /** Yes, No, or withdrawn (null). Pressing your answer again withdraws it, as Undo does. */
   const assess = (supported: boolean | null) => {
     const was = version.myAssessment;
@@ -188,8 +206,12 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               mine={source.addedBy === reader}
               editBlocked={addBlocked}
               mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId)}
+              mayReport={can(reader, board.role, "report", { closed: false }) === null}
+              mayClear={source.report !== undefined && can(reader, board.role, "unreport", { closed: false }, source.report.by) === null}
+              reportedByReader={source.report?.by === reader}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
+              onReport={(unavailable) => void markUnavailable(source, unavailable)}
             />
           ))}
         </div>
@@ -240,11 +262,21 @@ interface SourceProps {
   /** Set when the reader added it but their role can no longer write. */
   editBlocked: Blocked | null;
   mayRemove: boolean;
+  /** Whether the reader may report it can't be opened, and may clear the report on it (C-02). */
+  mayReport: boolean;
+  mayClear: boolean;
+  reportedByReader: boolean;
   onEdit(): void;
   onRemove(): void;
+  /** Reports it (true), or takes the report back (false). */
+  onReport(unavailable: boolean): void;
 }
 
-function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, onRemove }: SourceProps) {
+/** The Wayback Machine's copy of a web address, as Wikipedia offers for a dead link (M3a-3). */
+const archived = (link: string) => `https://web.archive.org/web/${link}`;
+
+function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayReport, mayClear, reportedByReader, onEdit, onRemove, onReport }: SourceProps) {
+  const report = source.unavailable ? (mayClear ? "clear" : null) : mayReport ? "report" : null;
   return (
     // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
     <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
@@ -267,7 +299,20 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, 
           <span className="sm-source-note">{source.locator}</span>
         ) : null}
         {source.finding ? <p>{source.finding}</p> : null}
-        {mine || mayRemove ? (
+        {source.report ? (
+          <p className="sm-source-note">
+            {`${reportedByReader ? "You" : source.report.byName} reported on ${shortDate(source.report.at)} that it can’t be opened.`}
+            {source.link ? (
+              <>
+                {" "}
+                <a className="sm-source-link" href={archived(source.link)} target="_blank" rel="noopener noreferrer nofollow ugc">
+                  Try an archived copy
+                </a>
+              </>
+            ) : null}
+          </p>
+        ) : null}
+        {mine || mayRemove || report ? (
           <div className="sm-source-actions">
             {mine ? (
               <button type="button" className="sm-link-button cursor-interaction" {...blockedProps(editBlocked)} onClick={() => editBlocked || onEdit()}>
@@ -277,6 +322,15 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, 
             {mayRemove ? (
               <button type="button" className="sm-link-button cursor-interaction" aria-label="Remove from this version" onClick={onRemove}>
                 Remove
+              </button>
+            ) : null}
+            {report === "report" ? (
+              <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(true)}>
+                Can’t open it?
+              </button>
+            ) : report === "clear" ? (
+              <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(false)}>
+                {reportedByReader ? "Undo report" : "Clear report"}
               </button>
             ) : null}
           </div>

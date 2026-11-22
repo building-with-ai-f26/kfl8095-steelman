@@ -164,7 +164,10 @@ export interface SourceRow {
   /** Who added it, by ID and username: only they may edit it. */
   addedBy: string;
   addedByName: string;
+  /** Reported as one that can't be opened (C-02). */
   unavailable: boolean;
+  /** Who reported it, by ID and username, and when; left out when it isn't reported (M3a-3). */
+  report?: { by: string; byName: string; at: string };
   changedSeq: number;
 }
 

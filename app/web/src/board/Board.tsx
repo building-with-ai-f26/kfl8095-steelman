@@ -263,6 +263,8 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         session.hold({ action: { kind: "uncite", versionId: version.id, sourceId }, label, optionId, after: version.argumentId });
         setFocusTo(".sm-undo button");
       },
+      reportSource: (sourceId) => session.reportSource(sourceId),
+      clearSourceReport: (sourceId, own) => session.clearSourceReport(sourceId, own),
       act: (action) => session.act(action),
       announce: (text) => session.announce(text),
     },

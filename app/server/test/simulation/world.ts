@@ -18,6 +18,7 @@ import type * as VotesModule from "../../src/votes.ts";
 import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
 import * as realModeration from "../../src/moderation.ts";
+import * as sources from "../../src/sources.ts";
 import { NOON, addAccount, addMember, seedBoard } from "../support/board.ts";
 
 /** The server code under test. Normally the real modules; a planted-bug test hands in altered copies. */
@@ -42,6 +43,9 @@ export type Step =
   /** A moderator's (M2-4): only Ana, the owner, may; anyone else is refused. Not queued: moderation needs the service there. */
   | { kind: "hide"; reader: number; target: number }
   | { kind: "restore"; reader: number; target: number }
+  /** "Can't open it?" (M3a-3) on the board's one source: anyone may report it; the reporter or the owner clears it. Not queued, like moderation. */
+  | { kind: "reportSource"; reader: number }
+  | { kind: "clearSource"; reader: number }
   | { kind: "minutePasses" }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
@@ -66,6 +70,8 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("delete" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("hide" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("restore" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("reportSource" as const), reader }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("clearSource" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("minutePasses" as const) }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
@@ -112,10 +118,13 @@ export interface Tally {
   /** Wordings hidden and restored (M2-4). */
   hidden: number;
   restored: number;
+  /** Reports that the source can't be opened, and clearings (M3a-3). */
+  sourceReports: number;
+  sourceClears: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -301,6 +310,26 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           }
           break;
         }
+        case "reportSource":
+        case "clearSource": {
+          if (!r.online) break;
+          const reporter = (await client.query("select unavailable_by from source where id = $1", [b.source])).rows[0].unavailable_by as string | null;
+          const result = step.kind === "reportSource" ? await sources.reportUnavailable(services, b.board, r.person, b.source) : await sources.clearUnavailable(services, b.board, r.person, b.source);
+          if (result.status === "done") tally.done++;
+          else if (result.status === "already_done") tally.alreadyDone++;
+          else if (result.status === "refused") tally.refused[result.reason] = (tally.refused[result.reason] ?? 0) + 1;
+          // Check 9, for source reports: anyone may report; a report is cleared only by its reporter or the owner; a second one is already done.
+          if (step.kind === "reportSource") check(result.status === (reporter ? "already_done" : "done"), "9. Anyone may report a source; a second report is already done", { step, result });
+          else if (!reporter) check(result.status === "already_done", "9. Clearing an unreported source is already done", { step, result });
+          else if (reporter === r.person || moderates(r.person)) check(result.status === "done", "9. The reporter or the owner clears a report", { step, result });
+          else check(result.status === "refused" && result.reason === "not_author", "9. Someone else's report is cleared only by the owner", { step, result });
+          if (result.status === "done") {
+            if (step.kind === "reportSource") tally.sourceReports++;
+            else tally.sourceClears++;
+            await poll(r);
+          }
+          break;
+        }
         default:
           await act(r, chooseAction(step, r, options, ids, step.kind === "edit" ? clock.now().getTime() : 0));
       }
@@ -394,6 +423,9 @@ async function expectedRefusal(client: pg.Client, person: string, action: Queued
       if (v.deleted_at || v.hidden_at) return "version_deleted";
       if (v.current_rev !== action.rev) return "revision_changed";
       if (action.supported !== true) return null;
+      // A Yes that already stands is sent twice: already done, even if its source was reported since (M3a-3), as an assessment made before the report stands.
+      const standing = await one("select count(*)::int as n from assessment where version_id = $1 and rev = $2 and account_id = $3 and supported", [action.versionId, action.rev, person]);
+      if (standing.n > 0) return null;
       const evidence = await one(
         "select count(*)::int as n from revision_source c join source s on s.id = c.source_id where c.version_id = $1 and c.rev = $2 and s.unavailable_at is null",
         [action.versionId, action.rev],

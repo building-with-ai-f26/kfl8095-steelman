@@ -40,7 +40,7 @@ import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption } from "./options.ts";
-import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
+import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
 import type { WriteResult } from "./write-path.ts";
@@ -430,6 +430,15 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "assess"));
   });
+
+  // "Can't open it?" (M3a-3, C-02): anyone who can read reports a source; the reporter, an Editor, or the Owner clears it.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id/unavailable", { config: { limit: "writing" } }, async (request, reply) =>
+    answer(reply, await reportUnavailable(services, request.params.board, request.person, request.params.id)),
+  );
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id/unavailable", async (request, reply) =>
+    answer(reply, await clearUnavailable(services, request.params.board, request.person, request.params.id)),
+  );
 
   // Options (M3a-2, A-07): add one at the end, rename one, or delete an empty one. An Editor's and the Owner's.
   app.post<{ Params: { board: string } }>("/api/boards/:board/options", { config: { limit: "writing" } }, async (request, reply) => {
