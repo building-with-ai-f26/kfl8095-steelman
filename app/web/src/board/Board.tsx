@@ -33,6 +33,7 @@ import { VoteControl } from "./Vote.tsx";
 import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
+import { rememberPlace } from "../places.ts";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -60,7 +61,15 @@ export function Board({ boardId, version = null, zoom = "read", onZoom = () => {
   const view = useMemo(() => (state.view ? leaveOut(state.view, state.leftOut) : null), [state.view, state.leftOut]);
 
   if (state.phase === "missing") return <NotFound />;
-  if (state.phase === "no_access") return <p className="sm-meta">You don’t have access to this steelman.</p>;
+  if (state.phase === "no_access")
+    return (
+      <main className="sm-meta sm-dead-end">
+        <p>You don’t have access to this steelman.</p>
+        <a className="sm-link-button cursor-interaction" href="/">
+          Go to Your steelmen
+        </a>
+      </main>
+    );
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!view) return null;
   return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
@@ -331,6 +340,8 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     onShown(true);
     return () => onShown(false);
   }, [onShown]);
+  // Where Your account and the other detours lead back to (M3a-1): this board, at the version open as it's left.
+  useEffect(() => rememberPlace(() => ({ path: window.location.pathname, name: state.question })), [state.question]);
   // Switching views says where the reader is now. Strongest case closes what's open on the board, as the
   // prototype does: drafts of new arguments and wordings are kept, an edit in progress is discarded.
   const shownZoom = useRef(zoom);

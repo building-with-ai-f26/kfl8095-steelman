@@ -52,6 +52,8 @@ export interface OpenOptions {
   onLine?: false;
   /** Expects links to a board that doesn't exist, so their 404 isn't counted as a console error (M-06). */
   missingBoards?: true;
+  /** Expects a board this person may not open, so its 403 isn't counted as a console error (M3a-1's no-access screen). */
+  closedBoards?: true;
   /** Sets up the browser session before the board opens: answering an outside address, or changing what the browser says about itself. */
   prepare?: (context: BrowserContext) => Promise<unknown>;
   /** Opens this address instead of the demo board, such as another board's (and doesn't wait for the demo board's question). */
@@ -147,7 +149,7 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
   await options.prepare?.(context);
   const page = await context.newPage();
   page.on("console", (message) => {
-    if (message.type() === "error" && !isExpectedOfflineError(message.text()) && !(options.missingBoards && isMissingBoard(message.text(), message.location().url))) errors.push(`${person}: ${message.text()}`);
+    if (message.type() === "error" && !isExpectedOfflineError(message.text()) && !(options.missingBoards && isMissingBoard(message.text(), message.location().url)) && !(options.closedBoards && isClosedBoard(message.text(), message.location().url))) errors.push(`${person}: ${message.text()}`);
   });
   page.on("pageerror", (error) => errors.push(`${person}: ${error.message}`));
   // Time runs as usual, but a test can move it on to the next poll.
@@ -164,6 +166,11 @@ async function openAs(browser: Browser, origin: string, demo: DemoBoard, person:
 /** The browser logs the 404 of a link to a board that doesn't exist, which the board screen expects (M-06) when a test says so. */
 function isMissingBoard(text: string, url: string): boolean {
   return text.includes("status of 404") && /^\/api\/boards\/[^/?]+$/.test(new URL(url).pathname);
+}
+
+/** The browser logs the 403 of a board the person may not open, which the board screen expects when a test says so. */
+function isClosedBoard(text: string, url: string): boolean {
+  return text.includes("status of 403") && /^\/api\/boards\/[^/?]+$/.test(new URL(url).pathname);
 }
 
 /** While a session is offline, the browser itself logs each request that fails. */

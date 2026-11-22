@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { analyticsStatus, chooseAnalytics, turnOnAnalytics } from "./analytics.ts";
 import type { AnalyticsStatus } from "./analytics.ts";
+import { BackLink } from "./BackLink.tsx";
 
 const STATE: Record<AnalyticsStatus, string> = {
   none: "Usage analytics aren’t running here.",
@@ -21,6 +22,7 @@ const STATE: Record<AnalyticsStatus, string> = {
 export function Privacy() {
   return (
     <main className="sm-privacy">
+      <BackLink here="/privacy" />
       <p className="sm-privacy-date">Updated November 22, 2026</p>
       <h1>Privacy</h1>
       <p className="sm-privacy-lede">Steelman is a class project. This page says what it keeps about you, who can see it, how long it’s kept, and what you can do about it.</p>

@@ -18,6 +18,8 @@ import { ChangeEmail } from "./signIn/ChangeEmail.tsx";
 import type { MyAccount } from "./api.ts";
 import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
+import { BackLink, usePlaceBefore } from "./BackLink.tsx";
+import { forgetPlaces, rememberPlace } from "./places.ts";
 
 const DELETED = "deleted_account";
 
@@ -39,6 +41,10 @@ export function Account() {
       setTourBoard(list.boards.find((board) => board.options.some((option) => option.arguments > 0))?.id ?? null);
     });
   }, []);
+  // Read before this screen notes itself below (M3a-1).
+  const cameFrom = usePlaceBefore("/account");
+  // Privacy, opened from here, leads back here (M3a-1).
+  useEffect(() => rememberPlace(() => ({ path: "/account", name: "Your account" })), []);
   // Cancel puts the cursor back on Delete account.
   useEffect(() => {
     if (wasDeleting.current && !deleting) deleteLink.current?.focus();
@@ -61,12 +67,14 @@ export function Account() {
       return;
     }
     forgetTestUser();
+    forgetPlaces();
     // A fresh page, so nothing of the account stays in memory; signed out, it shows Sign in.
     window.location.assign("/");
   };
   return (
     <main className="sm-landing" data-canvas="cool">
       <div className="sm-landing-inner">
+        <BackLink here="/account" place={cameFrom} />
         <section className="sm-rail-card sm-landing-auth sm-account" aria-labelledby="sm-account-title">
           <h1 id="sm-account-title" className="sm-auth-title">
             Your account
@@ -127,6 +135,7 @@ export function Account() {
               onCancel={() => setDeleting(false)}
               onDeleted={() => {
                 forgetTestUser();
+                forgetPlaces();
                 setDeleted(true);
               }}
             />
