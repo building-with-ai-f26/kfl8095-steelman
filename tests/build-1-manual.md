@@ -1610,6 +1610,19 @@ Build plan M2-8b. The plan said Google Connect and Disconnect; the builder's dec
 | Tests first | `e2e/sign-in-methods.spec.ts` (2: signed in by code, and with Google), seen to fail first; the no-email test in `e2e/account-card.spec.ts` passed from the start, as before |
 | Known limitations | The Google row says what Google sign-in allows, with the sign-in page's own limits: while Google's consent screen is in Testing only listed test users can use it, a school's Google Workspace can block it, and locally without a Google client it isn't available. Once the email can change (M2-8c), Google must sign in only with the new address for the row to stay true; that's part of M2-8c's design |
 
+## November 22 — Changing your email, by code: the design (L-04)
+
+Build plan M2-8c, drafted in the prototype for the builder's review before it's built (the plan: "The design of the email-change screens, shown before it's built"). The prototype confirmed a new email by a link; the real product confirms with a 6-digit code (Q21).
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | Notion, which signs in as Steelman does (an email code or Google, no password); its live help, checked Nov 22: a code is sent to the new address; an email another account uses is refused; the old address is told of the change; no recent sign-in is asked for; Google signs in only when its email matches, with no Connect or Disconnect. Taken: all of these. Not taken: Notion's list of up to five addresses. The code form is the sign-in screen's (six boxes over one input, Send a new code) |
+| The steps | Email's Change opens "New email" with Cancel and Send code. Send code shows "Confirm your new email": "We sent a code to x. Your email changes when you enter it.", the code boxes, Send a new code, Cancel, and Change email. Enter submits each step. Success: "Your email is now x. We sent a note to your old email." on the Email row. The old address gets: "Your Steelman email changed. The email for your Steelman account is now x. If you didn't make this change, reply to this email." Google then signs in only with the new address |
+| Errors | As sign-in's code: "Enter the 6-digit code.", "That code isn’t right.", "That code has expired. Send a new code." (ten minutes), "Too many wrong tries. Send a new code." (five). "Another account already uses this email." is said only once the code is right, so the form can't be used to find out who has an account. A new code cancels the old: "We sent a new code to x. The earlier code no longer works." Cancel: "Your email hasn’t changed." |
+| Also reworded | "Email link · Always on" is now "Email code · We email you a code each time you sign in."; Google has no button and says "You can sign in with Google if your Google account uses this email." (as Notion, Nov 22). The Tour, Usage analytics, and Your data rows use the app's sentences, and the card's controls no longer shrink |
+| Checked | In the prototype at 1280 and 375 px: wrong code, another account, Cancel (focus back on Change), and success; no sideways scroll at 375 px |
+| Settled (builder, Nov 22: "follow best practices", as one credible company) | The old address is told of the change, and no recent sign-in is required, as Notion |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
