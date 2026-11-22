@@ -12,6 +12,7 @@ import { listBoards } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import { NEW_PATH, boardPath } from "./links.ts";
 import { ago, fullDate } from "./when.ts";
+import { HOME_PLACE, rememberPlace } from "./places.ts";
 
 export function Home() {
   const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(null);
@@ -28,6 +29,8 @@ export function Home() {
     return () => window.removeEventListener("pageshow", restored);
   }, [load]);
 
+  // The list is where detours lead back to when there's nowhere else (M3a-1).
+  useEffect(() => rememberPlace(() => HOME_PLACE), []);
   if (list === null) return null;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   return (

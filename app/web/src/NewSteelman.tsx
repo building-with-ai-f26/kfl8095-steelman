@@ -14,6 +14,7 @@ import { createBoard } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
 import { boardPath } from "./links.ts";
+import { usePlaceBefore } from "./BackLink.tsx";
 
 const PLACEHOLDERS = ["First option", "Second option", "Third option", "Fourth option"];
 
@@ -82,6 +83,8 @@ export function NewSteelman() {
     fail(answer.problem, null);
   }
 
+  /** Where Cancel goes (M3a-1). */
+  const cameFrom = usePlaceBefore("/new");
   /** What a field needs when the error is about it. */
   const marks = (field: string) => (badField === field ? { "aria-invalid": true, "aria-describedby": "sm-create-error" } : {});
   return (
@@ -191,8 +194,9 @@ export function NewSteelman() {
                 {error}
               </span>
             ) : null}
-            {/* The prototype's Cancel, back to the list. */}
-            <a className="sm-link-button cursor-interaction" href="/">
+            {/* The prototype's Cancel, back to where you came from (M3a-1): a board, or the list. A form's own Cancel
+                is its way back, so it gets no "Back to …" link as well (GOV.UK: one way back, not two). */}
+            <a className="sm-link-button cursor-interaction" href={cameFrom.path}>
               Cancel
             </a>
             <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>

@@ -1648,6 +1648,23 @@ A bug fix in M2-5's "edited" (the wording it replaced and the votes before). Fou
 | Tests first | A new test hovers, waits for the panel, then clicks and moves away; it failed 3 runs in 3 before the fix. After: the five tests in `e2e/edited-counts.spec.ts` passed 50 runs in 50. The existing test is unchanged. A sixth, after the second reader: Enter opens it and Enter again closes it |
 | Second reader | A fresh agent found nothing blocking. Taken: the new test also checks aria-expanded after the second click; the keyboard test |
 
+## November 22 — A way back from every screen (M-13)
+
+Build plan M3a-1, at the builder's request: "there is no navigation back from settings to the screen you were looking at without using the browser."
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | GOV.UK's Back link component, read live: at the top, before the content; "Go back to [page]" rather than "Back" when there are many ways in; never with breadcrumbs as well; working without JavaScript. Linear's settings start with "Back to app" (from memory). The prototype's back link names where it goes (sm-profile-back). Taken: "Back to" and where it goes, as a real link, in a Back landmark, at the top of the screen |
+| Where it appears | Your account and the privacy page. It names the board's question, Your account (for the privacy page opened from it), or Your steelmen, and goes there, at the version that was open. From a typed address it's Your steelmen, and a new tab may start there too (some browsers copy a tab's trail into one opened from it). A reload keeps it. Signing out, deleting the account, or switching test account forgets the trail, so the next person isn't led to the last one's board. A long question runs to "…" on one line, drawn by the stylesheet, so the link's text, and what a screen reader reads, is still the whole name (WCAG 2.5.3, Label in Name). Only a path on this site is followed: it's parsed as the browser would, so "//elsewhere", "/\\elsewhere", and other sites are refused |
+| New steelman | Its Cancel already led out, always to the list; it now goes back to where you came from instead, so the form keeps one way back, not two (GOV.UK). Its saved screenshots are unchanged |
+| Dead ends | The not-found and no-access screens now link to Your steelmen (the no-access message is now in a `main` landmark). "Your account is deleted" already led to Steelman; sign-in needs none |
+| How it remembers | The list, each board, and Your account note themselves as the tab's last place (sessionStorage, as they're left); a screen with a back link keeps the place before it for itself, so a reload still knows. Nothing leaves the browser |
+| In the running app | Checked by hand at phone width: from a board, Your account says "Back to Should our library open on Sundays?" and returns there |
+| Tests first | `e2e/way-back.spec.ts` (10: from a board, a reload, from the list and from a typed address, privacy and Cancel, a long name, only this site's paths, switching test account, the dead ends, and accessibility scans at 1280 and 375 px), the first eight seen to fail first. The browser fixture gained `closedBoards`, to expect a board's 403, as `missingBoards` expects a 404 |
+| Departures from the item | New steelman gets no back link: its own Cancel goes back instead (one way back, and its saved screenshots stay). The link sits at the top inside `main`, not before it as GOV.UK says; GOV.UK's reason is its skip link, which Steelman doesn't have |
+| Second reader | A fresh agent found nothing blocking in the code. Taken: paths are parsed as the browser would follow them, so "/\\elsewhere" can't lead off the site; the trail is forgotten when the person changes; the no-access message is in a landmark; these records corrected |
+| Known limitations | Coming back to a board opens its Board view, not Strongest case if that was on. A board itself has no back link; its wordmark leads to Your steelmen, as the prototype's does. The trail is one tab's: a new tab starts at Your steelmen |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

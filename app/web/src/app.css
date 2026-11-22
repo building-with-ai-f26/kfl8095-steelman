@@ -185,3 +185,11 @@ body { margin:0; }
 #steelman-study .sm-prev del { text-decoration-color:#a8a39a; }
 #steelman-study .sm-prev .sm-prev-votes { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding-top:7px; border-top:1px solid #e4e0d6; font:400 11px/1.3 var(--sm-sans); }
 #steelman-study .sm-prev .sm-prev-votes b { margin-right:2px; font:600 15px/1 var(--sm-serif); font-variant-numeric:tabular-nums; color:var(--sm-ink); }
+
+/* "Back to …" (M3a-1): the prototype's back link, above the screen's card, and a way on from a dead end. */
+#steelman-study .sm-back { margin: 0 0 10px; }
+#steelman-study .sm-back .sm-profile-back { margin: 0; max-width: 100%; text-decoration: none; }
+#steelman-study .sm-back .sm-profile-back span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#steelman-study .sm-back .sm-profile-back:hover { color: var(--sm-ink); }
+#steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
+#steelman-study .sm-dead-end p { margin: 0; }

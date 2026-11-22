@@ -13,6 +13,9 @@ export function NotFound() {
       <a className="sm-button sm-solid cursor-interaction" href={NEW_PATH}>
         New steelman
       </a>
+      <a className="sm-link-button cursor-interaction" href="/">
+        Go to Your steelmen
+      </a>
     </AuthCard>
   );
 }

@@ -18,6 +18,7 @@ import { ChooseUsername } from "./signIn/ChooseUsername.tsx";
 import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
+import { forgetPlaces } from "./places.ts";
 
 /**
  * Links look like /b/<board ID>, or /b/<board ID>/v/<version ID> (links.ts).
@@ -166,6 +167,8 @@ function TestUserSwitch() {
         value={chosenTestUser() ?? ""}
         onChange={(event) => {
           chooseTestUser(event.target.value);
+          // Another person, so not the last one's way back (M3a-1).
+          forgetPlaces();
           window.location.reload();
         }}
       >
