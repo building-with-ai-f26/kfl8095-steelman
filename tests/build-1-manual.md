@@ -1581,6 +1581,21 @@ Build plan M2-8a, the first part of the account card (M2-8, split Nov 21: a, Sig
 | Tests first | `e2e/account-card.spec.ts` (4, a fifth after the second reader, plus 2 accessibility scans) and `e2e/sign-out.spec.ts` (2), seen to fail first (the no-key test passed from the start, since there was no row) |
 | Known limitations | The analytics choice is still per browser, not per account. Signing out ends this browser's session only, not others' |
 
+## November 21 — Server events (M-08)
+
+Build plan M2-12, with Q29 (Nov 17): events from the service, anonymous like the browser's, only when the person's analytics choice allows. It changes what's collected, so the builder confirms the pull request.
+
+| Check | Observed result |
+| --- | --- |
+| What's sent | When a write is saved (not when it was already done or was refused): `vote_importance`, `vote_articulation`, `assess`, `write_argument`, `write_wording`, `edit_wording`, `add_source`. Each goes to PostHog's capture address with the project key, a new random ID each time, and the properties `environment` (local, staging, or production, from the address the service was reached at) and `source: service`, plus PostHog's flags for no person profile and no location lookup. No account, username, email, board, or text |
+| When | Only when the write carries `x-steelman-analytics: on`, which the browser adds while its analytics are on (including while the first-visit notice is still asking, as the browser's own events do). Never with Global Privacy Control or Do Not Track (the service checks the headers too), never after Turn off, and never from a service with no PostHog key |
+| Never in the way | The send isn't waited for, gives up after 2 seconds, and a failure is dropped: a PostHog that's down doesn't slow or fail the write (tested) |
+| Update | Not sent: Update happens in the browser, from changes it already has, so the service never sees it. The browser's own analytics already record the click. Sending it would need a new request just for analytics; left for the builder |
+| Privacy page | A paragraph under Cookies and analytics: "While your analytics are on, our service also tells PostHog each time you save a vote, an assessment, or something you wrote…", and it says what the events don't carry. Dated November 21 |
+| Second reader | A fresh agent found nothing blocking, and confirmed nothing in an event or its request identifies a person (the service forwards no browser headers; PostHog sees the service's address, with location lookup off), the header is never on a read, queued writes check the choice when they're sent, and a failed send can't reject unhandled. Taken from its points: the service releases PostHog's answer; a PostHog that never answers is tested not to hold up the write (under 1 s); the browser tests wait for analytics to start before voting; a test that Turn on from the privacy page brings the header back; the privacy page says "each time you vote, assess, or save something you wrote" (a withdrawn vote is an event too) and that the random IDs aren't the browser's, so the events can't be joined to visits. Left for the builder: on Cloud Run the service has CPU only while answering a request, so an event sent just after a write may be slowed or lost when nothing else comes in; keeping CPU on costs money |
+| Tests first | `server/test/api/server-events.test.ts` (6) and `e2e/server-events.spec.ts` (4, a fourth after the second reader), seen to fail first (two browser tests passed from the start, since nothing sent the header yet) |
+| Known limitations | PostHog sees the service's address, not the person's, so the events have no location; with the browser's events off, nothing joins them to a visit. Not tested against PostHog itself (a stand-in receives them) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
