@@ -1596,6 +1596,20 @@ Build plan M2-12, with Q29 (Nov 17): events from the service, anonymous like the
 | Tests first | `server/test/api/server-events.test.ts` (6) and `e2e/server-events.spec.ts` (4, a fourth after the second reader), seen to fail first (two browser tests passed from the start, since nothing sent the header yet) |
 | Known limitations | PostHog sees the service's address, not the person's, so the events have no location; with the browser's events off, nothing joins them to a visit. Not tested against PostHog itself (a stand-in receives them) |
 
+## November 21 — Accessibility on every screen (M-04)
+
+Build plan M2-11: the axe scan on every screen at desktop and 375 px, then what it and a keyboard pass find.
+
+| Check | Observed result |
+| --- | --- |
+| Screens scanned | New in `e2e/accessibility.spec.ts`: Strongest case, Your account (and with Delete account open), the privacy page signed in and signed out, and a page that doesn't exist, each at 1280 and 375 px. Already scanned at both widths: sign in, the list, New steelman, the board folded and unfolded, an open card and its sources, the card menu, Share and its people list, the tour, and Your account's analytics row. At desktop width only: moderation and reports, and the analytics notice. No violations on any. Not scanned yet (found by the second reader): the board's no-access and signed-out messages, "Couldn’t reach Steelman", "Your account is deleted", and the pill's offline, too-many, and back-online states |
+| Keyboard | The core loop as one browser test with only Tab, Shift+Tab, the arrow keys, Enter, and Space: an importance vote, Suggest a revised version from the card's menu, an articulation vote on it, a source added and assessed, Strongest case and back, New steelman, and an argument on the new board. It passes, so the keyboard pass found nothing to fix |
+| Votes announced | Nothing told a screen reader a vote had counted: the button only became pressed. Each vote now says so in the status line: "You voted this argument more important." / "less important.", "You voted this wording better articulated." / "less well articulated.", and "You took back your importance vote." / "articulation vote." A refusal, once the service answers, replaces it with why; while the service asks to wait, the wait stays what's said. The same words twice in a row (two votes the same way on different arguments, or "Board updated." twice) now get a no-break space on the repeat, so the status line changes and a screen reader reads it again; this holds for every announcement on the board. Assessments already said "Assessment saved." The prototype announces no votes; this is new |
+| Already in place | Articulation buttons sit in a group named for their wording ("Articulation: …"), as importance's do; Update says "Board updated."; reduced motion turns off every transition and animation (the prototype's rule), now tested on the board with a row unfolded; the app uses two canvases, cool and stone, and the scans cover both, contrast included |
+| Second reader | A fresh agent found nothing blocking. Taken: repeated announcements are read again; the wait isn't replaced by a vote's message; the reduced-motion test first checks that the board does move without the setting; "every screen" corrected above, with the screens still unscanned. Left: if an earlier vote is refused after a later one was announced, the refusal replaces the later vote's message, so it can sound like the later vote was refused |
+| Tests first | The vote-announcement test and the repeat test were seen to fail first. The scans, the keyboard loop, and the reduced-motion test passed from the start: they check what was already right, so a change can't undo it unnoticed |
+| Known limitations | Never tried with a real screen reader or by a keyboard-only person (the milestone's person check). The fragments rule (AGENTS.md rule 13, proposed) isn't swept across the screens here |
+
 ## November 22 — The ways in on Your account (L-04)
 
 Build plan M2-8b. The plan said Google Connect and Disconnect; the builder's decision (Nov 22) was to follow a credible product. Notion signs in the way Steelman does (an email code or Google, no password) and has neither button, so Steelman follows it.
@@ -1622,6 +1636,17 @@ Build plan M2-8c, drafted in the prototype for the builder's review before it's 
 | Also reworded | "Email link · Always on" is now "Email code · We email you a code each time you sign in."; Google has no button and says "You can sign in with Google if your Google account uses this email." (as Notion, Nov 22). The Tour, Usage analytics, and Your data rows use the app's sentences, and the card's controls no longer shrink |
 | Checked | In the prototype at 1280 and 375 px: wrong code, another account, Cancel (focus back on Change), and success; no sideways scroll at 375 px |
 | Settled (builder, Nov 22: "follow best practices", as one credible company) | The old address is told of the change, and no recent sign-in is required, as Notion |
+
+## November 22 — "edited" stays open when clicked after hovering (A-06)
+
+A bug fix in M2-5's "edited" (the wording it replaced and the votes before). Found as a flaky browser test: `e2e/edited-counts.spec.ts`'s "with a mouse, a click keeps it open…" failed about 2 runs in 10, on its own branch as well as others.
+
+| Check | Observed result |
+| --- | --- |
+| The bug | A click set the panel to stay open only if it wasn't already showing. With a real mouse, hovering shows it before the click, so the click closed it. The test passed only when its click came before the page caught up with the hover |
+| The fix | A click goes by whether the panel is held open, not whether it's showing: the first click holds open what hovering showed (or opens it, on a phone), and a second click closes it |
+| Tests first | A new test hovers, waits for the panel, then clicks and moves away; it failed 3 runs in 3 before the fix. After: the five tests in `e2e/edited-counts.spec.ts` passed 50 runs in 50. The existing test is unchanged. A sixth, after the second reader: Enter opens it and Enter again closes it |
+| Second reader | A fresh agent found nothing blocking. Taken: the new test also checks aria-expanded after the second click; the keyboard test |
 
 ## November 22 — Changing your email, built (L-04)
 

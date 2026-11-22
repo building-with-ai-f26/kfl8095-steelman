@@ -87,3 +87,37 @@ test("M2-5, A-06: with a mouse, a click keeps it open after the pointer leaves, 
   await expect(card(reader, EDITED).locator(".sm-prev")).toHaveCount(0);
   await expect(edited).toHaveAttribute("aria-expanded", "false");
 });
+
+// The flake in the test above, made certain: a real mouse hovers before it clicks, so "edited" is already showing what
+// it replaced when the click comes. The click must keep it open, not close it.
+test("M2-5, A-06: with a mouse, clicking after hovering keeps it open once the pointer leaves", async ({ board }) => {
+  await editAfterVotes(board);
+  const reader = await board.open("tess.b");
+  const edited = card(reader, EDITED).getByRole("button", { name: "edited" });
+
+  await edited.hover();
+  await expect(card(reader, EDITED).locator(".sm-prev-votes")).toBeVisible();
+  await edited.click();
+  await reader.getByRole("heading", { level: 1 }).hover();
+  await expect(card(reader, EDITED).locator(".sm-prev-votes")).toBeVisible();
+  await expect(edited).toHaveAttribute("aria-expanded", "true");
+
+  await edited.click();
+  await expect(card(reader, EDITED).locator(".sm-prev")).toHaveCount(0);
+  await expect(edited).toHaveAttribute("aria-expanded", "false");
+});
+
+test("M2-5, A-06, M-04: with the keyboard, Enter on \"edited\" opens what it replaced and Enter again closes it", async ({ board }) => {
+  await editAfterVotes(board);
+  const reader = await board.open("tess.b");
+  const edited = card(reader, EDITED).getByRole("button", { name: "edited" });
+
+  await edited.focus();
+  await reader.keyboard.press("Enter");
+  await expect(card(reader, EDITED).locator(".sm-prev-votes")).toBeVisible();
+  await expect(edited).toHaveAttribute("aria-expanded", "true");
+
+  await reader.keyboard.press("Enter");
+  await expect(card(reader, EDITED).locator(".sm-prev")).toHaveCount(0);
+  await expect(edited).toHaveAttribute("aria-expanded", "false");
+});
