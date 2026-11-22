@@ -31,7 +31,7 @@ const HEIRS = ["owner", "editor", "contributor"];
 export interface AccountSummary {
   username: string | null;
   email: string | null;
-  /** How they can sign in: "Email code" for anyone with an email, and "Google" if linked. */
+  /** How they have signed in: "Email code" for anyone with an email, and "Google" if linked. Used by Download your data; Your account lists both ways in for everyone (M2-8b). */
   signIn: string[];
 }
 
