@@ -1610,6 +1610,17 @@ Build plan M2-8b. The plan said Google Connect and Disconnect; the builder's dec
 | Tests first | `e2e/sign-in-methods.spec.ts` (2: signed in by code, and with Google), seen to fail first; the no-email test in `e2e/account-card.spec.ts` passed from the start, as before |
 | Known limitations | The Google row says what Google sign-in allows, with the sign-in page's own limits: while Google's consent screen is in Testing only listed test users can use it, a school's Google Workspace can block it, and locally without a Google client it isn't available. Once the email can change (M2-8c), Google must sign in only with the new address for the row to stay true; that's part of M2-8c's design |
 
+## November 22 — "edited" stays open when clicked after hovering (A-06)
+
+A bug fix in M2-5's "edited" (the wording it replaced and the votes before). Found as a flaky browser test: `e2e/edited-counts.spec.ts`'s "with a mouse, a click keeps it open…" failed about 2 runs in 10, on its own branch as well as others.
+
+| Check | Observed result |
+| --- | --- |
+| The bug | A click set the panel to stay open only if it wasn't already showing. With a real mouse, hovering shows it before the click, so the click closed it. The test passed only when its click came before the page caught up with the hover |
+| The fix | A click goes by whether the panel is held open, not whether it's showing: the first click holds open what hovering showed (or opens it, on a phone), and a second click closes it |
+| Tests first | A new test hovers, waits for the panel, then clicks and moves away; it failed 3 runs in 3 before the fix. After: the five tests in `e2e/edited-counts.spec.ts` passed 50 runs in 50. The existing test is unchanged. A sixth, after the second reader: Enter opens it and Enter again closes it |
+| Second reader | A fresh agent found nothing blocking. Taken: the new test also checks aria-expanded after the second click; the keyboard test |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

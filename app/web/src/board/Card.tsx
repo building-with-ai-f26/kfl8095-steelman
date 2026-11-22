@@ -507,9 +507,10 @@ function Byline({ version }: { version: VersionRow }) {
               type="button"
               className="sm-link-button sm-edited cursor-interaction"
               aria-expanded={shown}
-              // A press decides on its own: it opens what hovering showed, or closes it.
+              // A press keeps open what hovering showed (or opens it, on a phone), and a second press closes it.
+              // It goes by the pin alone: hovering has already shown it by the time a mouse clicks.
               onClick={() => {
-                setPinned(!shown);
+                setPinned(!pinned);
                 setHovered(false);
               }}
               // A touch sends pointer events too; only a mouse hovers.
