@@ -11,6 +11,9 @@
 // option (an Editor's or the Owner's), a source taken off a wording (anyone
 // who may add one), and a hidden wording (an Editor's or the Owner's). It
 // shows on the newest such entry while the thing is still gone.
+//
+// Undo, on a combine or a separation not yet undone (M3a-8, J-04), for an
+// Editor or the Owner: as GitHub offers Revert on a merge long after it.
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -19,7 +22,7 @@ import type { HistoryEntry, ReaderView, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { versionPath } from "../links.ts";
 import { shortDate } from "../when.ts";
-import { finalArgument, isLiveVersion, leadWording, short } from "./display.ts";
+import { isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 interface HistoryProps {
@@ -106,7 +109,7 @@ export function History({ boardId, view, reader, role, session, logSeq, heldOpti
                       <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen)}
                       <time dateTime={entry.at}>{new Date(entry.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
                       {restorable.has(entry.seq) ? <Restore entry={entry} view={view} reader={reader} role={role} session={session} heldOptions={heldOptions} onDone={restored} /> : null}
-                      {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) ? (
+                      {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) && undoable(entry, view) ? (
                         <UndoChange entry={entry} view={view} session={session} onDone={restored} />
                       ) : null}
                     </p>
@@ -186,7 +189,7 @@ function Restore({ entry, view, reader, role, session, heldOptions, onDone }: Re
 function UndoChange({ entry, view, session, onDone }: { entry: HistoryEntry; view: ReaderView; session: BoardSession; onDone(): void }) {
   const [busy, setBusy] = useState(false);
   const wording = view.rows.versions[entry.subjectId]?.wording;
-  const what = `${entry.kind === "wording_combined" ? "combining" : "separating"}${wording ? ` “${short(wording)}”` : ""}`;
+  const what = `${entry.kind === "wording_combined" ? "combining" : "separating"} ${wording ? `“${short(wording)}”` : "a wording"}`;
   return (
     <button
       type="button"
@@ -194,15 +197,26 @@ function UndoChange({ entry, view, session, onDone }: { entry: HistoryEntry; vie
       disabled={busy}
       onClick={() => {
         setBusy(true);
+        // Taken, it stays disabled until History reads the undo and the button goes.
         void session.undoChange(entry.seq, entry.subjectId).then((done) => {
-          setBusy(false);
-          if (done) onDone();
+          if (!done) setBusy(false);
+          else onDone();
         });
       }}
     >
       Undo<span className="sm-sr">{` ${what}`}</span>
     </button>
   );
+}
+
+/**
+ * Whether the service could undo it: not once its wording is deleted, nor, unless two arguments became one, once the
+ * argument it would go back to is. Moved on since is only "not yet", which the service says, so Undo stays.
+ */
+function undoable(entry: HistoryEntry, view: ReaderView): boolean {
+  if (view.rows.versions[entry.subjectId]?.deleted) return false;
+  const from = entry.detail.from ? view.rows.arguments[entry.detail.from] : undefined;
+  return !(from?.deleted && !entry.detail.merged);
 }
 
 /** What the entry says after its actor's name: a sentence, naming things from the rows the reader holds. */
@@ -268,7 +282,8 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
     case "source_edited":
       return `edited ${source}.`;
     case "wording_combined": {
-      const lead = entry.detail.into ? leadWording(view, finalArgument(view, entry.detail.into), entry.subjectId) : null;
+      // The argument it joined, by its own lead: not one that argument was combined into later, which took no part.
+      const lead = entry.detail.into ? leadWording(view, entry.detail.into, entry.subjectId) : null;
       return (
         <>
           combined {wording(entry.subjectId)} with {lead ? `“${short(lead)}”` : "another argument"}.

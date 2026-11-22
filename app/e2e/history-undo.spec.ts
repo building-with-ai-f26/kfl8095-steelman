@@ -84,3 +84,46 @@ test("M3a-8, J-04: a combine the wording has moved on from since says why it can
   // The browser logs the service's refusal; it's the answer this test expects.
   expect(board.errors.splice(0)).toEqual(["maya.chen: Failed to load resource: the server responded with a status of 409 (Conflict)"]);
 });
+
+test("M3a-8, J-04, M-04: an Editor who isn't the Owner undoes it too; its name says what it undoes, and the cursor goes to History's title", async ({ board }) => {
+  const study = await find(board, STUDY);
+  const family = await find(board, FAMILY);
+  await board.api("maya.chen").post(`versions/${study.version}/combine`, { into: family.argument });
+  const people = (await board.api("maya.chen").get("people")) as { people: { id: string; name: string }[] };
+  await board.api("maya.chen").put(`people/${people.people.find((p) => p.name === "tess.b")!.id}`, { role: "editor" });
+  const page = await board.open("tess.b");
+  await openHistory(page);
+
+  const undo = entries(page).nth(1).getByRole("button", { name: `Undo combining “${short(STUDY)}”` });
+  await undo.click();
+
+  await expect(status(page)).toHaveText("The wording is back where it was.");
+  await expect(panel(page).getByRole("heading", { name: "History", level: 2 })).toBeFocused();
+});
+
+test("M3a-8, J-04, A-06: no Undo once the combined wording has been deleted", async ({ board }) => {
+  const lead = await find(board, LEAD);
+  const study = await find(board, STUDY);
+  await board.api("maya.chen").post(`versions/${lead.version}/combine`, { into: study.argument });
+  await board.api("maya.chen").delete(`versions/${lead.version}`);
+  const page = await board.open("maya.chen");
+  await openHistory(page);
+
+  await expect(entries(page).filter({ hasText: "combined" })).toHaveCount(1);
+  await expect(entries(page).filter({ hasText: "combined" }).getByRole("button", { name: /Undo/ })).toHaveCount(0);
+});
+
+test("M3a-8, J-04, J-05: History's Undo for the change the Undo bar still holds takes the bar with it", async ({ board }) => {
+  const page = await board.open("maya.chen");
+  await page.locator(".sm-card").filter({ has: page.locator(".sm-claim", { hasText: STUDY }) }).getByRole("button", { name: "Combine with another argument" }).click();
+  await page.getByRole("button", { name: `Combine here: same point as “${short(FAMILY)}”` }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Combine" }).click();
+  await expect(page.locator(".sm-undo")).toBeVisible();
+  await openHistory(page);
+
+  await entries(page).nth(0).getByRole("button", { name: /^Undo/ }).click();
+
+  await expect(status(page)).toHaveText("The wording is back where it was.");
+  await expect(page.locator(".sm-undo")).toHaveCount(0);
+  await expect(row(page, STUDY)).toBeVisible();
+});

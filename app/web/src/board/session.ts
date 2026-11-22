@@ -491,6 +491,8 @@ export class BoardSession {
    */
   async undoChange(seq: number, versionId: string): Promise<boolean> {
     if (this.state.restructured?.seq === seq) return this.undoRestructure();
+    // Another change's undo: the bar's screen from before is out of date now, so the bar goes.
+    this.endRestructured();
     const answer = await this.ask(() => undoChange(this.board, seq));
     if (!answer) return false;
     await this.poll();

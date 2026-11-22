@@ -72,6 +72,19 @@ describe("History", () => {
     expect(entries.find((e) => e.kind === "wording_uncombined")).toMatchObject({ subjectId: b.version, detail: { undoes: combined } });
   });
 
+  test("M3a-8, J-03, J-04: a separation says which argument it left and which it made, and its undo which change it undid", async () => {
+    const second = await write(db.client, b.board, (seq) => addArgument(db.client, ids, { board: b.board, option: b.yes, author: b.ben, seq, wording: "Weekend hours suit families." }));
+    await api.post(`/api/boards/${b.board}/versions/${b.version}/combine`, { as: eve, body: { into: second.argument } });
+    const fresh = ids.itemId();
+    const separated = (await api.post(`/api/boards/${b.board}/versions/${b.version}/separate`, { as: eve, body: { argumentId: fresh } })).body.seq;
+    await api.put(`/api/boards/${b.board}/changes/${separated}/undo`, { as: eve });
+
+    const entries = (await history(val)).body.entries as { kind: string; subjectId: string; detail: object }[];
+
+    expect(entries.find((e) => e.kind === "wording_separated")).toMatchObject({ subjectId: b.version, detail: { from: second.argument, argument: fresh } });
+    expect(entries.find((e) => e.kind === "wording_unseparated")).toMatchObject({ subjectId: b.version, detail: { undoes: separated } });
+  });
+
   test("J-03: a role change names the person it changed", async () => {
     await api.put(`/api/boards/${b.board}/people/${b.ben}`, { as: b.ana, body: { role: "voter" } });
 
