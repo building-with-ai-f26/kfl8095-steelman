@@ -168,6 +168,10 @@ export class BoardSession {
     if (action.kind === "assess" && this.state.stale.includes(action.versionId)) this.set({ stale: this.state.stale.filter((id) => id !== action.versionId) });
     this.queue = enqueue(this.queue, action);
     this.mineChanged();
+    // A vote says what it did, for a screen reader (M2-11); a refusal, once the service answers, says why instead.
+    const said = voteNote(action);
+    // While the service asks to wait, the wait is what's said: the vote is only queued.
+    if (said && !this.state.tooMany) this.announce(said);
     void this.flush();
   }
 
@@ -212,7 +216,10 @@ export class BoardSession {
   }
 
   announce(status: string): void {
-    this.set({ status });
+    // The same words twice in a row change nothing on the page, so a screen reader wouldn't read them again: the
+    // repeat gets a no-break space, which looks and reads the same (M2-11).
+    const same = this.state.status.replace(/\u00a0$/, "") === status;
+    this.set({ status: same && !this.state.status.endsWith("\u00a0") ? `${status}\u00a0` : status });
   }
 
   /**
@@ -457,6 +464,13 @@ const moderates = (role: Role | null) => role === "editor" || role === "owner";
 
 /** What a role lets someone do, as the announcement after setting it says. */
 const MEMBER_CAN = { viewer: "can view", voter: "can vote", contributor: "can contribute", editor: "can edit" } as const;
+
+/** What a vote is announced as (M2-11, M-04), or null for anything else. */
+export function voteNote(action: QueuedAction): string | null {
+  if (action.kind === "importance") return action.value === null ? "You took back your importance vote." : `You voted this argument ${action.value === 1 ? "more" : "less"} important.`;
+  if (action.kind === "articulation") return action.value === null ? "You took back your articulation vote." : `You voted this wording ${action.value === 1 ? "better" : "less well"} articulated.`;
+  return null;
+}
 
 /** What the reader is told when the service refuses something they did. */
 function refusalNote(answer: Answer): string {
