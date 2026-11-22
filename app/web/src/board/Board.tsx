@@ -35,6 +35,7 @@ import { BoardSession, leaveOptionsOut } from "./session.ts";
 import type { Held, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
 import { OptionMenu } from "./OptionMenu.tsx";
+import { History } from "./History.tsx";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -407,15 +408,33 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     session.announce(`${editing ? "Your changes were discarded. " : ""}Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.`);
   }, [zoom, session, writing]);
   /** Choosing an argument in Strongest case opens its wording on the board, its row unfolded if the wording doesn't lead it there. */
-  const openFromCase = (item: CaseItem) => {
-    const at = (view.shown.versions[item.argumentId] ?? []).indexOf(item.versionId);
+  const openFromCase = (item: CaseItem) => showVersion(item.argumentId, item.versionId);
+  /** Opens a wording on the board, from Strongest case or History: its row unfolded if it isn't the leading one, and its card open. */
+  const showVersion = (argumentId: string, versionId: string) => {
+    const at = (view.shown.versions[argumentId] ?? []).indexOf(versionId);
     if (writing?.kind === "wording") setWriting(null);
-    setOpen(at > 0 ? item.argumentId : null);
-    setExpanded(item.versionId);
-    setSide(view.rows.arguments[item.argumentId]!.optionId);
-    setArrived(item.versionId);
-    setFocusTo(cardControl(item.versionId, "claim"));
+    setOpen(at > 0 ? argumentId : null);
+    setExpanded(versionId);
+    setSide(view.rows.arguments[argumentId]!.optionId);
+    setArrived(versionId);
+    setFocusTo(cardControl(versionId, "claim"));
     onZoom("read");
+  };
+
+  // History (M3a-4, J-03): a panel beside the board, opened from the question header.
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const historyButton = useRef<HTMLButtonElement>(null);
+  const closeHistory = useCallback(() => {
+    setHistoryOpen(false);
+    session.announce("History closed.");
+    historyButton.current?.focus();
+  }, [session]);
+  const openFromHistory = (versionId: string) => {
+    const version = view.rows.versions[versionId];
+    if (!version) return;
+    // Where the panel covers the board, it closes, so the wording can be seen.
+    if (window.matchMedia("(max-width: 1199px)").matches) setHistoryOpen(false);
+    showVersion(version.argumentId, versionId);
   };
 
   const update = () => {
@@ -441,8 +460,25 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           {why}
         </span>
       ))}
-      <div className="sm-scene">
+      <div className={`sm-scene${historyOpen ? " sm-with-drawer" : ""}`}>
         <section className="sm-head" aria-label="The question">
+          <div className="sm-head-tools">
+            <button
+              ref={historyButton}
+              type="button"
+              className="sm-head-button sm-history-button cursor-interaction"
+              aria-expanded={historyOpen}
+              aria-controls="sm-history"
+              onClick={() => {
+                if (historyOpen) return closeHistory();
+                setHistoryOpen(true);
+                session.announce("History is open.");
+              }}
+            >
+              <Icon name="history" />
+              <span>History</span>
+            </button>
+          </div>
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
@@ -465,6 +501,19 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             </p>
           ) : null}
         </section>
+        {historyOpen ? (
+          <History
+            boardId={boardId}
+            view={view}
+            reader={reader}
+            role={state.role}
+            session={session}
+            logSeq={state.logSeq}
+            heldOptions={state.optionsLeftOut.length}
+            onOpen={openFromHistory}
+            onClose={closeHistory}
+          />
+        ) : null}
         <main id="sm-content">
           {zoom === "case" ? (
             <div className="sm-board" style={{ "--sm-cols": boardColumns(options, undefined) } as React.CSSProperties}>

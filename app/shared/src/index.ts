@@ -39,7 +39,7 @@ export type {
   BoardList,
   BoardListing,
   BoardSnapshot,
-  LogRow,
+  HistoryEntry, LogRow,
   NewBoard,
   OptionRow,
   Person,

@@ -76,6 +76,25 @@ export function deleteOption({ db, clock }: Services, boardId: string, person: s
   });
 }
 
+/**
+ * Restores a deleted option from History (M3a-4, J-03), where it was, so the
+ * ten-second Undo isn't the only way back. It's empty, as it was when it was
+ * deleted. Never past four; restoring one that's there is already done.
+ */
+export function restoreOption({ db, clock }: Services, boardId: string, person: string | null, optionId: string): Promise<WriteResult> {
+  return writeToBoard(db, boardId, person, {
+    action: "structure",
+    load: loadOption(boardId, optionId),
+    async change(trx, option, seq) {
+      if (!option.deleted_at) return "already_done";
+      if ((await liveOptions(trx, boardId)) >= OPTIONS_PER_BOARD.max) return { refused: "too_many_options" };
+      await trx.updateTable("option").set({ deleted_at: null, changed_seq: seq }).where("id", "=", optionId).execute();
+      await trx.insertInto("change").values({ board_id: boardId, seq, at: clock.now(), actor_id: person!, kind: "option_restored", subject_kind: "option", subject_id: optionId }).execute();
+      return "done";
+    },
+  });
+}
+
 /** Whether an ID is already some other item's: an argument, a wording, or a source. */
 async function idUsed(trx: Trx, id: string): Promise<boolean> {
   const { rows } = await sql<{ used: boolean }>`

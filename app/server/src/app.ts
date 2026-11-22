@@ -39,7 +39,8 @@ import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
-import { addOption, deleteOption, renameOption } from "./options.ts";
+import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
+import { readHistory } from "./history.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -456,6 +457,17 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id", async (request, reply) =>
     answer(reply, await deleteOption(services, request.params.board, request.person, request.params.id)),
   );
+
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id/restore", { config: { limit: "writing" } }, async (request, reply) =>
+    answer(reply, await restoreOption(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // History (M3a-4, J-03): the change log read back, for anyone who can read the board.
+  app.get<{ Params: { board: string } }>("/api/boards/:board/history", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    return { entries: await readHistory(db, request.params.board) };
+  });
 
   app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {
     const body = newArgumentInput.safeParse(request.body);

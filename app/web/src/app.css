@@ -196,3 +196,19 @@ body { margin:0; }
 #steelman-study .sm-back .sm-profile-back:hover { color: var(--sm-ink); }
 #steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
 #steelman-study .sm-dead-end p { margin: 0; }
+
+/* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
+   in the prototype's head button, widened as its comment button is. */
+#steelman-study .sm-head-button.sm-history-button { display:inline-flex; align-items:center; gap:6px; width:auto; padding:0 9px; font-size:13px; }
+/* The question keeps clear of it: beside it on a wide screen, and on a phone below it, on a line of its own. */
+#steelman-study .sm-head { padding-right:112px; }
+@media(max-width:640px) {
+  #steelman-study .sm-head { padding-right:18px; }
+  #steelman-study .sm-head .sm-head-tools { position:static; justify-content:flex-end; margin:-8px -8px 4px 0; }
+}
+#steelman-study .sm-history-drawer { top:0; z-index:50; max-height:calc(100vh - 24px); overflow:auto; }
+/* As the prototype makes room for its drawer (data-drawer on .sm-surface): on a wide screen the board moves left. */
+@media(min-width:1200px) { #steelman-study .sm-scene.sm-with-drawer { padding-right:380px; } }
+#steelman-study .sm-history-day { display:grid; gap:10px; }
+#steelman-study .sm-history-day h3 { margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+#steelman-study .sm-history .sm-link-button { margin-top:4px; }

@@ -5,8 +5,8 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, receive, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardSnapshot, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, deleteOption, readBoard, readChanges, readPeople, renameOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import type { Access, BoardSnapshot, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, addOption, citeSource, deleteOption, readBoard, readChanges, readHistory, readPeople, renameOption, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
@@ -61,6 +61,8 @@ export interface SessionState {
   optionGone: { id: string; name: string } | null;
   /** Options the reader deleted, kept off the screen: held for Undo, or sent and not yet answered. */
   optionsLeftOut: readonly string[];
+  /** The newest change-log row a poll has brought (History reads the log again when it moves, M3a-4); 0 before any. */
+  logSeq: number;
 }
 
 export class BoardSession {
@@ -81,6 +83,7 @@ export class BoardSession {
     undo: null,
     optionGone: null,
     optionsLeftOut: [],
+    logSeq: 0,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -377,6 +380,26 @@ export class BoardSession {
     return true;
   }
 
+  /** The board's History (M3a-4, J-03), newest first, or null when it can't be read now. */
+  history(): Promise<HistoryEntry[] | null> {
+    return readHistory(this.board);
+  }
+
+  /** Restores a deleted option from History (M3a-4). Not queued, like deleting one. */
+  restoreOption(option: { id: string; name: string }): Promise<boolean> {
+    return this.moderate(() => restoreOption(this.board, option.id), `You restored the option “${option.name}”.`, "That option is already back.");
+  }
+
+  /** Puts a source taken off a wording back on it, from History (M3a-4). Its credibility starts over, as with any change of sources. */
+  putSourceBack(versionId: string, sourceId: string): Promise<boolean> {
+    return this.moderate(() => citeSource(this.board, versionId, sourceId), "You put the source back on the wording. The credibility score resets.", "That source is already on the wording.");
+  }
+
+  /** Restores a hidden wording from History (M3a-4), saying so in a sentence. */
+  restoreHidden(versionId: string): Promise<boolean> {
+    return this.moderate(() => setHidden(this.board, versionId, null), "You restored the wording.", "That wording is already restored.");
+  }
+
   /** Everyone on the board, for Share's people list, or null when it can't be read now. */
   people(): Promise<Person[] | null> {
     return readPeople(this.board);
@@ -484,7 +507,8 @@ export class BoardSession {
         this.sent = this.sent.filter((action) => !asked.has(action));
         const accessSettled = !this.sharing && shares === this.shareCount;
         const wasModerator = moderates(this.state.role);
-        this.set({ view: receive(this.state.view, changes), role: changes.role, ...(accessSettled ? { access: changes.access } : {}) });
+        const logSeq = Math.max(this.state.logSeq, ...changes.log.map((row) => row.seq));
+        this.set({ view: receive(this.state.view, changes), role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}) });
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);

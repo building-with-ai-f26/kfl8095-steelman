@@ -171,6 +171,28 @@ export interface SourceRow {
   changedSeq: number;
 }
 
+/** One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. */
+export interface HistoryEntry {
+  seq: number;
+  at: string;
+  actorName: string;
+  kind: string;
+  subjectKind: string;
+  subjectId: string;
+  /** A moderator's stated reason, where the action has one. */
+  reason: string | null;
+  /** What the entry needs beyond its subject: the wording and source a source change was on, the person and role of a role change, the access set. */
+  detail: {
+    version?: string;
+    source?: string;
+    argumentDeleted?: true;
+    accountName?: string;
+    role?: Role;
+    general?: "link" | "invited";
+    linkRole?: Role;
+  };
+}
+
 export interface LogRow {
   seq: number;
   at: string;

@@ -37,6 +37,8 @@ interface Cast {
   others: { version: string; source: string; cara: string };
   /** A third option with no arguments, so one may be deleted (M3a-2). */
   empty: string;
+  /** A deleted option, so one may be restored from History (M3a-4). */
+  gone: string;
 }
 
 /** An invited-only board with one of each persona, and Cara, a contributor who isn't one of them. */
@@ -71,10 +73,14 @@ async function castBoard(): Promise<Cast> {
     return { version, source, cara };
   });
   const empty = ids.itemId();
+  const gone = ids.itemId();
   await write(db.client, b.board, (seq) =>
-    db.client.query("insert into option (id, board_id, name, position, created_at, changed_seq) values ($1, $2, 'Only in winter', 3, now(), $3)", [empty, b.board, seq]),
+    db.client.query(
+      "insert into option (id, board_id, name, position, created_at, changed_seq, deleted_at) values ($1, $2, 'Only in winter', 3, now(), $4, null), ($3, $2, 'Only at night', 4, now(), $4, now())",
+      [empty, b.board, gone, seq],
+    ),
   );
-  return { b, person, own, others, empty };
+  return { b, person, own, others, empty, gone };
 }
 
 type Do = (cast: Cast, as: string | undefined, persona: Persona) => Promise<{ status: number; body: { reason?: string } }>;
@@ -205,6 +211,9 @@ const ACTIONS: Action[] = [
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/people/${others.cara}`, { as, body: { role: "voter" } }),
   },
+  // History (M3a-4, J-03): read by anyone on the board; restoring a deleted option is the structure action.
+  { name: "read the board's history", least: "viewer", write: false, run: ({ b }, as) => api.get(`/api/boards/${b.board}/history`, { as }) },
+  { name: "restore a deleted option", least: "editor", write: true, run: ({ b, gone }, as) => api.put(`/api/boards/${b.board}/options/${gone}/restore`, { as }) },
   // "Can't open it?" (M3a-3, C-02): anyone who can read reports a source; someone else's report is cleared by an Editor or the Owner.
   { name: "report that a source can't be opened", least: "viewer", write: true, run: ({ b }, as) => api.put(`/api/boards/${b.board}/sources/${b.source}/unavailable`, { as }) },
   {
