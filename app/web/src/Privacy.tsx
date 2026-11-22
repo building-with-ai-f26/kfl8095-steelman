@@ -21,7 +21,7 @@ const STATE: Record<AnalyticsStatus, string> = {
 export function Privacy() {
   return (
     <main className="sm-privacy">
-      <p className="sm-privacy-date">Updated November 15, 2026</p>
+      <p className="sm-privacy-date">Updated November 21, 2026</p>
       <h1>Privacy</h1>
       <p className="sm-privacy-lede">Steelman is a class project. This page says what it keeps about you, who can see it, how long it’s kept, and what you can do about it.</p>
 
@@ -79,6 +79,11 @@ export function Privacy() {
         Usage analytics send PostHog the pages you view, what you click, your IP address, and screen replays of your visits. A replay shows what was on your screen, such as the boards you read, but
         hides what you type and your email. PostHog isn’t told who you are: a random ID, kept in a cookie and in your browser’s storage, groups your visits until you clear this site’s data, and it
         isn’t tied to your account. Your choice to turn analytics off or on is kept in your browser too. We use analytics only to see where people get stuck.
+      </p>
+      <p>
+        While your analytics are on, our service also tells PostHog each time you vote, assess, or save something you wrote, because the browser’s own analytics are sometimes blocked. Each of these
+        events says only what was saved and whether it was on our test site or the real one. It doesn’t say who you are, which board it was on, or what you wrote. Each one has its own random ID, not
+        your browser’s, so these events can’t be joined to your visits.
       </p>
       <AnalyticsSwitch />
       <p>If your browser sends Global Privacy Control or Do Not Track, nothing is sent and you aren’t asked.</p>
