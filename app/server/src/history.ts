@@ -54,6 +54,13 @@ function detailOf(kind: string, subject: string, after: unknown, names: Map<stri
       const name = names.get(String(field(after, "account")));
       return { ...(name ? { accountName: name } : {}), role: field(after, "role") as Role };
     }
+    case "wording_combined":
+      return { from: String(field(after, "from")), into: String(field(after, "into")), ...(field(after, "merged") ? { merged: true as const } : {}) };
+    case "wording_separated":
+      return { from: String(field(after, "from")), argument: String(field(after, "argument")) };
+    case "wording_uncombined":
+    case "wording_unseparated":
+      return { undoes: Number(field(after, "undoes")) };
     case "access_changed":
       return { general: field(after, "general") as "link" | "invited", linkRole: field(after, "linkRole") as Role };
     default:

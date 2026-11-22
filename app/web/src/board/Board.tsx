@@ -30,7 +30,7 @@ import { markTourSeen, readTour } from "../api.ts";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
+import { WHY, columns, finalArgument, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession, leaveOptionsOut } from "./session.ts";
 import type { Held, Restructured, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
@@ -1088,16 +1088,6 @@ function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; 
   );
 }
 
-/** Where an argument's wordings are now: itself, or the argument it was combined into, followed through later combines. */
-function finalArgument(view: ReaderView, argumentId: string): string {
-  let id = argumentId;
-  for (let hops = 0; hops < 50; hops++) {
-    const next = view.rows.arguments[id]?.mergedInto;
-    if (!next) return id;
-    id = next;
-  }
-  return id;
-}
 
 /**
  * An option's header (M3a-2, A-07): its name, and for an Editor or the Owner

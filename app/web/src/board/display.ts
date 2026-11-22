@@ -139,6 +139,27 @@ export function moderationItem(version: VersionRow, reader: string | null, role:
   return [version.hidden ? "restore" : "hide"];
 }
 
+/** Where an argument's wordings are now: itself, or the argument it was combined into, followed through later combines. */
+export function finalArgument(view: ReaderView, argumentId: string): string {
+  let id = argumentId;
+  for (let hops = 0; hops < 50; hops++) {
+    const next = view.rows.arguments[id]?.mergedInto;
+    if (!next) return id;
+    id = next;
+  }
+  return id;
+}
+
+/**
+ * The wording an argument leads with: first on screen, else its first live wording, leaving out `except` (the wording
+ * a sentence already names). Null when it has none to show.
+ */
+export function leadWording(view: ReaderView, argumentId: string, except?: string): string | null {
+  const fits = (v: VersionRow | undefined): v is VersionRow => isLiveVersion(v) && v!.argumentId === argumentId && v!.id !== except;
+  const any = (view.shown.versions[argumentId] ?? []).map((id) => view.rows.versions[id]).find(fits) ?? Object.values(view.rows.versions).find(fits);
+  return any?.wording ?? null;
+}
+
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */
 export function short(wording: string): string {
   return wording.length > 60 ? `${wording.slice(0, 57)}…` : wording;

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { createSeededIds } from "@steelman/shared/testing";
-import { addAccount, addMember, seedBoard } from "../support/board.ts";
+import { addAccount, addArgument, addMember, seedBoard, write } from "../support/board.ts";
 import type { SeededBoard } from "../support/board.ts";
 import { useApi } from "../support/api.ts";
 import { useTestDatabase } from "../support/database.ts";
@@ -59,6 +59,17 @@ describe("History", () => {
     expect(body.entries[1]).toMatchObject({ subjectKind: "version", subjectId: b.otherVersion, reason: "offtopic" });
     expect(body.entries[2]).toMatchObject({ subjectKind: "option", subjectId: winter });
     expect(typeof body.entries[0].at).toBe("string");
+  });
+
+  test("M3a-8, J-03, J-04: a combine says which arguments, and its undo which change it undid", async () => {
+    const second = await write(db.client, b.board, (seq) => addArgument(db.client, ids, { board: b.board, option: b.yes, author: b.ben, seq, wording: "Weekend hours suit families." }));
+    const combined = (await api.post(`/api/boards/${b.board}/versions/${b.version}/combine`, { as: eve, body: { into: second.argument } })).body.seq;
+    await api.put(`/api/boards/${b.board}/changes/${combined}/undo`, { as: eve });
+
+    const entries = (await history(val)).body.entries as { kind: string; subjectId: string; detail: object }[];
+
+    expect(entries.find((e) => e.kind === "wording_combined")).toMatchObject({ subjectId: b.version, detail: { from: b.argument, into: second.argument, merged: true } });
+    expect(entries.find((e) => e.kind === "wording_uncombined")).toMatchObject({ subjectId: b.version, detail: { undoes: combined } });
   });
 
   test("J-03: a role change names the person it changed", async () => {

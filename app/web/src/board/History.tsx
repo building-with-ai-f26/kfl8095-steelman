@@ -19,7 +19,7 @@ import type { HistoryEntry, ReaderView, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { versionPath } from "../links.ts";
 import { shortDate } from "../when.ts";
-import { isLiveVersion, short } from "./display.ts";
+import { finalArgument, isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 interface HistoryProps {
@@ -74,6 +74,9 @@ export function History({ boardId, view, reader, role, session, logSeq, heldOpti
   const restored = () => window.setTimeout(() => title.current?.focus());
   const days = byDay(entries ?? []);
   const restorable = newestOfEach(entries ?? []);
+  // A combine or separation not yet undone may be undone here, after its ten seconds (M3a-8).
+  const undone = new Set((entries ?? []).flatMap((entry) => (entry.detail.undoes === undefined ? [] : [entry.detail.undoes])));
+  const mayUndo = can(reader, role, "structure", { closed: false }) === null;
   return (
     <div ref={drawer} className="sm-drawer sm-history-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-history-title" id="sm-history">
       <div className="sm-drawer-head">
@@ -103,6 +106,9 @@ export function History({ boardId, view, reader, role, session, logSeq, heldOpti
                       <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen)}
                       <time dateTime={entry.at}>{new Date(entry.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
                       {restorable.has(entry.seq) ? <Restore entry={entry} view={view} reader={reader} role={role} session={session} heldOptions={heldOptions} onDone={restored} /> : null}
+                      {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) ? (
+                        <UndoChange entry={entry} view={view} session={session} onDone={restored} />
+                      ) : null}
                     </p>
                   </li>
                 ))}
@@ -173,6 +179,32 @@ function Restore({ entry, view, reader, role, session, heldOptions, onDone }: Re
   );
 }
 
+/**
+ * Undo, on a combine or separation (M3a-8, J-04), as GitHub offers Revert on a merged pull request long after it: the
+ * service puts the wording back, with the votes a combine set aside, or says why it can't yet.
+ */
+function UndoChange({ entry, view, session, onDone }: { entry: HistoryEntry; view: ReaderView; session: BoardSession; onDone(): void }) {
+  const [busy, setBusy] = useState(false);
+  const wording = view.rows.versions[entry.subjectId]?.wording;
+  const what = `${entry.kind === "wording_combined" ? "combining" : "separating"}${wording ? ` “${short(wording)}”` : ""}`;
+  return (
+    <button
+      type="button"
+      className="sm-link-button cursor-interaction"
+      disabled={busy}
+      onClick={() => {
+        setBusy(true);
+        void session.undoChange(entry.seq, entry.subjectId).then((done) => {
+          setBusy(false);
+          if (done) onDone();
+        });
+      }}
+    >
+      Undo<span className="sm-sr">{` ${what}`}</span>
+    </button>
+  );
+}
+
 /** What the entry says after its actor's name: a sentence, naming things from the rows the reader holds. */
 function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (versionId: string) => void): ReactNode {
   const optionName = view.rows.options[entry.subjectId]?.name;
@@ -235,6 +267,20 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       return `took ${source} off a wording.`;
     case "source_edited":
       return `edited ${source}.`;
+    case "wording_combined": {
+      const lead = entry.detail.into ? leadWording(view, finalArgument(view, entry.detail.into), entry.subjectId) : null;
+      return (
+        <>
+          combined {wording(entry.subjectId)} with {lead ? `“${short(lead)}”` : "another argument"}.
+        </>
+      );
+    }
+    case "wording_separated":
+      return <>made {wording(entry.subjectId)} its own argument.</>;
+    case "wording_uncombined":
+      return <>moved {wording(entry.subjectId)} back where it was.</>;
+    case "wording_unseparated":
+      return <>moved {wording(entry.subjectId)} back into its argument.</>;
     case "source_unavailable":
       return `reported that ${source} can’t be opened.`;
     case "source_available":

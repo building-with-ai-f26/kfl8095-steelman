@@ -1785,6 +1785,19 @@ Build plan M3a-7: M3a-5's design on the real board, on the service M3a-6 built.
 | Existing tests (rule 9) | Two browser tests in `e2e/card-menu.spec.ts` pin the Owner's menu without Combine and Separate, one saying so in its name ("nothing of combining, separating, or AI"). They now fail, as intended by the feature, and wait for the builder: the author's menu on a row with two wordings becomes Copy link, Edit wording and context, Combine with another argument, Make it a separate argument, Delete version; the Owner's on someone else's wording gains Combine with another argument. `versionMenu` offers them only when the board says where the wording sits, so the unit tests that call it without that are unchanged |
 | Known limitations | Picking and dragging work within a column; on a phone, where one column shows at a time, the handle is pressed, not dragged. The disabled "Combine with another argument" the prototype shows when an option has one argument is left out instead. A wording someone else moved shows its note only until Update, and its card can't be opened meanwhile. History names these changes in M3a-8 |
 
+## November 22 — Undo a combine from History (J-03, J-04)
+
+Build plan M3a-8: after the ten seconds of Undo, History names each combine and separation and undoes it.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | GitHub's pull-request timeline, from memory: Revert stays on a merge long after it. Canny's merge help, read live for the M3 audit: an admin can unmerge a post. Google Docs' version history, read live for the audit: the way back sits in the history itself. Taken: an Undo on the History entry, named for what it undoes |
+| The design (readiness 1 before) | Settled by those comparisons, as the builder asked on Nov 22, and not drawn in the prototype first, as the build plan asked: History's entry says "maya.chen combined “…” with “…”." or "made “…” its own argument.", and for an Editor or the Owner it has Undo ("Undo combining “…”" to a screen reader) until it's undone. An undo reads "moved “…” back where it was." or "moved “…” back into its argument." |
+| What Undo does | The service's undo (M3a-6): the wording goes back; if the arguments had become one, they're two again and the votes the combine set aside return, unless someone has voted since; wordings added since stay where they were added. The wording shows where it is at once, "The wording is back where it was." One the wording has moved on from since, or built on by a later combine, says "Something was combined or separated since, so this can’t be undone yet." Undoing an undo isn't offered |
+| Tests first | `e2e/history-undo.spec.ts` (4), seen to fail first; `server/test/api/history.test.ts` gained 1 for the entries' details, written with the code. The service's rollback rules (after other changes, out of order, twice, a newer vote winning) are M3a-6's tests and the simulation's |
+| Looked at | History with a combine and its Undo at 375 px |
+| Known limitations | A Contributor sees the entries but not Undo, as combining is an Editor's or the Owner's. History lists at most the newest 500 changes, so an older combine can't be undone from it |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

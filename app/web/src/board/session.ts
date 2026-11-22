@@ -471,6 +471,20 @@ export class BoardSession {
     return true;
   }
 
+  /**
+   * Undoes a combine or a separation from History (M3a-8, J-04), after its ten seconds: the wording goes back, and
+   * shows where it is now at once, as the reader's own change does.
+   */
+  async undoChange(seq: number, versionId: string): Promise<boolean> {
+    if (this.state.restructured?.seq === seq) return this.undoRestructure();
+    const answer = await this.ask(() => undoChange(this.board, seq));
+    if (!answer) return false;
+    await this.poll();
+    if (this.state.view) this.set({ view: showMoved(this.state.view, versionId) });
+    this.announce(answer.status === "done" ? "The wording is back where it was." : "That was already undone.");
+    return true;
+  }
+
   private endRestructured(): void {
     window.clearTimeout(this.restructureTimer);
     if (this.state.restructured) this.set({ restructured: null });

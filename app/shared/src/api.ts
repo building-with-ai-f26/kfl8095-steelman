@@ -205,6 +205,13 @@ export interface HistoryEntry {
     role?: Role;
     general?: "link" | "invited";
     linkRole?: Role;
+    /** A combine or separation (M3a-8): the argument the wording left, the one it joined or became, and whether two arguments became one. */
+    from?: string;
+    into?: string;
+    argument?: string;
+    merged?: true;
+    /** An undo: the change it undid. */
+    undoes?: number;
   };
 }
 
