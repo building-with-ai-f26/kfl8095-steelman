@@ -76,6 +76,14 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("voted_at")
     .orderBy("argument_id")
     .execute();
+  // Importance votes a combine set aside, kept so Undo can put them back (M3a-6).
+  const setAside = await db
+    .selectFrom("combine_vote")
+    .select(["board_id", "seq", "from_id", "into_id", "from_value", "into_value", "asked_again"])
+    .where("account_id", "=", person)
+    .orderBy("board_id")
+    .orderBy("seq")
+    .execute();
   const articulation = await db
     .selectFrom("articulation_vote")
     .select(["board_id", "version_id", "value", "voted_at"])
@@ -160,6 +168,7 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     votes: {
       importance: importance.map((v) => ({ board: v.board_id, argument: v.argument_id, value: v.value, at: v.voted_at.toISOString() })),
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
+      setAsideByCombine: setAside.map((v) => ({ board: v.board_id, combine: Number(v.seq), from: v.from_id, into: v.into_id, fromValue: v.from_value, intoValue: v.into_value, askedAgain: v.asked_again })),
       evidence: evidence.map((v) => ({ board: v.board_id, version: v.version_id, rev: v.rev, supported: v.supported, at: v.assessed_at.toISOString() })),
     },
     reports: reports.map((r) => ({ board: r.board_id, version: r.version_id, reason: r.reason, note: r.note, at: r.reported_at.toISOString(), withdrawn: r.withdrawn_at?.toISOString() ?? null })),
@@ -206,6 +215,7 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
     const touched = await sql<{ board_id: string }>`
       select board_id from board_member where account_id = ${person}
       union select board_id from importance_vote where account_id = ${person}
+      union select board_id from combine_vote where account_id = ${person}
       union select board_id from articulation_vote where account_id = ${person}
       union select board_id from assessment where account_id = ${person}
       union select board_id from argument where created_by = ${person}

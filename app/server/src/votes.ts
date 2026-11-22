@@ -47,8 +47,8 @@ export function setImportance({ db, clock }: Services, boardId: string, person: 
       // Sent to an argument since combined away, by someone who has voted where it went: their vote there stands (§3).
       if (argument.redirected && argument.current !== null) return "already_done";
       if ((argument.current ?? null) === value) return "already_done";
-      // Voting on it answers any ask to vote again, left by a combine (M3a-6).
-      await trx.updateTable("combine_vote").set({ asked_again: false }).where("into_id", "=", argumentId).where("account_id", "=", person!).where("asked_again", "=", true).execute();
+      // Voting on it answers any ask to vote again, left by a combine, and is a newer vote that Undo leaves as it is (M3a-6).
+      await trx.updateTable("combine_vote").set({ asked_again: false, revoted: true }).where("into_id", "=", argumentId).where("account_id", "=", person!).where("revoted", "=", false).execute();
       if (value === null) {
         await trx.deleteFrom("importance_vote").where("argument_id", "=", argumentId).where("account_id", "=", person!).execute();
       } else {

@@ -26,7 +26,7 @@ export const newArgumentInput = z.strictObject({
 /** A new option, with the ID the browser made for it, and an option's new name (M3a-2, A-07). */
 export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionNameInput });
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
-/** Combining one argument into another (M3a-6): the one it goes into. */
+/** Combining a wording into another argument (M3a-6): the one it goes into. */
 export const combineInput = z.strictObject({ into: itemIdInput });
 /** Separating a wording (M3a-6): the ID the browser made for its new argument. */
 export const separateInput = z.strictObject({ argumentId: itemIdInput });
@@ -284,11 +284,11 @@ export type RefusalReason =
   | "not_author"
   | "test_users_off"
   | "argument_deleted"
-  /** Two arguments are combined only within one option, and never one into itself (M3a-6). */
+  /** A wording is combined only into another argument in its option (M3a-6). */
   | "not_same_option"
   /** An argument's only wording can't be separated from it (M3a-6). */
   | "only_wording"
-  /** A combine a later combine built on can't be undone (M3a-6, as Canny won't unmerge a post merged again). */
+  /** A combine or separation that something moved again since can't be undone (M3a-6, as Canny won't unmerge a post merged again). */
   | "combined_since"
   /** Only a combine or a separation can be undone this way (M3a-6). */
   | "cant_undo"

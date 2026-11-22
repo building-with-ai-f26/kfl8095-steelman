@@ -12,7 +12,7 @@ import type { Step } from "./world.ts";
 // Combine, separate, and undo in the simulation (M3a-6; M3a's Done when):
 // one fixed sequence that always plays them, with the ten checks after each
 // step. Ben goes offline and votes on every argument he sees; Ana, the
-// owner, combines two arguments, separates a wording, and undoes both; back online, Ben's votes on the combined argument follow it (or
+// owner, combines a wording into another argument, separates one, and undoes both; back online, Ben's votes on the combined argument follow it (or
 // stand where he'd voted); Cy, who isn't an Editor, is refused. Readers who
 // had the board open keep their rows still until Update, and a caught-up
 // reader who presses Update sees what a new one does (checks 7 and 8).
@@ -32,14 +32,14 @@ const SEQUENCE: Step[] = [
   { kind: "poll", reader: 1 },
   { kind: "offline", reader: 1 },
   ...[0, 1, 2, 3].map((target): Step => ({ kind: "importance", reader: 1, target, value: 1 })),
-  { kind: "combine", reader: 0, target: 0, into: 1 },
+  { kind: "combine", reader: 0, target: 0, into: 0 },
   { kind: "poll", reader: 2 },
   { kind: "separate", reader: 0, target: 0 },
   { kind: "online", reader: 1 },
-  { kind: "combine", reader: 2, target: 0, into: 1 },
-  { kind: "undo", reader: 0 },
+  { kind: "combine", reader: 2, target: 0, into: 0 },
+  { kind: "undo", reader: 0, target: 0 },
   { kind: "poll", reader: 2 },
-  { kind: "undo", reader: 0 },
+  { kind: "undo", reader: 0, target: 0 },
   { kind: "update", reader: 2 },
   { kind: "update", reader: 1 },
 ];

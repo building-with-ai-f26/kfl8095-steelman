@@ -1,12 +1,13 @@
-// Combining and separating arguments (M3a-6, A-10; plans/architecture.md §2
-// and §3), and undoing either. An Editor's or the Owner's (the structure
-// action), as the M3a-5 preview designed them.
+// Combining and separating (M3a-6, A-10; plans/architecture.md §2 and §3),
+// and undoing either, as the prototype's drag has them and the builder chose
+// (Nov 22): an Editor's or the Owner's (the structure action).
 //
-// Combine moves every wording of one argument into another in the same
-// option. A wording's ID never changes (invariant 4), so its articulation
-// votes, assessments, and link go with it (Q8). The argument combined away
-// keeps its row with `merged_into`, so old links and offline votes follow
-// it. Importance votes merge per person (PRD §5): two identical votes become
+// Combine moves one wording into another argument in the same option. A
+// wording's ID never changes (invariant 4), so its articulation votes,
+// assessments, and link go with it (Q8). When it was its argument's last
+// wording, the two arguments become one: the argument left empty keeps its
+// row with `merged_into`, so old links and offline votes follow it, and
+// importance votes merge per person (PRD §5): two identical votes become
 // one; two that disagree are both removed and the person is asked to vote
 // again; a vote on only the first moves. What each person's votes were is
 // kept in combine_vote, never in the change log (invariant 7).
@@ -17,8 +18,8 @@
 //
 // Undo puts either back as a change of its own (the log is append-only):
 // wordings added since stay where they were added, and a vote cast since
-// wins over the one it would restore. A combine that a later combine built
-// on isn't undone, and says so.
+// wins over the one it would restore. A wording moved again since, or an
+// argument combined again since, isn't undone, and says so.
 
 import { sql } from "kysely";
 import { idUsed } from "./options.ts";
@@ -56,47 +57,78 @@ async function setVote(trx: Trx, boardId: string, argumentId: string, account: s
   if (value !== null) await trx.insertInto("importance_vote").values({ argument_id: argumentId, account_id: account, board_id: boardId, value, voted_at: now }).execute();
 }
 
-export function combineArguments({ db, clock }: Services, boardId: string, person: string | null, fromId: string, intoId: string): Promise<WriteResult> {
+export function combineWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string, intoId: string): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
     action: "structure",
     load: async (trx) => {
-      const from = await loadArgument(trx, boardId, fromId);
+      const version = await trx.selectFrom("version").select(["argument_id", "deleted_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst();
+      if (!version) return null;
+      const from = await loadArgument(trx, boardId, version.argument_id);
       const into = await loadArgument(trx, boardId, intoId);
-      return from && into ? { from, into } : null;
+      return from && into ? { version, from, into } : null;
     },
-    stale: async (_trx, { from, into }) => {
-      if (from.merged_into === into.id) return null; // Sent again: already done.
-      if (from.id === into.id || from.option_id !== into.option_id) return { refused: "not_same_option" };
+    stale: async (_trx, { version, from, into }) => {
+      if (from.id === into.id) return null; // Sent again: already done.
+      if (version.deleted_at) return { refused: "version_deleted" };
+      if (from.option_id !== into.option_id) return { refused: "not_same_option" };
       return isLive(from) && isLive(into) ? null : { refused: "argument_deleted" };
     },
     async change(trx, { from, into }, seq) {
-      if (from.merged_into === into.id) return "already_done";
+      if (from.id === into.id) return "already_done";
       const now = clock.now();
-      const moved = (await trx.selectFrom("version").select("id").where("argument_id", "=", from.id).orderBy("created_seq").orderBy("id").execute()).map((row) => row.id);
-      await trx.updateTable("version").set({ argument_id: into.id, changed_seq: seq }).where("argument_id", "=", from.id).execute();
-
-      // Per person: identical become one, disagreeing are removed and asked again, a vote only on `from` moves.
-      const votesOn = async (id: string) => new Map((await trx.selectFrom("importance_vote").select(["account_id", "value"]).where("argument_id", "=", id).execute()).map((v) => [v.account_id, v.value]));
-      const fromVotes = await votesOn(from.id);
-      const intoVotes = await votesOn(into.id);
-      for (const [account, fromValue] of fromVotes) {
-        const intoValue = intoVotes.get(account) ?? null;
-        const disagree = intoValue !== null && intoValue !== fromValue;
-        const after = disagree ? null : (intoValue ?? fromValue);
-        await setVote(trx, boardId, from.id, account, null, now);
-        await setVote(trx, boardId, into.id, account, after, now);
-        await trx
-          .insertInto("combine_vote")
-          .values({ board_id: boardId, seq, account_id: account, from_id: from.id, into_id: into.id, from_value: fromValue, into_value: intoValue, after_value: after, asked_again: disagree })
-          .execute();
-      }
-      await trx.updateTable("argument").set({ merged_into: into.id, changed_seq: seq }).where("id", "=", from.id).execute();
-      await recount(trx, from.id, seq);
-      await recount(trx, into.id, seq);
-      await log(trx, now, { boardId, seq, person: person!, kind: "arguments_combined", subjectKind: "argument", subjectId: from.id, after: { into: into.id, versions: moved } });
+      await trx.updateTable("version").set({ argument_id: into.id, changed_seq: seq }).where("id", "=", versionId).execute();
+      // A hidden wording still keeps its argument (writing.ts), so it counts as one left behind.
+      const left = await trx.selectFrom("version").select("id").where("argument_id", "=", from.id).where("deleted_at", "is", null).executeTakeFirst();
+      if (!left) await mergeArguments(trx, { boardId, seq, now, fromId: from.id, intoId: into.id });
+      await log(trx, now, {
+        boardId,
+        seq,
+        person: person!,
+        kind: "wording_combined",
+        subjectKind: "version",
+        subjectId: versionId,
+        after: { from: from.id, into: into.id, ...(left ? {} : { merged: true }) },
+      });
       return "done";
     },
   });
+}
+
+/** The arguments become one: `from`, now empty, points at `into`, and importance votes merge per person. */
+async function mergeArguments(trx: Trx, m: { boardId: string; seq: number; now: Date; fromId: string; intoId: string }): Promise<void> {
+  // Per person: identical become one, disagreeing are removed and asked again, a vote only on `from` moves.
+  const votesOn = async (id: string) => new Map((await trx.selectFrom("importance_vote").select(["account_id", "value"]).where("argument_id", "=", id).execute()).map((v) => [v.account_id, v.value]));
+  const fromVotes = await votesOn(m.fromId);
+  const intoVotes = await votesOn(m.intoId);
+  for (const [account, fromValue] of fromVotes) {
+    const intoValue = intoVotes.get(account) ?? null;
+    const disagree = intoValue !== null && intoValue !== fromValue;
+    const after = disagree ? null : (intoValue ?? fromValue);
+    await setVote(trx, m.boardId, m.fromId, account, null, m.now);
+    await setVote(trx, m.boardId, m.intoId, account, after, m.now);
+    await trx
+      .insertInto("combine_vote")
+      .values({ board_id: m.boardId, seq: m.seq, account_id: account, from_id: m.fromId, into_id: m.intoId, from_value: fromValue, into_value: intoValue, after_value: after, asked_again: disagree })
+      .execute();
+  }
+  // Someone still asked to vote again on `from`, who hasn't voted on `into`, is asked there now.
+  const stillAsked = await trx
+    .selectFrom("combine_vote")
+    .select("account_id")
+    .distinct()
+    .where("into_id", "=", m.fromId)
+    .where("asked_again", "=", true)
+    .where("account_id", "not in", [...fromVotes.keys(), ...intoVotes.keys(), ""])
+    .execute();
+  for (const { account_id: account } of stillAsked) {
+    await trx
+      .insertInto("combine_vote")
+      .values({ board_id: m.boardId, seq: m.seq, account_id: account, from_id: m.fromId, into_id: m.intoId, from_value: null, into_value: null, after_value: null, asked_again: true })
+      .execute();
+  }
+  await trx.updateTable("argument").set({ merged_into: m.intoId, changed_seq: m.seq }).where("id", "=", m.fromId).execute();
+  await recount(trx, m.fromId, m.seq);
+  await recount(trx, m.intoId, m.seq);
 }
 
 export function separateWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string, newId: string): Promise<WriteResult> {
@@ -136,7 +168,7 @@ export function undoStructure({ db, clock }: Services, boardId: string, person: 
     load: async (trx) =>
       (await trx.selectFrom("change").select(["kind", "subject_id", "after"]).where("board_id", "=", boardId).where("seq", "=", String(undoSeq)).executeTakeFirst()) ?? null,
     async change(trx, entry, seq) {
-      if (entry.kind !== "arguments_combined" && entry.kind !== "wording_separated") return { refused: "cant_undo" };
+      if (entry.kind !== "wording_combined" && entry.kind !== "wording_separated") return { refused: "cant_undo" };
       const undone = await trx
         .selectFrom("change")
         .select("seq")
@@ -146,8 +178,8 @@ export function undoStructure({ db, clock }: Services, boardId: string, person: 
       if (undone) return "already_done";
       const after = entry.after as Record<string, unknown>;
       const now = clock.now();
-      return entry.kind === "arguments_combined"
-        ? uncombine(trx, { boardId, person: person!, seq, undoSeq, now, fromId: entry.subject_id, intoId: String(after.into), versions: (after.versions as string[]) ?? [] })
+      return entry.kind === "wording_combined"
+        ? uncombine(trx, { boardId, person: person!, seq, undoSeq, now, versionId: entry.subject_id, fromId: String(after.from), intoId: String(after.into), merged: after.merged === true })
         : unseparate(trx, { boardId, person: person!, seq, undoSeq, now, versionId: entry.subject_id, fromId: String(after.from), newId: String(after.argument) });
     },
   });
@@ -161,43 +193,65 @@ interface Undoing {
   now: Date;
 }
 
-async function uncombine(trx: Trx, u: Undoing & { fromId: string; intoId: string; versions: string[] }) {
+async function uncombine(trx: Trx, u: Undoing & { versionId: string; fromId: string; intoId: string; merged: boolean }) {
+  const version = await trx.selectFrom("version").select(["argument_id", "deleted_at"]).where("id", "=", u.versionId).executeTakeFirst();
   const from = await loadArgument(trx, u.boardId, u.fromId);
   const into = await loadArgument(trx, u.boardId, u.intoId);
-  if (!from || !into || from.merged_into !== into.id) return { refused: "cant_undo" as const };
-  if (!isLive(into)) return { refused: "combined_since" as const };
+  if (!version || !from || !into) return { refused: "cant_undo" as const };
+  if (version.deleted_at) return { refused: "version_deleted" as const };
+  // Moved again since, or the argument it went into combined into another since: undoing that comes first.
+  if (version.argument_id !== into.id || !isLive(into)) return { refused: "combined_since" as const };
+  if (u.merged ? from.merged_into !== into.id : from.merged_into !== null) return { refused: "combined_since" as const };
+  if (!u.merged && from.deleted_at) return { refused: "argument_deleted" as const };
+  // A later combine that made `into` one with another argument set votes aside after this one did: it's undone first,
+  // so each person's votes come back as they were (the second reader, Nov 22).
+  if (u.merged && (await laterMerge(trx, u.boardId, u.undoSeq, into.id))) return { refused: "combined_since" as const };
 
-  // The wordings it moved, if they're still there: one added since, or separated out since, stays where it is.
-  if (u.versions.length > 0) {
-    await trx.updateTable("version").set({ argument_id: from.id, changed_seq: u.seq }).where("argument_id", "=", into.id).where("id", "in", u.versions).execute();
+  await trx.updateTable("version").set({ argument_id: from.id, changed_seq: u.seq }).where("id", "=", u.versionId).execute();
+  if (u.merged) {
+    // Votes: each person's as they were, unless they've voted on the combined argument since; then theirs stands.
+    const rows = await trx.selectFrom("combine_vote").selectAll().where("board_id", "=", u.boardId).where("seq", "=", String(u.undoSeq)).execute();
+    for (const row of rows) {
+      if (row.revoted) continue;
+      await setVote(trx, u.boardId, into.id, row.account_id, row.into_value, u.now);
+      await setVote(trx, u.boardId, from.id, row.account_id, row.from_value, u.now);
+    }
+    await trx.deleteFrom("combine_vote").where("board_id", "=", u.boardId).where("seq", "=", String(u.undoSeq)).execute();
+    await trx.updateTable("argument").set({ merged_into: null, changed_seq: u.seq }).where("id", "=", from.id).execute();
+    await recount(trx, from.id, u.seq);
+    await recount(trx, into.id, u.seq);
   }
-  // Votes: each person's as they were, unless they've voted on the combined argument since; then theirs stands.
-  const rows = await trx.selectFrom("combine_vote").selectAll().where("board_id", "=", u.boardId).where("seq", "=", String(u.undoSeq)).execute();
-  for (const row of rows) {
-    const now = (await trx.selectFrom("importance_vote").select("value").where("argument_id", "=", into.id).where("account_id", "=", row.account_id).executeTakeFirst())?.value ?? null;
-    if (now !== row.after_value) continue;
-    await setVote(trx, u.boardId, into.id, row.account_id, row.into_value, u.now);
-    await setVote(trx, u.boardId, from.id, row.account_id, row.from_value, u.now);
-  }
-  await trx.deleteFrom("combine_vote").where("board_id", "=", u.boardId).where("seq", "=", String(u.undoSeq)).execute();
-  await trx.updateTable("argument").set({ merged_into: null, changed_seq: u.seq }).where("id", "=", from.id).execute();
-  await recount(trx, from.id, u.seq);
-  await recount(trx, into.id, u.seq);
-  await log(trx, u.now, { boardId: u.boardId, seq: u.seq, person: u.person, kind: "arguments_uncombined", subjectKind: "argument", subjectId: from.id, after: { into: into.id, undoes: u.undoSeq } });
+  await log(trx, u.now, { boardId: u.boardId, seq: u.seq, person: u.person, kind: "wording_uncombined", subjectKind: "version", subjectId: u.versionId, after: { from: from.id, into: into.id, undoes: u.undoSeq } });
   return "done" as const;
 }
 
 async function unseparate(trx: Trx, u: Undoing & { versionId: string; fromId: string; newId: string }) {
-  const version = await trx.selectFrom("version").select("argument_id").where("id", "=", u.versionId).executeTakeFirst();
+  const version = await trx.selectFrom("version").select(["argument_id", "deleted_at"]).where("id", "=", u.versionId).executeTakeFirst();
   const from = await loadArgument(trx, u.boardId, u.fromId);
-  if (!version || !from || version.argument_id !== u.newId) return { refused: "cant_undo" as const };
-  if (!isLive(from)) return { refused: "combined_since" as const };
+  if (!version || !from) return { refused: "cant_undo" as const };
+  if (version.deleted_at) return { refused: "version_deleted" as const };
+  if (version.argument_id !== u.newId || from.merged_into !== null) return { refused: "combined_since" as const };
+  if (from.deleted_at) return { refused: "argument_deleted" as const };
   await trx.updateTable("version").set({ argument_id: from.id, changed_seq: u.seq }).where("id", "=", u.versionId).execute();
   // The new argument closes, unless someone added a wording to it since.
   const left = await trx.selectFrom("version").select("id").where("argument_id", "=", u.newId).where("deleted_at", "is", null).executeTakeFirst();
   if (!left) await trx.updateTable("argument").set({ deleted_at: u.now, changed_seq: u.seq }).where("id", "=", u.newId).execute();
   await log(trx, u.now, { boardId: u.boardId, seq: u.seq, person: u.person, kind: "wording_unseparated", subjectKind: "version", subjectId: u.versionId, after: { argument: u.newId, undoes: u.undoSeq } });
   return "done" as const;
+}
+
+/** Whether a combine after `seq`, not yet undone, made `argumentId` one with another argument, either way round. */
+async function laterMerge(trx: Trx, boardId: string, seq: number, argumentId: string): Promise<boolean> {
+  const later = await trx
+    .selectFrom("change as c")
+    .select("c.seq")
+    .where("c.board_id", "=", boardId)
+    .where("c.seq", ">", String(seq))
+    .where("c.kind", "=", "wording_combined")
+    .where(sql<boolean>`c.after->>'merged' = 'true' and (c.after->>'into' = ${argumentId} or c.after->>'from' = ${argumentId})`)
+    .where(({ not, exists, selectFrom }) => not(exists(selectFrom("change as u").select("u.seq").where("u.board_id", "=", boardId).where(sql<boolean>`(u.after->>'undoes')::bigint = c.seq`))))
+    .executeTakeFirst();
+  return later !== undefined;
 }
 
 /** A change-log row: IDs and change numbers only, never what anyone wrote, nor anyone's votes (invariant 7). */

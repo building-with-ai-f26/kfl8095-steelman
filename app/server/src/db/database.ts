@@ -134,6 +134,7 @@ export interface Database {
     into_value: number | null;
     after_value: number | null;
     asked_again: boolean;
+    revoted: Generated<boolean>;
   };
   articulation_vote: { version_id: string; account_id: string; board_id: string; value: number; voted_at: Date };
   assessment: { version_id: string; rev: number; account_id: string; board_id: string; supported: boolean; assessed_at: Date };

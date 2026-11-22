@@ -97,6 +97,7 @@ export function Privacy() {
         <li>Being signed in: until 30 days after you last use Steelman.</li>
         <li>Request logs (your IP address and browser), kept by Google Cloud: 30 days.</li>
         <li>What you write, and the record of changes to a board: for as long as the board exists.</li>
+        <li>When two arguments are combined, your importance votes on them from before: for as long as the board exists, so the combine can be undone.</li>
         <li>
           Backups of the database: 14 days for daily ones, 8 weeks for weekly ones. Something deleted stays in a backup until it expires, and a restored backup has every deletion since it was made
           applied again.

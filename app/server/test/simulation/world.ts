@@ -47,10 +47,10 @@ export type Step =
   /** "Can't open it?" (M3a-3) on the board's one source: anyone may report it; the reporter or the owner clears it. Not queued, like moderation. */
   | { kind: "reportSource"; reader: number }
   | { kind: "clearSource"; reader: number }
-  /** Combine and separate (M3a-6): only Ana, the owner, may. Not queued, like moderation. Undo undoes the newest one not yet undone. */
+  /** Combine a wording into another argument, and separate one (M3a-6): only Ana, the owner, may. Not queued, like moderation. Undo undoes the newest one not yet undone. */
   | { kind: "combine"; reader: number; target: number; into: number }
   | { kind: "separate"; reader: number; target: number }
-  | { kind: "undo"; reader: number }
+  | { kind: "undo"; reader: number; target: number }
   | { kind: "minutePasses" }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
@@ -79,7 +79,7 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("clearSource" as const), reader }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("combine" as const), reader, target, into: fc.nat(3) }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("separate" as const), reader, target }) },
-  { weight: 1, arbitrary: fc.record({ kind: fc.constant("undo" as const), reader }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("undo" as const), reader, target }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("minutePasses" as const) }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
@@ -269,20 +269,25 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
   const structureStep = async (step: Extract<Step, { kind: "combine" | "separate" | "undo" }>, r: Reader): Promise<WriteResult | null> => {
     const live = async (id: string) => (await client.query("select deleted_at is null and merged_into is null as live from argument where id = $1", [id])).rows[0]?.live === true;
     if (step.kind === "combine") {
-      // Two arguments the reader sees in one option.
+      // A wording the reader sees, into another argument they see in its option, as a drag does.
       const columns = Object.values(r.view.shown.arguments).filter((list) => list.length >= 2);
       const list = columns[step.target % Math.max(columns.length, 1)];
       if (!list) return null;
-      const from = list[step.target % list.length]!;
+      const shownIn = list[step.target % list.length]!;
       const into = list[(step.target + 1 + step.into) % list.length]!;
-      if (from === into) return null;
-      const merged = (await client.query("select merged_into from argument where id = $1", [from])).rows[0].merged_into;
-      const bothLive = (await live(from)) && (await live(into));
-      const result = await structure.combineArguments(services, b.board, r.person, from, into);
+      const wordings = r.view.shown.versions[shownIn] ?? [];
+      const versionId = wordings[step.into % Math.max(wordings.length, 1)];
+      if (shownIn === into || !versionId) return null;
+      const v = (await client.query("select argument_id, deleted_at from version where id = $1", [versionId])).rows[0];
+      const bothLive = (await live(v.argument_id)) && (await live(into));
+      const sameOption = (await client.query("select count(distinct option_id)::int as n from argument where id in ($1, $2)", [v.argument_id, into])).rows[0].n === 1;
+      const result = await structure.combineWording(services, b.board, r.person, versionId, into);
       if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may combine", { step, result });
-      else if (merged === into) check(result.status === "already_done", "9. A combine sent again is already done", { step, result });
+      else if (v.argument_id === into) check(result.status === "already_done", "9. A combine sent again is already done", { step, result });
+      else if (v.deleted_at) check(result.status === "refused" && result.reason === "version_deleted", "9. Combining a deleted wording is refused", { step, result });
+      else if (!sameOption) check(result.status === "refused" && result.reason === "not_same_option", "9. A wording is combined only within its option", { step, result });
       else if (!bothLive) check(result.status === "refused" && result.reason === "argument_deleted", "9. A combine with an argument gone since is refused", { step, result });
-      else check(result.status === "done", "9. The owner's combine of two live arguments is done", { step, result });
+      else check(result.status === "done", "9. The owner's combine of a wording into a live argument is done", { step, result });
       return result;
     }
     if (step.kind === "separate") {
@@ -300,19 +305,24 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
       else check(result.status === "done", "9. The owner's separation is done", { step, result });
       return result;
     }
-    // Undo: the newest combine or separation not yet undone.
-    const newest = (
+    // Undo: any combine or separation not yet undone, newest first by `target`, so undos also come out of order.
+    const open = (
       await client.query(
-        `select seq from change c where board_id = $1 and kind in ('arguments_combined', 'wording_separated')
+        `select seq from change c where board_id = $1 and kind in ('wording_combined', 'wording_separated')
            and not exists (select 1 from change u where u.board_id = c.board_id and (u.after->>'undoes')::bigint = c.seq)
-         order by seq desc limit 1`,
+         order by seq desc`,
         [b.board],
       )
-    ).rows[0]?.seq;
-    if (!newest) return null;
-    const result = await structure.undoStructure(services, b.board, r.person, Number(newest));
+    ).rows.map((row) => Number(row.seq));
+    if (open.length === 0) return null;
+    const result = await structure.undoStructure(services, b.board, r.person, open[step.target % open.length]!);
     if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may undo", { step, result });
-    else check(result.status === "done" || (result.status === "refused" && ["combined_since", "cant_undo"].includes(result.reason)), "9. The owner's undo is done, or says why not", { step, result });
+    else
+      check(
+        result.status === "done" || (result.status === "refused" && ["combined_since", "version_deleted", "argument_deleted"].includes(result.reason)),
+        "9. The owner's undo is done, or says why not",
+        { step, result },
+      );
     return result;
   };
 

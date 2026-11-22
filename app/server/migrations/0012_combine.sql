@@ -1,10 +1,12 @@
 -- Combining arguments (M3a-6, A-10; plans/architecture.md §2, "How undo
--- works"): one row per person who had an importance vote on either of two
--- arguments when they were combined, saying what their votes were before and
--- what the combine left on the argument they went into. Undo puts each back,
--- unless the person has voted again since (their newer vote wins). A row
--- whose person disagreed with themself (+1 on one, -1 on the other) is how
--- the board asks them to vote again (PRD §5).
+-- works"): when combining a wording leaves its argument empty, the two
+-- arguments become one, and this keeps one row per person who had an
+-- importance vote on the argument combined away (or was still asked to vote
+-- again on it), saying what their votes were before and what the combine
+-- left on the argument they went into. Undo puts each back, unless the
+-- person has voted on that argument since (`revoted`: their newer vote
+-- wins). A row whose person disagreed with themself (+1 on one, -1 on the
+-- other) is how the board asks them to vote again (PRD §5).
 --
 -- These are votes, so they live here and not in the change log, which never
 -- holds one (invariant 7, migration 0005). Like votes, they go with the
@@ -24,6 +26,8 @@ create table combine_vote (
   -- What the combine left on `into_id` for this person: null when it removed both votes.
   after_value  smallint,
   asked_again  boolean not null,
+  -- They voted on `into_id` after the combine, so Undo leaves their votes as they are.
+  revoted      boolean not null default false,
   primary key (board_id, seq, account_id),
   foreign key (board_id, from_id) references argument (board_id, id),
   foreign key (board_id, into_id) references argument (board_id, id)
@@ -35,5 +39,5 @@ create index combine_vote_asked on combine_vote (into_id, account_id) where aske
 create index combine_vote_account on combine_vote (account_id);
 
 grant select, insert, delete on combine_vote to steelman_app;
-grant update (asked_again) on combine_vote to steelman_app;
+grant update (asked_again, revoted) on combine_vote to steelman_app;
 grant select, delete on combine_vote to steelman_account_deletion;

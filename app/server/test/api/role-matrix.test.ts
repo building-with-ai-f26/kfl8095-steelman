@@ -41,10 +41,10 @@ interface Cast {
   gone: string;
   /**
    * For combining and separating (M3a-6): two more arguments for Yes, the first
-   * with two wordings, so one may be separated; and a combine already made of
-   * two others, so it may be undone.
+   * with two wordings, so one may be separated or combined; and a combine
+   * already made of two others, so it may be undone.
    */
-  structure: { from: string; into: string; separable: string; combined: number };
+  structure: { into: string; separable: string; combined: number };
 }
 
 /** An invited-only board with one of each persona, and Cara, a contributor who isn't one of them. */
@@ -93,8 +93,8 @@ async function castBoard(): Promise<Cast> {
   });
   const separable = ids.itemId();
   await api.post(`/api/boards/${b.board}/arguments/${from!.argument}/versions`, { as: cara, body: { id: separable, wording: "One, put another way.", context: "" } });
-  const combined = (await api.post(`/api/boards/${b.board}/arguments/${x!.argument}/combine`, { as: b.ana, body: { into: y!.argument } })).body.seq as number;
-  return { b, person, own, others, empty, gone, structure: { from: from!.argument, into: into!.argument, separable, combined } };
+  const combined = (await api.post(`/api/boards/${b.board}/versions/${x!.version}/combine`, { as: b.ana, body: { into: y!.argument } })).body.seq as number;
+  return { b, person, own, others, empty, gone, structure: { into: into!.argument, separable, combined } };
 }
 
 type Do = (cast: Cast, as: string | undefined, persona: Persona) => Promise<{ status: number; body: { reason?: string } }>;
@@ -227,10 +227,10 @@ const ACTIONS: Action[] = [
   },
   // Combine, separate, and undo (M3a-6, A-10): the structure action, an Editor's and the Owner's.
   {
-    name: "combine two arguments",
+    name: "combine a wording into another argument",
     least: "editor",
     write: true,
-    run: ({ b, structure }, as) => api.post(`/api/boards/${b.board}/arguments/${structure.from}/combine`, { as, body: { into: structure.into } }),
+    run: ({ b, structure }, as) => api.post(`/api/boards/${b.board}/versions/${structure.separable}/combine`, { as, body: { into: structure.into } }),
   },
   {
     name: "separate a wording into its own argument",

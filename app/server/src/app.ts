@@ -43,7 +43,7 @@ import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { readHistory } from "./history.ts";
-import { combineArguments, separateWording, undoStructure } from "./structure.ts";
+import { combineWording, separateWording, undoStructure } from "./structure.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
@@ -470,10 +470,10 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   );
 
   // Combine and separate (M3a-6, A-10), and undoing either by its change number: an Editor's and the Owner's.
-  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/combine", { config: { limit: "writing" } }, async (request, reply) => {
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/combine", { config: { limit: "writing" } }, async (request, reply) => {
     const body = combineInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return answer(reply, await combineArguments(services, request.params.board, request.person, request.params.id, body.data.into));
+    return answer(reply, await combineWording(services, request.params.board, request.person, request.params.id, body.data.into));
   });
 
   app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/separate", { config: { limit: "writing" } }, async (request, reply) => {
