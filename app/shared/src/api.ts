@@ -315,6 +315,8 @@ export type RefusalReason =
   /** A board keeps at least two options, and at most four (OPTIONS_PER_BOARD). */
   | "too_few_options"
   | "too_many_options"
+  /** Another option on the board already has that name, capitals aside (A-07). */
+  | "option_name_taken"
   | "version_deleted"
   | "revision_changed"
   | "needs_evidence"
