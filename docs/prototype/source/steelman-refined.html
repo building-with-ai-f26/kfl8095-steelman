@@ -762,6 +762,19 @@
 
   /* ── New steelman: the sheet is the board's skeleton, written in place: a question box, then its options. ── */
   #steelman-study .sm-create-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
+  /* The preview before combining or separating (A-10, M3a-5): what moves, what happens to the votes, and that History can undo it. */
+  #steelman-study .sm-preview-scrim { position:absolute; inset:0; z-index:70; background:#24242459; }
+  #steelman-study .sm-preview-scrim[hidden], #steelman-study .sm-preview[hidden] { display:none; }
+  #steelman-study .sm-preview { position:absolute; z-index:71; left:50%; transform:translateX(-50%); display:grid; gap:14px; width:480px; max-width:calc(100% - 32px); padding:20px 20px 18px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 12px 32px #0000001f; }
+  #steelman-study .sm-preview h2 { font:600 17px/1.3 var(--sm-serif); }
+  #steelman-study .sm-preview-pair { display:grid; gap:6px; }
+  #steelman-study .sm-preview-pair blockquote { margin:0; padding:10px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); font:400 15px/1.4 var(--sm-serif); }
+  #steelman-study .sm-preview-pair .sm-preview-into { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--sm-muted); }
+  #steelman-study .sm-preview-pair .sm-preview-into svg { width:14px; height:14px; }
+  #steelman-study .sm-preview-facts { display:grid; gap:6px; margin:0; padding:0 0 0 18px; font-size:14px; line-height:1.45; }
+  #steelman-study .sm-preview-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
+  #steelman-study .sm-vote-again { display:flex; align-items:flex-start; gap:6px; margin:8px 0 0; padding:8px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); font-size:13px; line-height:1.4; }
+  #steelman-study .sm-vote-again svg { flex:none; width:14px; height:14px; margin-top:2px; }
   #steelman-study .sm-create-scrim[hidden], #steelman-study .sm-create[hidden] { display:none; }
   #steelman-study .sm-create { position:absolute; z-index:71; left:50%; top:84px; transform:translateX(-50%); display:grid; width:600px; max-width:calc(100% - 32px); background:var(--sm-card); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 24px 60px #00000040; }
   #steelman-study .sm-create-canvas { display:grid; gap:14px; padding:20px 20px 22px; border-radius:10px 10px 0 0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
@@ -1205,6 +1218,8 @@
   <div class="sm-tour" hidden></div>
   <div class="sm-create-scrim" data-action-scrim hidden></div>
   <section class="sm-create" role="dialog" aria-modal="true" aria-labelledby="sm-create-title" hidden></section>
+  <div class="sm-preview-scrim" data-action="preview-cancel" hidden></div>
+  <section class="sm-preview" role="dialog" aria-modal="true" aria-labelledby="sm-preview-title" hidden></section>
 </div>
 <script>
 (() => {
@@ -1877,7 +1892,7 @@
   }
   const reasonMenu = id => `<p class="sm-menu-note">${state.menuView==='report'?'Report it as':'Hide it as'}</p>`+Object.entries(REASONS).map(([k,l])=>modItem(state.menuView==='report'?'report-card':'hide-card',id,{spam:'ban',abuse:'shield-alert',offtopic:'move-right',other:'circle-help'}[k],l,k)).join('');
   function historyMarkup() {
-    const verbs={closed:'closed the board',reopened:'reopened the board',decided:'recorded the decision:',hid:'hid',restored:'restored',dismissed:'dismissed reports on',accepted:'accepted',declined:'declined',deleted:'deleted'};
+    const verbs={combined:'combined two arguments, keeping',separated:'made a separate argument of',closed:'closed the board',reopened:'reopened the board',decided:'recorded the decision:',hid:'hid',restored:'restored',dismissed:'dismissed reports on',accepted:'accepted',declined:'declined',deleted:'deleted'};
     return doc.log.length?`<ol class="sm-history">${doc.log.map(e=>`<li><span class="sm-avatar" aria-hidden="true">${escape(userInitials(e.by==='you'?ME:e.by))}</span><p><strong>${userLink(e.by,e.by==='you'?'You':escape(e.by))}</strong> ${verbs[e.did]||e.did}${['closed','reopened'].includes(e.did)?'':` “${escape(e.ref)}”`}${e.reason?` <span class="sm-history-reason">${escape(REASONS[e.reason]||e.reason)}</span>`:''}<time datetime="${e.at}" title="${fullDate(e.at)}">${ago(e.at)}</time></p></li>`).join('')}</ol>`:'<p class="sm-field-hint">Nothing yet.</p>';
   }
   const heldId = () => { let id; do id='p'+(doc.nextId++); while(doc.pending.some(x=>x.id===id)); return id; };
@@ -1893,7 +1908,7 @@
     const source=from?.id===idea.id,target=from&&!source&&from.option===idea.option;
     const verb=target&&canMove(state.moving)?'Combine here':'Suggest combining here';
     const here=target?`<button type="button" class="sm-move-here cursor-interaction" data-action="move-here" data-id="${idea.id}" data-key="move-here-${idea.id}" aria-label="${verb}: same point as “${escape(short(ordered(idea)[0]))}”"><span>${icon('merge')}${verb}</span></button>`:'';
-    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}</div></section>`;
+    return `<section class="sm-idea ${open?'sm-open':''} ${dim?'sm-dim':''} ${idea.versions.length<2?'sm-single':''} ${source?'sm-move-source':''} ${target?'sm-move-target':''}" data-node="${idea.id}" aria-label="${escape(short(lead))}">${open?trackAxis(idea):''}${importanceVote(idea)}<div class="sm-card-wrap">${face}${idea.voteAgain?`<p class="sm-vote-again" role="note">${icon('rotate-ccw')}<span>Your two importance votes disagreed when these arguments were combined, so vote again on this one.</span></p>`:''}${here}${suggestionsFor(idea)}${heldVersions(idea)}</div></section>`;
   }
   // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
   function mergedRow(idea) {
@@ -2341,6 +2356,64 @@
     if(state.expanded===card&&state.open===old.id) state.expanded=null;
     startUndo(snapshot,{option:old.option,afterIdea:ideaId,label:'Split into its own argument.',card,idea:old.id});
     return ideaId;
+  }
+  // Combining two arguments (A-10): every wording of one moves into the other, with its articulation votes, assessments,
+  // and comments (Q8). Importance votes merge per person (PRD §5): two identical votes become one, and two that disagree
+  // are both removed and the person is asked to vote again. The prototype holds only your own votes and everyone else's
+  // net score, so others' overlaps are an illustration, computed the same way every time from the two arguments.
+  function overlap(from,into) {
+    let h=0;for(const ch of from.id+into.id)h=(h*31+ch.charCodeAt(0))|0;
+    const both=Math.min(Math.abs(from.score),Math.abs(into.score));
+    const agree=Math.min(both,Math.abs(h)%3),disagree=Math.min(both-agree,Math.abs(h>>3)%3);
+    return {agree,disagree};
+  }
+  function combinedImportance(from,into) {
+    const mine=[state.importance[from.id]||0,state.importance[into.id]||0];
+    const {agree}=overlap(from,into);
+    const yours=mine[0]&&mine[1]?(mine[0]===mine[1]?mine[0]:0):mine[0]+mine[1];
+    return {score:from.score+into.score-agree,yours,youDisagree:!!(mine[0]&&mine[1]&&mine[0]!==mine[1])};
+  }
+  function combineIdeas(fromId,intoId) {
+    const snapshot=takeSnapshot(),from=ideaOf(fromId),into=ideaOf(intoId),after=combinedImportance(from,into),moved=[...from.versions];
+    for(const card of moved){cards[card].idea=intoId;into.versions.push(card);}
+    from.versions=[];ideas.splice(ideas.indexOf(from),1);delete state.importance[fromId];
+    into.score=after.score;
+    if(after.youDisagree){delete state.importance[intoId];into.voteAgain=true;} else if(after.yours) state.importance[intoId]=after.yours;
+    state.open=intoId;state.composing=false;state.expanded=moved[0];
+    logEvent('combined',cards[ordered(into)[0]].claim);
+    startUndo(snapshot,{option:into.option,afterIdea:intoId,label:'Combined.',card:moved[0],idea:fromId});
+  }
+  // The preview: a dialog over the board, near where it was asked for. Combine and Separate are its only ways on; Cancel,
+  // Escape, or a click outside it changes nothing.
+  let preview=null;
+  const previewEl=root.querySelector('.sm-preview'),previewScrim=root.querySelector('.sm-preview-scrim');
+  function previewMarkup() {
+    const quote=id=>`<blockquote>${escape(short(id))}</blockquote>`;
+    const facts=list=>`<ul class="sm-preview-facts">${list.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+    const actions=verb=>`<div class="sm-preview-actions"><button type="button" class="sm-button cursor-interaction" data-action="preview-cancel" data-key="preview-cancel">Cancel</button><button type="button" class="sm-button sm-solid cursor-interaction" data-action="preview-confirm" data-key="preview-confirm">${verb}</button></div>`;
+    if(preview.kind==='separate') {
+      return `<h2 id="sm-preview-title">Make this wording its own argument?</h2><div class="sm-preview-pair">${quote(preview.card)}</div>`
+        +facts(['It moves to the end of this option as a new argument.','It keeps its articulation votes, assessments, and comments.','The new argument starts with no importance votes.','You can undo this from History.'])
+        +actions('Separate');
+    }
+    const from=ideaOf(cards[preview.card].idea),into=ideaOf(preview.into),after=combinedImportance(from,into),{disagree}=overlap(from,into);
+    const n=from.versions.length,asked=disagree+(after.youDisagree?1:0);
+    const list=[
+      n===1?'Its wording moves into the second argument, with its articulation votes, assessments, and comments.':`Its ${n} wordings move into the second argument, with their articulation votes, assessments, and comments.`,
+      `Its importance becomes ${after.score+after.yours}, counting each person’s vote once.`,
+      ...(asked?[`${asked===1?'One person':asked+' people'} voted one argument up and the other down, so their votes on both are removed and they’re asked to vote again.${after.youDisagree?' You are one of them.':''}`]:[]),
+      'You can undo this from History.'
+    ];
+    return `<h2 id="sm-preview-title">Combine these arguments?</h2><div class="sm-preview-pair">${quote(ordered(from)[0])}<span class="sm-preview-into">${icon('merge')}joins</span>${quote(ordered(into)[0])}</div>`+facts(list)+actions('Combine');
+  }
+  function renderPreview() {
+    previewEl.hidden=previewScrim.hidden=!preview;
+    if(!preview){previewEl.innerHTML='';return;}
+    previewEl.innerHTML=previewMarkup();
+    // Near the argument it's about, so a reader far down a long board doesn't have to scroll to find it.
+    const near=board.querySelector(`.sm-card[data-card="${preview.card}"]`)||board;
+    const top=near.getBoundingClientRect().top-root.getBoundingClientRect().top;
+    previewEl.style.top=Math.max(16,Math.round(top-40))+'px';
   }
   // Options. Renaming happens in the column header; a new option starts as an empty name field.
   function commitOptionName() {
@@ -3570,7 +3643,7 @@
     board.style.setProperty('--sm-cols',boardColumns());
     board.innerHTML=boardMarkup();
     headEl.innerHTML=headMarkup()+(state.linkNote?`<p class="sm-link-note" role="status">${icon('info')}<span>${escape(state.linkNote)}</span><button type="button" class="sm-link-button cursor-interaction" data-action="link-note-close" data-key="link-note-close">Dismiss</button></p>`:'');headEl.classList.toggle('sm-commenting',commenting('question'));
-    renderDrawer();renderMenu();
+    renderDrawer();renderMenu();renderPreview();
     if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
     const newTrack=board.querySelector('.sm-track');
     if(newTrack&&trackIdea===state.open&&kind!=='added') newTrack.scrollLeft=scrollLeft;
@@ -3629,11 +3702,12 @@
     el.classList.remove('sm-arrived');void el.offsetWidth;el.classList.add('sm-arrived');setTimeout(()=>el.classList.remove('sm-arrived'),1400);
   }
   // Combining: a direct move for the owner or the version's author; a suggestion for other contributors.
+  // Combining or separating directly opens a preview first (M3a-5), as Zendesk does before merging tickets and Canny
+  // before merging posts: what moves, what happens to the votes, and that it can be undone from History.
   function combine(card,targetId) {
     if(canMove(card)) {
-      moveVersion(card,targetId);lastToggled=targetId;
-      announce('Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.');
-      return {focus:'undo',motion:'unfold'};
+      preview={kind:'combine',card,into:targetId};
+      return {focus:'preview-confirm',motion:''};
     }
     const id='sg'+(doc.nextId++);doc.suggestions.push({id,card,into:targetId,by:'you',at:new Date().toISOString()});
     announce('Suggestion added. The board’s owner or the version’s author decides.');
@@ -3943,8 +4017,23 @@
     }
     if(action==='suggest-accept') {
       const g=doc.suggestions.find(x=>x.id===id);if(!g||!canMove(g.card))return;
-      moveVersion(g.card,g.into);doc.suggestions=doc.suggestions.filter(x=>x.id!==id);focus='undo';motion='unfold';lastToggled=g.into;
-      announce('Combined. It now sits with the other wordings of that argument, keeping its votes and comments. Undo is available for ten seconds.');
+      preview={kind:'combine',card:g.card,into:g.into,suggestion:g.id};focus='preview-confirm';
+    }
+    if(action==='preview-confirm'&&preview) {
+      const p=preview;preview=null;
+      if(p.kind==='combine') {
+        combineIdeas(cards[p.card].idea,p.into);
+        if(p.suggestion) doc.suggestions=doc.suggestions.filter(x=>x.id!==p.suggestion);
+        focus='undo';motion='unfold';lastToggled=p.into;
+        announce('The arguments are combined. Undo is available for ten seconds, and History can undo it later.');
+      } else {
+        splitVersion(p.card);logEvent('separated',cards[p.card].claim);focus='undo';motion='reorder';
+        announce('The wording is now its own argument, at the end of this option. Undo is available for ten seconds, and History can undo it later.');
+      }
+    }
+    if(action==='preview-cancel'&&preview) {
+      const p=preview;preview=null;focus='menu-'+p.card;
+      announce(p.kind==='combine'?'Nothing was combined.':'Nothing was separated.');
     }
     if(action==='suggest-dismiss') {
       const g=doc.suggestions.find(x=>x.id===id);doc.suggestions=doc.suggestions.filter(x=>x.id!==id);
@@ -3991,7 +4080,7 @@
       const idea=cards[id].idea;if(ordered(ideaOf(idea))[0]!==id){state.open=idea;lastToggled=idea;}
       zoomTo('read',id);return;
     }
-    if(action==='split-card') {splitVersion(id);focus='undo';announce('Split into a new argument at the bottom of this option, with no importance votes yet. Undo is available for ten seconds.');}
+    if(action==='split-card') {preview={kind:'separate',card:id};focus='preview-confirm';}
     if(action==='edit-card') {
       const card=cards[id];state.editing=id;state.editDraftClaim=card.claim;state.editDraftReason=card.brief||card.explanation||'';
       focus='edit-claim';announce('Editing your version in place.');
@@ -4147,7 +4236,7 @@
       else {const keep=state.boardId;state=freshState();docs=seedDocs();resetSpaces();state.view='board';state.boardId=keep;useDoc(docs[keep]);state.drawer='settings';focus='reset';announce('The example boards were reset.');}
     }
     let toast=null;
-    if(action==='importance') {const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'up':'down',text:state.importance[id]?(Number(vote)>0?'Important.':'Less important.'):'Vote withdrawn.'};announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
+    if(action==='importance') {const again=ideaOf(id);if(again)delete again.voteAgain;const old=state.importance[id]||0;state.importance[id]=old===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'up':'down',text:state.importance[id]?(Number(vote)>0?'Important.':'Less important.'):'Vote withdrawn.'};announce(state.importance[id]?'Importance vote saved. The shared order stays in place.':'Importance vote withdrawn.');}
     if(action==='preference') {state.preference[id]=(state.preference[id]||0)===Number(vote)?0:Number(vote);toast={key,dir:Number(vote)>0?'left':'right',text:state.preference[id]?(Number(vote)>0?'Well articulated.':'Weaker articulation.'):'Vote withdrawn.'};announce(state.preference[id]?'Articulation vote saved. The shared order stays in place.':'Articulation vote withdrawn.');}
     if(action==='assess') {const value=trigger.dataset.value;state.assessments[id]=value==='skip'||state.assessments[id]===value?null:value;announce(state.assessments[id]?'Your one active assessment is included in the support percentage.':'Assessment withdrawn.');}
     if(action==='compose-idea') {state.composingIdea=id;state.composing=false;focus='idea-claim';announce(`Write a new argument for ${optionName(id)} in the empty card.`);}
@@ -4220,6 +4309,7 @@
   root.addEventListener('keydown',event=>{
     if(event.key==='Enter'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=commitOptionName();render(focus);save();return;}
     if(event.key==='Escape'&&event.target.id==='sm-option-name'){event.preventDefault();const focus=cancelOptionName();render(focus);save();announce('Rename cancelled.');return;}
+    if(preview&&event.key==='Escape'){event.preventDefault();root.querySelector('[data-key="preview-cancel"]')?.click();return;}
     if(state.creating&&event.key==='Escape'){event.preventDefault();root.querySelector('[data-key="create-close"]')?.click();return;}
     if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)&&event.target.closest?.('.sm-create')){event.preventDefault();createSubmit();return;}
     if(event.key==='Enter'&&event.target.id==='sm-create-q'){event.preventDefault();createEl.querySelector('.sm-create-opt')?.focus();return;}
@@ -4338,7 +4428,7 @@
     const t=event.target.closest?.('.sm-drop-target');if(!t)return;
     event.preventDefault();const card=dragCard,split=t.classList.contains('sm-drop-split');endDrag();
     report(split?'drag-separate':'drag-combine',{board:state.boardId,id:card});
-    if(split){splitVersion(card);render('undo','reorder');save();announce('Separated into a new argument at the bottom of this option. Undo is available for ten seconds.');return;}
+    if(split){preview={kind:'separate',card};render('preview-confirm');return;}
     const r=combine(card,t.dataset.node);render(r.focus,r.motion);save();
   });
   root.addEventListener('dragend',endDrag);
