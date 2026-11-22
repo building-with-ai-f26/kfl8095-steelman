@@ -40,8 +40,8 @@ export interface Restructured {
   /** Where the Undo bar sits: under the row the wording is in now. */
   optionId: string;
   after: string | null;
-  /** What was on screen before, so Undo puts everything back where it was. */
-  before: BoardOrder;
+  /** What was on screen before, so Undo puts everything back where it was; null once the reader has pressed Update since. */
+  before: BoardOrder | null;
   /** The wording that moved, where the cursor goes after Undo. */
   versionId: string;
 }
@@ -113,6 +113,10 @@ export class BoardSession {
   private undoTimer: number | undefined;
   private optionTimer: number | undefined;
   private restructureTimer: number | undefined;
+  /** How many times Update has been pressed: a screen kept from before one is out of date. */
+  private updates = 0;
+  /** The reader's own combine or separation the rows don't show yet (the read after it failed): the wording that moved. */
+  private movedUnseen: string | null = null;
   private tooManyTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
@@ -245,7 +249,10 @@ export class BoardSession {
   /** Update: draws the board in the newest shared order. */
   update(status = "Board updated."): void {
     if (!this.state.view) return;
-    this.set({ view: pressUpdate(this.state.view), status });
+    this.updates++;
+    // An Undo bar still showing keeps its Undo, but no longer the screen from before: Update has redrawn it.
+    const restructured = this.state.restructured ? { ...this.state.restructured, before: null } : null;
+    this.set({ view: pressUpdate(this.state.view), status, restructured });
   }
 
   announce(status: string): void {
@@ -372,7 +379,7 @@ export class BoardSession {
       void deleteOption(this.board, gone.id, true).catch(() => undefined);
       return;
     }
-    void this.moderate(() => deleteOption(this.board, gone.id), "").then(() => this.set({ optionsLeftOut: this.state.optionsLeftOut.filter((id) => id !== gone.id) }));
+    void this.moderate(() => deleteOption(this.board, gone.id), "").finally(() => this.set({ optionsLeftOut: this.state.optionsLeftOut.filter((id) => id !== gone.id) }));
   }
 
   /**
@@ -384,8 +391,20 @@ export class BoardSession {
     if (!answer) return false;
     const said = answer.status === "already_done" ? already : done;
     if (said) this.announce(said);
-    await this.poll();
+    await this.refresh();
     return true;
+  }
+
+  /**
+   * Asks for changes after a write the service took. When that read fails, the write still stands: the poll already
+   * scheduled asks again, so the failure isn't the caller's to handle.
+   */
+  private async refresh(): Promise<void> {
+    try {
+      await this.poll();
+    } catch {
+      // The next poll brings what this one would have.
+    }
   }
 
   /** Sends a write that isn't queued. Answers what the service said when it was taken; otherwise says why not, and answers null. */
@@ -412,7 +431,7 @@ export class BoardSession {
   /**
    * Combines a wording into another argument in its option (M3a-7, A-10). Not queued, like a moderator's action: it's
    * sent now, and the wording moves on screen once the service has it. Ten seconds of Undo follow, which send its undo
-   * (J-05). `last`: it's its argument's last wording, so the two arguments become one.
+   * (J-05). When it was its argument's last wording, the two arguments become one, and the Undo bar says so.
    */
   combine(versionId: string, intoId: string): Promise<boolean> {
     const from = this.state.view?.rows.versions[versionId]?.argumentId;
@@ -441,14 +460,20 @@ export class BoardSession {
     this.sendHeld();
     this.sendHeldOption();
     this.endRestructured();
-    const before = this.state.view?.shown ?? null;
+    const updates = this.updates;
+    const shownBefore = this.state.view?.shown ?? null;
     const answer = await this.ask(request);
     if (!answer) return false;
-    await this.poll();
+    await this.refresh();
     const view = this.state.view;
     if (!view) return true;
+    // Update pressed while it was being sent has already redrawn the screen: Undo doesn't bring the old one back.
+    const before = this.updates === updates ? shownBefore : null;
+    // The read after it failed, so the rows don't show the move yet: it's shown as the reader's own when they arrive.
+    const unseen = answer.status === "done" && view.seq < answer.seq;
+    this.movedUnseen = unseen ? versionId : null;
     // The reader's own change shows at once, as their deletion does; others see it on their next Update.
-    const moved = showMoved(view, versionId);
+    const moved = unseen ? view : showMoved(view, versionId);
     const version = moved.rows.versions[versionId];
     const argument = version ? moved.rows.arguments[version.argumentId] : undefined;
     if (answer.status !== "done") {
@@ -457,12 +482,13 @@ export class BoardSession {
       return true;
     }
     const words = wordsFor(moved);
-    if (!before || !argument) {
+    if (!argument) {
       this.set({ view: moved });
       this.announce(words.said);
       return true;
     }
     this.set({ view: moved, restructured: { seq: answer.seq, label: words.label, optionId: argument.optionId, after: argument.id, before, versionId }, status: `${words.said} Undo is available for ten seconds.` });
+    window.clearTimeout(this.restructureTimer);
     this.restructureTimer = window.setTimeout(() => this.endRestructured(), UNDO_MS);
     return true;
   }
@@ -472,17 +498,34 @@ export class BoardSession {
     const held = this.state.restructured;
     if (!held) return false;
     this.endRestructured();
+    const updates = this.updates;
     const answer = await this.ask(() => undoChange(this.board, held.seq));
     if (!answer) {
       // Not taken: the bar comes back for another ten seconds, so there's still a way to try again.
-      this.set({ restructured: held });
+      window.clearTimeout(this.restructureTimer);
+      this.set({ restructured: this.updates === updates ? held : { ...held, before: null } });
       this.restructureTimer = window.setTimeout(() => this.endRestructured(), UNDO_MS);
       return false;
     }
-    await this.poll();
-    if (this.state.view) this.set({ view: putBack(this.state.view, held.before) });
+    await this.refresh();
+    // The screen from before the change, unless the reader pressed Update since: then only the wording goes back,
+    // and the order Update drew stays.
+    const before = this.updates === updates ? held.before : null;
+    this.showUndone(held.versionId, answer, before);
     this.announce("The wording is back where it was.");
     return true;
+  }
+
+  /** Shows a wording back where an undo put it, at once; or, when the read after the undo failed, once the rows arrive. */
+  private showUndone(versionId: string, answer: { status: "done"; seq: number } | { status: "already_done" }, before: BoardOrder | null = null): void {
+    const view = this.state.view;
+    if (!view) return;
+    if (answer.status === "done" && view.seq < answer.seq) {
+      this.movedUnseen = versionId;
+      return;
+    }
+    this.movedUnseen = null;
+    this.set({ view: before ? putBack(view, before) : showMoved(view, versionId) });
   }
 
   /**
@@ -495,8 +538,8 @@ export class BoardSession {
     this.endRestructured();
     const answer = await this.ask(() => undoChange(this.board, seq));
     if (!answer) return false;
-    await this.poll();
-    if (this.state.view) this.set({ view: showMoved(this.state.view, versionId) });
+    await this.refresh();
+    this.showUndone(versionId, answer);
     this.announce(answer.status === "done" ? "The wording is back where it was." : "That was already undone.");
     return true;
   }
@@ -634,7 +677,13 @@ export class BoardSession {
         const accessSettled = !this.sharing && shares === this.shareCount;
         const wasModerator = moderates(this.state.role);
         const logSeq = Math.max(this.state.logSeq, ...changes.log.map((row) => row.seq));
-        this.set({ view: receive(this.state.view, changes), role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}) });
+        let view = receive(this.state.view, changes);
+        // The reader's own move, whose rows a failed read kept back: shown as theirs now, not marked as someone else's.
+        if (this.movedUnseen !== null && changes.versions.some((version) => version.id === this.movedUnseen)) {
+          view = showMoved(view, this.movedUnseen);
+          this.movedUnseen = null;
+        }
+        this.set({ view, role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}) });
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);
@@ -738,6 +787,8 @@ function refusalNote(answer: Answer): string {
         return "A question needs at least two options.";
       case "too_many_options":
         return "A question can have at most four options.";
+      case "option_name_taken":
+        return "Another option already has that name.";
       case "not_same_option":
         return "A wording can only be combined with an argument in its own option.";
       case "only_wording":

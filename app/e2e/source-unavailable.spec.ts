@@ -45,7 +45,7 @@ test("M3a-3, C-02: Can’t open it? marks the source unavailable, says who and w
   await row.getByRole("button", { name: "Can’t open it?" }).click();
 
   await expect(row.locator("summary")).toContainText("Unavailable");
-  await expect(row.getByText("You reported on Nov 16, 2026 that it can’t be opened.")).toBeVisible();
+  await expect(row.getByText("You reported it on Nov 16, 2026.")).toBeVisible();
   await expect(row.getByRole("link", { name: "Try an archived copy" })).toHaveAttribute("href", "https://web.archive.org/web/https://example.org/shift-work");
   await expect(row.getByRole("button", { name: "Can’t open it?" })).toHaveCount(0);
   await expect(row.locator("summary")).toBeFocused();
@@ -66,7 +66,7 @@ test("M3a-3, C-02: another reader sees the mark on every wording that cites the 
   await poll(other);
 
   await expect(row.locator("summary")).toContainText("Unavailable");
-  await expect(row.getByText("jordan_w reported on Nov 16, 2026 that it can’t be opened.")).toBeVisible();
+  await expect(row.getByText("jordan_w reported it on Nov 16, 2026.")).toBeVisible();
   // Only the reporter, an Editor, or the Owner clears it.
   await expect(row.getByRole("button", { name: /report/i })).toHaveCount(0);
 });

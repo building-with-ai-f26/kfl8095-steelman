@@ -211,7 +211,13 @@ body { margin:0; }
 @media(min-width:1200px) { #steelman-study .sm-scene.sm-with-drawer { padding-right:380px; } }
 #steelman-study .sm-history-day { display:grid; gap:10px; }
 #steelman-study .sm-history-day h3 { margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
-#steelman-study .sm-history .sm-link-button { margin-top:4px; }
+/* An entry: its sentence, then one line with its time and, when something can still be done about it, Restore or Undo. */
+#steelman-study .sm-history-entry { display:grid; gap:3px; min-width:0; }
+#steelman-study .sm-history-meta { display:flex; align-items:baseline; gap:12px; }
+#steelman-study .sm-history-meta .sm-link-button { padding:0; font-size:12px; font-weight:600; color:var(--sm-ink); text-decoration:underline; text-underline-offset:2px; }
+/* A wording's link reads as the entry's own text, underlined, not in the browser's blue. */
+#steelman-study .sm-history a { color:inherit; text-decoration:underline; text-decoration-color:var(--sm-quiet); text-underline-offset:2px; }
+#steelman-study .sm-history a:hover { text-decoration-color:currentColor; }
 
 /* Combine and separate (M3a-7): the prototype's dialog sits over the board, in the middle of the window, rather than
    placed beside the argument by script, so on a phone its buttons are never below the fold. */

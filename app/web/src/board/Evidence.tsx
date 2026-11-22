@@ -160,10 +160,18 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     setForm(null);
     board.removeSource(version, source.id, assessed);
   };
+  /** Sources whose report, or its withdrawal, is on its way: a second press meanwhile does nothing. */
+  const reporting = useRef(new Set<string>());
   /** Reports it, or takes the report back; the cursor stays on the source, as in the prototype. */
   const markUnavailable = async (source: SourceRow, unavailable: boolean) => {
-    if (unavailable) await board.reportSource(source.id);
-    else await board.clearSourceReport(source.id, source.report?.by === reader);
+    if (reporting.current.has(source.id)) return;
+    reporting.current.add(source.id);
+    try {
+      if (unavailable) await board.reportSource(source.id);
+      else await board.clearSourceReport(source.id, source.report?.by === reader);
+    } finally {
+      reporting.current.delete(source.id);
+    }
     setFocus(`src-${source.id}`);
   };
   /** Yes, No, or withdrawn (null). Pressing your answer again withdraws it, as Undo does. */
@@ -272,11 +280,21 @@ interface SourceProps {
   onReport(unavailable: boolean): void;
 }
 
-/** The Wayback Machine's copy of a web address, as Wikipedia offers for a dead link (M3a-3). */
-const archived = (link: string) => `https://web.archive.org/web/${link}`;
+/**
+ * The Wayback Machine's copy of a web address, as Wikipedia offers for a dead link (M3a-3). The address is put in its
+ * standard form first, so "../" in it can't lead anywhere else on the archive's site; null when it isn't an address.
+ */
+function archived(link: string): string | null {
+  try {
+    return `https://web.archive.org/web/${new URL(link).href}`;
+  } catch {
+    return null;
+  }
+}
 
 function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayReport, mayClear, reportedByReader, onEdit, onRemove, onReport }: SourceProps) {
   const report = source.unavailable ? (mayClear ? "clear" : null) : mayReport ? "report" : null;
+  const archive = source.report && source.link ? archived(source.link) : null;
   return (
     // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
     <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
@@ -301,11 +319,12 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayRepor
         {source.finding ? <p>{source.finding}</p> : null}
         {source.report ? (
           <p className="sm-source-note">
-            {`${reportedByReader ? "You" : source.report.byName} reported on ${shortDate(source.report.at)} that it can’t be opened.`}
-            {source.link ? (
+            {/* The row's Unavailable tag says what was reported; this says who and when. */}
+            {`${reportedByReader ? "You" : source.report.byName} reported it on ${shortDate(source.report.at)}.`}
+            {archive ? (
               <>
                 {" "}
-                <a className="sm-source-link" href={archived(source.link)} target="_blank" rel="noopener noreferrer nofollow ugc">
+                <a className="sm-source-link" href={archive} target="_blank" rel="noopener noreferrer nofollow ugc">
                   Try an archived copy
                 </a>
               </>

@@ -33,7 +33,7 @@ test("M3a-8, J-03, J-04: History says who combined and separated what, in senten
   await openHistory(page);
 
   await expect(entries(page).nth(0)).toContainText(`maya.chen made “${short(SHIFT)}” its own argument.`);
-  await expect(entries(page).nth(1)).toContainText(`maya.chen combined “${short(STUDY)}” with “${short(FAMILY)}”.`);
+  await expect(entries(page).nth(1)).toContainText(`maya.chen combined “${short(STUDY)}” with “${short(FAMILY)}”`);
   // A Contributor can't undo either.
   await expect(panel(page).getByRole("button", { name: /Undo/ })).toHaveCount(0);
 });

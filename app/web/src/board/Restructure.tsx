@@ -77,8 +77,8 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
           {asking.kind === "combine" ? (
             <>
               <span className="sm-preview-into">
-                <Icon name="merge" />
-                joins
+                <Icon name="arrow-down" />
+                <span className="sm-sr">joins</span>
               </span>
               <blockquote className="ph-no-capture">{short(asking.intoWording)}</blockquote>
             </>

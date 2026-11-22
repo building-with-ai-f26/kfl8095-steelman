@@ -120,7 +120,8 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
       </article>
     );
   }
-  const moved = row !== undefined ? opening.menu.moved(version, row) : null;
+  // An edit in progress stays open when a poll brings someone else's move of this wording: what's typed isn't lost.
+  const moved = row !== undefined && opening.menu.editing !== version.id ? opening.menu.moved(version, row) : null;
   if (moved) {
     return (
       <article className={`sm-card sm-removed sm-gone${face}`} data-card={version.id}>
@@ -229,7 +230,7 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
                 className="sm-source-button sm-merge-handle cursor-interaction"
                 draggable
                 aria-label="Combine with another argument"
-                data-tooltip="Drag it onto the argument it repeats, or press to pick one."
+                data-tooltip="Combine"
                 onClick={() => opening.menu.combine(shown, "handle")}
                 onDragStart={(event) => {
                   event.dataTransfer.effectAllowed = "move";
@@ -302,8 +303,8 @@ const MENU_ITEMS: Record<MenuItem, { icon: IconName; label: string }> = {
   edit: { icon: "pencil", label: "Edit wording and context" },
   suggest: { icon: "pen-line", label: "Suggest a revised version" },
   copyLink: { icon: "link", label: "Copy link" },
-  combine: { icon: "merge", label: "Combine with another argument" },
-  separate: { icon: "split", label: "Make it a separate argument" },
+  combine: { icon: "merge", label: "Combine…" },
+  separate: { icon: "split", label: "Separate…" },
   deleteVersion: { icon: "trash-2", label: "Delete version" },
   deleteArgument: { icon: "trash-2", label: "Delete argument" },
   report: { icon: "flag", label: "Report" },

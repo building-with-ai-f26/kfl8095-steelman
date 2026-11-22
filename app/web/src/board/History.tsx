@@ -22,7 +22,7 @@ import type { HistoryEntry, ReaderView, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { versionPath } from "../links.ts";
 import { shortDate } from "../when.ts";
-import { isLiveVersion, leadWording, short } from "./display.ts";
+import { endQuote, endsSentence, isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 interface HistoryProps {
@@ -33,8 +33,6 @@ interface HistoryProps {
   session: BoardSession;
   /** The newest change-log row the board has polled: History reads again when it moves, not on every vote. */
   logSeq: number;
-  /** Options this tab holds for their ten-seconds Undo: still counted toward the four. */
-  heldOptions: number;
   /** Opens a wording on the board. */
   onOpen(versionId: string): void;
   onClose(): void;
@@ -45,7 +43,7 @@ const AS_REASON: Record<string, string> = { spam: "as spam", abuse: "as abusive"
 const A_ROLE: Record<Role, string> = { viewer: "a viewer", voter: "a voter", contributor: "a contributor", editor: "an editor", owner: "the owner" };
 const LINK_CAN: Partial<Record<Role, string>> = { viewer: "view", voter: "vote", contributor: "contribute" };
 
-export function History({ boardId, view, reader, role, session, logSeq, heldOptions, onOpen, onClose }: HistoryProps) {
+export function History({ boardId, view, reader, role, session, logSeq, onOpen, onClose }: HistoryProps) {
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null);
   const [failed, setFailed] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
@@ -105,14 +103,19 @@ export function History({ boardId, view, reader, role, session, logSeq, heldOpti
                     <span className="sm-avatar" aria-hidden="true">
                       {initials(entry.actorName)}
                     </span>
-                    <p>
-                      <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen)}
-                      <time dateTime={entry.at}>{new Date(entry.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
-                      {restorable.has(entry.seq) ? <Restore entry={entry} view={view} reader={reader} role={role} session={session} heldOptions={heldOptions} onDone={restored} /> : null}
-                      {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) && undoable(entry, view) ? (
-                        <UndoChange entry={entry} view={view} session={session} onDone={restored} />
-                      ) : null}
-                    </p>
+                    <div className="sm-history-entry">
+                      <p>
+                        <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen)}
+                      </p>
+                      {/* Its time, and beside it what can still be done about it, as GitHub puts Revert on a merge's own line. */}
+                      <div className="sm-history-meta">
+                        <time dateTime={entry.at}>{new Date(entry.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
+                        {restorable.has(entry.seq) ? <Restore entry={entry} view={view} reader={reader} role={role} session={session} onDone={restored} /> : null}
+                        {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) && undoable(entry, view) ? (
+                          <UndoChange entry={entry} view={view} session={session} onDone={restored} />
+                        ) : null}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ol>
@@ -131,11 +134,10 @@ interface RestoreProps {
   reader: string | null;
   role: Role | null;
   session: BoardSession;
-  heldOptions: number;
   onDone(): void;
 }
 
-function Restore({ entry, view, reader, role, session, heldOptions, onDone }: RestoreProps) {
+function Restore({ entry, view, reader, role, session, onDone }: RestoreProps) {
   const [busy, setBusy] = useState(false);
   const may = (action: "structure" | "add" | "hide") => can(reader, role, action, { closed: false }) === null;
   let restore: (() => Promise<boolean>) | null = null;
@@ -143,7 +145,8 @@ function Restore({ entry, view, reader, role, session, heldOptions, onDone }: Re
   let what = "";
   if (entry.kind === "option_deleted") {
     const option = view.rows.options[entry.subjectId];
-    const live = Object.values(view.rows.options).filter((o) => !o.deleted).length + heldOptions;
+    // An option this tab holds for its ten seconds of Undo is still in the rows, so it's counted here already.
+    const live = Object.values(view.rows.options).filter((o) => !o.deleted).length;
     if (option?.deleted && may("structure") && live < OPTIONS_PER_BOARD.max) {
       restore = () => session.restoreOption(option);
       what = `the option “${option.name}”`;
@@ -225,26 +228,34 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
   const option = optionName === undefined ? "an option" : `the option “${optionName}”`;
   const sourceId = entry.detail.source ?? entry.subjectId;
   const source = view.rows.sources[sourceId] ? `the source “${view.rows.sources[sourceId]!.name}”` : "a source";
-  const wording = (versionId: string): ReactNode => {
+  /** A wording, named by its words. With `last`, it ends the sentence, which then takes no second full stop. */
+  const wording = (versionId: string, last = false): ReactNode => {
     const version = view.rows.versions[versionId];
-    if (!version || version.deleted || version.wording === null) return "a wording";
+    if (!version || version.deleted || version.wording === null) return last ? "a wording." : "a wording";
     const quote = `“${short(version.wording)}”`;
-    if (!isLiveVersion(version)) return quote;
+    const stop = last && !endsSentence(short(version.wording)) ? "." : "";
+    if (!isLiveVersion(version)) return quote + stop;
     return (
-      <a
-        href={versionPath(boardId, versionId)}
-        className="cursor-interaction"
-        onClick={(event) => {
-          // With a modifier held, the browser opens it in a new tab or window, as any link does.
-          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          event.preventDefault();
-          onOpen(versionId);
-        }}
-      >
-        {quote}
-      </a>
+      <>
+        {link(versionId, quote)}
+        {stop}
+      </>
     );
   };
+  const link = (versionId: string, quote: string): ReactNode => (
+    <a
+      href={versionPath(boardId, versionId)}
+      className="cursor-interaction"
+      onClick={(event) => {
+        // With a modifier held, the browser opens it in a new tab or window, as any link does.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        onOpen(versionId);
+      }}
+    >
+      {quote}
+    </a>
+  );
   switch (entry.kind) {
     case "board_created":
       return "created this board.";
@@ -262,7 +273,7 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
     case "option_restored":
       return `restored ${option}.`;
     case "version_edited":
-      return <>edited {wording(entry.subjectId)}.</>;
+      return <>edited {wording(entry.subjectId, true)}</>;
     case "version_deleted":
       return entry.detail.argumentDeleted ? "deleted a wording and its argument." : "deleted a wording.";
     case "version_hidden":
@@ -272,7 +283,7 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
         </>
       );
     case "version_restored":
-      return <>restored {wording(entry.subjectId)}.</>;
+      return <>restored {wording(entry.subjectId, true)}</>;
     case "source_added":
       return `added ${source}.`;
     case "source_cited":
@@ -286,7 +297,7 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       const lead = entry.detail.into ? leadWording(view, entry.detail.into, entry.subjectId) : null;
       return (
         <>
-          combined {wording(entry.subjectId)} with {lead ? `“${short(lead)}”` : "another argument"}.
+          combined {wording(entry.subjectId)} with {lead ? endQuote(lead) : "another argument."}
         </>
       );
     }
