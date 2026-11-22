@@ -13,6 +13,7 @@
 
 import type { PublicConfig } from "@steelman/shared";
 import { posthogAssetsHost } from "@steelman/shared";
+import { setAnalyticsOn } from "./analyticsChoice.ts";
 import { readConfig } from "./api.ts";
 
 /** The choice, as docs/analytics.js keeps it: "on", "off", or nothing yet. Same name, so a choice made there holds here on the same site. */
@@ -107,6 +108,8 @@ export function startAnalytics(): Promise<Decision> {
     const signal = signalled();
     const decision = decide({ analytics, signal, stored: stored() });
     if (decision !== "off" && analytics) load(analytics);
+    // Asking counts as on, as for the browser's own events: they run until the person turns them off.
+    setAnalyticsOn(decision !== "off");
     return decision;
   });
   return started;
@@ -124,6 +127,7 @@ export function chooseAnalytics(on: boolean): void {
     // Storage blocked: the choice holds for this page only.
   }
   if (!on) {
+    setAnalyticsOn(false);
     posthog("stopSessionRecording");
     posthog("opt_out_capturing");
   }
@@ -145,6 +149,7 @@ export async function turnOnAnalytics(): Promise<void> {
   chooseAnalytics(true);
   const { analytics } = await askedConfig();
   if (!analytics || signalled()) return;
+  setAnalyticsOn(true);
   // PostHog remembers an opt-out in its own storage, so it is told to opt in again even when it's only now loading.
   if (!window.posthog) load(analytics);
   posthog("opt_in_capturing");
