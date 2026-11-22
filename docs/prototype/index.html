@@ -2653,7 +2653,6 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-preview-pair blockquote { margin:0; padding:10px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); font:400 15px/1.4 var(--sm-serif); }
   #steelman-study .sm-preview-pair .sm-preview-into { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--sm-muted); }
   #steelman-study .sm-preview-pair .sm-preview-into svg { width:14px; height:14px; }
-  #steelman-study .sm-preview-facts { display:grid; gap:6px; margin:0; padding:0 0 0 18px; font-size:14px; line-height:1.45; }
   #steelman-study .sm-preview-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
   #steelman-study .sm-vote-again { display:flex; align-items:flex-start; gap:6px; margin:8px 0 0; padding:8px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); font-size:13px; line-height:1.4; }
   #steelman-study .sm-vote-again svg { flex:none; width:14px; height:14px; margin-top:2px; }
@@ -3774,7 +3773,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   const reasonMenu = id =&gt; `&lt;p class=&quot;sm-menu-note&quot;&gt;${state.menuView===&#x27;report&#x27;?&#x27;Report it as&#x27;:&#x27;Hide it as&#x27;}&lt;/p&gt;`+Object.entries(REASONS).map(([k,l])=&gt;modItem(state.menuView===&#x27;report&#x27;?&#x27;report-card&#x27;:&#x27;hide-card&#x27;,id,{spam:&#x27;ban&#x27;,abuse:&#x27;shield-alert&#x27;,offtopic:&#x27;move-right&#x27;,other:&#x27;circle-help&#x27;}[k],l,k)).join(&#x27;&#x27;);
   function historyMarkup() {
-    const verbs={combined:&#x27;combined two arguments, keeping&#x27;,separated:&#x27;made a separate argument of&#x27;,closed:&#x27;closed the board&#x27;,reopened:&#x27;reopened the board&#x27;,decided:&#x27;recorded the decision:&#x27;,hid:&#x27;hid&#x27;,restored:&#x27;restored&#x27;,dismissed:&#x27;dismissed reports on&#x27;,accepted:&#x27;accepted&#x27;,declined:&#x27;declined&#x27;,deleted:&#x27;deleted&#x27;};
+    const verbs={combined:&#x27;combined&#x27;,separated:&#x27;made a separate argument of&#x27;,closed:&#x27;closed the board&#x27;,reopened:&#x27;reopened the board&#x27;,decided:&#x27;recorded the decision:&#x27;,hid:&#x27;hid&#x27;,restored:&#x27;restored&#x27;,dismissed:&#x27;dismissed reports on&#x27;,accepted:&#x27;accepted&#x27;,declined:&#x27;declined&#x27;,deleted:&#x27;deleted&#x27;};
     return doc.log.length?`&lt;ol class=&quot;sm-history&quot;&gt;${doc.log.map(e=&gt;`&lt;li&gt;&lt;span class=&quot;sm-avatar&quot; aria-hidden=&quot;true&quot;&gt;${escape(userInitials(e.by===&#x27;you&#x27;?ME:e.by))}&lt;/span&gt;&lt;p&gt;&lt;strong&gt;${userLink(e.by,e.by===&#x27;you&#x27;?&#x27;You&#x27;:escape(e.by))}&lt;/strong&gt; ${verbs[e.did]||e.did}${[&#x27;closed&#x27;,&#x27;reopened&#x27;].includes(e.did)?&#x27;&#x27;:` “${escape(e.ref)}”`}${e.reason?` &lt;span class=&quot;sm-history-reason&quot;&gt;${escape(REASONS[e.reason]||e.reason)}&lt;/span&gt;`:&#x27;&#x27;}&lt;time datetime=&quot;${e.at}&quot; title=&quot;${fullDate(e.at)}&quot;&gt;${ago(e.at)}&lt;/time&gt;&lt;/p&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ol&gt;`:&#x27;&lt;p class=&quot;sm-field-hint&quot;&gt;Nothing yet.&lt;/p&gt;&#x27;;
   }
   const heldId = () =&gt; { let id; do id=&#x27;p&#x27;+(doc.nextId++); while(doc.pending.some(x=&gt;x.id===id)); return id; };
@@ -3790,7 +3789,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const source=from?.id===idea.id,target=from&amp;&amp;!source&amp;&amp;from.option===idea.option;
     const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
     const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${idea.voteAgain?`&lt;p class=&quot;sm-vote-again&quot; role=&quot;note&quot;&gt;${icon(&#x27;rotate-ccw&#x27;)}&lt;span&gt;Your two importance votes disagreed when these arguments were combined, so vote again on this one.&lt;/span&gt;&lt;/p&gt;`:&#x27;&#x27;}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${idea.voteAgain?`&lt;p class=&quot;sm-vote-again&quot; role=&quot;note&quot;&gt;${icon(&#x27;rotate-ccw&#x27;)}&lt;span&gt;Your votes on the two arguments disagreed, so vote again.&lt;/span&gt;&lt;/p&gt;`:&#x27;&#x27;}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
   }
   // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
   function mergedRow(idea) {
@@ -4255,38 +4254,34 @@ html&gt;body{padding:0}&lt;/style&gt;
     const yours=mine[0]&amp;&amp;mine[1]?(mine[0]===mine[1]?mine[0]:0):mine[0]+mine[1];
     return {score:from.score+into.score-agree,yours,youDisagree:!!(mine[0]&amp;&amp;mine[1]&amp;&amp;mine[0]!==mine[1])};
   }
-  function combineIdeas(fromId,intoId) {
-    const snapshot=takeSnapshot(),from=ideaOf(fromId),into=ideaOf(intoId),after=combinedImportance(from,into),moved=[...from.versions];
-    for(const card of moved){cards[card].idea=intoId;into.versions.push(card);}
-    from.versions=[];ideas.splice(ideas.indexOf(from),1);delete state.importance[fromId];
-    into.score=after.score;
-    if(after.youDisagree){delete state.importance[intoId];into.voteAgain=true;} else if(after.yours) state.importance[intoId]=after.yours;
-    state.open=intoId;state.composing=false;state.expanded=moved[0];
-    logEvent(&#x27;combined&#x27;,cards[ordered(into)[0]].claim);
-    startUndo(snapshot,{option:into.option,afterIdea:intoId,label:&#x27;Combined.&#x27;,card:moved[0],idea:fromId});
+  // Combining moves the wording dragged (or chosen) into the other argument, with its articulation votes, assessments,
+  // and comments (Q8): the prototype&#x27;s model, which the builder chose on Nov 22. When it was its argument&#x27;s last
+  // wording, the two arguments become one, and their importance votes merge per person.
+  function combineWording(card,intoId) {
+    const from=ideaOf(cards[card].idea),into=ideaOf(intoId),last=from.versions.length===1;
+    if(last) {
+      const after=combinedImportance(from,into);
+      into.score=after.score;
+      if(after.youDisagree){delete state.importance[intoId];into.voteAgain=true;} else if(after.yours) state.importance[intoId]=after.yours;
+    }
+    moveVersion(card,intoId);
+    logEvent(&#x27;combined&#x27;,cards[card].claim);
   }
   // The preview: a dialog over the board, near where it was asked for. Combine and Separate are its only ways on; Cancel,
   // Escape, or a click outside it changes nothing.
   let preview=null;
   const previewEl=root.querySelector(&#x27;.sm-preview&#x27;),previewScrim=root.querySelector(&#x27;.sm-preview-scrim&#x27;);
   function previewMarkup() {
-    const quote=id=&gt;`&lt;blockquote&gt;${escape(short(cards[id].claim))}&lt;/blockquote&gt;`;
-    const facts=list=&gt;`&lt;ul class=&quot;sm-preview-facts&quot;&gt;${list.map(f=&gt;`&lt;li&gt;${f}&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ul&gt;`;
+    const quote=id=&gt;`&lt;blockquote&gt;${escape(short(id))}&lt;/blockquote&gt;`;
     const actions=verb=&gt;`&lt;div class=&quot;sm-preview-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;preview-cancel&quot; data-key=&quot;preview-cancel&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;preview-confirm&quot; data-key=&quot;preview-confirm&quot;&gt;${verb}&lt;/button&gt;&lt;/div&gt;`;
-    if(preview.kind===&#x27;separate&#x27;) {
-      return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Make this wording its own argument?&lt;/h2&gt;&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;/div&gt;`
-        +facts([&#x27;It moves to the end of this option as a new argument.&#x27;,&#x27;It keeps its articulation votes, assessments, and comments.&#x27;,&#x27;The new argument starts with no importance votes.&#x27;,&#x27;You can undo this from History.&#x27;])
-        +actions(&#x27;Separate&#x27;);
-    }
-    const from=ideaOf(cards[preview.card].idea),into=ideaOf(preview.into),after=combinedImportance(from,into),{disagree}=overlap(from,into);
-    const n=from.versions.length,asked=disagree+(after.youDisagree?1:0);
-    const list=[
-      n===1?&#x27;Its wording moves into the second argument, with its articulation votes, assessments, and comments.&#x27;:`Its ${n} wordings move into the second argument, with their articulation votes, assessments, and comments.`,
-      `Its importance becomes ${after.score+after.yours}, counting each person’s vote once.`,
-      ...(asked?[`${asked===1?&#x27;One person&#x27;:asked+&#x27; people&#x27;} voted one of them up and the other down, so ${asked===1?&#x27;that vote is&#x27;:&#x27;those votes are&#x27;} removed and ${asked===1?&#x27;they’re&#x27;:&#x27;they’re each&#x27;} asked to vote again.${after.youDisagree?&#x27; You are one of them.&#x27;:&#x27;&#x27;}`]:[]),
-      &#x27;You can undo this from History.&#x27;
-    ];
-    return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Combine these arguments?&lt;/h2&gt;&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(ordered(from)[0])}&lt;span class=&quot;sm-preview-into&quot;&gt;${icon(&#x27;merge&#x27;)}joins&lt;/span&gt;${quote(ordered(into)[0])}&lt;/div&gt;`+facts(list)+actions(&#x27;Combine&#x27;);
+    if(preview.kind===&#x27;separate&#x27;) return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Make this wording its own argument?&lt;/h2&gt;&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;/div&gt;`+actions(&#x27;Separate&#x27;);
+    const from=ideaOf(cards[preview.card].idea),into=ideaOf(preview.into),last=from.versions.length===1;
+    const pair=`&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;span class=&quot;sm-preview-into&quot;&gt;${icon(&#x27;merge&#x27;)}joins&lt;/span&gt;${quote(ordered(into)[0])}&lt;/div&gt;`;
+    if(!last) return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Combine this wording with that argument?&lt;/h2&gt;`+pair+actions(&#x27;Combine&#x27;);
+    // Its argument&#x27;s last wording: the two arguments become one. Only who must vote again is said, since nothing else shows it.
+    const after=combinedImportance(from,into),asked=overlap(from,into).disagree+(after.youDisagree?1:0);
+    const note=asked?`&lt;p class=&quot;sm-field-hint&quot;&gt;${after.youDisagree?(asked===1?&#x27;You’ll be asked to vote again.&#x27;:`You and ${asked-1} ${asked===2?&#x27;other&#x27;:&#x27;others&#x27;} will be asked to vote again.`):`${asked===1?&#x27;One person&#x27;:asked+&#x27; people&#x27;} will be asked to vote again.`}&lt;/p&gt;`:&#x27;&#x27;;
+    return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Combine these arguments?&lt;/h2&gt;`+pair+note+actions(&#x27;Combine&#x27;);
   }
   function renderPreview() {
     previewEl.hidden=previewScrim.hidden=!preview;
@@ -5585,7 +5580,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   }
   // Combining: a direct move for the owner or the version&#x27;s author; a suggestion for other contributors.
   // Combining or separating directly opens a preview first (M3a-5), as Zendesk does before merging tickets and Canny
-  // before merging posts: what moves, what happens to the votes, and that it can be undone from History.
+  // before merging posts: what moves, what happens to the votes, and that it can be undone from History. It moves the
+  // wording you dragged or chose; the arguments become one only when it was its argument&#x27;s last wording.
   function combine(card,targetId) {
     if(canMove(card)) {
       preview={kind:&#x27;combine&#x27;,card,into:targetId};
@@ -5904,10 +5900,11 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;preview-confirm&#x27;&amp;&amp;preview) {
       const p=preview;preview=null;
       if(p.kind===&#x27;combine&#x27;) {
-        combineIdeas(cards[p.card].idea,p.into);
+        const last=ideaOf(cards[p.card].idea).versions.length===1;
+        combineWording(p.card,p.into);
         if(p.suggestion) doc.suggestions=doc.suggestions.filter(x=&gt;x.id!==p.suggestion);
         focus=&#x27;undo&#x27;;motion=&#x27;unfold&#x27;;lastToggled=p.into;
-        announce(&#x27;The arguments are combined. Undo is available for ten seconds, and History can undo it later.&#x27;);
+        announce(last?&#x27;The arguments are combined. Undo is available for ten seconds, and History can undo it later.&#x27;:&#x27;The wording now sits with the other argument’s wordings. Undo is available for ten seconds, and History can undo it later.&#x27;);
       } else {
         splitVersion(p.card);logEvent(&#x27;separated&#x27;,cards[p.card].claim);focus=&#x27;undo&#x27;;motion=&#x27;reorder&#x27;;
         announce(&#x27;The wording is now its own argument, at the end of this option. Undo is available for ten seconds, and History can undo it later.&#x27;);
