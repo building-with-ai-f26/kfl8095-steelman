@@ -9,24 +9,75 @@
 import { sql } from "kysely";
 import { versionRows } from "./read.ts";
 import { writeToBoard } from "./write-path.ts";
-import type { Services, WriteResult } from "./write-path.ts";
+import type { Services, Trx, WriteResult } from "./write-path.ts";
+
+/**
+ * Where an argument's wordings are now: itself, or, if it was combined away,
+ * the argument it went into, followed through later combines (architecture
+ * §3's stale-write table, M3a-6). `path` is the way there: the argument
+ * named, each argument it was combined into in turn, and last the one it is
+ * now. Null when it isn't on this board.
+ */
+export async function argumentNow(trx: Trx, boardId: string, argumentId: string): Promise<{ id: string; deleted_at: Date | null; redirected: boolean; path: string[] } | null> {
+  const path = [argumentId];
+  // A chain of combines is short; the bound only guards against a loop the schema doesn't allow anyway.
+  for (let hops = 0; hops < 50; hops++) {
+    const id = path.at(-1)!;
+    const argument = await trx.selectFrom("argument").select(["deleted_at", "merged_into"]).where("id", "=", id).where("board_id", "=", boardId).executeTakeFirst();
+    if (!argument) return null;
+    if (!argument.merged_into) return { id, deleted_at: argument.deleted_at, redirected: id !== argumentId, path };
+    path.push(argument.merged_into);
+  }
+  return null;
+}
+
+/**
+ * Whether the vote someone has on the argument at the end of `path` came only
+ * from the argument at its start, carried by the combines: they had no vote of
+ * their own on any argument it went into (`into_value` null), and haven't
+ * voted on a combined argument since (`revoted`). Each combine on the way kept
+ * a combine_vote row for everyone whose vote it moved or merged (structure.ts).
+ * A vote of their own there stands, even one the same as the carried one.
+ */
+async function carriedAlong(trx: Trx, person: string, path: string[]): Promise<boolean> {
+  for (let hop = 0; hop + 1 < path.length; hop++) {
+    const kept = await trx
+      .selectFrom("combine_vote")
+      .select("seq")
+      .where("from_id", "=", path[hop]!)
+      .where("into_id", "=", path[hop + 1]!)
+      .where("account_id", "=", person)
+      .where("revoted", "=", false)
+      .where("into_value", "is", null)
+      .executeTakeFirst();
+    if (!kept) return false;
+  }
+  return true;
+}
 
 type Vote = 1 | -1 | null;
 
-export function setImportance({ db, clock }: Services, boardId: string, person: string | null, argumentId: string, value: Vote): Promise<WriteResult> {
+export function setImportance({ db, clock }: Services, boardId: string, person: string | null, named: string, value: Vote): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
     action: "vote",
-    load: async (trx) =>
-      (await trx
-        .selectFrom("argument as a")
-        .leftJoin("importance_vote as mine", (join) => join.onRef("mine.argument_id", "=", "a.id").on("mine.account_id", "=", person ?? ""))
-        .select(["a.deleted_at", "mine.value as current"])
-        .where("a.id", "=", argumentId)
-        .where("a.board_id", "=", boardId)
-        .executeTakeFirst()) ?? null,
+    // A vote on an argument combined away applies to the one it went into (M3a-6).
+    load: async (trx) => {
+      const argument = await argumentNow(trx, boardId, named);
+      if (!argument) return null;
+      const mine = await trx.selectFrom("importance_vote").select("value").where("argument_id", "=", argument.id).where("account_id", "=", person ?? "").executeTakeFirst();
+      return { ...argument, current: mine?.value ?? null };
+    },
     stale: async (_trx, argument) => (argument.deleted_at ? { refused: "argument_deleted" } : null),
     change: async (trx, argument, seq) => {
+      // The argument the vote lands on: the one named, or where it was combined into.
+      const argumentId = argument.id;
+      // Sent to an argument since combined away, by someone with a vote where it went (§3; the builder, Nov 22). If that
+      // vote is the one the combine carried there from the argument they voted on, the queued vote is their newest
+      // choice, so it applies, as Undo lets a newer vote win. If they voted there themselves, their vote there stands.
+      if (argument.redirected && argument.current !== null && !(await carriedAlong(trx, person!, argument.path))) return "already_done";
       if ((argument.current ?? null) === value) return "already_done";
+      // Voting on it answers any ask to vote again, left by a combine, and is a newer vote that Undo leaves as it is (M3a-6).
+      await trx.updateTable("combine_vote").set({ asked_again: false, revoted: true }).where("into_id", "=", argumentId).where("account_id", "=", person!).where("revoted", "=", false).execute();
       if (value === null) {
         await trx.deleteFrom("importance_vote").where("argument_id", "=", argumentId).where("account_id", "=", person!).execute();
       } else {

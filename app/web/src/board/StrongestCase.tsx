@@ -7,6 +7,7 @@ import { strongestCase } from "@steelman/shared";
 import type { CaseItem, QueuedAction, ReaderView } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { Meter } from "./Card.tsx";
+import { Texture } from "./Texture.tsx";
 import { assessmentShown, columns, editShown, importanceShown } from "./display.ts";
 
 interface StrongestCaseProps {
@@ -26,6 +27,7 @@ export function StrongestCase({ view, leftOut, mine, onOpen }: StrongestCaseProp
       <Fragment key={option.id}>
         {index > 0 && <div className="sm-col-gap" aria-hidden="true" />}
         <section className={`sm-column sm-case-column${index === 0 ? " sm-first" : ""}`} data-option={option.id} aria-label={`The case for ${option.name}`}>
+          <Texture />
           <div className="sm-column-head">
             <h2>{option.name}</h2>
           </div>

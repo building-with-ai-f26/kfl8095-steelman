@@ -182,7 +182,7 @@ This works because **nothing on a board is ever removed from its table**: delete
 
 How undo works for the hard cases (T3, but the log is shaped for it now):
 
-- **Combine** records which versions moved from which argument, and how importance votes were merged: per person, two identical votes become one; two conflicting votes are both removed and the person is asked again (PRD §5). Each version's articulation votes, assessments, and comments go with it (Q8). **Undo** moves those versions back, restores the removed votes, and clears `merged_into`. Wordings added to the combined argument *after* the combine stay where they were added. If someone has voted again on the combined argument since, their newer vote wins and the old one isn't restored.
+- **Combine** moves one wording into another argument in the same option, as the prototype's drag does (the builder's choice, Nov 22). When it was its argument's last wording, the two arguments become one: the empty one keeps its row with `merged_into`, and importance votes merge per person, two identical votes become one; two conflicting votes are both removed and the person is asked again (PRD §5). Each person's votes before the merge are kept in `combine_vote` (never in the change log, invariant 7), so Undo can restore them. The wording's articulation votes, assessments, and comments go with it (Q8). **Undo** moves the wording back and, if the arguments became one, restores the removed votes and clears `merged_into`. Wordings added to the combined argument *after* the combine stay where they were added. If someone has voted again on the combined argument since, their newer vote wins and the old one isn't restored.
 - **Separate** records the version and its old argument. The new argument starts with no importance votes. **Undo** moves the version back and closes the new argument if nothing else was added to it.
 - **Hide / restore** and **delete** are single flag changes; the change row holds the reason.
 
@@ -193,7 +193,7 @@ One sentinel account, **`deleted_account`**, is added by the first deletion (its
 | Data | What happens |
 |---|---|
 | Email, sign-in methods, analytics choice | Erased |
-| Importance votes, articulation votes, assessments, reports filed | **Deleted** (counts change accordingly; each affected row is stamped with its board's next change number, so open boards pick up the new counts, and nothing names anyone) |
+| Importance votes (and those a combine set aside, in `combine_vote`), articulation votes, assessments, reports filed | **Deleted** (counts change accordingly; each affected row is stamped with its board's next change number, so open boards pick up the new counts, and nothing names anyone) |
 | Comments | Deleted. A comment with replies leaves "Comment deleted" in place so the thread still reads (the prototype's behavior) |
 | Arguments, versions, revisions, sources | **Kept**, with the author changed to `deleted_account` |
 | Change log rows they made | Actor changed to `deleted_account`; any `before` / `after` fields that hold their account ID are scrubbed |
@@ -293,7 +293,7 @@ Conflicts are rare by design: **nobody overwrites anybody.** A better wording is
 
 | Your queued action | What changed meanwhile | What the server does | What you see |
 |---|---|---|---|
-| Importance vote on an argument | It was combined into another | Applies the vote to the argument it was combined into, unless you'd already voted there (your vote there stands) | Nothing unusual |
+| Importance vote on an argument | It was combined into another | Applies the vote to the argument it was combined into. If your vote there is only the one the combine carried over from the argument you voted on, your queued vote replaces it, since it is your newest choice. If you voted there yourself, before or after the combine, your vote there stands | Nothing unusual |
 | Importance vote on an argument | It was deleted | Drops it | "1 action couldn't be sent: that argument was deleted" |
 | Articulation vote on a wording | It moved by combine or separate | Applies it (the wording's ID never changes) | Nothing unusual |
 | Articulation or importance vote | The wording or argument was hidden by a moderator | Drops it | Same note as above |
