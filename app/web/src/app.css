@@ -188,29 +188,22 @@ body { margin:0; }
 #steelman-study .sm-prev .sm-prev-votes { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding-top:7px; border-top:1px solid #e4e0d6; font:400 11px/1.3 var(--sm-sans); }
 #steelman-study .sm-prev .sm-prev-votes b { margin-right:2px; font:600 15px/1 var(--sm-serif); font-variant-numeric:tabular-nums; color:var(--sm-ink); }
 
-/* "Back to …" (M3a-1): the prototype's back link, above the screen's card, and a way on from a dead end. */
-/* min-width: 0, so a long name shrinks to "…" instead of widening the page's grid. */
+/* The back arrow (M3a-1, M-13; drawn in pages.css): min-width 0, so it never widens the page's grid. */
 #steelman-study .sm-back { min-width: 0; max-width: 100%; margin: 0 0 10px; }
-#steelman-study .sm-back .sm-profile-back { margin: 0; max-width: 100%; text-decoration: none; }
-#steelman-study .sm-back .sm-profile-back span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#steelman-study .sm-back .sm-profile-back:hover { color: var(--sm-ink); }
 #steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
 #steelman-study .sm-dead-end p { margin: 0; }
 
 /* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
    in the prototype's head button, widened as its comment button is. */
 #steelman-study .sm-head-button.sm-history-button { display:inline-flex; align-items:center; gap:6px; width:auto; padding:0 9px; font-size:13px; }
-/* The question keeps clear of it: beside it on a wide screen. On a phone the question has the full width, and History
-   sits under it, at the end of the line that says who can open the board (the builder, Nov 22), so it takes no line
-   of its own. */
-#steelman-study .sm-head { padding-right:112px; }
-@media(max-width:640px) {
-  #steelman-study .sm-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:8px; padding-right:18px; }
-  #steelman-study .sm-head > h1 { grid-column:1 / -1; grid-row:1; }
-  #steelman-study .sm-head > .sm-question-meta { grid-column:1; grid-row:2; }
-  #steelman-study .sm-head .sm-head-tools { position:static; grid-column:2; grid-row:2; align-self:end; margin:0 -8px -6px 0; }
-  #steelman-study .sm-head > .sm-link-note { grid-column:1 / -1; }
-}
+/* The question has the full width, and History sits under it, at the end of the line that says who can open the
+   board, at every width (the builder, Nov 22). */
+#steelman-study .sm-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:8px; padding-right:25px; }
+@media(max-width:640px) { #steelman-study .sm-head { padding-right:18px; } }
+#steelman-study .sm-head > h1 { grid-column:1 / -1; grid-row:1; }
+#steelman-study .sm-head > .sm-question-meta { grid-column:1; grid-row:2; }
+#steelman-study .sm-head .sm-head-tools { position:static; grid-column:2; grid-row:2; align-self:end; margin:0 -8px -6px 0; }
+#steelman-study .sm-head > .sm-link-note { grid-column:1 / -1; }
 #steelman-study .sm-history-drawer { top:0; z-index:50; max-height:calc(100vh - 24px); overflow:auto; }
 /* As the prototype makes room for its drawer (data-drawer on .sm-surface): on a wide screen the board moves left. */
 @media(min-width:1200px) { #steelman-study .sm-scene.sm-with-drawer { padding-right:380px; } }

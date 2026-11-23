@@ -1827,6 +1827,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
   --sm-cred-mid:#a9a6ae;     /* evidence: contested (50%), neutral midpoint of the diverging scale */
   --sm-cred-strong:#3d9a64;  /* evidence: supported as worded (100%) */
+  --sm-alert:#B4232F;        /* something broken or reported, such as a source that can&#x27;t be opened: text and edges; 4.5:1 on white and on its tint */
+  --sm-alert-tint:#fdf1f2;   /* the fill behind an alert */
   --sm-ai:#C9952B;           /* AI contributions: ochre, always paired with the robot icon (and a dotted edge on an AI draft) */
   --sm-ai-ink:#6b4a0e;       /* text on or beside AI ochre */
   --sm-ai-hover:#fbf5e8;     /* hover fill behind the AI robot and the AI draft tag */
@@ -2352,6 +2354,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-source-packet dd { margin:0; }
   #steelman-study .sm-source-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:12px; }
   #steelman-study .sm-source-actions:empty { display:none; }
+  /* &quot;Can&#x27;t open it?&quot; is an icon at the end of the source&#x27;s actions; a report shows in red, apart from the source&#x27;s text. */
+  #steelman-study .sm-source-actions .sm-report-link { margin:-6px -6px -6px auto; }
+  #steelman-study .sm-source-actions .sm-report-link:hover { color:var(--sm-alert); background:var(--sm-alert-tint); }
+  #steelman-study .sm-unavailable { flex:none; padding:1px 7px; border:1px solid currentColor; border-radius:999px; font-size:11px; font-weight:600; line-height:1.4; color:var(--sm-alert); }
+  #steelman-study .sm-unavailable-note { display:grid; gap:4px; margin-top:10px; padding:8px 10px; border-left:3px solid var(--sm-alert); border-radius:0 6px 6px 0; background:var(--sm-alert-tint); font-size:12px; line-height:1.5; }
+  #steelman-study .sm-unavailable-note p { display:flex; align-items:center; gap:6px; margin:0; color:var(--sm-alert); font-weight:500; }
+  #steelman-study .sm-unavailable-note p svg { flex:none; }
+  #steelman-study .sm-unavailable-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-left:19px; }
+  #steelman-study .sm-unavailable-actions .sm-link-button { padding:0; font-size:12px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:2px; }
   #steelman-study .sm-add-source { margin-top:10px; }
   #steelman-study .sm-source-more { justify-self:start; padding:0; font-size:11px; }
   #steelman-study .sm-you-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e2e2e2; color:var(--sm-muted); font-size:11px; font-weight:600; vertical-align:1px; }
@@ -2654,6 +2665,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-preview-pair .sm-preview-into { display:flex; justify-content:center; color:var(--sm-muted); }
   #steelman-study .sm-preview-pair .sm-preview-into svg { width:16px; height:16px; }
   #steelman-study .sm-preview-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
+  /* The dialog&#x27;s light gray line on what happens to the votes, with who&#x27;s asked again close under it. */
+  #steelman-study .sm-preview .sm-preview-asked { margin-top:-10px; }
   #steelman-study .sm-vote-again { grid-column:2; justify-self:start; display:inline-flex; align-items:center; gap:6px; margin:0; padding:4px 10px 4px 8px; border:1px solid var(--sm-ink); border-radius:999px; background:var(--sm-card); font-size:12px; font-weight:600; line-height:1.4; cursor:default; }
   #steelman-study .sm-open &gt; .sm-vote-again { grid-row:3; }
   /* The vote it asks for is ringed, so the chip needs no sentence. */
@@ -3709,7 +3722,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const n=idea.versions.length;
     const fold=`&lt;button type=&quot;button&quot; class=&quot;sm-fold cursor-interaction&quot; data-action=&quot;fold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;fold-${idea.id}&quot; aria-label=&quot;Fold versions back into the stack&quot; data-tooltip=&quot;Fold back&quot;&gt;${icon(&#x27;fold-horizontal&#x27;)}&lt;/button&gt;`;
     // One wording has nothing to compare against, so there is no articulation axis (or vote) until a second arrives.
-    if(n&lt;2) return `&lt;div class=&quot;sm-track-axis sm-track-note&quot;&gt;&lt;span&gt;${icon(&#x27;chevrons-right&#x27;)}Only one wording so far. Write a second to compare them.&lt;/span&gt;${fold}&lt;/div&gt;`;
+    if(n&lt;2) return `&lt;div class=&quot;sm-track-axis sm-track-note&quot;&gt;${fold}&lt;/div&gt;`;
     // Phones swap the axis for a carousel caption: which version you&#x27;re on, and dots.
     // Dots only while they fit; a long row keeps just the caption.
     const pager=`&lt;div class=&quot;sm-pager&quot; aria-live=&quot;polite&quot;&gt;&lt;span class=&quot;sm-pager-text&quot;&gt;1 of ${n} · best articulated&lt;/span&gt;${n&lt;=8?`&lt;span class=&quot;sm-pager-dots&quot; aria-hidden=&quot;true&quot;&gt;&lt;i data-on&gt;&lt;/i&gt;${&#x27;&lt;i&gt;&lt;/i&gt;&#x27;.repeat(n-1)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
@@ -3943,12 +3956,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       const actions=[
         mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;edit-source&quot; ${ref} data-key=&quot;edit-source-${key}&quot;&gt;Edit&lt;/button&gt;`:&#x27;&#x27;,
         mine?`${(()=&gt;{const n=stats(cardId).n,armed=state.removeArmed===key;return `&lt;button type=&quot;button&quot; class=&quot;sm-link-button ${armed?&#x27;sm-armed&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;${armed?`Remove: ${n} assessments start over`:&#x27;Remove from this version&#x27;}&quot;&gt;${armed?`Remove · ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over`:&#x27;Remove&#x27;}&lt;/button&gt;`;})()}`:&#x27;&#x27;,
-        !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report that it can’t be opened&quot;&gt;Can’t open it?&lt;/button&gt;`:&#x27;&#x27;,
-        source.reportedBy===&#x27;you&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;`:&#x27;&#x27;
+        !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-report-link cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report a broken link&quot; data-tooltip=&quot;Can’t open it?&quot;&gt;${icon(&#x27;link-2-off&#x27;)}&lt;/button&gt;`:&#x27;&#x27;
       ].join(&#x27;&#x27;);
-      const note=source.reportedBy===&#x27;you&#x27;?&#x27;You reported it can’t be opened.&#x27;:&#x27;&#x27;;
+      // A report shows in red, apart from the source&#x27;s text (the builder, Nov 22): who and when, and Undo report for its reporter.
+      const note=source.unavailable?`&lt;div class=&quot;sm-unavailable-note&quot;&gt;&lt;p&gt;${icon(&#x27;link-2-off&#x27;)}${source.reportedBy===&#x27;you&#x27;?&#x27;You reported it today.&#x27;:&#x27;Someone reported it.&#x27;}&lt;/p&gt;${source.reportedBy===&#x27;you&#x27;?`&lt;div class=&quot;sm-unavailable-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;`:&#x27;&#x27;;
       const rows=[[&#x27;Backs up&#x27;,source.premise],[&#x27;Limit&#x27;,source.limit]].filter(([,v])=&gt;v).map(([k,v])=&gt;`&lt;dt&gt;${k}&lt;/dt&gt;&lt;dd&gt;${escape(v)}&lt;/dd&gt;`).join(&#x27;&#x27;);
-      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?.[0]===&#x27;unopened&#x27;&amp;&amp;!source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-ai-offer cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;ai-unavailable-${key}&quot;&gt;Mark unavailable&lt;/button&gt;`:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note?`&lt;p class=&quot;sm-source-note&quot;&gt;${note}&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
+      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-unavailable&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?.[0]===&#x27;unopened&#x27;&amp;&amp;!source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-ai-offer cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;ai-unavailable-${key}&quot;&gt;Mark unavailable&lt;/button&gt;`:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-add-source cursor-interaction&quot; data-action=&quot;add-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;add-source-${cardId}&quot;&gt;${icon(&#x27;plus&#x27;)}Add a source&lt;/button&gt;`;

@@ -18,5 +18,5 @@ test("M-07, J-03: Who sees what says that a board's history shows who did what a
   const page = await signedOut(browser, origin, "/privacy");
 
   const seen = page.getByRole("heading", { name: "Who sees what" }).locator("xpath=following-sibling::ul[1]");
-  await expect(seen).toContainText("A board’s history shows everyone who can open the board who did what there, and when, including when you added each argument and wording. It never shows your votes.");
+  await expect(seen).toContainText("Everyone who can open a board sees its history. The history shows who did what there and when, including when you added each argument and wording. It never shows your votes.");
 });

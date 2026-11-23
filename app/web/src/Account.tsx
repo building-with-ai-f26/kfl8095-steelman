@@ -2,7 +2,11 @@
 // in ChangeEmail.tsx), how you sign in, the
 // usage-analytics switch, Download your data, Sign out, and Delete account, in
 // the prototype's Account card (profileMarkup, privacyGroup, deleteForm, and
-// deletedMarkup in docs/prototype/source/steelman-refined.html). Typing your
+// deletedMarkup in docs/prototype/source/steelman-refined.html), laid out as
+// Google Account's settings are (the builder, Nov 22: "too cramped / too many
+// lines"): the title with its back arrow on the page, then each group a card
+// of its own, with a short title and rows of label and value, ruled only
+// between rows (pages.css). Typing your
 // username to confirm a deletion is GitHub's way too (checked on
 // docs.github.com). Sign out sits at the foot of the card, above Delete
 // account, as in the prototype; GitHub and Google keep it last in the account
@@ -18,7 +22,7 @@ import { ChangeEmail } from "./signIn/ChangeEmail.tsx";
 import type { MyAccount } from "./api.ts";
 import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
-import { BackLink, usePlaceBefore } from "./BackLink.tsx";
+import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 import { forgetPlaces, rememberPlace } from "./places.ts";
 
 const DELETED = "deleted_account";
@@ -74,11 +78,10 @@ export function Account() {
   return (
     <main className="sm-landing" data-canvas="cool">
       <div className="sm-landing-inner">
-        <BackLink here="/account" place={cameFrom} />
-        <section className="sm-rail-card sm-landing-auth sm-account" aria-labelledby="sm-account-title">
-          <h1 id="sm-account-title" className="sm-auth-title">
-            Your account
-          </h1>
+        <section className="sm-account" aria-labelledby="sm-account-title">
+          <TitleBar here="/account" place={cameFrom}>
+            <h1 id="sm-account-title">Your account</h1>
+          </TitleBar>
           <div className="sm-rgroup">
             {/* ph-no-capture: kept out of analytics and screen replays (M-08). */}
             <Row label="Username">
@@ -125,25 +128,27 @@ export function Account() {
               </span>
             </Row>
           </div>
-          <button ref={signOutButton} type="button" className="sm-button sm-signout cursor-interaction" disabled={signingOut} onClick={() => void leave()}>
-            <Icon name="log-out" size={16} />
-            Sign out
-          </button>
-          {deleting ? (
-            <DeleteForm
-              username={account.username ?? ""}
-              onCancel={() => setDeleting(false)}
-              onDeleted={() => {
-                forgetTestUser();
-                forgetPlaces();
-                setDeleted(true);
-              }}
-            />
-          ) : (
-            <button ref={deleteLink} type="button" className="sm-link-button sm-delete-link cursor-interaction" onClick={() => setDeleting(true)}>
-              Delete account
+          <div className="sm-account-end">
+            <button ref={signOutButton} type="button" className="sm-button sm-signout cursor-interaction" disabled={signingOut} onClick={() => void leave()}>
+              <Icon name="log-out" size={16} />
+              Sign out
             </button>
-          )}
+            {deleting ? (
+              <DeleteForm
+                username={account.username ?? ""}
+                onCancel={() => setDeleting(false)}
+                onDeleted={() => {
+                  forgetTestUser();
+                  forgetPlaces();
+                  setDeleted(true);
+                }}
+              />
+            ) : (
+              <button ref={deleteLink} type="button" className="sm-link-button sm-delete-link cursor-interaction" onClick={() => setDeleting(true)}>
+                Delete account
+              </button>
+            )}
+          </div>
         </section>
       </div>
       <div id="sm-status" className="sm-live" role="status" aria-live="polite">
