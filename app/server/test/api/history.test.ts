@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { createSeededIds } from "@steelman/shared/testing";
-import { addAccount, addMember, seedBoard } from "../support/board.ts";
+import { addAccount, addArgument, addMember, seedBoard, write } from "../support/board.ts";
 import type { SeededBoard } from "../support/board.ts";
 import { useApi } from "../support/api.ts";
 import { useTestDatabase } from "../support/database.ts";
@@ -54,11 +54,38 @@ describe("History", () => {
       ["version_hidden", eveName],
       ["option_deleted", eveName],
       ["option_added", anaName],
+      // The two arguments the seeded board began with, which History now lists (history-additions.test.ts).
+      ["argument_added", anaName],
+      ["argument_added", anaName],
     ]);
     expect(body.entries[0]).toMatchObject({ subjectKind: "version", subjectId: b.version, detail: { version: b.version, source: b.source }, reason: null });
     expect(body.entries[1]).toMatchObject({ subjectKind: "version", subjectId: b.otherVersion, reason: "offtopic" });
     expect(body.entries[2]).toMatchObject({ subjectKind: "option", subjectId: winter });
     expect(typeof body.entries[0].at).toBe("string");
+  });
+
+  test("M3a-8, J-03, J-04: a combine says which arguments, and its undo which change it undid", async () => {
+    const second = await write(db.client, b.board, (seq) => addArgument(db.client, ids, { board: b.board, option: b.yes, author: b.ben, seq, wording: "Weekend hours suit families." }));
+    const combined = (await api.post(`/api/boards/${b.board}/versions/${b.version}/combine`, { as: eve, body: { into: second.argument } })).body.seq;
+    await api.put(`/api/boards/${b.board}/changes/${combined}/undo`, { as: eve });
+
+    const entries = (await history(val)).body.entries as { kind: string; subjectId: string; detail: object }[];
+
+    expect(entries.find((e) => e.kind === "wording_combined")).toMatchObject({ subjectId: b.version, detail: { from: b.argument, into: second.argument, merged: true } });
+    expect(entries.find((e) => e.kind === "wording_uncombined")).toMatchObject({ subjectId: b.version, detail: { undoes: combined } });
+  });
+
+  test("M3a-8, J-03, J-04: a separation says which argument it left and which it made, and its undo which change it undid", async () => {
+    const second = await write(db.client, b.board, (seq) => addArgument(db.client, ids, { board: b.board, option: b.yes, author: b.ben, seq, wording: "Weekend hours suit families." }));
+    await api.post(`/api/boards/${b.board}/versions/${b.version}/combine`, { as: eve, body: { into: second.argument } });
+    const fresh = ids.itemId();
+    const separated = (await api.post(`/api/boards/${b.board}/versions/${b.version}/separate`, { as: eve, body: { argumentId: fresh } })).body.seq;
+    await api.put(`/api/boards/${b.board}/changes/${separated}/undo`, { as: eve });
+
+    const entries = (await history(val)).body.entries as { kind: string; subjectId: string; detail: object }[];
+
+    expect(entries.find((e) => e.kind === "wording_separated")).toMatchObject({ subjectId: b.version, detail: { from: second.argument, argument: fresh } });
+    expect(entries.find((e) => e.kind === "wording_unseparated")).toMatchObject({ subjectId: b.version, detail: { undoes: separated } });
   });
 
   test("J-03: a role change names the person it changed", async () => {

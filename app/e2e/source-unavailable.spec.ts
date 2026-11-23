@@ -42,12 +42,12 @@ test("M3a-3, C-02: Can’t open it? marks the source unavailable, says who and w
   const page = await board.open("jordan_w");
   const row = await openSource(page, LEAD);
 
-  await row.getByRole("button", { name: "Can’t open it?" }).click();
+  await row.getByRole("button", { name: "Report a broken link" }).click();
 
   await expect(row.locator("summary")).toContainText("Unavailable");
-  await expect(row.getByText("You reported on Nov 16, 2026 that it can’t be opened.")).toBeVisible();
+  await expect(row.getByText("You reported it on Nov 16, 2026.")).toBeVisible();
   await expect(row.getByRole("link", { name: "Try an archived copy" })).toHaveAttribute("href", "https://web.archive.org/web/https://example.org/shift-work");
-  await expect(row.getByRole("button", { name: "Can’t open it?" })).toHaveCount(0);
+  await expect(row.getByRole("button", { name: "Report a broken link" })).toHaveCount(0);
   await expect(row.locator("summary")).toBeFocused();
   await expect(status(page)).toHaveText("You reported that this source can’t be opened. It shows as unavailable on every wording that cites it.");
   // Yes needs a source someone can open (PRD §4).
@@ -66,7 +66,7 @@ test("M3a-3, C-02: another reader sees the mark on every wording that cites the 
   await poll(other);
 
   await expect(row.locator("summary")).toContainText("Unavailable");
-  await expect(row.getByText("jordan_w reported on Nov 16, 2026 that it can’t be opened.")).toBeVisible();
+  await expect(row.getByText("jordan_w reported it on Nov 16, 2026.")).toBeVisible();
   // Only the reporter, an Editor, or the Owner clears it.
   await expect(row.getByRole("button", { name: /report/i })).toHaveCount(0);
 });
@@ -75,7 +75,7 @@ test("M3a-3, C-02: the reporter takes it back with Undo report", async ({ board 
   await addSurvey(board, LEAD);
   const page = await board.open("jordan_w");
   const row = await openSource(page, LEAD);
-  await row.getByRole("button", { name: "Can’t open it?" }).click();
+  await row.getByRole("button", { name: "Report a broken link" }).click();
   await expect(row.locator("summary")).toContainText("Unavailable");
 
   await row.getByRole("button", { name: "Undo report" }).click();
@@ -92,7 +92,7 @@ test("M3a-3, C-02, H-03: an Editor clears someone else’s report; a Viewer can 
   await board.setRole("lin.zhao", "viewer");
   const viewer = await board.open("lin.zhao");
   const row = await openSource(viewer, LEAD);
-  await row.getByRole("button", { name: "Can’t open it?" }).click();
+  await row.getByRole("button", { name: "Report a broken link" }).click();
   await expect(row.locator("summary")).toContainText("Unavailable");
 
   await board.setRole("omar_h", "editor");

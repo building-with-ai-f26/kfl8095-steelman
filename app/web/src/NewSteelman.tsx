@@ -14,7 +14,7 @@ import { createBoard } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
 import { boardPath } from "./links.ts";
-import { usePlaceBefore } from "./BackLink.tsx";
+import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 
 const PLACEHOLDERS = ["First option", "Second option", "Third option", "Fourth option"];
 
@@ -83,7 +83,7 @@ export function NewSteelman() {
     fail(answer.problem, null);
   }
 
-  /** Where Cancel goes (M3a-1). */
+  /** Where the back arrow and Cancel go (M3a-1). */
   const cameFrom = usePlaceBefore("/new");
   /** What a field needs when the error is about it. */
   const marks = (field: string) => (badField === field ? { "aria-invalid": true, "aria-describedby": "sm-create-error" } : {});
@@ -91,9 +91,11 @@ export function NewSteelman() {
     <main className="sm-landing sm-create-landing" data-canvas="cool">
       <form ref={sheet} className="sm-create sm-create-page" aria-labelledby="sm-create-title" onSubmit={(event) => void submit(event)} noValidate>
         <div className="sm-create-canvas">
-          <div className="sm-create-top">
+          {/* The way back, at the left of the title as on Your account (the builder, Nov 22: "That back option
+              should also exist from the 'New steelman' screen"). */}
+          <TitleBar here="/new" place={cameFrom}>
             <h1 id="sm-create-title">New steelman</h1>
-          </div>
+          </TitleBar>
           <div className="sm-create-q" data-invalid={badField === "question" ? "" : undefined}>
             <textarea
               data-field="question"
@@ -194,8 +196,8 @@ export function NewSteelman() {
                 {error}
               </span>
             ) : null}
-            {/* The prototype's Cancel, back to where you came from (M3a-1): a board, or the list. A form's own Cancel
-                is its way back, so it gets no "Back to …" link as well (GOV.UK: one way back, not two). */}
+            {/* The prototype's Cancel, back to where you came from (M3a-1), as the back arrow goes: a board, or the
+                list. Google's own forms keep both, the arrow by the title and Cancel by the form's button. */}
             <a className="sm-link-button cursor-interaction" href={cameFrom.path}>
               Cancel
             </a>

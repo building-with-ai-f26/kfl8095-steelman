@@ -1827,6 +1827,8 @@ html&gt;body{padding:0}&lt;/style&gt;
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
   --sm-cred-mid:#a9a6ae;     /* evidence: contested (50%), neutral midpoint of the diverging scale */
   --sm-cred-strong:#3d9a64;  /* evidence: supported as worded (100%) */
+  --sm-alert:#B4232F;        /* something broken or reported, such as a source that can&#x27;t be opened: text and edges; 4.5:1 on white and on its tint */
+  --sm-alert-tint:#fdf1f2;   /* the fill behind an alert */
   --sm-ai:#C9952B;           /* AI contributions: ochre, always paired with the robot icon (and a dotted edge on an AI draft) */
   --sm-ai-ink:#6b4a0e;       /* text on or beside AI ochre */
   --sm-ai-hover:#fbf5e8;     /* hover fill behind the AI robot and the AI draft tag */
@@ -2352,6 +2354,15 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-source-packet dd { margin:0; }
   #steelman-study .sm-source-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:12px; }
   #steelman-study .sm-source-actions:empty { display:none; }
+  /* &quot;Can&#x27;t open it?&quot; is an icon at the end of the source&#x27;s actions; a report shows in red, apart from the source&#x27;s text. */
+  #steelman-study .sm-source-actions .sm-report-link { margin:-6px -6px -6px auto; }
+  #steelman-study .sm-source-actions .sm-report-link:hover { color:var(--sm-alert); background:var(--sm-alert-tint); }
+  #steelman-study .sm-unavailable { flex:none; padding:1px 7px; border:1px solid currentColor; border-radius:999px; font-size:11px; font-weight:600; line-height:1.4; color:var(--sm-alert); }
+  #steelman-study .sm-unavailable-note { display:grid; gap:4px; margin-top:10px; padding:8px 10px; border-left:3px solid var(--sm-alert); border-radius:0 6px 6px 0; background:var(--sm-alert-tint); font-size:12px; line-height:1.5; }
+  #steelman-study .sm-unavailable-note p { display:flex; align-items:center; gap:6px; margin:0; color:var(--sm-alert); font-weight:500; }
+  #steelman-study .sm-unavailable-note p svg { flex:none; }
+  #steelman-study .sm-unavailable-actions { display:flex; flex-wrap:wrap; gap:4px 14px; margin-left:19px; }
+  #steelman-study .sm-unavailable-actions .sm-link-button { padding:0; font-size:12px; color:var(--sm-ink); text-decoration:underline; text-underline-offset:2px; }
   #steelman-study .sm-add-source { margin-top:10px; }
   #steelman-study .sm-source-more { justify-self:start; padding:0; font-size:11px; }
   #steelman-study .sm-you-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px; background:#e2e2e2; color:var(--sm-muted); font-size:11px; font-weight:600; vertical-align:1px; }
@@ -2390,7 +2401,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   /* Pick mode for moving a version: other rows in the option offer &quot;Move here&quot;; the source row recedes. */
   #steelman-study .sm-move-banner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-12px 24px 18px 40px; padding:9px 12px 9px 14px; border:1px dashed var(--sm-ink); border-radius:6px; background:var(--sm-card); font-size:13px; }
   #steelman-study .sm-move-source { opacity:.45; }
-  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:center; border:2px dashed var(--sm-ink); border-radius:10px; background:#ffffffb8; font-size:13px; font-weight:600; }
+  #steelman-study .sm-move-here { position:absolute; inset:0 24px 0 0; z-index:5; display:grid; place-items:end center; padding:0 0 8px; border:2px dashed var(--sm-ink); border-radius:10px; background:linear-gradient(to top,var(--sm-card) 40px,transparent 40px); font-size:13px; font-weight:600; }
   #steelman-study .sm-open .sm-move-here { right:0; }
   #steelman-study .sm-move-here span { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--sm-ink); color:#fff; }
   #steelman-study .sm-move-here svg { width:14px; height:14px; }
@@ -2418,7 +2429,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study [hidden] { display:none !important; }
   @media(max-width:800px) {
     #steelman-study .sm-scene { padding:24px 14px 20px; }
-    #steelman-study .sm-board { grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr); }
+    #steelman-study .sm-board { grid-template-columns:var(--sm-cols,minmax(0,1fr) 40px minmax(0,1fr)); }
     #steelman-study .sm-column { padding:0 9px 13px; }
     #steelman-study .sm-claim-button { padding:15px; }
     #steelman-study .sm-column-head { padding:13px; }
@@ -2651,11 +2662,16 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-preview h2 { font:600 17px/1.3 var(--sm-serif); }
   #steelman-study .sm-preview-pair { display:grid; gap:6px; }
   #steelman-study .sm-preview-pair blockquote { margin:0; padding:10px 12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); font:400 15px/1.4 var(--sm-serif); }
-  #steelman-study .sm-preview-pair .sm-preview-into { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--sm-muted); }
-  #steelman-study .sm-preview-pair .sm-preview-into svg { width:14px; height:14px; }
+  #steelman-study .sm-preview-pair .sm-preview-into { display:flex; justify-content:center; color:var(--sm-muted); }
+  #steelman-study .sm-preview-pair .sm-preview-into svg { width:16px; height:16px; }
   #steelman-study .sm-preview-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
-  #steelman-study .sm-vote-again { display:flex; align-items:flex-start; gap:6px; margin:8px 0 0; padding:8px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-card); font-size:13px; line-height:1.4; }
-  #steelman-study .sm-vote-again svg { flex:none; width:14px; height:14px; margin-top:2px; }
+  /* The dialog&#x27;s light gray line on what happens to the votes, with who&#x27;s asked again close under it. */
+  #steelman-study .sm-preview .sm-preview-asked { margin-top:-10px; }
+  #steelman-study .sm-vote-again { grid-column:2; justify-self:start; display:inline-flex; align-items:center; gap:6px; margin:0; padding:4px 10px 4px 8px; border:1px solid var(--sm-ink); border-radius:999px; background:var(--sm-card); font-size:12px; font-weight:600; line-height:1.4; cursor:default; }
+  #steelman-study .sm-open &gt; .sm-vote-again { grid-row:3; }
+  /* The vote it asks for is ringed, so the chip needs no sentence. */
+  #steelman-study .sm-idea:has(&gt; .sm-vote-again) &gt; .sm-vote { box-shadow:0 0 0 2px var(--sm-card),0 0 0 3.5px var(--sm-ink); }
+  #steelman-study .sm-vote-again svg { flex:none; width:13px; height:13px; }
   #steelman-study .sm-create-scrim[hidden], #steelman-study .sm-create[hidden] { display:none; }
   #steelman-study .sm-create { position:absolute; z-index:71; left:50%; top:84px; transform:translateX(-50%); display:grid; width:600px; max-width:calc(100% - 32px); background:var(--sm-card); border-radius:10px; box-shadow:var(--sm-shadow-lg),0 24px 60px #00000040; }
   #steelman-study .sm-create-canvas { display:grid; gap:14px; padding:20px 20px 22px; border-radius:10px 10px 0 0; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
@@ -3051,6 +3067,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     /* Below each option header: a small arrow and &quot;Most important first&quot;, in the same quiet voice as the version caption. */
     #steelman-study .sm-col-axis { display:flex; align-items:center; gap:5px; width:auto; margin:-16px 0 12px var(--sm-lane,40px); padding:0; border:0; background:none; color:var(--sm-muted); font:400 12px/1 var(--sm-sans); letter-spacing:0; text-transform:none; }
     #steelman-study .sm-col-axis svg { width:13px; height:13px; }
+    /* Under the &quot;Pick the argument…&quot; banner, the axis label keeps its distance. */
+    #steelman-study .sm-move-banner + .sm-col-axis { margin-top:-6px; }
     #steelman-study .sm-open &gt; .sm-track-axis { height:40px; padding:0 4px 0 12px; border:0; background:transparent; }
     #steelman-study .sm-track-axis .sm-axis { display:none; }
     #steelman-study .sm-pager { display:flex; align-items:center; gap:10px; flex:1; min-width:0; font:400 12px/1 var(--sm-sans); color:var(--sm-muted); }
@@ -3631,7 +3649,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const expanded=state.expanded===id;
     const idea=ideaOf(cards[id].idea),others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
     // The merge handle: drag it onto another argument in the same option (or click it to pick one).
-    const direct=canMove(id),handle=others&amp;&amp;(direct||canSuggest())?`&lt;button type=&quot;button&quot; class=&quot;sm-source-button sm-merge-handle cursor-interaction&quot; draggable=&quot;true&quot; data-drag=&quot;${id}&quot; data-action=&quot;move-card&quot; data-id=&quot;${id}&quot; data-key=&quot;merge-${id}&quot; aria-label=&quot;${direct?&#x27;Combine with another argument&#x27;:&#x27;Suggest combining with another argument&#x27;}&quot; data-tooltip=&quot;${direct?&#x27;Drag onto the argument it repeats&#x27;:&#x27;Drag to suggest combining&#x27;}&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;/button&gt;`:&#x27;&#x27;;
+    const direct=canMove(id),handle=others&amp;&amp;(direct||canSuggest())?`&lt;button type=&quot;button&quot; class=&quot;sm-source-button sm-merge-handle cursor-interaction&quot; draggable=&quot;true&quot; data-drag=&quot;${id}&quot; data-action=&quot;move-card&quot; data-id=&quot;${id}&quot; data-key=&quot;merge-${id}&quot; aria-label=&quot;${direct?&#x27;Combine with another argument&#x27;:&#x27;Suggest combining with another argument&#x27;}&quot; data-tooltip=&quot;${direct?&#x27;Combine&#x27;:&#x27;Suggest combining&#x27;}&quot;&gt;${icon(&#x27;merge&#x27;)}&lt;/button&gt;`:&#x27;&#x27;;
     return `&lt;span class=&quot;sm-cred-group&quot;&gt;${credibility(id)}${aiCheckMark(id)}&lt;/span&gt;&lt;div class=&quot;sm-card-tools&quot;&gt;${handle}${commentButton(&#x27;card:&#x27;+id,&#x27;sm-source-button sm-comment-button&#x27;,&#x27;version&#x27;)}${sourceCount(id)}&lt;button type=&quot;button&quot; class=&quot;sm-expand cursor-interaction&quot; data-action=&quot;toggle&quot; data-id=&quot;${id}&quot; data-key=&quot;expand-${id}&quot; aria-label=&quot;${expanded?&#x27;Collapse&#x27;:&#x27;Expand&#x27;} card&quot; aria-expanded=&quot;${expanded}&quot; aria-controls=&quot;sm-reveal-${id}&quot;&gt;${icon(expanded?&#x27;chevron-up&#x27;:&#x27;chevron-down&#x27;)}&lt;/button&gt;&lt;/div&gt;`;
   }
   // Who wrote a version: quiet, under the claim. AI drafts say so in their tag instead.
@@ -3667,25 +3685,25 @@ html&gt;body{padding:0}&lt;/style&gt;
       const visible=doc.options.filter(o=&gt;!isHidden(o.id)).length;
       return item(&#x27;hide-col&#x27;,&#x27;eye-off&#x27;,&#x27;Hide this column&#x27;,visible&lt;=1?&#x27;At least one column stays visible.&#x27;:&#x27;It folds to a strip; click the strip to bring it back.&#x27;,visible&lt;=1)
         +(visible&gt;1?item(&#x27;solo-col&#x27;,&#x27;maximize-2&#x27;,&#x27;Show only this column&#x27;,&#x27;Hides the others.&#x27;):&#x27;&#x27;)
-        +item(&#x27;rename-option&#x27;,&#x27;pencil&#x27;,&#x27;Rename option&#x27;)
-        +item(&#x27;delete-option&#x27;,&#x27;trash-2&#x27;,&#x27;Delete option&#x27;,few?&#x27;A question needs at least two options.&#x27;:rows?&#x27;Move or delete its arguments first.&#x27;:&#x27;It has no arguments.&#x27;,few||rows&gt;0);
+        +item(&#x27;rename-option&#x27;,&#x27;pencil&#x27;,&#x27;Rename&#x27;)
+        +item(&#x27;delete-option&#x27;,&#x27;trash-2&#x27;,&#x27;Delete&#x27;,few?&#x27;A question needs at least two options.&#x27;:rows?&#x27;Only an empty option can be deleted.&#x27;:&#x27;&#x27;,few||rows&gt;0);
     }
     const card=cards[id],mine=card.by===&#x27;you&#x27;,idea=ideaOf(card.idea),last=idea.versions.length===1;
     const others=ideas.some(i=&gt;i.option===idea.option&amp;&amp;i.id!==idea.id);
     if(card.by===&#x27;ai&#x27;) return `&lt;p class=&quot;sm-menu-note&quot;&gt;Drafted by AI.&lt;/p&gt;`
       +item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Write a better version&#x27;)
-      +(myRole()===&#x27;owner&#x27;?item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine with another argument&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)+item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,&#x27;Remove this AI draft&#x27;):&#x27;&#x27;);
+      +(myRole()===&#x27;owner&#x27;?item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine…&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)+item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,&#x27;Remove this AI draft&#x27;):&#x27;&#x27;);
     const author=`&lt;p class=&quot;sm-menu-note&quot;&gt;Written by ${escape(card.by||&#x27;another contributor&#x27;)}.&lt;/p&gt;`;
     if(!mine&amp;&amp;canStructure()) return author
       +item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;)
-      +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine with another argument&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
-      +(last?&#x27;&#x27;:item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Make it a separate argument&#x27;));
+      +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine…&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
+      +(last?&#x27;&#x27;:item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Separate…&#x27;));
     if(!mine) return author+item(&#x27;revise-card&#x27;,&#x27;pen-line&#x27;,&#x27;Suggest a revised version&#x27;)
       +(canSuggest()&amp;&amp;others?item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Suggest combining with another argument&#x27;,&#x27;The owner or the author decides.&#x27;):&#x27;&#x27;);
     return `&lt;p class=&quot;sm-menu-note&quot;&gt;You wrote this version.&lt;/p&gt;`
       +item(&#x27;edit-card&#x27;,&#x27;pencil&#x27;,&#x27;Edit wording and context&#x27;)
-      +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine with another argument&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
-      +(last?&#x27;&#x27;:item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Make it a separate argument&#x27;))
+      +item(&#x27;move-card&#x27;,&#x27;merge&#x27;,&#x27;Combine…&#x27;,others?&#x27;&#x27;:&#x27;No other argument here yet.&#x27;,!others)
+      +(last?&#x27;&#x27;:item(&#x27;split-card&#x27;,&#x27;split&#x27;,&#x27;Separate…&#x27;))
       +item(&#x27;delete-card&#x27;,&#x27;trash-2&#x27;,last?&#x27;Delete argument&#x27;:&#x27;Delete version&#x27;,last?&#x27;Removes the row.&#x27;:&#x27;&#x27;);
   }
   const undoMarkup = () =&gt; `&lt;div class=&quot;sm-undo&quot; role=&quot;status&quot;&gt;&lt;span&gt;${state.undo.label}&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;undo&quot; data-key=&quot;undo&quot;&gt;Undo&lt;/button&gt;&lt;/div&gt;`;
@@ -3704,7 +3722,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const n=idea.versions.length;
     const fold=`&lt;button type=&quot;button&quot; class=&quot;sm-fold cursor-interaction&quot; data-action=&quot;fold&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;fold-${idea.id}&quot; aria-label=&quot;Fold versions back into the stack&quot; data-tooltip=&quot;Fold back&quot;&gt;${icon(&#x27;fold-horizontal&#x27;)}&lt;/button&gt;`;
     // One wording has nothing to compare against, so there is no articulation axis (or vote) until a second arrives.
-    if(n&lt;2) return `&lt;div class=&quot;sm-track-axis sm-track-note&quot;&gt;&lt;span&gt;${icon(&#x27;chevrons-right&#x27;)}Only one wording so far. Write a second to compare them.&lt;/span&gt;${fold}&lt;/div&gt;`;
+    if(n&lt;2) return `&lt;div class=&quot;sm-track-axis sm-track-note&quot;&gt;${fold}&lt;/div&gt;`;
     // Phones swap the axis for a carousel caption: which version you&#x27;re on, and dots.
     // Dots only while they fit; a long row keeps just the caption.
     const pager=`&lt;div class=&quot;sm-pager&quot; aria-live=&quot;polite&quot;&gt;&lt;span class=&quot;sm-pager-text&quot;&gt;1 of ${n} · best articulated&lt;/span&gt;${n&lt;=8?`&lt;span class=&quot;sm-pager-dots&quot; aria-hidden=&quot;true&quot;&gt;&lt;i data-on&gt;&lt;/i&gt;${&#x27;&lt;i&gt;&lt;/i&gt;&#x27;.repeat(n-1)}&lt;/span&gt;`:&#x27;&#x27;}&lt;/div&gt;`;
@@ -3789,7 +3807,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const source=from?.id===idea.id,target=from&amp;&amp;!source&amp;&amp;from.option===idea.option;
     const verb=target&amp;&amp;canMove(state.moving)?&#x27;Combine here&#x27;:&#x27;Suggest combining here&#x27;;
     const here=target?`&lt;button type=&quot;button&quot; class=&quot;sm-move-here cursor-interaction&quot; data-action=&quot;move-here&quot; data-id=&quot;${idea.id}&quot; data-key=&quot;move-here-${idea.id}&quot; aria-label=&quot;${verb}: same point as “${escape(short(ordered(idea)[0]))}”&quot;&gt;&lt;span&gt;${icon(&#x27;merge&#x27;)}${verb}&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;;
-    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${idea.voteAgain?`&lt;p class=&quot;sm-vote-again&quot; role=&quot;note&quot;&gt;${icon(&#x27;rotate-ccw&#x27;)}&lt;span&gt;Your votes on the two arguments disagreed, so vote again.&lt;/span&gt;&lt;/p&gt;`:&#x27;&#x27;}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;&lt;/section&gt;`;
+    return `&lt;section class=&quot;sm-idea ${open?&#x27;sm-open&#x27;:&#x27;&#x27;} ${dim?&#x27;sm-dim&#x27;:&#x27;&#x27;} ${idea.versions.length&lt;2?&#x27;sm-single&#x27;:&#x27;&#x27;} ${source?&#x27;sm-move-source&#x27;:&#x27;&#x27;} ${target?&#x27;sm-move-target&#x27;:&#x27;&#x27;}&quot; data-node=&quot;${idea.id}&quot; aria-label=&quot;${escape(short(lead))}&quot;&gt;${open?trackAxis(idea):&#x27;&#x27;}${importanceVote(idea)}&lt;div class=&quot;sm-card-wrap&quot;&gt;${face}${here}${suggestionsFor(idea)}${heldVersions(idea)}&lt;/div&gt;${idea.voteAgain?`&lt;p class=&quot;sm-vote-again&quot; role=&quot;note&quot; data-tooltip=&quot;Your votes on the two arguments disagreed.&quot;&gt;${icon(&#x27;rotate-ccw&#x27;)}&lt;span aria-hidden=&quot;true&quot;&gt;Vote again&lt;/span&gt;&lt;span class=&quot;sm-sr&quot;&gt;Your votes on the two arguments disagreed, so vote again.&lt;/span&gt;&lt;/p&gt;`:&#x27;&#x27;}&lt;/section&gt;`;
   }
   // Someone combined this argument with another: it keeps its place until you update, and points to where it went.
   function mergedRow(idea) {
@@ -3938,12 +3956,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       const actions=[
         mine?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;edit-source&quot; ${ref} data-key=&quot;edit-source-${key}&quot;&gt;Edit&lt;/button&gt;`:&#x27;&#x27;,
         mine?`${(()=&gt;{const n=stats(cardId).n,armed=state.removeArmed===key;return `&lt;button type=&quot;button&quot; class=&quot;sm-link-button ${armed?&#x27;sm-armed&#x27;:&#x27;&#x27;} cursor-interaction&quot; data-action=&quot;remove-source&quot; ${ref} data-key=&quot;remove-source-${key}&quot; aria-label=&quot;${armed?`Remove: ${n} assessments start over`:&#x27;Remove from this version&#x27;}&quot;&gt;${armed?`Remove · ${n} ${n===1?&#x27;assessment starts&#x27;:&#x27;assessments start&#x27;} over`:&#x27;Remove&#x27;}&lt;/button&gt;`;})()}`:&#x27;&#x27;,
-        !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report that it can’t be opened&quot;&gt;Can’t open it?&lt;/button&gt;`:&#x27;&#x27;,
-        source.reportedBy===&#x27;you&#x27;?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;`:&#x27;&#x27;
+        !source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-icon-button sm-report-link cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;report-source-${key}&quot; aria-label=&quot;Report a broken link&quot; data-tooltip=&quot;Can’t open it?&quot;&gt;${icon(&#x27;link-2-off&#x27;)}&lt;/button&gt;`:&#x27;&#x27;
       ].join(&#x27;&#x27;);
-      const note=source.reportedBy===&#x27;you&#x27;?&#x27;You reported it can’t be opened.&#x27;:&#x27;&#x27;;
+      // A report shows in red, apart from the source&#x27;s text (the builder, Nov 22): who and when, and Undo report for its reporter.
+      const note=source.unavailable?`&lt;div class=&quot;sm-unavailable-note&quot;&gt;&lt;p&gt;${icon(&#x27;link-2-off&#x27;)}${source.reportedBy===&#x27;you&#x27;?&#x27;You reported it today.&#x27;:&#x27;Someone reported it.&#x27;}&lt;/p&gt;${source.reportedBy===&#x27;you&#x27;?`&lt;div class=&quot;sm-unavailable-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-link-button cursor-interaction&quot; data-action=&quot;unreport-source&quot; ${ref} data-key=&quot;unreport-source-${key}&quot; aria-label=&quot;Withdraw your report&quot;&gt;Undo report&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;`:&#x27;&#x27;;
       const rows=[[&#x27;Backs up&#x27;,source.premise],[&#x27;Limit&#x27;,source.limit]].filter(([,v])=&gt;v).map(([k,v])=&gt;`&lt;dt&gt;${k}&lt;/dt&gt;&lt;dd&gt;${escape(v)}&lt;/dd&gt;`).join(&#x27;&#x27;);
-      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-source-note&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?.[0]===&#x27;unopened&#x27;&amp;&amp;!source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-ai-offer cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;ai-unavailable-${key}&quot;&gt;Mark unavailable&lt;/button&gt;`:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note?`&lt;p class=&quot;sm-source-note&quot;&gt;${note}&lt;/p&gt;`:&#x27;&#x27;}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
+      return `&lt;details class=&quot;sm-source-row&quot; data-source-key=&quot;${key}&quot; ${state.openSources?.[key]?&#x27;open&#x27;:&#x27;&#x27;}&gt;&lt;summary class=&quot;cursor-interaction&quot; data-key=&quot;src-${key}&quot;&gt;${icon(&#x27;file-text&#x27;)}&lt;span&gt;${escape(source.name)}${mine?&#x27;&lt;span class=&quot;sm-you-tag&quot;&gt;You&lt;/span&gt;&#x27;:&#x27;&#x27;}&lt;/span&gt;${source.unavailable?&#x27;&lt;span class=&quot;sm-unavailable&quot;&gt;Unavailable&lt;/span&gt;&#x27;:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?.[0]===&#x27;unopened&#x27;&amp;&amp;!source.unavailable?`&lt;button type=&quot;button&quot; class=&quot;sm-link-button sm-ai-offer cursor-interaction&quot; data-action=&quot;report-source&quot; ${ref} data-key=&quot;ai-unavailable-${key}&quot;&gt;Mark unavailable&lt;/button&gt;`:&#x27;&#x27;}${card.aiCheck?.sources?.[id]?aiGlyph(card.aiCheck.sources[id][0],`AI: this source ${card.aiCheck.sources[id][0]===&#x27;unopened&#x27;?&#x27;couldn’t be opened.&#x27;:AI_VERDICT[card.aiCheck.sources[id][0]]+&#x27; the wording.&#x27;} ${card.aiCheck.sources[id][1]}`):&#x27;&#x27;}&lt;i data-lucide=&quot;chevron-right&quot; class=&quot;sm-chevron&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/summary&gt;&lt;div class=&quot;sm-source-packet&quot;&gt;${source.locator?`&lt;span class=&quot;sm-source-note&quot;&gt;${escape(source.locator)}&lt;/span&gt;`:&#x27;&#x27;}&lt;p&gt;${escape(source.finding)}&lt;/p&gt;${rows?`&lt;dl&gt;${rows}&lt;/dl&gt;`:&#x27;&#x27;}${note}&lt;div class=&quot;sm-source-actions&quot;&gt;${actions}&lt;/div&gt;&lt;/div&gt;&lt;/details&gt;`;
     }).join(&#x27;&#x27;);
     const formHere=state.sourceForm?.card===cardId;
     const addControl=formHere?sourceForm(cardId):`&lt;button type=&quot;button&quot; class=&quot;sm-text-button sm-add-source cursor-interaction&quot; data-action=&quot;add-source&quot; data-id=&quot;${cardId}&quot; data-key=&quot;add-source-${cardId}&quot;&gt;${icon(&#x27;plus&#x27;)}Add a source&lt;/button&gt;`;
@@ -4276,7 +4294,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     const actions=verb=&gt;`&lt;div class=&quot;sm-preview-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button cursor-interaction&quot; data-action=&quot;preview-cancel&quot; data-key=&quot;preview-cancel&quot;&gt;Cancel&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;sm-button sm-solid cursor-interaction&quot; data-action=&quot;preview-confirm&quot; data-key=&quot;preview-confirm&quot;&gt;${verb}&lt;/button&gt;&lt;/div&gt;`;
     if(preview.kind===&#x27;separate&#x27;) return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Make this wording its own argument?&lt;/h2&gt;&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;/div&gt;`+actions(&#x27;Separate&#x27;);
     const from=ideaOf(cards[preview.card].idea),into=ideaOf(preview.into),last=from.versions.length===1;
-    const pair=`&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;span class=&quot;sm-preview-into&quot;&gt;${icon(&#x27;merge&#x27;)}joins&lt;/span&gt;${quote(ordered(into)[0])}&lt;/div&gt;`;
+    const pair=`&lt;div class=&quot;sm-preview-pair&quot;&gt;${quote(preview.card)}&lt;span class=&quot;sm-preview-into&quot;&gt;${icon(&#x27;arrow-down&#x27;)}&lt;span class=&quot;sm-sr&quot;&gt;joins&lt;/span&gt;&lt;/span&gt;${quote(ordered(into)[0])}&lt;/div&gt;`;
     if(!last) return `&lt;h2 id=&quot;sm-preview-title&quot;&gt;Combine this wording with that argument?&lt;/h2&gt;`+pair+actions(&#x27;Combine&#x27;);
     // Its argument&#x27;s last wording: the two arguments become one. Only who must vote again is said, since nothing else shows it.
     const after=combinedImportance(from,into),asked=overlap(from,into).disagree+(after.youDisagree?1:0);

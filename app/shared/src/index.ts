@@ -31,10 +31,11 @@ export type { SourceInput } from "./inputs.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
 export { posthogAssetsHost, tooManyMessage } from "./api.ts";
-export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuery, deleteAccountInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, reportInput, voteInput } from "./api.ts";
+export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuery, deleteAccountInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, reportInput, voteInput, combineInput, separateInput } from "./api.ts";
 export type {
   Access,
   ArgumentRow,
+  CombinePreview,
   BoardChanges,
   BoardList,
   BoardListing,
@@ -51,7 +52,7 @@ export type {
   VersionRow,
   WriteAnswer,
 } from "./api.ts";
-export { leaveOut, openView, pillCount, pressUpdate, receive } from "./sync.ts";
+export { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
 export { CASE_SIZE, strongestCase } from "./strongest.ts";
 export type { CaseItem, OptionCase } from "./strongest.ts";

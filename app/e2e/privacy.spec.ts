@@ -33,7 +33,7 @@ test("M-07 The privacy page is readable signed out, dated, and covers the eight 
   for (const named of ["Google Cloud", "PostHog", "Resend", "Google Fonts"]) await expect(page.locator("main")).toContainText(named);
   await expect(page.locator("main")).toContainText("Steelman isn’t for children under 13.");
   await expect(page.locator("main")).toContainText("Something deleted stays in a backup until it expires");
-  await expect(page.locator("main")).toContainText("A deleted account’s username: held for 30 days");
+  await expect(page.locator("main")).toContainText("We hold a deleted account’s username for 30 days");
   await expect(page.locator("main")).toContainText("hides what you type and your email");
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
@@ -114,7 +114,7 @@ test.describe("with a PostHog key", () => {
     });
     await page.goto("/privacy");
 
-    await expect(switchState(page)).toHaveText("Usage analytics are off: your browser asks not to be tracked.");
+    await expect(switchState(page)).toHaveText("Usage analytics are off because your browser asks not to be tracked.");
     await expect(page.getByRole("button", { name: /Turn (on|off)/ })).toHaveCount(0);
   });
 });

@@ -33,6 +33,8 @@
   --sm-cred-weak:#E06C78;    /* evidence: not supported as worded (0%) */
   --sm-cred-mid:#a9a6ae;     /* evidence: contested (50%), neutral midpoint of the diverging scale */
   --sm-cred-strong:#3d9a64;  /* evidence: supported as worded (100%) */
+  --sm-alert:#B4232F;        /* something broken or reported, such as a source that can't be opened: text and edges; 4.5:1 on white and on its tint */
+  --sm-alert-tint:#fdf1f2;   /* the fill behind an alert */
   --sm-ai:#C9952B;           /* AI contributions: ochre, always paired with the robot icon (and a dotted edge on an AI draft) */
   --sm-ai-ink:#6b4a0e;       /* text on or beside AI ochre */
   --sm-ai-hover:#fbf5e8;     /* hover fill behind the AI robot and the AI draft tag */
