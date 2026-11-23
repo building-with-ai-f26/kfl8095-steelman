@@ -161,6 +161,20 @@ export function leadWording(view: ReaderView, argumentId: string, except?: strin
   return any?.wording ?? null;
 }
 
+/**
+ * A wording in quotes as a sentence's last words. The sentence's own full stop is left off when the wording ends
+ * with one, so it never reads “…to study.”.
+ */
+export function endQuote(wording: string): string {
+  const cut = short(wording);
+  return `“${cut}”${endsSentence(cut) ? "" : "."}`;
+}
+
+/** Whether text already ends as a sentence does. */
+export function endsSentence(text: string): boolean {
+  return /[.?!…]$/.test(text);
+}
+
 /** As the prototype labels a row: its leading wording, cut at 60 characters. */
 export function short(wording: string): string {
   return wording.length > 60 ? `${wording.slice(0, 57)}…` : wording;

@@ -67,6 +67,8 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
   const becomesOne = asking.kind === "combine" && (preview?.last ?? asking.last);
   const title = asking.kind === "separate" ? "Make this wording its own argument?" : becomesOne ? "Combine these arguments?" : "Combine this wording with that argument?";
   const note = preview?.last ? askedAgain(preview) : null;
+  // What happens to the votes, in one light gray line (the builder, Nov 22): the one thing the dialog can't show.
+  const votes = asking.kind === "separate" ? SEPARATE_VOTES : becomesOne ? ONE_ARGUMENT_VOTES : MOVE_VOTES;
   return (
     <>
       <div className="sm-preview-scrim" onClick={onCancel} />
@@ -77,15 +79,16 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
           {asking.kind === "combine" ? (
             <>
               <span className="sm-preview-into">
-                <Icon name="merge" />
-                joins
+                <Icon name="arrow-down" />
+                <span className="sm-sr">joins</span>
               </span>
               <blockquote className="ph-no-capture">{short(asking.intoWording)}</blockquote>
             </>
           ) : null}
         </div>
+        <p className="sm-field-hint sm-preview-votes">{votes}</p>
         {/* A live region, since it can arrive after the cursor is on Combine. */}
-        <p className={note ? "sm-field-hint" : "sm-sr"} role="status">
+        <p className={note ? "sm-field-hint sm-preview-asked" : "sm-sr"} role="status">
           {note}
         </p>
         <div className="sm-preview-actions">
@@ -100,6 +103,13 @@ export function RestructureDialog({ asking, loadPreview, onConfirm, onCancel }: 
     </>
   );
 }
+
+/** The wording moved keeps its own votes and assessments (Q8); importance votes belong to arguments. */
+const KEEPS = "The wording keeps its votes and credibility score.";
+const MOVE_VOTES = `${KEEPS} Each argument keeps its importance votes.`;
+/** PRD §5: two identical votes become one, two that disagree are removed (the line below says who's asked again). */
+const ONE_ARGUMENT_VOTES = `Each person keeps at most one importance vote on the combined argument. ${KEEPS}`;
+const SEPARATE_VOTES = `The new argument starts with no importance votes. ${KEEPS}`;
 
 /** "You and 2 others will be asked to vote again.", as the prototype says it; nothing when no one will be. */
 function askedAgain({ asked, you }: CombinePreview): string | null {

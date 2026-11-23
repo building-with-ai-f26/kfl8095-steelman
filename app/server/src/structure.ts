@@ -19,7 +19,8 @@
 // Undo puts either back as a change of its own (the log is append-only):
 // wordings added since stay where they were added, and a vote cast since
 // wins over the one it would restore. A wording moved again since, or an
-// argument combined again since, isn't undone, and says so.
+// argument combined again since, isn't undone, and says so. An argument an
+// undo leaves with no wording closes: none stays on the board empty.
 
 import { sql } from "kysely";
 import type { CombinePreview } from "@steelman/shared";
@@ -223,6 +224,8 @@ async function uncombine(trx: Trx, u: Undoing & { versionId: string; fromId: str
     await recount(trx, from.id, u.seq);
     await recount(trx, into.id, u.seq);
   }
+  // The argument it leaves closes if its own wordings were moved out or deleted since, as a separation's new argument does.
+  await closeIfEmpty(trx, into.id, u);
   await log(trx, u.now, { boardId: u.boardId, seq: u.seq, person: u.person, kind: "wording_uncombined", subjectKind: "version", subjectId: u.versionId, after: { from: from.id, into: into.id, undoes: u.undoSeq } });
   return "done" as const;
 }
@@ -236,10 +239,15 @@ async function unseparate(trx: Trx, u: Undoing & { versionId: string; fromId: st
   if (from.deleted_at) return { refused: "argument_deleted" as const };
   await trx.updateTable("version").set({ argument_id: from.id, changed_seq: u.seq }).where("id", "=", u.versionId).execute();
   // The new argument closes, unless someone added a wording to it since.
-  const left = await trx.selectFrom("version").select("id").where("argument_id", "=", u.newId).where("deleted_at", "is", null).executeTakeFirst();
-  if (!left) await trx.updateTable("argument").set({ deleted_at: u.now, changed_seq: u.seq }).where("id", "=", u.newId).execute();
+  await closeIfEmpty(trx, u.newId, u);
   await log(trx, u.now, { boardId: u.boardId, seq: u.seq, person: u.person, kind: "wording_unseparated", subjectKind: "version", subjectId: u.versionId, after: { argument: u.newId, undoes: u.undoSeq } });
   return "done" as const;
+}
+
+/** Closes an argument an undo left with no wording. A hidden wording still keeps its argument (writing.ts). */
+async function closeIfEmpty(trx: Trx, argumentId: string, u: Undoing): Promise<void> {
+  const left = await trx.selectFrom("version").select("id").where("argument_id", "=", argumentId).where("deleted_at", "is", null).executeTakeFirst();
+  if (!left) await trx.updateTable("argument").set({ deleted_at: u.now, changed_seq: u.seq }).where("id", "=", argumentId).execute();
 }
 
 /** Whether a combine after `seq`, not yet undone, made `argumentId` one with another argument, either way round. */
