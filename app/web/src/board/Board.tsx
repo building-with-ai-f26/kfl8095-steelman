@@ -756,6 +756,8 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
               )}
             </div>
           )}
+          {/* Inside the main region, so a screen reader finds it with the board it's about; it's drawn at the window's foot. */}
+          {state.problem !== null ? <Problem text={state.problem} onDismiss={() => session.dismissProblem()} /> : null}
         </main>
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
@@ -847,6 +849,22 @@ function readingAnchor(open: string | null): { id: string; top: number } | null 
     if (box.bottom > 60) return { id: row.dataset.node!, top: box.top };
   }
   return null;
+}
+
+/**
+ * Why the last thing the reader did wasn't done (M-14), at the foot of the window, above the Update pill: one sentence
+ * and a way to close it, with no icon, as Material's snackbar has it. It isn't a live region: the status line has
+ * already said it to a screen reader.
+ */
+function Problem({ text, onDismiss }: { text: string; onDismiss(): void }) {
+  return (
+    <div className="sm-problem">
+      <span>{text}</span>
+      <button type="button" className="cursor-interaction" aria-label="Dismiss" data-tooltip="Dismiss" onClick={onDismiss}>
+        <Icon name="x" size={15} />
+      </button>
+    </div>
+  );
 }
 
 /** "Too many in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */

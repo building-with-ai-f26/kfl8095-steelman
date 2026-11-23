@@ -80,6 +80,11 @@ export interface SessionState {
   logSeq: number;
   /** The reader's own combine or separation, while its Undo lasts (M3a-7), or null. */
   restructured: Restructured | null;
+  /**
+   * Why the last thing the reader did wasn't done (the service refused it, or couldn't be reached), shown at the foot
+   * of the window until they dismiss it or something they do works (M-14); null when there's nothing to say.
+   */
+  problem: string | null;
 }
 
 export class BoardSession {
@@ -102,6 +107,7 @@ export class BoardSession {
     optionsLeftOut: [],
     logSeq: 0,
     restructured: null,
+    problem: null,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -255,6 +261,25 @@ export class BoardSession {
     this.set({ view: pressUpdate(this.state.view), status, restructured });
   }
 
+  /**
+   * Says that something the reader did wasn't done, and why: in the status line, for a screen reader, and on screen,
+   * where it stays until it's dismissed or something else they do works (M-14). One at a time: a newer one replaces it.
+   */
+  private fail(why: string): void {
+    this.set({ problem: why });
+    this.announce(why);
+  }
+
+  /** The reader closes the message. */
+  dismissProblem(): void {
+    if (this.state.problem !== null) this.set({ problem: null });
+  }
+
+  /** Something the reader did worked, so an earlier message no longer says how things stand. */
+  private worked(): void {
+    if (this.state.problem !== null) this.set({ problem: null });
+  }
+
   announce(status: string): void {
     // The same words twice in a row change nothing on the page, so a screen reader wouldn't read them again: the
     // repeat gets a no-break space, which looks and reads the same (M2-11).
@@ -293,6 +318,7 @@ export class BoardSession {
       this.sharing = false;
     }
     const now = this.accepted!;
+    this.worked();
     this.announce(now.general === "link" ? `Anyone with the link can ${{ viewer: "view", voter: "vote", contributor: "contribute" }[now.linkRole]}.` : "Only invited people can open it.");
     await this.poll();
   }
@@ -414,17 +440,18 @@ export class BoardSession {
       answer = await request();
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
-      this.announce("Couldn’t reach Steelman. Try again.");
+      this.fail("Couldn’t reach Steelman. Try again.");
       return null;
     }
     if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) {
-      this.announce(tooManyMessage(answer.retryAfter));
+      this.fail(tooManyMessage(answer.retryAfter));
       return null;
     }
     if (answer.status !== "done" && answer.status !== "already_done") {
-      this.announce(refusalNote(answer));
+      this.fail(refusalNote(answer));
       return null;
     }
+    this.worked();
     return answer;
   }
 
@@ -581,20 +608,22 @@ export class BoardSession {
       answer = await setRole(this.board, person.id, role);
     } catch (error) {
       if (!(error instanceof Unreachable)) throw error;
-      this.announce("Couldn’t reach Steelman. Try again.");
+      this.fail("Couldn’t reach Steelman. Try again.");
       return false;
     }
     if (answer.status !== "done" && answer.status !== "already_done") {
-      this.announce(answer.status === "not_found" ? `${person.name ?? "They"} is no longer on this board.` : refusalNote(answer));
+      this.fail(answer.status === "not_found" ? `${person.name ?? "They"} is no longer on this board.` : refusalNote(answer));
       return false;
     }
+    this.worked();
     this.announce(`${person.name ?? "They"} ${MEMBER_CAN[role]}.`);
     return true;
   }
 
-  private stopSharing(status: string): void {
+  private stopSharing(why: string): void {
     this.wanted = null;
-    this.set({ access: this.accepted, status });
+    this.set({ access: this.accepted });
+    this.fail(why);
   }
 
   pillCount(): number {
@@ -625,9 +654,12 @@ export class BoardSession {
         // By this action, not by place: a newer choice made while it was on its way may have replaced it in the queue.
         this.queue = this.queue.filter((queued) => queued !== action);
         if (answer.status === "done" || answer.status === "already_done") this.sent.push(action);
-        else {
+        else if (action.kind === "assess" && answer.status === "refused" && answer.reason === "revision_changed") {
+          // The card itself says this, beside the answer it couldn't take, so it isn't said again at the foot of the window.
           this.announce(refusalNote(answer));
-          if (action.kind === "assess" && answer.status === "refused" && answer.reason === "revision_changed") this.set({ stale: [...this.state.stale, action.versionId] });
+          this.set({ stale: [...this.state.stale, action.versionId] });
+        } else {
+          this.fail(refusalNote(answer));
           // A delete refused comes back on screen.
           if (action.kind === "delete") this.set({ leftOut: this.state.leftOut.filter((id) => id !== action.versionId) });
         }
