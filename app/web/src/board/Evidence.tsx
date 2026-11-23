@@ -304,7 +304,7 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayRepor
           {source.name}
           {mine ? <span className="sm-you-tag">You</span> : <span className="sm-source-note sm-source-by">{source.addedByName}</span>}
         </span>
-        {source.unavailable ? <span className="sm-source-note">Unavailable</span> : null}
+        {source.unavailable ? <span className="sm-unavailable">Unavailable</span> : null}
         <Icon name="chevron-right" className="sm-chevron" />
       </summary>
       <div className="sm-source-packet">
@@ -318,20 +318,29 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayRepor
         ) : null}
         {source.finding ? <p>{source.finding}</p> : null}
         {source.report ? (
-          <p className="sm-source-note">
-            {/* The row's Unavailable tag says what was reported; this says who and when. */}
-            {`${reportedByReader ? "You" : source.report.byName} reported it on ${shortDate(source.report.at)}.`}
-            {archive ? (
-              <>
-                {" "}
-                <a className="sm-source-link" href={archive} target="_blank" rel="noopener noreferrer nofollow ugc">
-                  Try an archived copy
-                </a>
-              </>
+          // In red, apart from the source's own text (the builder, Nov 22): who reported it and when, and what to do.
+          <div className="sm-unavailable-note">
+            <p>
+              <Icon name="link-2-off" size={13} />
+              {`${reportedByReader ? "You" : source.report.byName} reported it on ${shortDate(source.report.at)}.`}
+            </p>
+            {archive || report === "clear" ? (
+              <div className="sm-unavailable-actions">
+                {archive ? (
+                  <a className="sm-source-link" href={archive} target="_blank" rel="noopener noreferrer nofollow ugc">
+                    Try an archived copy
+                  </a>
+                ) : null}
+                {report === "clear" ? (
+                  <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(false)}>
+                    {reportedByReader ? "Undo report" : "Clear report"}
+                  </button>
+                ) : null}
+              </div>
             ) : null}
-          </p>
+          </div>
         ) : null}
-        {mine || mayRemove || report ? (
+        {mine || mayRemove || report === "report" ? (
           <div className="sm-source-actions">
             {mine ? (
               <button type="button" className="sm-link-button cursor-interaction" {...blockedProps(editBlocked)} onClick={() => editBlocked || onEdit()}>
@@ -344,12 +353,9 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayRepor
               </button>
             ) : null}
             {report === "report" ? (
-              <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(true)}>
-                Can’t open it?
-              </button>
-            ) : report === "clear" ? (
-              <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(false)}>
-                {reportedByReader ? "Undo report" : "Clear report"}
+              // Behind an icon at the row's end, as GitHub puts a report action behind an icon with a tooltip.
+              <button type="button" className="sm-icon-button sm-report-link cursor-interaction" aria-label="Report a broken link" data-tooltip="Can’t open it?" onClick={() => onReport(true)}>
+                <Icon name="link-2-off" size={15} />
               </button>
             ) : null}
           </div>

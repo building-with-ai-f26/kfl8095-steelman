@@ -221,32 +221,43 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
         <span className="sm-cred-group">
           <Meter yes={shown.yes} no={shown.no} />
         </span>
-        {shown.sourceIds.length > 0 || mayCombine ? (
-          <div className="sm-card-tools">
-            {mayCombine ? (
-              // The prototype's merge handle: drag it onto the argument this one repeats, or press it to pick one (M3a-7).
-              <button
-                type="button"
-                className="sm-source-button sm-merge-handle cursor-interaction"
-                draggable
-                aria-label="Combine with another argument"
-                data-tooltip="Combine"
-                onClick={() => opening.menu.combine(shown, "handle")}
-                onDragStart={(event) => {
-                  event.dataTransfer.effectAllowed = "move";
-                  event.dataTransfer.setData("text/plain", version.id);
-                  const face = event.currentTarget.closest(".sm-card");
-                  if (face) event.dataTransfer.setDragImage(face, 30, 20);
-                  opening.menu.dragStart(shown);
-                }}
-                onDragEnd={() => opening.menu.dragEnd()}
-              >
-                <Icon name="merge" />
-              </button>
-            ) : null}
-            {shown.sourceIds.length > 0 ? <SourceCount count={shown.sourceIds.length} /> : null}
-          </div>
-        ) : null}
+        {/* Always drawn: the chevron at its right end opens and closes the card (the builder, Nov 22). */}
+        <div className="sm-card-tools">
+          {mayCombine ? (
+            // The prototype's merge handle: drag it onto the argument this one repeats, or press it to pick one (M3a-7).
+            <button
+              type="button"
+              className="sm-source-button sm-merge-handle cursor-interaction"
+              draggable
+              aria-label="Combine with another argument"
+              data-tooltip="Combine"
+              onClick={() => opening.menu.combine(shown, "handle")}
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", version.id);
+                const face = event.currentTarget.closest(".sm-card");
+                if (face) event.dataTransfer.setDragImage(face, 30, 20);
+                opening.menu.dragStart(shown);
+              }}
+              onDragEnd={() => opening.menu.dragEnd()}
+            >
+              <Icon name="merge" />
+            </button>
+          ) : null}
+          {shown.sourceIds.length > 0 ? <SourceCount count={shown.sourceIds.length} /> : null}
+          {/* The prototype's expand chevron, last at the footer's right: the same as pressing the wording (the builder, Nov 22). */}
+          <button
+            type="button"
+            className="sm-expand cursor-interaction"
+            aria-expanded={open}
+            aria-controls={reveal}
+            aria-label={open ? "Collapse card" : "Expand card"}
+            data-tooltip={open ? "Collapse" : "Expand"}
+            onClick={() => opening.toggle(version.id)}
+          >
+            <Icon name={open ? "chevron-up" : "chevron-down"} />
+          </button>
+        </div>
       </div>
       <div className="sm-card-reveal" id={reveal} hidden={!open}>
         {open ? (
