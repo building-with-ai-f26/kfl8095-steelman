@@ -38,7 +38,7 @@ describe("picking a username", () => {
     const email = newAddress();
     const cookie = await api.signedIn(email, "lee_g");
 
-    expect((await update(cookie, { name: "N".repeat(200_000) })).status).toBe(400);
+    expect((await update(cookie, { name: "N".repeat(2000) })).status).toBe(400);
     expect((await update(cookie, { image: "javascript:alert(1)" })).status).toBe(400);
     expect((await update(cookie, { username: "lee_h", name: "Lee" })).status).toBe(400);
 
@@ -58,7 +58,7 @@ describe("signing in with a code", () => {
   test("L-01: anything besides the address and the code is refused", async () => {
     const email = await requested();
 
-    const refused = await api.request("POST", "/api/auth/sign-in/email-otp", { body: { email, otp: api.codeFor(email), name: "N".repeat(200_000), image: "https://example.com/x.png" } });
+    const refused = await api.request("POST", "/api/auth/sign-in/email-otp", { body: { email, otp: api.codeFor(email), name: "N".repeat(2000), image: "https://example.com/x.png" } });
 
     expect(refused.status).toBe(400);
     expect(refused.cookie).toBeUndefined();
