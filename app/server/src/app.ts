@@ -153,6 +153,9 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   too_many: 429,
 };
 
+/** The most bytes a request to sign-in's routes may send. */
+const SIGN_IN_BODY_MOST = 16 * 1024;
+
 /** Requests that only read. Anything else is a write, and must come from our own site. */
 const READS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -257,6 +260,9 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     app.route({
       method: ["GET", "POST"],
       url: "/api/auth/*",
+      // A sign-in request is an address, a code, a username, or where to go next. The default, a megabyte, only
+      // gives a stranger room to send something slow to handle (SECURITY.md).
+      bodyLimit: SIGN_IN_BODY_MOST,
       async handler(request, reply) {
         const url = new URL(request.url, signInDependencies.origin);
         const route = `${request.method} ${url.pathname.slice("/api/auth".length)}`;
