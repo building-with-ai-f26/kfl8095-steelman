@@ -1881,6 +1881,14 @@ The builder tested M3a locally and asked for these changes. Each with tests writ
 | Fixes | Production answered 413 to a 20,000-character sign-in value, 400 to extra sign-in fields, 404 to a write to an unknown board, and 400 to a zero byte |
 | Known limitations | The no-access page is two plain lines, and a friendlier one is backlog item M3a-9. The live app has no PostHog key yet |
 
+## November 23 — PostHog on the live app (M-08)
+
+| Item | Result |
+|---|---|
+| Staging and production | The builder set `POSTHOG_KEY` on both services with `gcloud run services update`. Each got a new revision of the same image |
+| Checked in a browser | On both sites `/api/config` returns the key, the first-visit notice appears with Turn off and OK, an event is sent, and the session recorder loads |
+| Known limitations | `terraform apply` could not set the key: it reuses the revision name the last deploy gave the service, and Cloud Run answers 409. Terraform cannot change the service's settings until that is fixed |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
