@@ -38,6 +38,8 @@ import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
+import { Texture } from "./Texture.tsx";
+import { Wires } from "./Wires.tsx";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
 const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
@@ -622,6 +624,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         </span>
       ))}
       <div className={`sm-scene${historyOpen ? " sm-with-drawer" : ""}`}>
+        <Wires view={view} mine={state.mine} />
         <section className="sm-head" aria-label="The question">
           <div className="sm-head-tools">
             <button
@@ -994,6 +997,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
           structure.drop(target.classList.contains("sm-drop-split") ? "separate" : target.dataset.node!);
         }}
       >
+        <Texture />
         {first && ranked && (
           <div className="sm-col-vaxis">
             <Axis kind="v" start="more important" end="less important" />
