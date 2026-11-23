@@ -1838,6 +1838,27 @@ The builder decided the five items the M3a audit left open, all as recommended. 
 | The privacy page (M-07) | At the builder's request, "Who sees what" gains: "A board’s history shows everyone who can open the board who did what there, and when, including when you added each argument and wording. It never shows your votes." `e2e/privacy-history.spec.ts` failed first; `e2e/privacy.spec.ts` still passes |
 | Known limitations | A second, different vote sent to a combined-away argument before the page refreshes is answered as already done. The simulation doesn't play source edits, so only the service tests cover item 2 |
 
+## November 22 — After the builder's first test of M3a (A-01, A-02, A-05, A-10, B-07, C-02, J-03, M-07, M-13, L-04)
+
+The builder tested M3a locally and asked for these changes. Each with tests written first.
+
+| Check | Observed result |
+| --- | --- |
+| Compared first (AGENTS.md rule 12) | Read live: Material 3's top app bar on developer.android.com (a back arrow icon button left of the title, named for where it goes) and material-web's lists (dividers only between rows); 37signals' and GOV.UK's privacy notices (plain "we keep X for N days" sentences). From memory: Google Account's settings cards; GitHub's icon buttons with tooltips for secondary actions |
+| Votes in the dialog (A-10) | One light gray line under the wordings says what happens to the votes: "The wording keeps its votes and credibility score. Each argument keeps its importance votes." when one of several wordings moves; "Each person keeps at most one importance vote on the combined argument." when two arguments become one; "The new argument starts with no importance votes." when a wording is separated. Who is asked to vote again still follows, close under it |
+| A reported source (C-02) | A red "Unavailable" tag in the source's row, and a red note: "You reported it on Nov 22, 2026.", with Try an archived copy and Undo report (or Clear report). "Can’t open it?" is an icon button (a broken link), with that question as its hint and "Report a broken link" as its name. A new token, `--sm-alert` (#B4232F, 4.5:1 on white and on its tint), is the red for text |
+| History's place (J-03) | Under the question, at the end of the line that says who can open the board, at every width |
+| The card chevron (A-02) | The prototype's expand chevron ("Expand card", "Collapse card") at the right of every card's footer, after the merge handle and the source count |
+| One wording (A-05) | An unfolded row with one wording shows only its fold control; "Only one wording so far." is gone, in the app and the prototype |
+| Your account and New steelman (M-13, L-04) | The back control is an arrow icon button left of the screen's title, still a link named "Back to …", on Your account, New steelman (new), and the privacy page. Your account's settings sit in separate borderless cards with taller rows, larger text, and rules only between rows; Sign out and Delete account sit under them. No control or text changed |
+| The privacy page (M-07) | Every line is a whole, plain sentence, and nothing calls Steelman a class project. Every fact, period, and processor is unchanged |
+| Wires and hexagons (A-01, B-07) | Moved up the backlog at the builder's request: the prototype's wires from the question to the option headers and down to every row, and its honeycomb texture in each column, denser behind more important rows and darker behind better wordings. Compared side by side with the prototype at 1280 and 375 px. Decorative: hidden from screen readers and the pointer, no motion; about 3 ms a redraw |
+| Checked | `npm run check`, Node 22, Docker: 1,068 unit, service, and simulation tests pass; 374 browser tests pass and 6 fail, all waiting for the builder: the 2 `card-details` and 2 `new-steelman` saved screenshots and the 2 `card-menu` tests. Types, lint, and `git diff --check` are clean. Seen in the browser on a fresh local test board and on Your account |
+| Tests | New: `e2e/m3a-feedback.spec.ts` (7), `e2e/settings-design.spec.ts` (9), `e2e/wires-texture.spec.ts` (8), `web/test/wires-texture.test.ts` (15). Each failed first, except two guards that passed from the start |
+| Existing tests changed (rule 9) | `source-unavailable.spec.ts` names the report button "Report a broken link"; `way-back.spec.ts` reads the back control's tooltip in place of its drawn text, and expects New steelman's back control; `privacy.spec.ts` and `privacy-history.spec.ts` read three sentences in their new wording. No assertion was removed |
+| Saved screenshots | `new-steelman-desktop` and `new-steelman-375` now differ (the back arrow) and wait for the builder, with the two `card-details` ones that already did (the card is taller). The board screenshots still pass, since the wires and hexagons fall under their tolerance |
+| Known limitations | The privacy page names no direct contact beyond a GitHub issue, now that "through the course" is gone. It doesn't list reports or comments among what deleting an account removes (comments aren't built yet) |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
