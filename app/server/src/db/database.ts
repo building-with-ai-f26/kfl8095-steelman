@@ -123,6 +123,19 @@ export interface Database {
   };
   published_order: { board_id: string; computed_at: Date; arguments: ColumnType<unknown, string, string>; versions: ColumnType<unknown, string, string>; changed_seq: BigIntColumn };
   importance_vote: { argument_id: string; account_id: string; board_id: string; value: number; voted_at: Date };
+  /** Each person's importance votes on two arguments when they were combined (M3a-6), for undo and for asking them to vote again. */
+  combine_vote: {
+    board_id: string;
+    seq: BigIntColumn;
+    account_id: string;
+    from_id: string;
+    into_id: string;
+    from_value: number | null;
+    into_value: number | null;
+    after_value: number | null;
+    asked_again: boolean;
+    revoted: Generated<boolean>;
+  };
   articulation_vote: { version_id: string; account_id: string; board_id: string; value: number; voted_at: Date };
   assessment: { version_id: string; rev: number; account_id: string; board_id: string; supported: boolean; assessed_at: Date };
   change: {

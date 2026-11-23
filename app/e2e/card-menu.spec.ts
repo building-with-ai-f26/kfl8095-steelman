@@ -53,11 +53,12 @@ async function expectNoAxeViolations(page: Page): Promise<void> {
 }
 
 test.describe("what the menu offers", () => {
-  test("A-12: the author's menu has Copy link, Edit wording and context, and Delete version, with Delete last", async ({ board }) => {
+  test("A-12, A-10: the author's menu has Copy link, Edit wording and context, Combine…, Separate…, and Delete version, with Delete last", async ({ board }) => {
     const page = await board.open("maya.chen");
     await openMenu(page, LEAD);
 
-    expect(await items(page)).toEqual(["Copy link", "Edit wording and context", "Delete version"]);
+    // The Owner may combine and separate (M3a-7; the builder approved this change, Nov 22), on a row with two wordings.
+    expect(await items(page)).toEqual(["Copy link", "Edit wording and context", "Combine…", "Separate…", "Delete version"]);
     await expect(page.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
   });
 
@@ -68,15 +69,17 @@ test.describe("what the menu offers", () => {
     expect(await items(page)).toEqual(["Copy link", "Edit wording and context", "Delete argument"]);
   });
 
-  test("A-12, J-01, J-02: someone else's menu has Copy link, Suggest a revised version, and Report, and the owner's also Hide; nothing of combining, separating, or AI", async ({ board }) => {
+  test("A-12, A-10, J-01, J-02: someone else's menu has Copy link, Suggest a revised version, and Report; the owner's also Combine… and Hide; nothing of AI", async ({ board }) => {
     // Maya owns the board, and still can't edit or delete what someone else wrote. Report came with M2-3 and Hide with
     // M2-4 (the builder approved this change, Nov 20).
     for (const person of ["jordan_w", "maya.chen"] as const) {
       const page = await board.open(person);
       await openMenu(page, person === "maya.chen" ? BUDGET : LEAD);
 
-      expect(await items(page), person).toEqual(["Copy link", "Suggest a revised version", "Report", ...(person === "maya.chen" ? ["Hide"] : [])]);
-      await expect(menu(page).getByText(/combine|separate|AI/i)).toHaveCount(0);
+      // The Owner also combines (M3a-7; the builder approved this change, Nov 22). Budget is its row's only wording, so there's no Separate….
+      const owner = person === "maya.chen";
+      expect(await items(page), person).toEqual(["Copy link", "Suggest a revised version", ...(owner ? ["Combine…"] : []), "Report", ...(owner ? ["Hide"] : [])]);
+      await expect(menu(page).getByText(owner ? /separate|AI/i : /combine|separate|AI/i)).toHaveCount(0);
     }
   });
 

@@ -1,7 +1,8 @@
 // Options (M3a-2, A-07): an Editor or the Owner adds one at the end, renames
 // one, or deletes an empty one, as the prototype's option header ⋯ menu and
 // dashed + Option have it. A board keeps two to four options
-// (OPTIONS_PER_BOARD). Each is one write through the write path, safe to send
+// (OPTIONS_PER_BOARD), each with a name of its own, capitals aside, as New
+// steelman asks when the board is made. Each is one write through the write path, safe to send
 // twice (invariant 10): a new option arrives with the ID the browser made, a
 // rename to the name it already has changes nothing, and a delete sets a flag
 // that's already set. Each is a change row, so History can say who.
@@ -13,6 +14,19 @@ import type { Services, Trx, WriteResult } from "./write-path.ts";
 
 const liveOptions = async (trx: Trx, boardId: string) =>
   Number((await trx.selectFrom("option").select((eb) => eb.fn.countAll<string>().as("n")).where("board_id", "=", boardId).where("deleted_at", "is", null).executeTakeFirstOrThrow()).n);
+
+/** Whether another option still on the board has this name, capitals aside. A deleted option's name is free again. */
+async function nameTaken(trx: Trx, boardId: string, name: string, exceptId: string): Promise<boolean> {
+  const other = await trx
+    .selectFrom("option")
+    .select("id")
+    .where("board_id", "=", boardId)
+    .where("deleted_at", "is", null)
+    .where("id", "!=", exceptId)
+    .where(sql<boolean>`lower(name) = lower(${name})`)
+    .executeTakeFirst();
+  return other !== undefined;
+}
 
 const loadOption = (boardId: string, optionId: string) => async (trx: Trx) =>
   (await trx.selectFrom("option").select(["name", "deleted_at"]).where("id", "=", optionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
@@ -26,6 +40,7 @@ export function addOption({ db, clock }: Services, boardId: string, person: stri
       if (existing) return existing.board_id === boardId && existing.name === input.name ? "already_done" : { refused: "id_taken" };
       if (await idUsed(trx, input.id)) return { refused: "id_taken" };
       if ((await liveOptions(trx, boardId)) >= OPTIONS_PER_BOARD.max) return { refused: "too_many_options" };
+      if (await nameTaken(trx, boardId, input.name, input.id)) return { refused: "option_name_taken" };
       const last = await trx.selectFrom("option").select((eb) => eb.fn.max("position").as("position")).where("board_id", "=", boardId).executeTakeFirst();
       const now = clock.now();
       await trx
@@ -45,6 +60,7 @@ export function renameOption({ db, clock }: Services, boardId: string, person: s
     stale: async (_trx, option) => (option.deleted_at ? { refused: "option_deleted" } : null),
     async change(trx, option, seq) {
       if (option.name === name) return "already_done";
+      if (await nameTaken(trx, boardId, name, optionId)) return { refused: "option_name_taken" };
       await trx.updateTable("option").set({ name, changed_seq: seq }).where("id", "=", optionId).execute();
       await trx.insertInto("change").values({ board_id: boardId, seq, at: clock.now(), actor_id: person!, kind: "option_renamed", subject_kind: "option", subject_id: optionId }).execute();
       return "done";
@@ -79,7 +95,8 @@ export function deleteOption({ db, clock }: Services, boardId: string, person: s
 /**
  * Restores a deleted option from History (M3a-4, J-03), where it was, so the
  * ten-second Undo isn't the only way back. It's empty, as it was when it was
- * deleted. Never past four; restoring one that's there is already done.
+ * deleted. Never past four, nor with a name another option has taken since;
+ * restoring one that's there is already done.
  */
 export function restoreOption({ db, clock }: Services, boardId: string, person: string | null, optionId: string): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
@@ -88,6 +105,8 @@ export function restoreOption({ db, clock }: Services, boardId: string, person: 
     async change(trx, option, seq) {
       if (!option.deleted_at) return "already_done";
       if ((await liveOptions(trx, boardId)) >= OPTIONS_PER_BOARD.max) return { refused: "too_many_options" };
+      // Its name may have been given to another option since: one of them is renamed first.
+      if (await nameTaken(trx, boardId, option.name, optionId)) return { refused: "option_name_taken" };
       await trx.updateTable("option").set({ deleted_at: null, changed_seq: seq }).where("id", "=", optionId).execute();
       await trx.insertInto("change").values({ board_id: boardId, seq, at: clock.now(), actor_id: person!, kind: "option_restored", subject_kind: "option", subject_id: optionId }).execute();
       return "done";
@@ -96,7 +115,7 @@ export function restoreOption({ db, clock }: Services, boardId: string, person: 
 }
 
 /** Whether an ID is already some other item's: an argument, a wording, or a source. */
-async function idUsed(trx: Trx, id: string): Promise<boolean> {
+export async function idUsed(trx: Trx, id: string): Promise<boolean> {
   const { rows } = await sql<{ used: boolean }>`
     select exists (select 1 from argument where id = ${id})
         or exists (select 1 from version where id = ${id})

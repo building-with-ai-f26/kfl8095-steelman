@@ -19,6 +19,7 @@ import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
 import * as realModeration from "../../src/moderation.ts";
 import * as sources from "../../src/sources.ts";
+import * as structure from "../../src/structure.ts";
 import { NOON, addAccount, addMember, seedBoard } from "../support/board.ts";
 
 /** The server code under test. Normally the real modules; a planted-bug test hands in altered copies. */
@@ -46,6 +47,10 @@ export type Step =
   /** "Can't open it?" (M3a-3) on the board's one source: anyone may report it; the reporter or the owner clears it. Not queued, like moderation. */
   | { kind: "reportSource"; reader: number }
   | { kind: "clearSource"; reader: number }
+  /** Combine a wording into another argument, and separate one (M3a-6): only Ana, the owner, may. Not queued, like moderation. Undo undoes the newest one not yet undone. */
+  | { kind: "combine"; reader: number; target: number; into: number }
+  | { kind: "separate"; reader: number; target: number }
+  | { kind: "undo"; reader: number; target: number }
   | { kind: "minutePasses" }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
@@ -72,6 +77,9 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("restore" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("reportSource" as const), reader }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("clearSource" as const), reader }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("combine" as const), reader, target, into: fc.nat(3) }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("separate" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("undo" as const), reader, target }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("minutePasses" as const) }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
@@ -121,10 +129,14 @@ export interface Tally {
   /** Reports that the source can't be opened, and clearings (M3a-3). */
   sourceReports: number;
   sourceClears: number;
+  /** Combines, separations, and undos done (M3a-6). */
+  combined: number;
+  separated: number;
+  undone: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -253,6 +265,67 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     }
   };
 
+  /** A combine, separation, or undo, checked against what the database says should happen (check 9). Null when there's nothing to try it on. */
+  const structureStep = async (step: Extract<Step, { kind: "combine" | "separate" | "undo" }>, r: Reader): Promise<WriteResult | null> => {
+    const live = async (id: string) => (await client.query("select deleted_at is null and merged_into is null as live from argument where id = $1", [id])).rows[0]?.live === true;
+    if (step.kind === "combine") {
+      // A wording the reader sees, into another argument they see in its option, as a drag does.
+      const columns = Object.values(r.view.shown.arguments).filter((list) => list.length >= 2);
+      const list = columns[step.target % Math.max(columns.length, 1)];
+      if (!list) return null;
+      const shownIn = list[step.target % list.length]!;
+      const into = list[(step.target + 1 + step.into) % list.length]!;
+      const wordings = r.view.shown.versions[shownIn] ?? [];
+      const versionId = wordings[step.into % Math.max(wordings.length, 1)];
+      if (shownIn === into || !versionId) return null;
+      const v = (await client.query("select argument_id, deleted_at from version where id = $1", [versionId])).rows[0];
+      const bothLive = (await live(v.argument_id)) && (await live(into));
+      const sameOption = (await client.query("select count(distinct option_id)::int as n from argument where id in ($1, $2)", [v.argument_id, into])).rows[0].n === 1;
+      const result = await structure.combineWording(services, b.board, r.person, versionId, into);
+      if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may combine", { step, result });
+      else if (v.argument_id === into) check(result.status === "already_done", "9. A combine sent again is already done", { step, result });
+      else if (v.deleted_at) check(result.status === "refused" && result.reason === "version_deleted", "9. Combining a deleted wording is refused", { step, result });
+      else if (!sameOption) check(result.status === "refused" && result.reason === "not_same_option", "9. A wording is combined only within its option", { step, result });
+      else if (!bothLive) check(result.status === "refused" && result.reason === "argument_deleted", "9. A combine with an argument gone since is refused", { step, result });
+      else check(result.status === "done", "9. The owner's combine of a wording into a live argument is done", { step, result });
+      return result;
+    }
+    if (step.kind === "separate") {
+      const shown = Object.values(r.view.shown.versions).flat();
+      const versionId = shown[step.target % Math.max(shown.length, 1)];
+      if (!versionId) return null;
+      const v = (await client.query("select argument_id, deleted_at from version where id = $1", [versionId])).rows[0];
+      const others = (await client.query("select count(*)::int as n from version where argument_id = $1 and id <> $2 and deleted_at is null", [v.argument_id, versionId])).rows[0].n;
+      const argumentLive = await live(v.argument_id);
+      const result = await structure.separateWording(services, b.board, r.person, versionId, ids.itemId());
+      if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may separate", { step, result });
+      else if (v.deleted_at) check(result.status === "refused" && result.reason === "version_deleted", "9. Separating a deleted wording is refused", { step, result });
+      else if (!argumentLive) check(result.status === "refused" && result.reason === "argument_deleted", "9. Separating from an argument gone since is refused", { step, result });
+      else if (others === 0) check(result.status === "refused" && result.reason === "only_wording", "9. An argument's only wording isn't separated", { step, result });
+      else check(result.status === "done", "9. The owner's separation is done", { step, result });
+      return result;
+    }
+    // Undo: any combine or separation not yet undone, newest first by `target`, so undos also come out of order.
+    const open = (
+      await client.query(
+        `select seq from change c where board_id = $1 and kind in ('wording_combined', 'wording_separated')
+           and not exists (select 1 from change u where u.board_id = c.board_id and (u.after->>'undoes')::bigint = c.seq)
+         order by seq desc`,
+        [b.board],
+      )
+    ).rows.map((row) => Number(row.seq));
+    if (open.length === 0) return null;
+    const result = await structure.undoStructure(services, b.board, r.person, open[step.target % open.length]!);
+    if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may undo", { step, result });
+    else
+      check(
+        result.status === "done" || (result.status === "refused" && ["combined_since", "version_deleted", "argument_deleted"].includes(result.reason)),
+        "9. The owner's undo is done, or says why not",
+        { step, result },
+      );
+    return result;
+  };
+
   for (const step of steps) {
     tally.steps++;
     if (step.kind === "minutePasses") clock.advance(60_000);
@@ -306,6 +379,23 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           if (result.status === "done") {
             if (step.kind === "hide") tally.hidden++;
             else tally.restored++;
+            await poll(r);
+          }
+          break;
+        }
+        case "combine":
+        case "separate":
+        case "undo": {
+          if (!r.online) break;
+          const result = await structureStep(step, r);
+          if (!result) break;
+          if (result.status === "done") tally.done++;
+          else if (result.status === "already_done") tally.alreadyDone++;
+          else if (result.status === "refused") tally.refused[result.reason] = (tally.refused[result.reason] ?? 0) + 1;
+          if (result.status === "done") {
+            if (step.kind === "combine") tally.combined++;
+            else if (step.kind === "separate") tally.separated++;
+            else tally.undone++;
             await poll(r);
           }
           break;
@@ -408,11 +498,22 @@ function perform(code: ServerCode, services: { db: Db; clock: FakeClock }, board
  * action now, worked out from the database directly, not from the server's
  * code: the reason it should be refused, or null if it shouldn't be.
  */
+/** Where an argument's wordings are now: itself, or the argument it was combined into, followed through later combines. */
+async function finalArgument(client: pg.Client, argumentId: string): Promise<string> {
+  let id = argumentId;
+  for (;;) {
+    const merged = (await client.query("select merged_into from argument where id = $1", [id])).rows[0]?.merged_into;
+    if (!merged) return id;
+    id = merged;
+  }
+}
+
 async function expectedRefusal(client: pg.Client, person: string, action: QueuedAction): Promise<RefusalReason | null> {
   const one = async (query: string, params: unknown[]) => (await client.query(query, params)).rows[0];
   switch (action.kind) {
+    // A vote or wording for an argument combined away follows it to where it went (M3a-6, §3).
     case "importance":
-      return (await one("select deleted_at from argument where id = $1", [action.argumentId])).deleted_at ? "argument_deleted" : null;
+      return (await one("select deleted_at from argument where id = $1", [await finalArgument(client, action.argumentId)])).deleted_at ? "argument_deleted" : null;
     case "articulation": {
       // A hidden wording is dropped as a deleted one is (M2-4).
       const v = await one("select deleted_at, hidden_at from version where id = $1", [action.versionId]);
@@ -435,7 +536,7 @@ async function expectedRefusal(client: pg.Client, person: string, action: Queued
     case "addArgument":
       return null;
     case "addWording":
-      return (await one("select deleted_at from argument where id = $1", [action.argumentId])).deleted_at ? "argument_deleted" : null;
+      return (await one("select deleted_at from argument where id = $1", [await finalArgument(client, action.argumentId)])).deleted_at ? "argument_deleted" : null;
     case "edit": {
       const v = await one(
         "select v.author_id, v.deleted_at, v.hidden_at, v.current_rev, r.wording, r.created_by from version v join version_revision r on r.version_id = v.id and r.rev = v.current_rev where v.id = $1",
@@ -484,6 +585,16 @@ async function alwaysTrue(client: pg.Client, board: string): Promise<void> {
     [board],
   );
   check(doubled.rowCount === 0, "2. Nobody has two votes on one thing", doubled.rows);
+
+  // Added by the M3a audit (Nov 22): combining, separating, and undoing either never leave an argument on the board
+  // with no wording. A hidden wording still keeps its argument (writing.ts).
+  const empty = await client.query(
+    `select 'argument ' || a.id as item from argument a
+     where a.board_id = $1 and a.deleted_at is null and a.merged_into is null
+       and not exists (select 1 from version v where v.argument_id = a.id and v.deleted_at is null)`,
+    [board],
+  );
+  check(empty.rowCount === 0, "A-10. Every argument still on the board has a wording", empty.rows);
 }
 
 async function savedOrder(client: pg.Client, board: string): Promise<{ order: BoardOrder; seq: number } | null> {
