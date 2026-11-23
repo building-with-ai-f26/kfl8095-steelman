@@ -1859,6 +1859,19 @@ The builder tested M3a locally and asked for these changes. Each with tests writ
 | Saved screenshots | `new-steelman-desktop` and `new-steelman-375` now differ (the back arrow) and wait for the builder, with the two `card-details` ones that already did (the card is taller). The board screenshots still pass, since the wires and hexagons fall under their tolerance |
 | Known limitations | The privacy page names no direct contact beyond a GitHub issue, now that "through the course" is gone. It doesn't list reports or comments among what deleting an account removes (comments aren't built yet) |
 
+## November 22 — Build 3 security audit (L-01, L-04, M-12)
+
+| Item | Result |
+|---|---|
+| Write-up | `SECURITY.md` at the root holds the checks, the findings, the fixes, the remaining issues, and the attack log |
+| Live sites | Signed-out and forged requests were refused on staging and production. Staging answered 429 after 5 sign-in codes to one address and after 30 from one network. Both sites' scripts hold no secret key |
+| Local, two accounts | Account B was refused with 403 on six requests against Account A's invited-only board. A script in a wording and a `javascript:` source link were shown as plain text |
+| Dependencies | `npm audit` reports 0 vulnerabilities |
+| Production backup | An on-demand Cloud SQL backup was taken with the builder's approval (ID `1795407059434`) |
+| Fixes | Pull requests 102 (L-01), 103 (L-01, L-04), and 104 (M-12), each with new tests that failed first. Types, lint, and the unit and service tests passed locally for each; the browser tests ran in CI |
+| Product Page | PRD v3 has a "Hosting, database, and security" table, and the build log has the Build 3 entry. Both were checked at desktop width and at 375 px with no sideways scroll |
+| Known limitations | The two-account test on production waits for the builder, who can sign in as two real accounts. The live app has no PostHog key yet. The low findings are in issue 105 |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

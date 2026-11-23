@@ -21,7 +21,7 @@ Each check below says where it ran. Rate limits and roles beyond Owner and Contr
 | 4 | Production is protected from the agent | Repo, Google Cloud | The rules are in place, with one accepted gap. |
 | 5 | Spending caps and rate limits | Staging, Terraform | Limits answer 429. Budgets alert but do not stop spending. |
 | 6 | Dependencies | `app/` | `npm audit` reports 0 vulnerabilities. |
-| 7 | Agent security review | Code | See "What the review found". |
+| 7 | Agent security review | Code, test database | One high, one medium, and six low findings. Three are fixed. |
 
 ### 1. Access controls
 
@@ -67,6 +67,38 @@ The app stores no user files. Google Cloud holds two buckets, one for Terraform 
 
 `npm audit` reports 0 vulnerabilities, with and without development packages. A nightly workflow runs `npm audit --audit-level=high` and opens an issue if it fails.
 
+### 7. Agent security review
+
+A second Claude agent read the service, the web app, the migrations, the Terraform, and the workflows, and confirmed each finding with a test against a throwaway database. It found no way for one account to read or change another account's board.
+
+| Severity | Finding | Status |
+|---|---|---|
+| High | One signed-out request with a very long value could keep a server busy for minutes. The pattern that masked emails in sign-in's log lines was slow on long text. | Fixed in [#102](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/102). |
+| Medium | A signed-in person could clear their username and pick a new one, and could store a name or picture of any length on their account. | Fixed in [#103](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/103). |
+| Low | A write to a board that does not exist, or a zero byte in a request, answered 500 with the database's error message. | Fixed in [#104](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/104). |
+| Low | Five more findings need the builder's decision. They cover hidden wordings' sources, board handover on account deletion, link members missing from the people list, the deletion scrub, and locking an address out of email codes. | Open in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105). |
+
+The review also confirmed these as sound: every board route checks the policy table, an item from one board cannot be used through another board's address, reports stay anonymous, the development test-user switch is off when deployed, writes from another site are refused, sign-in codes are hashed and expire after 10 minutes and 5 tries, all SQL uses parameters, and the page never renders user text as HTML.
+
+## What was fixed
+
+- Sign-in's log lines are masked in one pass and cut to 300 characters, and sign-in's routes accept at most 16 KB ([#102](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/102)).
+- Picking a username and signing in with a code accept only the fields the app's pages send ([#103](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/103)).
+- Unknown boards answer 404, zero bytes answer 400, and a 500 no longer includes the database's message ([#104](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/104)).
+- `AGENTS.md` gained the Shipping steps, the "Ask me first" list, and a rule to check each deploy on the live site.
+
+Each fix has new tests that failed before it. No existing test changed.
+
+## Remaining issues
+
+- **Production is behind `main`.** It runs the November 17 release, so the rate limits and the three fixes above reach it with the next release.
+- **The two-account test on production is the builder's step.** The agent cannot sign in as two real accounts, so it ran that test locally and ran the signed-out tests on the live sites.
+- **The low findings in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105) are open.**
+- **The live app sends no analytics yet.** Neither deployed service has the PostHog key, so PostHog works on the Product Page only.
+- **Budgets alert and do not cap.** The ceilings are three servers and a fixed database size.
+- **Rate-limit counts are kept per server.** With three servers a limit can be three times too generous. The sign-in email limit is exact, because it is counted in Postgres.
+- **Three gaps were accepted on November 18** (`plans/reviews/deployment-trust-boundary.md`). The agent acts with the builder's own GitHub and Google logins, the protected-files check can be bypassed from inside a pull request, and repository admins can bypass the release approval. They are sized for a class project and get reviewed again before access widens.
+
 ## Checks on every pull request
 
 | Workflow | What it runs |
@@ -87,3 +119,6 @@ Pull requests get no preview deployment, and a merge deploys to staging instead 
 | 4 | A wording contains `<img onerror>` and `<script>`, and a source's link is `javascript:alert(document.cookie)`. | Local | Both were saved and shown as plain text. No element, link, or alert was created. |
 | 5 | A request asks the static file route for `/assets/../../etc/passwd`. | Staging, production | Both answered with a redirect to the app's page or `404`. No file outside the web folder was read. |
 | 6 | A request tries Better Auth's password sign-in, which Steelman does not use. | Staging, production | Both answered `404`. |
+| 7 | A signed-out request starts a Google sign-in with a 40,000-character address to return to. | Test database | Before the fix, the server was busy for 4.1 seconds. After it, the request is refused with `413` at once. |
+| 8 | A signed-in person sends `{"username": null}` and then a new username. | Test database | Before the fix, both answered `200` and the person was renamed. After it, both answer `400`. |
+| 9 | A signed-out request writes to a board that does not exist. | Test database | Before the fix, it answered `500` with the database's message. After it, it answers `404`. |
