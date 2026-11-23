@@ -84,6 +84,19 @@ export function logLine(message: string): string {
     .slice(0, LOG_LINE_MOST);
 }
 
+/** What picking a username may carry, and what signing in with a code may carry. */
+const USERNAME_FIELDS: ReadonlySet<string> = new Set(["username"]);
+const CODE_SIGN_IN_FIELDS: ReadonlySet<string> = new Set(["email", "otp"]);
+
+/** Refuses a request body unless it holds every one of `fields`, each as text, and no other field. */
+function onlyText(body: unknown, fields: ReadonlySet<string>, message: string): void {
+  const sent = body !== null && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+  const keys = Object.keys(sent);
+  if (keys.length !== fields.size || keys.some((key) => !fields.has(key) || typeof sent[key] !== "string")) {
+    throw new APIError("BAD_REQUEST", { code: "UNEXPECTED_FIELDS", message });
+  }
+}
+
 /** What a request to start a Google sign-in may carry: which provider, and where to send the browser afterwards. */
 const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackURL", "errorCallbackURL", "newUserCallbackURL"]);
 
@@ -211,6 +224,11 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
             throw new APIError("BAD_REQUEST", { code: "GOOGLE_START_FIELDS", message: "Start a Google sign-in with the provider and where to go afterwards, nothing else." });
           }
         }
+        // These two take only what Steelman's pages send, as text (SECURITY.md). Better Auth would also store a
+        // name and a picture of any length, and its "picked once" and shape checks skip a username that isn't
+        // text: null cleared a picked username, so it could be picked again.
+        if (ctx.path === "/update-user") onlyText(ctx.body, USERNAME_FIELDS, "Send the username you picked, as text, and nothing else.");
+        if (ctx.path === "/sign-in/email-otp") onlyText(ctx.body, CODE_SIGN_IN_FIELDS, "Send the email address and the code, as text, and nothing else.");
         if (ctx.path === "/email-otp/request-email-change") return beforeEmailChangeCode(ctx.headers, (ctx.body as { newEmail?: unknown } | undefined)?.newEmail);
         if (ctx.path === "/email-otp/change-email") {
           const person = await sessionOf(ctx.headers);
