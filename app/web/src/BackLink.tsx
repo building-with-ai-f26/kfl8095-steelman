@@ -1,8 +1,10 @@
-// "Back to …" at the top of a screen that's a detour (M3a-1, M-13): the
-// prototype's back link (sm-profile-back), worded as GOV.UK's Back link
-// advises when there's more than one way in: say where it goes. A real link,
-// so it works as links do (a new tab, without the page's script), in a Back
-// landmark.
+// The way back from a screen that's a detour (M3a-1, M-13): Material 3's top
+// app bar navigation icon, as Google Account's own screens show it, an
+// arrow-left icon button at the left of the screen's title (the builder, Nov
+// 22: "Follow behavior of like Google screens"). Its name says where it goes,
+// as GOV.UK's Back link advises when there's more than one way in, and so does
+// its tooltip. A real link, so it works as links do (a new tab, without the
+// page's script), in a Back landmark.
 
 import { useState } from "react";
 import { Icon } from "./icons.tsx";
@@ -21,13 +23,24 @@ export function usePlaceBefore(here: string): Place {
 export function BackLink({ here, place: given }: { here: string; place?: Place }) {
   const read = usePlaceBefore(here);
   const place = given ?? read;
-  // A long name runs to "…" on one line (app.css), so what's seen is the start of what's read (WCAG 2.5.3).
+  const name = `Back to ${place.name}`;
+  // The name is the link's own text, kept for screen readers; what's drawn is the arrow.
   return (
     <nav className="sm-back" aria-label="Back">
-      <a className="sm-text-button sm-profile-back cursor-interaction" href={place.path}>
-        <Icon name="arrow-left" size={14} />
-        <span>Back to {place.name}</span>
+      <a className="sm-back-button cursor-interaction" href={place.path} data-tooltip={name}>
+        <Icon name="arrow-left" size={20} />
+        <span className="sm-sr">{name}</span>
       </a>
     </nav>
+  );
+}
+
+/** A screen's title with its way back at its left, as Material's top app bar sets them. */
+export function TitleBar({ here, place, children }: { here: string; place?: Place; children: React.ReactNode }) {
+  return (
+    <div className="sm-titlebar">
+      <BackLink here={here} place={place} />
+      {children}
+    </div>
   );
 }
