@@ -293,7 +293,7 @@ Conflicts are rare by design: **nobody overwrites anybody.** A better wording is
 
 | Your queued action | What changed meanwhile | What the server does | What you see |
 |---|---|---|---|
-| Importance vote on an argument | It was combined into another | Applies the vote to the argument it was combined into, unless you'd already voted there (your vote there stands) | Nothing unusual |
+| Importance vote on an argument | It was combined into another | Applies the vote to the argument it was combined into. If your vote there is only the one the combine carried over from the argument you voted on, your queued vote replaces it, since it is your newest choice. If you voted there yourself, before or after the combine, your vote there stands | Nothing unusual |
 | Importance vote on an argument | It was deleted | Drops it | "1 action couldn't be sent: that argument was deleted" |
 | Articulation vote on a wording | It moved by combine or separate | Applies it (the wording's ID never changes) | Nothing unusual |
 | Articulation or importance vote | The wording or argument was hidden by a moderator | Drops it | Same note as above |

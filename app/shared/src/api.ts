@@ -186,8 +186,13 @@ export interface SourceRow {
   changedSeq: number;
 }
 
-/** One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. */
+/**
+ * One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. Most
+ * are rows of the change log. A new argument or wording has no such row, so its entry is built from the wording's
+ * own row (`argument_added`, `wording_added`; the subject is the wording).
+ */
 export interface HistoryEntry {
+  /** The change number of the write. An addition's is the write that added it, which can be one a change-log row has too. */
   seq: number;
   at: string;
   actorName: string;
@@ -212,6 +217,8 @@ export interface HistoryEntry {
     merged?: true;
     /** An undo: the change it undid. */
     undoes?: number;
+    /** An edit of a source that cleared its "can't be opened" report (C-02). */
+    cleared?: true;
   };
 }
 

@@ -54,6 +54,9 @@ describe("History", () => {
       ["version_hidden", eveName],
       ["option_deleted", eveName],
       ["option_added", anaName],
+      // The two arguments the seeded board began with, which History now lists (history-additions.test.ts).
+      ["argument_added", anaName],
+      ["argument_added", anaName],
     ]);
     expect(body.entries[0]).toMatchObject({ subjectKind: "version", subjectId: b.version, detail: { version: b.version, source: b.source }, reason: null });
     expect(body.entries[1]).toMatchObject({ subjectKind: "version", subjectId: b.otherVersion, reason: "offtopic" });

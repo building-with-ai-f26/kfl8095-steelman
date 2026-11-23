@@ -44,7 +44,8 @@ test("J-03, A-10, M-02: a wording in History that someone moved says to press Up
   await board.api("maya.chen").post(`versions/${study.version}/combine`, { into: family.argument });
   await poll(page);
   await page.getByRole("button", { name: "History" }).click();
-  const link = history(page).getByRole("link", { name: `“${short(STUDY)}”` });
+  // The newest entry that names it is the combine's; the entry for adding it, which History now lists, links it too.
+  const link = history(page).getByRole("link", { name: `“${short(STUDY)}”` }).first();
 
   await link.click();
 
