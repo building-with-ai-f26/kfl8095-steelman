@@ -200,11 +200,16 @@ body { margin:0; }
 /* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
    in the prototype's head button, widened as its comment button is. */
 #steelman-study .sm-head-button.sm-history-button { display:inline-flex; align-items:center; gap:6px; width:auto; padding:0 9px; font-size:13px; }
-/* The question keeps clear of it: beside it on a wide screen, and on a phone below it, on a line of its own. */
+/* The question keeps clear of it: beside it on a wide screen. On a phone the question has the full width, and History
+   sits under it, at the end of the line that says who can open the board (the builder, Nov 22), so it takes no line
+   of its own. */
 #steelman-study .sm-head { padding-right:112px; }
 @media(max-width:640px) {
-  #steelman-study .sm-head { padding-right:18px; }
-  #steelman-study .sm-head .sm-head-tools { position:static; justify-content:flex-end; margin:-8px -8px 4px 0; }
+  #steelman-study .sm-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:8px; padding-right:18px; }
+  #steelman-study .sm-head > h1 { grid-column:1 / -1; grid-row:1; }
+  #steelman-study .sm-head > .sm-question-meta { grid-column:1; grid-row:2; }
+  #steelman-study .sm-head .sm-head-tools { position:static; grid-column:2; grid-row:2; align-self:end; margin:0 -8px -6px 0; }
+  #steelman-study .sm-head > .sm-link-note { grid-column:1 / -1; }
 }
 #steelman-study .sm-history-drawer { top:0; z-index:50; max-height:calc(100vh - 24px); overflow:auto; }
 /* As the prototype makes room for its drawer (data-drawer on .sm-surface): on a wide screen the board moves left. */
