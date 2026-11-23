@@ -6,6 +6,7 @@ import {
   hideInput,
   memberRoleInput,
   assessmentInput,
+  boardIdInput,
   can,
   deleteAccountInput,
   posthogAssetsHost,
@@ -185,13 +186,20 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     app.addHook("onResponse", async (request, reply) => {
       request.log.info({ method: request.method, route: routeOf(request), status: reply.statusCode, durationMs: Math.round(reply.elapsedTime) }, "request");
     });
-    // A failure is logged with its stack as the message, which is how Error Reporting groups them, and nothing
-    // else of the error: a database error's details can quote a value, such as an email. The answer is Fastify's own.
-    app.setErrorHandler(async (error: FastifyError, request, reply) => {
-      if ((error.statusCode ?? 500) >= 500) request.log.error({ method: request.method, route: routeOf(request) }, error.stack ?? String(error));
-      return reply.send(error);
-    });
   }
+  // A failure is logged with its stack as the message, which is how Error Reporting groups them, and nothing
+  // else of the error: a database error's details can quote a value, such as an email. For the same reason the
+  // answer says only that it failed (SECURITY.md). Anything under 500 is the caller's mistake, and Fastify's own answer.
+  app.setErrorHandler(async (error: FastifyError, request, reply) => {
+    if ((error.statusCode ?? 500) < 500) return reply.send(error);
+    if (logs) request.log.error({ method: request.method, route: request.routeOptions.url ?? "unmatched" }, error.stack ?? String(error));
+    return reply.code(500).send({ reason: "server_error" });
+  });
+  // A zero byte, in the address or in anything sent, is refused here: Postgres can't store one in text, and
+  // would answer with an error of its own.
+  app.addHook("preHandler", async (request, reply) => {
+    if (request.url.includes("%00") || request.url.includes("\u0000") || holdsZeroByte(request.body)) return reply.code(400).send({ reason: "invalid" });
+  });
   const policy = contentSecurityPolicy(analytics);
   const saved = createEvents(analytics, sendEvent);
   app.addHook("onSend", async (_request, reply) => {
@@ -352,7 +360,10 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
    * member (Q7).
    */
   async function letIn(boardId: string, person: string | null, reply: FastifyReply): Promise<Role | null> {
-    const board = await db.selectFrom("board").select("closed_at").where("id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst();
+    // An ID that isn't the shape of one names no board, and isn't worth asking the database about.
+    const board = boardIdInput.safeParse(boardId).success
+      ? await db.selectFrom("board").select("closed_at").where("id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst()
+      : undefined;
     if (!board) {
       void reply.code(404).send({ reason: "not_found" });
       return null;
@@ -588,6 +599,13 @@ export function callerNetwork(request: FastifyRequest, behindProxy: boolean): st
   const forwarded = request.headers["x-forwarded-for"];
   const last = behindProxy && typeof forwarded === "string" ? forwarded.split(",").at(-1)?.trim() : undefined;
   return networkOf(last || request.socket.remoteAddress || "unknown");
+}
+
+/** Whether any text in a request's body, at any depth, holds a zero byte. */
+function holdsZeroByte(value: unknown): boolean {
+  if (typeof value === "string") return value.includes("\u0000");
+  if (value === null || typeof value !== "object") return false;
+  return Object.entries(value).some(([key, inner]) => key.includes("\u0000") || holdsZeroByte(inner));
 }
 
 /** An IPv4 address as it is; an IPv6 address as its first four groups, written out in full. */

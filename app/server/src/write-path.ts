@@ -16,7 +16,7 @@
 
 import { sql } from "kysely";
 import type { Transaction } from "kysely";
-import { can } from "@steelman/shared";
+import { boardIdInput, can } from "@steelman/shared";
 import type { Action, Clock, RefusalReason, VersionRow, WriteAnswer } from "@steelman/shared";
 import { entryTo } from "./access.ts";
 import type { Database, Db } from "./db/database.ts";
@@ -54,6 +54,8 @@ class RollBack extends Error {
 }
 
 export async function writeToBoard<Loaded>(db: Db, boardId: string, person: string | null, steps: WriteSteps<Loaded>): Promise<WriteResult> {
+  // An ID that isn't the shape of one names no board.
+  if (!boardIdInput.safeParse(boardId).success) return { status: "not_found" };
   try {
     return await db.transaction().execute(async (trx) => {
       // 1. Lock.
@@ -82,8 +84,14 @@ export async function writeToBoard<Loaded>(db: Db, boardId: string, person: stri
     });
   } catch (error) {
     if (error instanceof RollBack) return error.answer;
+    // take_change_number found no board with this ID (migration 0002).
+    if (isNoSuchBoard(error)) return { status: "not_found" };
     throw error;
   }
+}
+
+function isNoSuchBoard(error: unknown): boolean {
+  return error instanceof Error && (error as { code?: unknown }).code === "23503" && error.message.startsWith("No such board:");
 }
 
 function answerFor(outcome: Outcome, seq: number): WriteAnswer {
