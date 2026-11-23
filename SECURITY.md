@@ -6,10 +6,10 @@ This is the Build 3 security audit of Steelman, run on November 22, 2026, in the
 
 Steelman is an app with sign-in. People sign in with Google or a 6-digit code sent by email, and there are no passwords. Boards, wordings, votes, and accounts are stored in Postgres. The app makes no AI calls yet and stores no files.
 
-- **Production:** https://app.steelman-argument.com (Google Cloud project `steelman-production`). It runs the November 17 release.
-- **Staging:** https://staging.steelman-argument.com (project `steelman-staging`). It runs `main`, and the next release copies its image to production unchanged.
+- **Production:** https://app.steelman-argument.com (Google Cloud project `steelman-production`). It runs the November 23 release, which includes the fixes below.
+- **Staging:** https://staging.steelman-argument.com (project `steelman-staging`). It runs `main`, and a release copies its image to production unchanged.
 
-Each check below says where it ran. Rate limits and roles beyond Owner and Contributor merged after November 17, so they were checked on staging and reach production with the next release.
+Each check below says where it ran. The checks ran on November 22, when production still ran the November 17 release. The builder released `main` to production on November 23, and the two-account test and the fixes were then checked there.
 
 ## What was checked
 
@@ -27,6 +27,7 @@ Each check below says where it ran. Rate limits and roles beyond Owner and Contr
 
 The service decides who is asking from the session cookie, then checks every request against one table of roles and actions (`app/shared/src/policy.ts`). The browser never connects to the database.
 
+- **Production, two accounts.** On November 23 the builder created an invited-only board as Account A and opened its link as Account B. The page said "You don't have access to this steelman." and the API answered `403 {"status":"refused","reason":"no_access"}`.
 - **Local, two accounts.** Account A created an invited-only board. Account B asked for the board, its changes, its people, and its history, and tried to open its link and add an argument. All six requests were refused with `403 no_access`. The board did not appear in Account B's list or data download.
 - **Staging and production, signed out.** Requests for the board list, the account, and the data download were refused with `401 signed_out`.
 - **Every pull request.** `role-matrix.test.ts` and `roles.test.ts` run every action as each role, as a non-member, and signed out.
@@ -87,12 +88,10 @@ The review also confirmed these as sound: every board route checks the policy ta
 - Unknown boards answer 404, zero bytes answer 400, and a 500 no longer includes the database's message ([#104](https://github.com/building-with-ai-f26/kfl8095-steelman/pull/104)).
 - `AGENTS.md` gained the Shipping steps, the "Ask me first" list, and a rule to check each deploy on the live site.
 
-Each fix has new tests that failed before it. No existing test changed.
+Each fix has new tests that failed before it. No existing test changed. After the November 23 release, production refused a 20,000-character sign-in value with `413` in 0.2 seconds, extra sign-in fields with `400`, a write to an unknown board with `404`, and a zero byte with `400`.
 
 ## Remaining issues
 
-- **Production is behind `main`.** It runs the November 17 release, so the rate limits and the three fixes above reach it with the next release.
-- **The two-account test on production is the builder's step.** The agent cannot sign in as two real accounts, so it ran that test locally and ran the signed-out tests on the live sites.
 - **The low findings in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105) are open.**
 - **The live app sends no analytics yet.** Neither deployed service has the PostHog key, so PostHog works on the Product Page only.
 - **Budgets alert and do not cap.** The ceilings are three servers and a fixed database size.
@@ -113,7 +112,7 @@ Pull requests get no preview deployment, and a merge deploys to staging instead 
 
 | # | Attack | Where | What happened |
 |---|---|---|---|
-| 1 | Account B reads and edits Account A's invited-only board through the API. | Local | All six requests were refused with `403 no_access`. |
+| 1 | Account B reads and edits Account A's invited-only board through the API. | Local, production | All six local requests were refused with `403 no_access`. On production, Account B's read was refused the same way. |
 | 2 | A request claims to be another account with the `x-steelman-test-user` header that development uses. | Staging, production | Both answered `403 test_users_off`, and `/api/test-users` answered `404`. |
 | 3 | A script floods the sign-in code route with 32 requests. | Staging | The per-address limit refused the sixth request and the per-network limit refused the thirty-first, both with `429`. |
 | 4 | A wording contains `<img onerror>` and `<script>`, and a source's link is `javascript:alert(document.cookie)`. | Local | Both were saved and shown as plain text. No element, link, or alert was created. |
