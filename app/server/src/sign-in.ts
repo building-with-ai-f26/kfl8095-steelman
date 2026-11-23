@@ -65,6 +65,25 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
  */
 const CODE_ROUTES: ReadonlySet<string> = new Set(["/email-otp/send-verification-otp", "/sign-in/email-otp", "/email-otp/request-email-change", "/email-otp/change-email"]);
 
+/** The most characters of one of Better Auth's messages that go to the log. */
+const LOG_LINE_MOST = 300;
+
+/**
+ * One of Better Auth's messages, as it goes to the log: every word with an @
+ * in it masked, then cut short. Better Auth quotes what a request sent (a
+ * whole callbackURL), so a message can be a megabyte of a stranger's text.
+ * It is masked word by word, in one pass: the pattern used before,
+ * /\S+@\S+/, took time that grew with the square of a long word's length,
+ * and one request could keep the service busy for minutes (SECURITY.md).
+ */
+export function logLine(message: string): string {
+  return message
+    .split(/(\s+)/)
+    .map((word) => (word.includes("@") ? "<email>" : word))
+    .join("")
+    .slice(0, LOG_LINE_MOST);
+}
+
 /** What a request to start a Google sign-in may carry: which provider, and where to send the browser afterwards. */
 const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackURL", "errorCallbackURL", "newUserCallbackURL"]);
 
@@ -110,7 +129,7 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
     database: { db: db as unknown as Kysely<Record<string, never>>, type: "postgres" },
     telemetry: { enabled: false },
     // Without a log of its own, Better Auth would print what went wrong, which can include an address.
-    logger: { level: "error", log: (level, message) => console.error(`sign-in ${level}: ${message.replace(/\S+@\S+/g, "<email>")}`) },
+    logger: { level: "error", log: (level, message) => console.error(`sign-in ${level}: ${logLine(message)}`) },
     // Our own limit is below, counted per address in Postgres. Better Auth's is per IP, in memory.
     rateLimit: { enabled: false },
     user: { modelName: "account", fields: { emailVerified: "email_verified", ...timestamps } },
