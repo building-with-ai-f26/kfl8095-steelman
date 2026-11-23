@@ -76,6 +76,14 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("voted_at")
     .orderBy("argument_id")
     .execute();
+  // Importance votes a combine set aside, kept so Undo can put them back (M3a-6).
+  const setAside = await db
+    .selectFrom("combine_vote")
+    .select(["board_id", "seq", "from_id", "into_id", "from_value", "into_value", "asked_again"])
+    .where("account_id", "=", person)
+    .orderBy("board_id")
+    .orderBy("seq")
+    .execute();
   const articulation = await db
     .selectFrom("articulation_vote")
     .select(["board_id", "version_id", "value", "voted_at"])
@@ -122,6 +130,30 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("created_at")
     .orderBy("id")
     .execute();
+  // Every time they reported a source as one that can't be opened (C-02, M3a-3), from the change log, which keeps a
+  // report after it's cleared; and whether it still stands: the source's latest report, still credited to them.
+  const sourceReports = await db
+    .selectFrom("change as c")
+    .innerJoin("source as s", (join) => join.onRef("s.id", "=", "c.subject_id").onRef("s.board_id", "=", "c.board_id"))
+    .select((eb) => [
+      "c.board_id",
+      "c.subject_id",
+      "c.at",
+      "c.seq",
+      "s.unavailable_by",
+      "s.unavailable_at",
+      eb
+        .selectFrom("change as later")
+        .select((later) => later.fn.max("later.seq").as("seq"))
+        .whereRef("later.board_id", "=", "c.board_id")
+        .whereRef("later.subject_id", "=", "c.subject_id")
+        .where("later.kind", "=", "source_unavailable")
+        .as("latest"),
+    ])
+    .where("c.actor_id", "=", person)
+    .where("c.kind", "=", "source_unavailable")
+    .orderBy("c.seq")
+    .execute();
   const memberships = await db.selectFrom("board_member").select(["board_id", "role"]).where("account_id", "=", person).execute();
 
   const boardIds = [...new Set([...memberships.map((m) => m.board_id), ...wrote.map((w) => w.board_id), ...sources.map((s) => s.board_id)])];
@@ -136,9 +168,16 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     votes: {
       importance: importance.map((v) => ({ board: v.board_id, argument: v.argument_id, value: v.value, at: v.voted_at.toISOString() })),
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
+      setAsideByCombine: setAside.map((v) => ({ board: v.board_id, combine: Number(v.seq), from: v.from_id, into: v.into_id, fromValue: v.from_value, intoValue: v.into_value, askedAgain: v.asked_again })),
       evidence: evidence.map((v) => ({ board: v.board_id, version: v.version_id, rev: v.rev, supported: v.supported, at: v.assessed_at.toISOString() })),
     },
     reports: reports.map((r) => ({ board: r.board_id, version: r.version_id, reason: r.reason, note: r.note, at: r.reported_at.toISOString(), withdrawn: r.withdrawn_at?.toISOString() ?? null })),
+    sourceReports: sourceReports.map((r) => ({
+      board: r.board_id,
+      source: r.subject_id,
+      at: r.at.toISOString(),
+      standing: r.unavailable_at !== null && r.unavailable_by === person && String(r.latest) === String(r.seq),
+    })),
     boards: boards.map((board) => ({
       board: board.id,
       link: `/b/${board.id}`,
@@ -176,6 +215,7 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
     const touched = await sql<{ board_id: string }>`
       select board_id from board_member where account_id = ${person}
       union select board_id from importance_vote where account_id = ${person}
+      union select board_id from combine_vote where account_id = ${person}
       union select board_id from articulation_vote where account_id = ${person}
       union select board_id from assessment where account_id = ${person}
       union select board_id from argument where created_by = ${person}
@@ -240,6 +280,8 @@ async function deleteReports(trx: Trx, boardId: string, person: string, seq: num
 }
 
 async function withdrawJudgments(trx: Trx, boardId: string, person: string, seq: number): Promise<void> {
+  // Votes a combine set aside, to put back if it's undone, are votes too (M3a-6).
+  await trx.deleteFrom("combine_vote").where("board_id", "=", boardId).where("account_id", "=", person).execute();
   const argumentIds = (await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).where("account_id", "=", person).returning("argument_id").execute()).map((row) => row.argument_id);
   if (argumentIds.length > 0) {
     await trx
@@ -317,6 +359,7 @@ async function deleteBoard(trx: Trx, boardId: string, now: Date, seq: number): P
   await trx.updateTable("version_revision").set({ wording: null, context: null }).where("board_id", "=", boardId).execute();
   await trx.updateTable("source").set({ name: "", locator: "", finding: "", backs_up: "", limits: "", changed_seq: seq }).where("board_id", "=", boardId).execute();
   await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).execute();
+  await trx.deleteFrom("combine_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("articulation_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("assessment").where("board_id", "=", boardId).execute();
   await trx.updateTable("argument").set({ importance: 0, importance_voters: 0, changed_seq: seq }).where("board_id", "=", boardId).execute();

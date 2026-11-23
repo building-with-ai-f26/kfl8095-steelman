@@ -12,12 +12,17 @@ import {
   changesQuery,
   editInput,
   newArgumentInput,
+  newOptionInput,
+  renameOptionInput,
   newBoardInput,
   newSourceInput,
   newWordingInput,
   sourceInput,
   voteInput,
   tooManyMessage,
+  combineInput,
+  itemIdInput,
+  separateInput,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { createEvents } from "./events.ts";
@@ -37,7 +42,10 @@ import { readChanges, readSnapshot } from "./read.ts";
 import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
-import { addSource, citeSource, editSource, unciteSource } from "./sources.ts";
+import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
+import { readHistory } from "./history.ts";
+import { combinePreview, combineWording, separateWording, undoStructure } from "./structure.ts";
+import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
 import { setArticulation, setAssessment, setImportance } from "./votes.ts";
 import { addArgument, addWording, deleteWording, editWording } from "./writing.ts";
 import type { WriteResult } from "./write-path.ts";
@@ -127,6 +135,15 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   not_author: 403,
   board_closed: 409,
   argument_deleted: 409,
+  not_same_option: 409,
+  only_wording: 409,
+  combined_since: 409,
+  cant_undo: 409,
+  option_deleted: 409,
+  option_not_empty: 409,
+  too_few_options: 409,
+  too_many_options: 409,
+  option_name_taken: 409,
   version_deleted: 409,
   revision_changed: 409,
   needs_evidence: 409,
@@ -422,6 +439,76 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = assessmentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAssessment(services, request.params.board, request.person, request.params.id, body.data), () => saved(request, "assess"));
+  });
+
+  // "Can't open it?" (M3a-3, C-02): anyone who can read reports a source; the reporter, an Editor, or the Owner clears it.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id/unavailable", { config: { limit: "writing" } }, async (request, reply) =>
+    answer(reply, await reportUnavailable(services, request.params.board, request.person, request.params.id)),
+  );
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/sources/:id/unavailable", async (request, reply) =>
+    answer(reply, await clearUnavailable(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Options (M3a-2, A-07): add one at the end, rename one, or delete an empty one. An Editor's and the Owner's.
+  app.post<{ Params: { board: string } }>("/api/boards/:board/options", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = newOptionInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addOption(services, request.params.board, request.person, body.data));
+  });
+
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = renameOptionInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await renameOption(services, request.params.board, request.person, request.params.id, body.data.name));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id", async (request, reply) =>
+    answer(reply, await deleteOption(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Restoring undoes a delete, so like Undo it isn't counted toward the writing limit (architecture §7).
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id/restore", async (request, reply) =>
+    answer(reply, await restoreOption(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Combine and separate (M3a-6, A-10), and undoing either by its change number: an Editor's and the Owner's.
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/combine", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = combineInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await combineWording(services, request.params.board, request.person, request.params.id, body.data.into));
+  });
+
+  // What a combine would do, for the dialog before it (M3a-7): read by whoever may combine.
+  app.get<{ Params: { board: string; id: string }; Querystring: { into?: string } }>("/api/boards/:board/versions/:id/combine", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    const refused = can(request.person, role, "structure", { closed: false });
+    if (refused) return reply.code(STATUS_FOR[refused]).send({ status: "refused", reason: refused });
+    const into = itemIdInput.safeParse(request.query.into);
+    if (!into.success) return reply.code(400).send({ reason: "invalid" });
+    const preview = await combinePreview(db, request.params.board, request.person, request.params.id, into.data);
+    return preview ?? reply.code(404).send({ reason: "not_found" });
+  });
+
+  app.post<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id/separate", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = separateInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await separateWording(services, request.params.board, request.person, request.params.id, body.data.argumentId));
+  });
+
+  // Not counted toward the writing limit: undoing never is (architecture §7), so a way back is always there.
+  app.put<{ Params: { board: string; seq: string } }>("/api/boards/:board/changes/:seq/undo", async (request, reply) => {
+    const seq = Number(request.params.seq);
+    if (!Number.isSafeInteger(seq) || seq < 1) return reply.code(400).send({ reason: "invalid" });
+    return answer(reply, await undoStructure(services, request.params.board, request.person, seq));
+  });
+
+  // History (M3a-4, J-03): the change log read back, for anyone who can read the board.
+  app.get<{ Params: { board: string } }>("/api/boards/:board/history", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    return { entries: await readHistory(db, request.params.board) };
   });
 
   app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {

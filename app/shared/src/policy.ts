@@ -3,7 +3,8 @@
 //
 // The roles, least to most: Viewer (reads), Voter (also votes and assesses),
 // Contributor (also writes), Editor (also takes a source off anyone's
-// wording, and hides and restores wordings, M2-4), Owner (also decides
+// wording, hides and restores wordings, M2-4, and adds, renames, and deletes
+// options, M3a-2), Owner (also decides
 // who can get in). Editing and deleting a wording stay its author's, for an
 // Editor too (Q28).
 
@@ -15,7 +16,7 @@ export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor
 /** The roles a board's link can give. Editor and Owner never come by the link. */
 export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "hide";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "unreport" | "hide" | "structure";
 
 interface Rule {
   /** The least role that may do it. */
@@ -41,10 +42,23 @@ export const POLICY: Record<Action, Rule> = {
    * builder, Nov 14; the Editor since M2-1).
    */
   uncite: { least: "contributor", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
-  /** Reporting a wording, or withdrawing your report (J-01, M2-3): anyone who can read. */
+  /** Reporting a wording, or withdrawing your report (J-01, M2-3), or reporting a source that can't be opened (C-02, M3a-3): anyone who can read. */
   report: { least: "viewer", openBoard: true, authorOnly: false },
+  /**
+   * Clearing a source's "can't be opened" mark (C-02, M3a-3): the person who
+   * reported it withdraws it, as in the prototype; an Editor or the Owner
+   * clears anyone's.
+   */
+  unreport: { least: "viewer", openBoard: true, authorOnly: true, anyoneFrom: "editor" },
   /** Hiding a wording with a reason, and restoring it (J-02, M2-4): an Editor's power, and the Owner's. */
   hide: { least: "editor", openBoard: true, authorOnly: false },
+  /**
+   * Changing the board's structure: adding, renaming, and deleting options
+   * (M3a-2, A-07), and later combining and separating arguments. An Editor's
+   * and the Owner's, as permissions.md's matrix has it; a Contributor will
+   * suggest instead (A-11).
+   */
+  structure: { least: "editor", openBoard: true, authorOnly: false },
   /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
 };

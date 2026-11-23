@@ -23,6 +23,23 @@ export const newArgumentInput = z.strictObject({
   context: contextInput,
 });
 
+/** A new option, with the ID the browser made for it, and an option's new name (M3a-2, A-07). */
+export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionNameInput });
+export const renameOptionInput = z.strictObject({ name: optionNameInput });
+/** Combining a wording into another argument (M3a-6): the one it goes into. */
+export const combineInput = z.strictObject({ into: itemIdInput });
+/**
+ * What combining a wording into an argument would do, for the dialog before it (M3a-7): whether the two arguments
+ * become one, and if so how many people would be asked to vote again, and whether the reader is one. Never who.
+ */
+export interface CombinePreview {
+  last: boolean;
+  asked: number;
+  you: boolean;
+}
+/** Separating a wording (M3a-6): the ID the browser made for its new argument. */
+export const separateInput = z.strictObject({ argumentId: itemIdInput });
+
 /** A new wording of an existing argument. */
 export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
 
@@ -110,6 +127,8 @@ export interface ArgumentRow {
   changedSeq: number;
   /** The reader's own importance vote. */
   myVote: 1 | -1 | null;
+  /** Present when the reader's two votes disagreed as this argument was combined, so they're asked to vote again (M3a-6, PRD §5). */
+  askedAgain?: true;
 }
 
 export interface VersionRow {
@@ -160,8 +179,47 @@ export interface SourceRow {
   /** Who added it, by ID and username: only they may edit it. */
   addedBy: string;
   addedByName: string;
+  /** Reported as one that can't be opened (C-02). */
   unavailable: boolean;
+  /** Who reported it, by ID and username, and when; left out when it isn't reported (M3a-3). */
+  report?: { by: string; byName: string; at: string };
   changedSeq: number;
+}
+
+/**
+ * One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. Most
+ * are rows of the change log. A new argument or wording has no such row, so its entry is built from the wording's
+ * own row (`argument_added`, `wording_added`; the subject is the wording).
+ */
+export interface HistoryEntry {
+  /** The change number of the write. An addition's is the write that added it, which can be one a change-log row has too. */
+  seq: number;
+  at: string;
+  actorName: string;
+  kind: string;
+  subjectKind: string;
+  subjectId: string;
+  /** A moderator's stated reason, where the action has one. */
+  reason: string | null;
+  /** What the entry needs beyond its subject: the wording and source a source change was on, the person and role of a role change, the access set. */
+  detail: {
+    version?: string;
+    source?: string;
+    argumentDeleted?: true;
+    accountName?: string;
+    role?: Role;
+    general?: "link" | "invited";
+    linkRole?: Role;
+    /** A combine or separation (M3a-8): the argument the wording left, the one it joined or became, and whether two arguments became one. */
+    from?: string;
+    into?: string;
+    argument?: string;
+    merged?: true;
+    /** An undo: the change it undid. */
+    undoes?: number;
+    /** An edit of a source that cleared its "can't be opened" report (C-02). */
+    cleared?: true;
+  };
 }
 
 export interface LogRow {
@@ -249,6 +307,23 @@ export type RefusalReason =
   | "not_author"
   | "test_users_off"
   | "argument_deleted"
+  /** A wording is combined only into another argument in its option (M3a-6). */
+  | "not_same_option"
+  /** An argument's only wording can't be separated from it (M3a-6). */
+  | "only_wording"
+  /** A combine or separation that something moved again since can't be undone (M3a-6, as Canny won't unmerge a post merged again). */
+  | "combined_since"
+  /** Only a combine or a separation can be undone this way (M3a-6). */
+  | "cant_undo"
+  /** The option was deleted (M3a-2). */
+  | "option_deleted"
+  /** An option with arguments can't be deleted; they'd have nowhere to go (M3a-2). */
+  | "option_not_empty"
+  /** A board keeps at least two options, and at most four (OPTIONS_PER_BOARD). */
+  | "too_few_options"
+  | "too_many_options"
+  /** Another option on the board already has that name, capitals aside (A-07). */
+  | "option_name_taken"
   | "version_deleted"
   | "revision_changed"
   | "needs_evidence"

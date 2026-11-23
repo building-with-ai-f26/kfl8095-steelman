@@ -106,3 +106,10 @@ test("M2-5, A-06: the reader's own edit shows no vote counts from before it unti
 
   expect(editShown(version({ previousWording: "First wording.", votesBefore: { importance: 4, articulation: 2 } }), [edit]).votesBefore).toBeNull();
 });
+
+test("M3a-7, A-10: on the board, an Editor or the Owner also combines and separates, before Delete; a Contributor doesn't", () => {
+  expect(versionMenu(version(), "ana", "owner", false, { others: true })).toEqual(["copyLink", "edit", "combine", "separate", "deleteVersion"]);
+  expect(versionMenu(version(), "ana", "owner", true, { others: true })).toEqual(["copyLink", "edit", "combine", "deleteArgument"]);
+  expect(versionMenu(version(), "ana", "owner", false, { others: false })).toEqual(["copyLink", "edit", "separate", "deleteVersion"]);
+  expect(versionMenu(version(), "ana", "contributor", false, { others: true })).toEqual(["copyLink", "edit", "deleteVersion"]);
+});

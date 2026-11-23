@@ -35,6 +35,16 @@ interface Cast {
   own: Record<Persona, string | undefined>;
   /** A wording by another contributor, Cara, citing a source she added. No persona wrote either. */
   others: { version: string; source: string; cara: string };
+  /** A third option with no arguments, so one may be deleted (M3a-2). */
+  empty: string;
+  /** A deleted option, so one may be restored from History (M3a-4). */
+  gone: string;
+  /**
+   * For combining and separating (M3a-6): two more arguments for Yes, the first
+   * with two wordings, so one may be separated or combined; and a combine
+   * already made of two others, so it may be undone.
+   */
+  structure: { into: string; separable: string; combined: number };
 }
 
 /** An invited-only board with one of each persona, and Cara, a contributor who isn't one of them. */
@@ -64,9 +74,27 @@ async function castBoard(): Promise<Cast> {
       [source, b.board, cara, seq],
     );
     await db.client.query("insert into revision_source (version_id, rev, source_id, board_id) values ($1, 1, $2, $3)", [version, source, b.board]);
+    // Cara reported that her own source can't be opened (M3a-3), so clearing it is clearing someone else's report.
+    await db.client.query("update source set unavailable_at = now(), unavailable_by = $2, changed_seq = $3 where id = $1", [source, cara, seq]);
     return { version, source, cara };
   });
-  return { b, person, own, others };
+  const empty = ids.itemId();
+  const gone = ids.itemId();
+  await write(db.client, b.board, (seq) =>
+    db.client.query(
+      "insert into option (id, board_id, name, position, created_at, changed_seq, deleted_at) values ($1, $2, 'Only in winter', 3, now(), $4, null), ($3, $2, 'Only at night', 4, now(), $4, now())",
+      [empty, b.board, gone, seq],
+    ),
+  );
+  const [from, into, x, y] = await write(db.client, b.board, async (seq) => {
+    const made = [];
+    for (const wording of ["One.", "Two.", "Three.", "Four."]) made.push(await addArgument(db.client, ids, { board: b.board, option: b.yes, author: cara, seq, wording }));
+    return made;
+  });
+  const separable = ids.itemId();
+  await api.post(`/api/boards/${b.board}/arguments/${from!.argument}/versions`, { as: cara, body: { id: separable, wording: "One, put another way.", context: "" } });
+  const combined = (await api.post(`/api/boards/${b.board}/versions/${x!.version}/combine`, { as: b.ana, body: { into: y!.argument } })).body.seq as number;
+  return { b, person, own, others, empty, gone, structure: { into: into!.argument, separable, combined } };
 }
 
 type Do = (cast: Cast, as: string | undefined, persona: Persona) => Promise<{ status: number; body: { reason?: string } }>;
@@ -197,6 +225,36 @@ const ACTIONS: Action[] = [
     write: true,
     run: ({ b, others }, as) => api.put(`/api/boards/${b.board}/people/${others.cara}`, { as, body: { role: "voter" } }),
   },
+  // Combine, separate, and undo (M3a-6, A-10): the structure action, an Editor's and the Owner's.
+  {
+    name: "combine a wording into another argument",
+    least: "editor",
+    write: true,
+    run: ({ b, structure }, as) => api.post(`/api/boards/${b.board}/versions/${structure.separable}/combine`, { as, body: { into: structure.into } }),
+  },
+  {
+    name: "separate a wording into its own argument",
+    least: "editor",
+    write: true,
+    run: ({ b, structure }, as) => api.post(`/api/boards/${b.board}/versions/${structure.separable}/separate`, { as, body: { argumentId: ids.itemId() } }),
+  },
+  { name: "undo a combine", least: "editor", write: true, run: ({ b, structure }, as) => api.put(`/api/boards/${b.board}/changes/${structure.combined}/undo`, { as }) },
+  // History (M3a-4, J-03): read by anyone on the board; restoring a deleted option is the structure action.
+  { name: "read the board's history", least: "viewer", write: false, run: ({ b }, as) => api.get(`/api/boards/${b.board}/history`, { as }) },
+  { name: "restore a deleted option", least: "editor", write: true, run: ({ b, gone }, as) => api.put(`/api/boards/${b.board}/options/${gone}/restore`, { as }) },
+  // "Can't open it?" (M3a-3, C-02): anyone who can read reports a source; someone else's report is cleared by an Editor or the Owner.
+  { name: "report that a source can't be opened", least: "viewer", write: true, run: ({ b }, as) => api.put(`/api/boards/${b.board}/sources/${b.source}/unavailable`, { as }) },
+  {
+    name: "clear someone else's report that a source can't be opened",
+    least: "viewer",
+    othersFrom: "editor",
+    write: true,
+    run: ({ b, others }, as) => api.delete(`/api/boards/${b.board}/sources/${others.source}/unavailable`, { as }),
+  },
+  // Options (M3a-2, A-07): the structure action, an Editor's and the Owner's (permissions.md).
+  { name: "add an option", least: "editor", write: true, run: ({ b }, as) => api.post(`/api/boards/${b.board}/options`, { as, body: { id: ids.itemId(), name: "Only in summer" } }) },
+  { name: "rename an option", least: "editor", write: true, run: ({ b }, as) => api.put(`/api/boards/${b.board}/options/${b.no}`, { as, body: { name: "No, never" } }) },
+  { name: "delete an empty option", least: "editor", write: true, run: ({ empty, b }, as) => api.delete(`/api/boards/${b.board}/options/${empty}`, { as }) },
 ];
 
 /** What each persona should be answered. */

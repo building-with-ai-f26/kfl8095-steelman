@@ -18,6 +18,13 @@
 // The service decides who may do what; the board offers Edit only on your own
 // source, and Remove to whoever added it, the wording's author, and the Owner.
 //
+// "Can't open it?" (C-02, M3a-3), as the prototype's source row has it:
+// anyone who can read reports that a source can't be opened, and it shows as
+// Unavailable on every wording that cites it. As Wikipedia handles a dead
+// link, the source stays usable: "Try an archived copy" opens the Wayback
+// Machine's copy of the address, and the note says who reported it and when.
+// The reporter has "Undo report"; an Editor or the Owner has "Clear report".
+//
 // Under the sources, the assessment (B-03): "Does the evidence back this
 // wording?", Yes or No, as a yes/no question is asked on GOV.UK. Yes needs a
 // source that can be opened. An assessment names the revision the reader saw;
@@ -29,6 +36,7 @@ import type { QueuedAction, Role, SourceRow, VersionRow } from "@steelman/shared
 import { Icon } from "../icons.tsx";
 import { useReader } from "../reader.ts";
 import { browserIds } from "../system.ts";
+import { shortDate } from "../when.ts";
 import { assessmentShown, blockedProps, isLiveVersion, whyNot } from "./display.ts";
 import type { Blocked } from "./display.ts";
 
@@ -45,6 +53,10 @@ export interface EvidenceBoard {
   removing: { versionId: string; sourceId: string } | null;
   /** Takes a source off the wording, held ten seconds for Undo (session.ts). */
   removeSource(version: VersionRow, sourceId: string, assessed: boolean): void;
+  /** Reports that a source can't be opened (C-02); answers whether it was taken. */
+  reportSource(sourceId: string): Promise<boolean>;
+  /** Withdraws the reader's own report (`own`), or clears someone else's. */
+  clearSourceReport(sourceId: string, own: boolean): Promise<boolean>;
   act(action: QueuedAction): void;
   announce(text: string): void;
 }
@@ -148,6 +160,20 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
     setForm(null);
     board.removeSource(version, source.id, assessed);
   };
+  /** Sources whose report, or its withdrawal, is on its way: a second press meanwhile does nothing. */
+  const reporting = useRef(new Set<string>());
+  /** Reports it, or takes the report back; the cursor stays on the source, as in the prototype. */
+  const markUnavailable = async (source: SourceRow, unavailable: boolean) => {
+    if (reporting.current.has(source.id)) return;
+    reporting.current.add(source.id);
+    try {
+      if (unavailable) await board.reportSource(source.id);
+      else await board.clearSourceReport(source.id, source.report?.by === reader);
+    } finally {
+      reporting.current.delete(source.id);
+    }
+    setFocus(`src-${source.id}`);
+  };
   /** Yes, No, or withdrawn (null). Pressing your answer again withdraws it, as Undo does. */
   const assess = (supported: boolean | null) => {
     const was = version.myAssessment;
@@ -188,8 +214,12 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               mine={source.addedBy === reader}
               editBlocked={addBlocked}
               mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId)}
+              mayReport={can(reader, board.role, "report", { closed: false }) === null}
+              mayClear={source.report !== undefined && can(reader, board.role, "unreport", { closed: false }, source.report.by) === null}
+              reportedByReader={source.report?.by === reader}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
+              onReport={(unavailable) => void markUnavailable(source, unavailable)}
             />
           ))}
         </div>
@@ -240,11 +270,31 @@ interface SourceProps {
   /** Set when the reader added it but their role can no longer write. */
   editBlocked: Blocked | null;
   mayRemove: boolean;
+  /** Whether the reader may report it can't be opened, and may clear the report on it (C-02). */
+  mayReport: boolean;
+  mayClear: boolean;
+  reportedByReader: boolean;
   onEdit(): void;
   onRemove(): void;
+  /** Reports it (true), or takes the report back (false). */
+  onReport(unavailable: boolean): void;
 }
 
-function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, onRemove }: SourceProps) {
+/**
+ * The Wayback Machine's copy of a web address, as Wikipedia offers for a dead link (M3a-3). The address is put in its
+ * standard form first, so "../" in it can't lead anywhere else on the archive's site; null when it isn't an address.
+ */
+function archived(link: string): string | null {
+  try {
+    return `https://web.archive.org/web/${new URL(link).href}`;
+  } catch {
+    return null;
+  }
+}
+
+function Source({ source, open, onToggle, mine, editBlocked, mayRemove, mayReport, mayClear, reportedByReader, onEdit, onRemove, onReport }: SourceProps) {
+  const report = source.unavailable ? (mayClear ? "clear" : null) : mayReport ? "report" : null;
+  const archive = source.report && source.link ? archived(source.link) : null;
   return (
     // ph-no-capture: PostHog's autocapture sends a clicked element's text and link, and a source's title, link, and adder are what people wrote.
     <details className="sm-source-row ph-no-capture" open={open} onToggle={(event) => onToggle(event.currentTarget.open)}>
@@ -254,7 +304,7 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, 
           {source.name}
           {mine ? <span className="sm-you-tag">You</span> : <span className="sm-source-note sm-source-by">{source.addedByName}</span>}
         </span>
-        {source.unavailable ? <span className="sm-source-note">Unavailable</span> : null}
+        {source.unavailable ? <span className="sm-unavailable">Unavailable</span> : null}
         <Icon name="chevron-right" className="sm-chevron" />
       </summary>
       <div className="sm-source-packet">
@@ -267,7 +317,30 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, 
           <span className="sm-source-note">{source.locator}</span>
         ) : null}
         {source.finding ? <p>{source.finding}</p> : null}
-        {mine || mayRemove ? (
+        {source.report ? (
+          // In red, apart from the source's own text (the builder, Nov 22): who reported it and when, and what to do.
+          <div className="sm-unavailable-note">
+            <p>
+              <Icon name="link-2-off" size={13} />
+              {`${reportedByReader ? "You" : source.report.byName} reported it on ${shortDate(source.report.at)}.`}
+            </p>
+            {archive || report === "clear" ? (
+              <div className="sm-unavailable-actions">
+                {archive ? (
+                  <a className="sm-source-link" href={archive} target="_blank" rel="noopener noreferrer nofollow ugc">
+                    Try an archived copy
+                  </a>
+                ) : null}
+                {report === "clear" ? (
+                  <button type="button" className="sm-link-button cursor-interaction" onClick={() => onReport(false)}>
+                    {reportedByReader ? "Undo report" : "Clear report"}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {mine || mayRemove || report === "report" ? (
           <div className="sm-source-actions">
             {mine ? (
               <button type="button" className="sm-link-button cursor-interaction" {...blockedProps(editBlocked)} onClick={() => editBlocked || onEdit()}>
@@ -277,6 +350,12 @@ function Source({ source, open, onToggle, mine, editBlocked, mayRemove, onEdit, 
             {mayRemove ? (
               <button type="button" className="sm-link-button cursor-interaction" aria-label="Remove from this version" onClick={onRemove}>
                 Remove
+              </button>
+            ) : null}
+            {report === "report" ? (
+              // Behind an icon at the row's end, as GitHub puts a report action behind an icon with a tooltip.
+              <button type="button" className="sm-icon-button sm-report-link cursor-interaction" aria-label="Report a broken link" data-tooltip="Can’t open it?" onClick={() => onReport(true)}>
+                <Icon name="link-2-off" size={15} />
               </button>
             ) : null}
           </div>

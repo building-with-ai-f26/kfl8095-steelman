@@ -79,6 +79,12 @@ async function argumentRows(db: Reader, boardId: string, person: string | null, 
     .selectFrom("argument as a")
     .leftJoin("importance_vote as mine", (join) => join.onRef("mine.argument_id", "=", "a.id").on("mine.account_id", "=", person ?? ""))
     .select(["a.id", "a.option_id", "a.created_seq", "a.importance", "a.importance_voters", "a.deleted_at", "a.merged_into", "a.changed_seq", "mine.value as my_vote"])
+    // Asked to vote again: their two votes disagreed when this argument was combined (M3a-6, PRD §5).
+    .select((eb) =>
+      eb
+        .exists(eb.selectFrom("combine_vote as cv").select("cv.seq").whereRef("cv.into_id", "=", "a.id").where("cv.account_id", "=", person ?? "").where("cv.asked_again", "=", true))
+        .as("asked_again"),
+    )
     .where("a.board_id", "=", boardId)
     .where("a.changed_seq", ">", String(after))
     .orderBy("a.created_seq")
@@ -94,6 +100,7 @@ async function argumentRows(db: Reader, boardId: string, person: string | null, 
     mergedInto: row.merged_into,
     changedSeq: Number(row.changed_seq),
     myVote: vote(row.my_vote),
+    ...(row.asked_again && row.my_vote === null ? { askedAgain: true as const } : {}),
   }));
 }
 
@@ -213,7 +220,8 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
   const rows = await db
     .selectFrom("source as s")
     .innerJoin("account as adder", "adder.id", "s.added_by")
-    .select(["s.id", "s.name", "s.locator", "s.finding", "s.backs_up", "s.limits", "s.added_by", "adder.username as added_by_name", "s.unavailable_at", "s.changed_seq"])
+    .leftJoin("account as reporter", "reporter.id", "s.unavailable_by")
+    .select(["s.id", "s.name", "s.locator", "s.finding", "s.backs_up", "s.limits", "s.added_by", "adder.username as added_by_name", "s.unavailable_at", "s.unavailable_by", "reporter.username as unavailable_by_name", "s.changed_seq"])
     .where("s.board_id", "=", boardId)
     .where("s.changed_seq", ">", String(after))
     .orderBy("s.created_at")
@@ -231,6 +239,7 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
     // Only an account with a username can write (app.ts), so whoever added it has one.
     addedByName: row.added_by_name ?? "",
     unavailable: row.unavailable_at !== null,
+    ...(row.unavailable_at && row.unavailable_by ? { report: { by: row.unavailable_by, byName: row.unavailable_by_name ?? "", at: row.unavailable_at.toISOString() } } : {}),
     changedSeq: Number(row.changed_seq),
   }));
 }

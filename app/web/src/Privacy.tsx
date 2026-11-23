@@ -10,11 +10,11 @@
 import { useEffect, useState } from "react";
 import { analyticsStatus, chooseAnalytics, turnOnAnalytics } from "./analytics.ts";
 import type { AnalyticsStatus } from "./analytics.ts";
-import { BackLink } from "./BackLink.tsx";
+import { TitleBar } from "./BackLink.tsx";
 
 const STATE: Record<AnalyticsStatus, string> = {
   none: "Usage analytics aren’t running here.",
-  signal: "Usage analytics are off: your browser asks not to be tracked.",
+  signal: "Usage analytics are off because your browser asks not to be tracked.",
   on: "Usage analytics are on in this browser.",
   off: "Usage analytics are off in this browser.",
 };
@@ -22,108 +22,102 @@ const STATE: Record<AnalyticsStatus, string> = {
 export function Privacy() {
   return (
     <main className="sm-privacy">
-      <BackLink here="/privacy" />
+      <TitleBar here="/privacy">
+        <h1>Privacy</h1>
+      </TitleBar>
       <p className="sm-privacy-date">Updated November 22, 2026</p>
-      <h1>Privacy</h1>
-      <p className="sm-privacy-lede">Steelman is a class project. This page says what it keeps about you, who can see it, how long it’s kept, and what you can do about it.</p>
+      <p className="sm-privacy-lede">This page says what Steelman keeps about you, who can see it, how long Steelman keeps it, and what you can do about it.</p>
 
       <h2>What we collect</h2>
       <ul>
-        <li>
-          <b>Your account:</b> your email, the username you choose, and how you sign in (an emailed code, or Google).
-        </li>
-        <li>
-          <b>What you write:</b> arguments, wordings, their context, and sources, on the boards you join.
-        </li>
-        <li>
-          <b>Your judgments:</b> your importance and wording votes, and whether a wording’s evidence holds up.
-        </li>
-        <li>
-          <b>Server logs:</b> your IP address and browser, with each request, for 30 days.
-        </li>
-        <li>
-          <b>Usage analytics,</b> unless you turn them off: see Cookies and analytics.
-        </li>
+        <li>We keep your email, the username you choose, and whether you sign in with an emailed code or with Google.</li>
+        <li>We keep the arguments, wordings, context, and sources that you write on the boards you join.</li>
+        <li>We keep your importance votes, your wording votes, your assessments of whether a wording’s evidence holds up, and your reports.</li>
+        <li>Our server logs record your IP address and browser with each request, and we keep them for 30 days.</li>
+        <li>We collect usage analytics unless you turn them off, as Cookies and analytics explains below.</li>
       </ul>
 
       <h2>Who sees what</h2>
       <ul>
-        <li>What you write, and your username beside it, is seen by everyone who can open that board.</li>
-        <li>Your votes and assessments count toward the totals everyone sees, but no one is shown which are yours.</li>
-        <li>Your email is seen by no one but you.</li>
+        <li>Everyone who can open a board sees what you write there, with your username beside it.</li>
+        <li>Your votes and assessments count toward the totals everyone sees, but no one is shown which ones are yours.</li>
+        <li>Everyone who can open a board sees its history. The history shows who did what there and when, including when you added each argument and wording. It never shows your votes.</li>
+        <li>When you report that a source can’t be opened, everyone who can open that board sees that you reported it. The board’s history keeps a record of your report even after the report is cleared.</li>
+        <li>No one but you sees your email.</li>
       </ul>
 
       <h2>Who processes it for us</h2>
       <ul>
         <li>
-          <b>Google Cloud</b> runs Steelman and its database, in the US.
+          <b>Google Cloud</b> runs Steelman and its database in the US.
         </li>
         <li>
-          <b>Google</b>, if you sign in with Google: it tells us your email.
+          <b>Google</b> tells us your email if you sign in with Google.
         </li>
         <li>
-          <b>Resend</b> sends the codes you use to sign in or to change your email. When your email changes, it also sends a note to your old address. If you ask to change to an email another account already uses, it tells that address instead of sending a code.
+          <b>Resend</b> sends the codes you use to sign in or to change your email. When your email changes, Resend also sends a note to your old address. If you ask to change to an email that another account already uses, Resend emails that address to say so instead of sending a code.
         </li>
         <li>
-          <b>PostHog</b> records usage analytics, in the US.
+          <b>PostHog</b> records usage analytics in the US.
         </li>
         <li>
-          <b>Google Fonts</b> serves the page’s fonts, so your browser asks Google for them, which shows Google your IP address.
+          <b>Google Fonts</b> serves the page’s fonts. Your browser asks Google for them, so Google sees your IP address.
         </li>
       </ul>
-      <p>We don’t sell what we keep about you or use it for advertising.</p>
+      <p>We don’t sell what we keep about you, and we don’t use it for advertising.</p>
 
       <h2>Cookies and analytics</h2>
       <p>
-        A cookie keeps you signed in, and signing in with Google uses a second one for a few minutes while it runs. They’re essential, so there’s no switch for them; deleting your account ends them.
+        A cookie keeps you signed in. Signing in with Google uses a second cookie for a few minutes while the sign-in runs. These cookies are essential, so there is no switch for them. Deleting your account ends them.
       </p>
       <p>
-        Usage analytics send PostHog the pages you view, what you click, your IP address, and screen replays of your visits. A replay shows what was on your screen, such as the boards you read, but
-        hides what you type and your email. PostHog isn’t told who you are: a random ID, kept in a cookie and in your browser’s storage, groups your visits until you clear this site’s data, and it
-        isn’t tied to your account. Your choice to turn analytics off or on is kept in your browser too. We use analytics only to see where people get stuck.
+        Usage analytics send PostHog the pages you view, what you click, your IP address, and screen replays of your visits. A replay shows what was on your screen, such as the boards you read, but it
+        hides what you type and your email. PostHog isn’t told who you are. Instead, a random ID groups your visits. The ID is kept in a cookie and in your browser’s storage until you clear this
+        site’s data, and it isn’t tied to your account. Your choice to turn analytics off or on is kept in your browser too. We use analytics only to see where people get stuck.
       </p>
       <p>
         While your analytics are on, our service also tells PostHog each time you vote, assess, or save something you wrote, because the browser’s own analytics are sometimes blocked. Each of these
-        events says only what was saved and whether it was on our test site or the real one. It doesn’t say who you are, which board it was on, or what you wrote. Each one has its own random ID, not
-        your browser’s, so these events can’t be joined to your visits.
+        events says only what was saved and whether it was on our test site or the real one. An event doesn’t say who you are, which board it was on, or what you wrote. Each event has its own random
+        ID instead of your browser’s ID, so these events can’t be joined to your visits.
       </p>
       <AnalyticsSwitch />
-      <p>If your browser sends Global Privacy Control or Do Not Track, nothing is sent and you aren’t asked.</p>
+      <p>If your browser sends Global Privacy Control or Do Not Track, Steelman sends nothing to PostHog and doesn’t ask you about analytics.</p>
 
       <h2>How long we keep it</h2>
       <ul>
-        <li>Codes for signing in or for a new email: they work for 10 minutes, and unused ones are deleted each day.</li>
-        <li>Being signed in: until 30 days after you last use Steelman.</li>
-        <li>Request logs (your IP address and browser), kept by Google Cloud: 30 days.</li>
-        <li>What you write, and the record of changes to a board: for as long as the board exists.</li>
+        <li>A code for signing in or for a new email works for 10 minutes. Unused codes are deleted each day.</li>
+        <li>You stay signed in until 30 days after you last use Steelman.</li>
+        <li>Google Cloud keeps request logs, which hold your IP address and browser, for 30 days.</li>
+        <li>We keep what you write, and the record of changes to a board, for as long as the board exists.</li>
+        <li>When two arguments are combined, we keep your earlier importance votes on them for as long as the board exists, so the combine can be undone.</li>
         <li>
-          Backups of the database: 14 days for daily ones, 8 weeks for weekly ones. Something deleted stays in a backup until it expires, and a restored backup has every deletion since it was made
-          applied again.
+          We keep daily backups of the database for 14 days and weekly backups for 8 weeks. Something deleted stays in a backup until it expires. If we restore a backup, every deletion made since the
+          backup was made is applied again.
         </li>
-        <li>A deleted account’s username: held for 30 days, so no one can take it straight away, then free.</li>
-        <li>Analytics: as long as PostHog keeps them on our plan. They aren’t tied to your account, so deleting it doesn’t delete them.</li>
-        <li>Resend keeps records of the emails it sent, for a period it sets.</li>
+        <li>We hold a deleted account’s username for 30 days so that no one can take it straight away. After that, anyone can choose it.</li>
+        <li>PostHog keeps analytics for the period our PostHog plan sets. Analytics aren’t tied to your account, so deleting your account doesn’t delete them.</li>
+        <li>Resend keeps records of the emails it sent for a period that Resend sets.</li>
       </ul>
 
       <h2>Your choices</h2>
       <ul>
         <li>
-          <b>Download your data</b> and <b>Delete account</b> are in <a href="/account">Your account</a>. Deleting removes your email, ways of signing in, votes, and assessments. What you wrote stays
-          on its boards, credited to deleted_account, so others’ work keeps its context. A board you own passes to its longest-standing contributor; one whose other members are all voters, or that has
-          none, is deleted with everything on it.
+          <b>Download your data</b> and <b>Delete account</b> are in <a href="/account">Your account</a>. Deleting your account removes your email, your ways of signing in, your votes, and your
+          assessments. What you wrote stays on its boards and is credited to deleted_account, so other people’s work keeps its context. A board you own passes to its longest-standing contributor. If
+          the board’s other members are all voters, or it has no other members, the board is deleted with everything on it.
         </li>
-        <li>Turn analytics off or on above.</li>
+        <li>You can turn analytics off or on in Cookies and analytics above.</li>
       </ul>
 
       <h2>Children</h2>
       <p>Steelman isn’t for children under 13.</p>
 
       <h2>Changes to this page</h2>
-      <p>Each change is dated at the top. When one matters to what we keep about you, people signed in are told.</p>
+      <p>We date each change at the top of this page. When a change affects what we keep about you, we tell people who are signed in.</p>
 
       <h2>Questions</h2>
       <p>
-        Ask Kieran LaMee through the course, or <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/issues">open an issue on GitHub</a>.
+        If you have a question, ask Kieran LaMee or <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/issues">open an issue on GitHub</a>.
       </p>
     </main>
   );

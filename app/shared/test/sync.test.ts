@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { leaveOut, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
+import { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved } from "@steelman/shared";
 import type { ArgumentRow, BoardChanges, BoardSnapshot, OptionRow, VersionRow } from "@steelman/shared";
 
 // The browser's sync rules (plans/architecture.md §3), as pure functions so
@@ -146,6 +146,37 @@ describe("receiving changes", () => {
     expect(pillCount(after)).toBe(1);
   });
 
+  test("A-07: an option deleted while on screen leaves at once; it was empty, so nothing else moves, and the pill doesn't count it", () => {
+    const s = snapshot();
+    s.options.push(option("winter", 3));
+    const view = openView(s);
+    expect(Object.keys(view.shown.arguments)).toEqual(["yes", "no", "winter"]);
+
+    const after = receive(view, { ...nothing(6), options: [option("winter", 3, { deleted: true, changedSeq: 6 })] });
+
+    expect(Object.keys(after.shown.arguments)).toEqual(["yes", "no"]);
+    expect(after.shown.arguments.yes).toEqual(view.shown.arguments.yes);
+    expect(pillCount(after)).toBe(0);
+  });
+
+  test("A-07: an option deleted after its last argument was deleted goes with that argument, and the pill counts neither", () => {
+    const s = snapshot();
+    s.options.push(option("winter", 3));
+    s.arguments.push(argument("w", "winter", 4));
+    s.versions.push(version("w1", "w", 4));
+    const view = receive(openView(s), {
+      ...nothing(6),
+      arguments: [argument("w", "winter", 4, { deleted: true, changedSeq: 6 })],
+      versions: [version("w1", "w", 4, { deleted: true, wording: null, changedSeq: 6 })],
+    });
+    expect(pillCount(view)).toBe(1);
+
+    const after = receive(view, { ...nothing(7), options: [option("winter", 3, { deleted: true, changedSeq: 7 })] });
+
+    expect(after.shown.arguments.winter).toBeUndefined();
+    expect(pillCount(after)).toBe(0);
+  });
+
   test("M-02: receiving the same changes twice is the same as once", () => {
     const changes = { ...nothing(6), arguments: [argument("z", "no", 6)], versions: [version("z1", "z", 6)] };
     const once = receive(openView(snapshot()), changes);
@@ -250,4 +281,118 @@ test("M2-4, J-02: a wording hidden while on screen stays where it is, and after 
   const updated = pressUpdate(view);
   expect(updated.shown.versions.a).toEqual(["a1", "a2"]);
   expect(pillCount(updated)).toBe(0);
+});
+
+describe("combined and separated by someone else (M3a-6)", () => {
+  test("A-10, M-02: a combined argument stays where it is, marked, and its wordings don't also join the other until Update", () => {
+    const view = openView(snapshot());
+
+    const after = receive(view, {
+      ...nothing(6),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 6 }), argument("b", "yes", 2, { importance: 3, changedSeq: 6 })],
+      versions: [version("a1", "b", 1, { changedSeq: 6 }), version("a2", "b", 1, { changedSeq: 6 })],
+    });
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c"]);
+    expect(after.shown.versions.a).toEqual(["a2", "a1"]);
+    expect(after.shown.versions.b).toEqual(["b1"]);
+    expect(pillCount(after)).toBe(1);
+
+    const updated = pressUpdate(after);
+    expect(updated.shown.arguments.yes).not.toContain("a");
+    expect(updated.shown.versions.b).toEqual(expect.arrayContaining(["b1", "a1", "a2"]));
+  });
+
+  test("A-10, M-02: a wording added to the combined argument afterwards still joins its end", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 6 })],
+      versions: [version("a1", "b", 1, { changedSeq: 6 }), version("a2", "b", 1, { changedSeq: 6 })],
+    });
+
+    const after = receive(view, { ...nothing(7), versions: [version("b9", "b", 7)] });
+
+    expect(after.shown.versions.b).toEqual(["b1", "b9"]);
+  });
+
+  test("A-10, M-02: a separated wording stays where it is, marked; its new argument waits for Update", () => {
+    const view = openView(snapshot());
+
+    const after = receive(view, { ...nothing(6), arguments: [argument("z", "yes", 6)], versions: [version("a1", "z", 1, { changedSeq: 6 })] });
+
+    expect(after.shown.versions.a).toEqual(["a2", "a1"]);
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c"]);
+    expect(pillCount(after)).toBe(1);
+
+    const updated = pressUpdate(after);
+    expect(updated.shown.arguments.yes).toEqual(["b", "a", "c", "z"]);
+    expect(updated.shown.versions.a).toEqual(["a2"]);
+    expect(updated.shown.versions.z).toEqual(["a1"]);
+  });
+});
+
+
+describe("the reader's own combine and separation (M3a-7)", () => {
+  test("A-10: a wording the reader combined shows in its new argument at once, where the shared order puts it, and isn't a change waiting for Update", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      versions: [version("a1", "b", 1, { changedSeq: 6 })],
+      order: { arguments: { yes: ["b", "a", "c"], no: ["d"] }, versions: { a: ["a2"], b: ["a1", "b1"], c: ["c1"], d: ["d1"] } },
+    });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.versions.a).toEqual(["a2"]);
+    expect(after.shown.versions.b).toEqual(["a1", "b1"]);
+    expect(pillCount(after)).toBe(0);
+  });
+
+  test("A-10: when it was the argument's last wording, that argument leaves the screen too", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      arguments: [argument("c", "yes", 3, { mergedInto: "b", changedSeq: 6 })],
+      versions: [version("c1", "b", 3, { changedSeq: 6 })],
+    });
+
+    const after = showMoved(view, "c1");
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a"]);
+    expect(after.shown.versions.c).toBeUndefined();
+    expect(after.shown.versions.b).toEqual(["b1", "c1"]);
+  });
+
+  test("A-10: a separated wording's new argument joins its option at once", () => {
+    const view = receive(openView(snapshot()), { ...nothing(6), arguments: [argument("z", "yes", 6)], versions: [version("a1", "z", 1, { changedSeq: 6 })] });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c", "z"]);
+    expect(after.shown.versions.z).toEqual(["a1"]);
+    expect(after.shown.versions.a).toEqual(["a2"]);
+  });
+
+  test("A-10, J-05: Undo puts the screen back as it was, and something added meanwhile still joins the end", () => {
+    const before = openView(snapshot());
+    const moved = showMoved(receive(before, { ...nothing(6), versions: [version("a1", "b", 1, { changedSeq: 6 })] }), "a1");
+    const undone = receive(moved, { ...nothing(8), versions: [version("a1", "a", 1, { changedSeq: 8 }), version("b9", "b", 7)] });
+
+    const after = putBack(undone, before.shown);
+
+    expect(after.shown.versions.a).toEqual(before.shown.versions.a);
+    expect(after.shown.versions.b).toEqual(["b1", "b9"]);
+  });
+
+  test("A-10: the argument it left goes too when combined away, though it still shows a wording someone else moved out", () => {
+    // Someone moved a2 out of a; the reader still sees it there, marked. Then the reader combines a1, a's last.
+    const view = receive(openView(snapshot()), {
+      ...nothing(7),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 7 })],
+      versions: [version("a2", "c", 1, { changedSeq: 6 }), version("a1", "b", 1, { changedSeq: 7 })],
+    });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.arguments.yes).not.toContain("a");
+    expect(after.shown.versions.a).toBeUndefined();
+  });
 });

@@ -78,6 +78,20 @@ describe("stale writes", () => {
     expect((await edit(b.ana, b.version, 1, "Too late.")).body).toEqual({ status: "refused", reason: "version_deleted" });
   });
 
+  test("M-02, A-07: a new argument for an option that was deleted is refused: 'that option was deleted'", async () => {
+    const option = ids.itemId();
+    await api.post(`/api/boards/${b.board}/options`, { as: b.ana, body: { id: option, name: "Only in winter" } });
+    await api.delete(`/api/boards/${b.board}/options/${option}`, { as: b.ana });
+
+    const { status, body } = await api.post(`/api/boards/${b.board}/arguments`, {
+      as: b.ben,
+      body: { id: ids.itemId(), optionId: option, versionId: ids.itemId(), wording: "Winter evenings are long.", context: "" },
+    });
+
+    expect(status).toBe(409);
+    expect(body).toEqual({ status: "refused", reason: "option_deleted" });
+  });
+
   test("M-02: anything sent to a board that closed meanwhile is refused: 'This board closed while you were away'", async () => {
     await db.client.query("update board set closed_at = $2 where id = $1", [b.board, NOON]);
 
