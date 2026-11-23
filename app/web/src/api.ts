@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardList, BoardSnapshot, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 
@@ -132,6 +132,11 @@ export async function deleteOption(board: string, option: string, keepalive = fa
   return answerOf(await call("DELETE", `boards/${board}/options/${encodeURIComponent(option)}`, undefined, keepalive));
 }
 
+/** Reports that a source can't be opened (M3a-3, C-02), or with `false` withdraws or clears the report. Not queued. */
+export async function setUnavailable(board: string, source: string, unavailable: boolean): Promise<Answer> {
+  return answerOf(await call(unavailable ? "PUT" : "DELETE", `boards/${board}/sources/${encodeURIComponent(source)}/unavailable`));
+}
+
 async function answerOf(response: Response): Promise<Answer> {
   if (response.status === 404) return { status: "not_found" };
   if (response.status === 400) return { status: "invalid" };
@@ -144,6 +149,53 @@ export async function readPeople(board: string): Promise<Person[] | null> {
   try {
     const response = await call("GET", `boards/${board}/people`);
     return response.ok ? ((await response.json()) as { people: Person[] }).people : null;
+  } catch (error) {
+    if (error instanceof Unreachable) return null;
+    throw error;
+  }
+}
+
+/** The board's History (M3a-4, J-03), newest first, or null when it can't be read now. */
+export async function readHistory(board: string): Promise<HistoryEntry[] | null> {
+  try {
+    const response = await call("GET", `boards/${board}/history`);
+    return response.ok ? ((await response.json()) as { entries: HistoryEntry[] }).entries : null;
+  } catch (error) {
+    if (error instanceof Unreachable) return null;
+    throw error;
+  }
+}
+
+/** Restores a deleted option from History (M3a-4). Not queued. */
+export async function restoreOption(board: string, option: string): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/options/${encodeURIComponent(option)}/restore`));
+}
+
+/** Cites a source already on the board on a wording: from History, putting back one taken off (M3a-4). Not queued. */
+export async function citeSource(board: string, version: string, source: string): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/versions/${encodeURIComponent(version)}/sources/${encodeURIComponent(source)}`));
+}
+
+/** Combines a wording into another argument in its option (M3a-7, A-10). Not queued, like a moderator's action. */
+export async function combineWording(board: string, version: string, into: string): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/versions/${encodeURIComponent(version)}/combine`, { into }));
+}
+
+/** Makes a wording its own argument, with the ID the browser made for it (M3a-7). Not queued. */
+export async function separateWording(board: string, version: string, argumentId: string): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/versions/${encodeURIComponent(version)}/separate`, { argumentId }));
+}
+
+/** Undoes a combine or a separation by its change number (M3a-7, J-04). Not queued. */
+export async function undoChange(board: string, seq: number): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/changes/${seq}/undo`));
+}
+
+/** What combining a wording into an argument would do (M3a-7): whether the arguments become one, and who'd be asked to vote again. Null when it can't be read now. */
+export async function readCombinePreview(board: string, version: string, into: string): Promise<CombinePreview | null> {
+  try {
+    const response = await call("GET", `boards/${board}/versions/${encodeURIComponent(version)}/combine?into=${encodeURIComponent(into)}`);
+    return response.ok ? ((await response.json()) as CombinePreview) : null;
   } catch (error) {
     if (error instanceof Unreachable) return null;
     throw error;

@@ -110,6 +110,8 @@ export function unciteSource({ db, clock }: Services, boardId: string, person: s
  * Edits a source (Q10). If its evidence changed, every wording whose current
  * revision cites it gets a new revision, deleted ones aside (their text is
  * gone). A hidden wording gets one too, so it starts over if it's restored.
+ * If the link changed and the source was reported as one that can't be
+ * opened, the edit clears the report; a change to anything else leaves it.
  */
 export function editSource({ db, clock }: Services, boardId: string, person: string | null, sourceId: string, input: SourceInput): Promise<WriteResult> {
   return writeToBoard(db, boardId, person, {
@@ -120,9 +122,20 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
       const evidenceChanged = source.locator !== input.locator || source.finding !== input.finding;
       const anyChange = evidenceChanged || source.name !== input.name || source.backs_up !== input.backsUp || source.limits !== input.limits;
       if (!anyChange) return "already_done";
+      // A new link on a source reported as one that can't be opened clears the report, as a Wikipedia editor removes a
+      // dead-link tag when fixing the link (C-02; the builder, Nov 22). Anyone can report it again.
+      const cleared = source.unavailable_at !== null && source.locator !== input.locator;
       await trx
         .updateTable("source")
-        .set({ name: input.name, locator: input.locator, finding: input.finding, backs_up: input.backsUp, limits: input.limits, changed_seq: seq })
+        .set({
+          name: input.name,
+          locator: input.locator,
+          finding: input.finding,
+          backs_up: input.backsUp,
+          limits: input.limits,
+          changed_seq: seq,
+          ...(cleared ? { unavailable_at: null, unavailable_by: null } : {}),
+        })
         .where("id", "=", sourceId)
         .execute();
 
@@ -143,7 +156,48 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
           revised.push({ version: version.id, rev });
         }
       }
-      await log(trx, clock, { boardId, seq, person: person!, kind: "source_edited", subjectKind: "source", subjectId: sourceId, after: { revised } });
+      // One write is one change row, so this row also says when the edit cleared a report.
+      await log(trx, clock, { boardId, seq, person: person!, kind: "source_edited", subjectKind: "source", subjectId: sourceId, after: { revised, ...(cleared ? { cleared: true } : {}) } });
+      return "done";
+    },
+  });
+}
+
+/**
+ * "Can't open it?" (C-02, M3a-3): anyone who can read reports that a source
+ * can't be opened. The mark is the source's, so it shows on every wording
+ * that cites it, and while a wording cites no other source it can't be
+ * assessed as supported (votes.ts). It changes no revision: an unavailable
+ * source doesn't make the wording false, and its assessments stand.
+ * A second report, by anyone, changes nothing.
+ */
+export function reportUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
+  return writeToBoard(db, boardId, person, {
+    action: "report",
+    load: (trx) => sourceOnBoard(trx, boardId, sourceId),
+    change: async (trx, source, seq) => {
+      if (source.unavailable_at) return "already_done";
+      await trx.updateTable("source").set({ unavailable_at: clock.now(), unavailable_by: person!, changed_seq: seq }).where("id", "=", sourceId).execute();
+      await log(trx, clock, { boardId, seq, person: person!, kind: "source_unavailable", subjectKind: "source", subjectId: sourceId, after: {} });
+      return "done";
+    },
+  });
+}
+
+/**
+ * Clears the mark: the person who reported it withdraws it, or an Editor or the Owner clears it. Clearing an unmarked
+ * source changes nothing. (The person who added the source clears it another way: by changing its link, in `editSource`.)
+ */
+export function clearUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
+  return writeToBoard(db, boardId, person, {
+    action: "unreport",
+    load: (trx) => sourceOnBoard(trx, boardId, sourceId),
+    // Nothing to clear is nobody's report: whoever asks is told it's done already. A mark with no reporter is an Editor's to clear.
+    authorOf: (source) => (source.unavailable_at ? (source.unavailable_by ?? "") : (person ?? "")),
+    change: async (trx, source, seq) => {
+      if (!source.unavailable_at) return "already_done";
+      await trx.updateTable("source").set({ unavailable_at: null, unavailable_by: null, changed_seq: seq }).where("id", "=", sourceId).execute();
+      await log(trx, clock, { boardId, seq, person: person!, kind: "source_available", subjectKind: "source", subjectId: sourceId, after: {} });
       return "done";
     },
   });
