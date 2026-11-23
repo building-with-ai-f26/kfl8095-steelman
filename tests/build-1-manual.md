@@ -1872,6 +1872,15 @@ The builder tested M3a locally and asked for these changes. Each with tests writ
 | Product Page | PRD v3 has a "Hosting, database, and security" table, and the build log has the Build 3 entry. Both were checked at desktop width and at 375 px with no sideways scroll |
 | Known limitations | The two-account test on production waits for the builder, who can sign in as two real accounts. The live app has no PostHog key yet. The low findings are in issue 105 |
 
+## November 23 — Build 3 audit, on production after the release (L-01, L-04, M-12, H-02)
+
+| Item | Result |
+|---|---|
+| Release | The builder released `main` (commit `2348938`) to production on November 23 |
+| Two accounts | The builder opened Account A's invited-only board as Account B. The page said "You don't have access to this steelman." and the API answered `403 no_access` |
+| Fixes | Production answered 413 to a 20,000-character sign-in value, 400 to extra sign-in fields, 404 to a write to an unknown board, and 400 to a zero byte |
+| Known limitations | The no-access page is two plain lines, and a friendlier one is backlog item M3a-9. The live app has no PostHog key yet |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
