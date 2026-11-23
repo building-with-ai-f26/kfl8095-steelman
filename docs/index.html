@@ -124,8 +124,25 @@
         </figure>
         <figure class="shot diagram">
           <a href="assets/architecture.svg" aria-label="Open the architecture diagram at full size"><img src="assets/architecture.svg" width="1480" height="740" loading="lazy" alt="Architecture: a React web app in the browser sends HTTPS requests to one Fastify service on Cloud Run, which handles sign-in, the board API, and background jobs, and stores everything in Postgres on Cloud SQL. Outside services: Google for sign-in, Resend for email, Stripe for AI credits, PostHog for analytics, and an AI model provider for evidence checks."></a>
-          <figcaption><span>The planned system</span><span>Built so far, on a laptop: web app, service, Postgres, Google sign-in</span></figcaption>
+          <figcaption><span>The planned system</span><span>Built and deployed: web app, service, Postgres, sign-in, email</span></figcaption>
         </figure>
+
+        <h3 class="label">Hosting, database, and security</h3>
+        <div class="card costs">
+          <table>
+            <tbody>
+              <tr><th scope="row">Hosting</th><td>One service on Google Cloud Run serves the web app and the API at <a href="https://app.steelman-argument.com">app.steelman-argument.com</a>. I chose Google Cloud over Render or Vercel to learn it.</td></tr>
+              <tr><th scope="row">Environments</th><td>Staging and production are separate Google Cloud projects. Every merge to <code>main</code> deploys to staging. I release the same image to production myself, and I can send traffic back to the previous version with one command.</td></tr>
+              <tr><th scope="row">No previews</th><td>Pull requests get no preview deployment. A preview would run unreviewed migrations on a shared database, so each pull request is tested against a database it creates and throws away.</td></tr>
+              <tr><th scope="row">Database</th><td>Each environment has its own Postgres 17 on Cloud SQL. Schema changes are numbered SQL migrations in git. Backups run daily and are kept for 14 days.</td></tr>
+              <tr><th scope="row">Sign-in</th><td>People sign in with Google or a 6-digit code by email. There are no passwords.</td></tr>
+              <tr><th scope="row">Access</th><td>The browser never reaches the database. The service checks every request against one table of roles and actions, and a test covers every role and action on each pull request.</td></tr>
+              <tr><th scope="row">Secrets</th><td>Secrets live in Google Secret Manager. GitHub deploys without a stored key, and a scan checks every pull request for committed secrets.</td></tr>
+              <tr><th scope="row">Limits</th><td>Writes and sign-in emails are rate limited. Each environment runs at most three servers and has a budget alert.</td></tr>
+              <tr><th scope="row">Audit</th><td>The Build 3 security audit is in <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/blob/main/SECURITY.md">SECURITY.md</a>.</td></tr>
+            </tbody>
+          </table>
+        </div>
 
         <h3 class="label">Analytics</h3>
         <div class="shots">
@@ -182,7 +199,7 @@
       </section>
 
       <section class="block" id="build-log" aria-labelledby="log-title">
-        <div class="block-head"><h2 id="log-title">Build log</h2><span>November 5–14, 2026</span></div>
+        <div class="block-head"><h2 id="log-title">Build log</h2><span>November 5–22, 2026</span></div>
 
         <h3 class="label">Build 1 · November 5–6</h3>
         <dl class="card log">
@@ -205,6 +222,21 @@
           <div><dt>Size</dt><dd>95 commits on seven days, 39 merged pull requests.</dd></div>
           <div><dt>Time</dt><dd>About 24 hours, from the timestamps of my messages to the coding agent.</dd></div>
           <div><dt>Cost</dt><dd>$10 for the domain, and about half of Claude’s $20-a-month plan. No hosting spend yet.</dd></div>
+        </dl>
+
+        <h3 class="label">Build 3 · November 15–22</h3>
+        <dl class="card log">
+          <div><dt>Nov 15–16</dt><dd>Sources and evidence moved to the server. I added the card menu, data download, account deletion, and the privacy page.</dd></div>
+          <div><dt>Nov 17</dt><dd>The app went live on Google Cloud. Every merge deploys to staging, and I release to production myself.</dd></div>
+          <div><dt>Nov 18</dt><dd>I added rate limits and reviewed who can deploy.</dd></div>
+          <div><dt>Nov 19–21</dt><dd>I added Viewer and Editor roles, reports, hiding a wording, the list of steelmen, phone layout, the tour, and accessibility fixes.</dd></div>
+          <div><dt>Nov 22</dt><dd>I added options, History, and combining wordings. I ran the security audit, which is in <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/blob/main/SECURITY.md">SECURITY.md</a>.</dd></div>
+          <div><dt>Learned</dt><dd>A separate staging site lets me try every merge on real hosting without touching real data. A second agent reviewing the code found a request that could freeze the server, which no test had covered.</dd></div>
+          <div><dt>Problems</dt><dd>Analytics were built and tested but never switched on in the live app, and only the audit caught it. Two browser tests failed at random until a port clash was fixed.</dd></div>
+          <div><dt>Next</dt><dd>Classmates test the live app on their phones on November 24.</dd></div>
+          <div><dt>Size</dt><dd>116 commits on eight days, 61 merged pull requests.</dd></div>
+          <div><dt>Time</dt><dd>About 16 hours, from the timestamps of my messages to the coding agent.</dd></div>
+          <div><dt>Cost</dt><dd>$12.50 for Claude, which is half of one week of the $100-a-month plan. Google Cloud hosting was about $3.</dd></div>
         </dl>
       </section>
     </main>
