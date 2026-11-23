@@ -1,6 +1,7 @@
-// An option header's ⋯ menu (M3a-2, A-07), as the prototype's: Rename
-// option, and Delete option, which says why when it can't be used ("Move or
-// delete its arguments first.") and, when it can, that the option is empty.
+// An option header's ⋯ menu (M3a-2, A-07), as the prototype's: Rename, and
+// Delete, which says why only when it can't be used ("Only an empty option
+// can be deleted."). The menu hangs from the option's own header, so its
+// items don't repeat "option", as Notion's and Trello's column menus don't.
 // It hangs from the board's main region and moves and closes like a version's
 // ⋯ menu (Card.tsx): the arrow keys, Home, and End move between items; Escape
 // closes it and puts the cursor back on ⋯; Tab, a click elsewhere, or a scroll
@@ -78,7 +79,7 @@ export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose
     <div ref={menu} className="sm-menu" role="menu" aria-label="Option settings">
       <button type="button" role="menuitem" className="sm-menu-item cursor-interaction" onClick={onRename}>
         <Icon name="pencil" />
-        <span>Rename option</span>
+        <span>Rename</span>
       </button>
       <button
         type="button"
@@ -92,8 +93,8 @@ export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose
       >
         <Icon name="trash-2" />
         <span>
-          Delete option
-          <small>{deleteBlocked ?? "It has no arguments."}</small>
+          Delete
+          {deleteBlocked ? <small>{deleteBlocked}</small> : null}
         </span>
       </button>
     </div>,

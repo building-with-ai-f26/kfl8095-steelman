@@ -585,6 +585,16 @@ async function alwaysTrue(client: pg.Client, board: string): Promise<void> {
     [board],
   );
   check(doubled.rowCount === 0, "2. Nobody has two votes on one thing", doubled.rows);
+
+  // Added by the M3a audit (Nov 22): combining, separating, and undoing either never leave an argument on the board
+  // with no wording. A hidden wording still keeps its argument (writing.ts).
+  const empty = await client.query(
+    `select 'argument ' || a.id as item from argument a
+     where a.board_id = $1 and a.deleted_at is null and a.merged_into is null
+       and not exists (select 1 from version v where v.argument_id = a.id and v.deleted_at is null)`,
+    [board],
+  );
+  check(empty.rowCount === 0, "A-10. Every argument still on the board has a wording", empty.rows);
 }
 
 async function savedOrder(client: pg.Client, board: string): Promise<{ order: BoardOrder; seq: number } | null> {

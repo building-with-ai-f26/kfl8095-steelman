@@ -28,6 +28,15 @@ export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionName
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
 /** Combining a wording into another argument (M3a-6): the one it goes into. */
 export const combineInput = z.strictObject({ into: itemIdInput });
+/**
+ * What combining a wording into an argument would do, for the dialog before it (M3a-7): whether the two arguments
+ * become one, and if so how many people would be asked to vote again, and whether the reader is one. Never who.
+ */
+export interface CombinePreview {
+  last: boolean;
+  asked: number;
+  you: boolean;
+}
 /** Separating a wording (M3a-6): the ID the browser made for its new argument. */
 export const separateInput = z.strictObject({ argumentId: itemIdInput });
 
@@ -177,8 +186,13 @@ export interface SourceRow {
   changedSeq: number;
 }
 
-/** One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. */
+/**
+ * One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. Most
+ * are rows of the change log. A new argument or wording has no such row, so its entry is built from the wording's
+ * own row (`argument_added`, `wording_added`; the subject is the wording).
+ */
 export interface HistoryEntry {
+  /** The change number of the write. An addition's is the write that added it, which can be one a change-log row has too. */
   seq: number;
   at: string;
   actorName: string;
@@ -196,6 +210,15 @@ export interface HistoryEntry {
     role?: Role;
     general?: "link" | "invited";
     linkRole?: Role;
+    /** A combine or separation (M3a-8): the argument the wording left, the one it joined or became, and whether two arguments became one. */
+    from?: string;
+    into?: string;
+    argument?: string;
+    merged?: true;
+    /** An undo: the change it undid. */
+    undoes?: number;
+    /** An edit of a source that cleared its "can't be opened" report (C-02). */
+    cleared?: true;
   };
 }
 
@@ -299,6 +322,8 @@ export type RefusalReason =
   /** A board keeps at least two options, and at most four (OPTIONS_PER_BOARD). */
   | "too_few_options"
   | "too_many_options"
+  /** Another option on the board already has that name, capitals aside (A-07). */
+  | "option_name_taken"
   | "version_deleted"
   | "revision_changed"
   | "needs_evidence"

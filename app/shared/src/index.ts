@@ -35,6 +35,7 @@ export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuer
 export type {
   Access,
   ArgumentRow,
+  CombinePreview,
   BoardChanges,
   BoardList,
   BoardListing,
@@ -51,7 +52,7 @@ export type {
   VersionRow,
   WriteAnswer,
 } from "./api.ts";
-export { leaveOut, openView, pillCount, pressUpdate, receive } from "./sync.ts";
+export { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
 export { CASE_SIZE, strongestCase } from "./strongest.ts";
 export type { CaseItem, OptionCase } from "./strongest.ts";

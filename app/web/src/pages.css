@@ -1,0 +1,48 @@
+/*
+  Your account and New steelman, as Google's own settings screens lay them out (the builder, Nov 22: "Feels too
+  cramped / too many lines … Follow behavior of like Google screens"). Loaded after app.css, so it can adjust what
+  that sheet and the prototype's set for these screens.
+*/
+
+/* The way back (M3a-1, M-13): Material 3's top app bar navigation icon, an arrow in a 40 px round icon button at the
+   left of the screen's title. The button hangs into the margin by its own padding, so the arrow lines up with what's
+   under the title, as in Google Account. */
+#steelman-study .sm-titlebar { display:flex; align-items:center; gap:6px; min-width:0; }
+#steelman-study .sm-titlebar .sm-back { flex:none; margin:0 0 0 -10px; }
+#steelman-study .sm-titlebar h1 { min-width:0; margin:0; overflow-wrap:anywhere; }
+#steelman-study .sm-back-button { display:grid; place-items:center; width:40px; height:40px; border-radius:50%; color:var(--sm-ink); text-decoration:none; transition:background-color var(--sm-fast) var(--sm-ease); }
+#steelman-study .sm-back-button:hover { background:var(--sm-soft); }
+#steelman-study .sm-back-button:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+#steelman-study .sm-back-button svg { width:20px; height:20px; }
+/* A page with the back arrow alone, above its title (the privacy page): the arrow still lines up with the text. */
+#steelman-study .sm-back:has(> .sm-back-button) { margin-left:-10px; }
+
+/* Your account (M-07): the title on the page, then each group a card of its own, as Google Account's are: white,
+   rounded, lifted a little, with no border. A group's title is small capitals at its top. Rows are taller and their
+   hints a size larger, and a quiet rule divides one row from the next, with none above the first or below the last. */
+#steelman-study .sm-account { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; min-width:0; }
+#steelman-study .sm-account h1 { font:600 24px/1.25 var(--sm-serif); color:var(--sm-ink); }
+#steelman-study .sm-account > .sm-titlebar { margin-bottom:4px; }
+#steelman-study .sm-account > .sm-rgroup { min-width:0; padding:6px 20px; border:0; border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+#steelman-study .sm-account > .sm-rgroup > h2 { margin:14px 0 4px; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
+#steelman-study .sm-account .sm-rgroup > .sm-rrow { min-height:56px; padding:12px 0; border-top:1px solid var(--sm-soft); font-size:14px; }
+#steelman-study .sm-account .sm-rgroup > .sm-rrow:first-child, #steelman-study .sm-account .sm-rgroup > h2 + .sm-rrow { border-top:0; }
+#steelman-study .sm-account .sm-rgroup > .sm-rrow:last-child { border-bottom:0; }
+#steelman-study .sm-account .sm-rrow-label { gap:3px; }
+#steelman-study .sm-account .sm-rrow-label small { font-size:12px; line-height:1.45; }
+#steelman-study .sm-account .sm-rrow-value { font-size:14px; }
+#steelman-study .sm-account .sm-rrow-control { gap:12px; }
+#steelman-study .sm-account .sm-rrow .sm-button { min-height:36px; padding:0 14px; font-size:13px; }
+/* Changing your email opens under the Email row, inside its card. */
+#steelman-study .sm-account .sm-rgroup > .sm-pw-form { padding:4px 0 16px; }
+
+/* Sign out and Delete account stand under the cards, on the page. Opened, Delete account's question is a card of
+   its own, edged in red. */
+#steelman-study .sm-account-end { display:grid; justify-items:center; gap:14px; margin-top:8px; }
+#steelman-study .sm-account-end .sm-signout { justify-self:stretch; height:40px; font-size:14px; }
+#steelman-study .sm-account-end .sm-delete-link { font-size:13px; }
+#steelman-study .sm-account-end .sm-delete-form { justify-self:stretch; padding:18px 20px; border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+
+/* New steelman (F-01): the sheet's title with its back arrow at its left. The arrow's button is taller than the
+   title, so the row keeps its height by tucking into the sheet's padding. */
+#steelman-study .sm-create-page .sm-titlebar { margin:-8px 0 -8px; }

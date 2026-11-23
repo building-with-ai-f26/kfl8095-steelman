@@ -353,6 +353,26 @@ describe("stale writes after a combine (architecture §3)", () => {
   });
 });
 
+describe("the dialog's preview (M3a-7)", () => {
+  const preview = (as: string, version = b.version) => api.get(`/api/boards/${b.board}/versions/${version}/combine?into=${second.argument}`, { as });
+
+  test("A-10: says whether the arguments become one, and how many would be asked to vote again, never who", async () => {
+    await castVotes();
+    expect((await preview(eve)).body).toEqual({ last: true, asked: 1, you: false });
+    await importance(eve, b.argument, 1);
+    await importance(eve, second.argument, -1);
+    expect((await preview(eve)).body).toEqual({ last: true, asked: 2, you: true });
+    const extra = await addWording(b.argument, "Sunday suits people who work weekdays.");
+    expect((await preview(eve, extra)).body).toEqual({ last: false, asked: 0, you: false });
+  });
+
+  test("A-10, H-03: only someone who may combine reads it, and only for an argument on this board", async () => {
+    expect((await preview(b.ben)).status).toBe(403);
+    expect((await preview(voters[0]!)).status).toBe(403);
+    expect((await api.get(`/api/boards/${b.board}/versions/${b.version}/combine?into=${ids.itemId()}`, { as: eve })).status).toBe(404);
+  });
+});
+
 describe("account deletion", () => {
   test("A-10, M-07: votes a combine set aside go with a deleted account, even when that was their only mark on the board", async () => {
     const [, p2] = voters as [string, string];

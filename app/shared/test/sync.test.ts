@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { leaveOut, openView, pillCount, pressUpdate, receive } from "@steelman/shared";
+import { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved } from "@steelman/shared";
 import type { ArgumentRow, BoardChanges, BoardSnapshot, OptionRow, VersionRow } from "@steelman/shared";
 
 // The browser's sync rules (plans/architecture.md §3), as pure functions so
@@ -331,3 +331,68 @@ describe("combined and separated by someone else (M3a-6)", () => {
   });
 });
 
+
+describe("the reader's own combine and separation (M3a-7)", () => {
+  test("A-10: a wording the reader combined shows in its new argument at once, where the shared order puts it, and isn't a change waiting for Update", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      versions: [version("a1", "b", 1, { changedSeq: 6 })],
+      order: { arguments: { yes: ["b", "a", "c"], no: ["d"] }, versions: { a: ["a2"], b: ["a1", "b1"], c: ["c1"], d: ["d1"] } },
+    });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.versions.a).toEqual(["a2"]);
+    expect(after.shown.versions.b).toEqual(["a1", "b1"]);
+    expect(pillCount(after)).toBe(0);
+  });
+
+  test("A-10: when it was the argument's last wording, that argument leaves the screen too", () => {
+    const view = receive(openView(snapshot()), {
+      ...nothing(6),
+      arguments: [argument("c", "yes", 3, { mergedInto: "b", changedSeq: 6 })],
+      versions: [version("c1", "b", 3, { changedSeq: 6 })],
+    });
+
+    const after = showMoved(view, "c1");
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a"]);
+    expect(after.shown.versions.c).toBeUndefined();
+    expect(after.shown.versions.b).toEqual(["b1", "c1"]);
+  });
+
+  test("A-10: a separated wording's new argument joins its option at once", () => {
+    const view = receive(openView(snapshot()), { ...nothing(6), arguments: [argument("z", "yes", 6)], versions: [version("a1", "z", 1, { changedSeq: 6 })] });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.arguments.yes).toEqual(["b", "a", "c", "z"]);
+    expect(after.shown.versions.z).toEqual(["a1"]);
+    expect(after.shown.versions.a).toEqual(["a2"]);
+  });
+
+  test("A-10, J-05: Undo puts the screen back as it was, and something added meanwhile still joins the end", () => {
+    const before = openView(snapshot());
+    const moved = showMoved(receive(before, { ...nothing(6), versions: [version("a1", "b", 1, { changedSeq: 6 })] }), "a1");
+    const undone = receive(moved, { ...nothing(8), versions: [version("a1", "a", 1, { changedSeq: 8 }), version("b9", "b", 7)] });
+
+    const after = putBack(undone, before.shown);
+
+    expect(after.shown.versions.a).toEqual(before.shown.versions.a);
+    expect(after.shown.versions.b).toEqual(["b1", "b9"]);
+  });
+
+  test("A-10: the argument it left goes too when combined away, though it still shows a wording someone else moved out", () => {
+    // Someone moved a2 out of a; the reader still sees it there, marked. Then the reader combines a1, a's last.
+    const view = receive(openView(snapshot()), {
+      ...nothing(7),
+      arguments: [argument("a", "yes", 1, { mergedInto: "b", changedSeq: 7 })],
+      versions: [version("a2", "c", 1, { changedSeq: 6 }), version("a1", "b", 1, { changedSeq: 7 })],
+    });
+
+    const after = showMoved(view, "a1");
+
+    expect(after.shown.arguments.yes).not.toContain("a");
+    expect(after.shown.versions.a).toBeUndefined();
+  });
+});

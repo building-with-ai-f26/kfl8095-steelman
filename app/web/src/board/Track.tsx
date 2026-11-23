@@ -22,11 +22,8 @@ export function TrackAxis({ count, at, onFold }: { count: number; at: number; on
   );
   if (count < 2) {
     return (
+      // Nothing to compare yet, and nothing said about it (the builder, Nov 22): only the way to fold it back.
       <div className="sm-track-axis sm-track-note">
-        <span>
-          <Icon name="chevrons-right" />
-          Only one wording so far. Write a second to compare them.
-        </span>
         {fold}
       </div>
     );
@@ -96,7 +93,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
                 />
               )}
             </div>
-            <Card version={version} opening={opening} inTrack />
+            <Card version={version} opening={opening} inTrack row={argumentId} />
           </Fragment>
         );
       })}

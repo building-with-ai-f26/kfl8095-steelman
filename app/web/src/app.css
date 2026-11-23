@@ -188,27 +188,43 @@ body { margin:0; }
 #steelman-study .sm-prev .sm-prev-votes { display:flex; flex-wrap:wrap; gap:4px 14px; margin:8px 0 0; padding-top:7px; border-top:1px solid #e4e0d6; font:400 11px/1.3 var(--sm-sans); }
 #steelman-study .sm-prev .sm-prev-votes b { margin-right:2px; font:600 15px/1 var(--sm-serif); font-variant-numeric:tabular-nums; color:var(--sm-ink); }
 
-/* "Back to …" (M3a-1): the prototype's back link, above the screen's card, and a way on from a dead end. */
-/* min-width: 0, so a long name shrinks to "…" instead of widening the page's grid. */
+/* The back arrow (M3a-1, M-13; drawn in pages.css): min-width 0, so it never widens the page's grid. */
 #steelman-study .sm-back { min-width: 0; max-width: 100%; margin: 0 0 10px; }
-#steelman-study .sm-back .sm-profile-back { margin: 0; max-width: 100%; text-decoration: none; }
-#steelman-study .sm-back .sm-profile-back span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#steelman-study .sm-back .sm-profile-back:hover { color: var(--sm-ink); }
 #steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
 #steelman-study .sm-dead-end p { margin: 0; }
 
 /* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
    in the prototype's head button, widened as its comment button is. */
 #steelman-study .sm-head-button.sm-history-button { display:inline-flex; align-items:center; gap:6px; width:auto; padding:0 9px; font-size:13px; }
-/* The question keeps clear of it: beside it on a wide screen, and on a phone below it, on a line of its own. */
-#steelman-study .sm-head { padding-right:112px; }
-@media(max-width:640px) {
-  #steelman-study .sm-head { padding-right:18px; }
-  #steelman-study .sm-head .sm-head-tools { position:static; justify-content:flex-end; margin:-8px -8px 4px 0; }
-}
+/* The question has the full width, and History sits under it, at the end of the line that says who can open the
+   board, at every width (the builder, Nov 22). */
+#steelman-study .sm-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:8px; padding-right:25px; }
+@media(max-width:640px) { #steelman-study .sm-head { padding-right:18px; } }
+#steelman-study .sm-head > h1 { grid-column:1 / -1; grid-row:1; }
+#steelman-study .sm-head > .sm-question-meta { grid-column:1; grid-row:2; }
+#steelman-study .sm-head .sm-head-tools { position:static; grid-column:2; grid-row:2; align-self:end; margin:0 -8px -6px 0; }
+#steelman-study .sm-head > .sm-link-note { grid-column:1 / -1; }
 #steelman-study .sm-history-drawer { top:0; z-index:50; max-height:calc(100vh - 24px); overflow:auto; }
 /* As the prototype makes room for its drawer (data-drawer on .sm-surface): on a wide screen the board moves left. */
 @media(min-width:1200px) { #steelman-study .sm-scene.sm-with-drawer { padding-right:380px; } }
 #steelman-study .sm-history-day { display:grid; gap:10px; }
 #steelman-study .sm-history-day h3 { margin:0; font:600 11px/1 var(--sm-sans); letter-spacing:.12em; text-transform:uppercase; color:var(--sm-muted); }
-#steelman-study .sm-history .sm-link-button { margin-top:4px; }
+/* An entry: its sentence, then one line with its time and, when something can still be done about it, Restore or Undo. */
+#steelman-study .sm-history-entry { display:grid; gap:3px; min-width:0; }
+#steelman-study .sm-history-meta { display:flex; align-items:baseline; gap:12px; }
+#steelman-study .sm-history-meta .sm-link-button { padding:0; font-size:12px; font-weight:600; color:var(--sm-ink); text-decoration:underline; text-underline-offset:2px; }
+/* A wording's link reads as the entry's own text, underlined, not in the browser's blue. */
+#steelman-study .sm-history a { color:inherit; text-decoration:underline; text-decoration-color:var(--sm-quiet); text-underline-offset:2px; }
+#steelman-study .sm-history a:hover { text-decoration-color:currentColor; }
+
+/* Combine and separate (M3a-7): the prototype's dialog sits over the board, in the middle of the window, rather than
+   placed beside the argument by script, so on a phone its buttons are never below the fold. */
+#steelman-study .sm-preview-scrim { position:fixed; }
+#steelman-study .sm-preview { position:fixed; top:50%; transform:translate(-50%,-50%); max-height:calc(100vh - 32px); overflow:auto; }
+
+/* A message when something can't be done (M-14): at the foot of the window, in front of the board and above the
+   Update pill, in the pill's own ink. Its sentence may run to two lines on a phone, so its corners are a card's. It rises in as the
+   pill does, staying centred. */
+#steelman-study .sm-problem { position:fixed; left:50%; bottom:64px; z-index:72; translate:-50% 0; display:flex; align-items:center; gap:10px; width:max-content; max-width:min(520px, calc(100% - 24px)); padding:9px 8px 9px 14px; border-radius:10px; background:var(--sm-ink); color:#fff; font-size:13px; line-height:1.4; box-shadow:0 6px 18px rgb(0 0 0 / .18); animation:sm-fresh-enter var(--sm-medium) var(--sm-ease); }
+#steelman-study .sm-problem button { display:grid; place-items:center; flex:none; width:28px; height:28px; padding:0; border:0; border-radius:6px; background:transparent; color:#fff; }
+#steelman-study .sm-problem button:hover { background:#ffffff26; }

@@ -98,7 +98,7 @@ test("M3a-4, J-03, J-02: a hidden wording shows its words and Restore to an Edit
   await expect(entries(owner).nth(0)).toContainText(`maya.chen hid “${STAFF}” as off-topic.`);
   await entries(owner).nth(0).getByRole("button", { name: "Restore" }).click();
   await expect(status(owner)).toHaveText("You restored the wording.");
-  await expect(entries(owner).nth(0)).toContainText(`maya.chen restored “${STAFF}”.`);
+  await expect(entries(owner).nth(0)).toContainText(`maya.chen restored “${STAFF}”`);
 });
 
 test("M3a-4, J-03, M-06: a wording named in History opens on the board", async ({ board }) => {
