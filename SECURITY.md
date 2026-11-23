@@ -93,7 +93,6 @@ Each fix has new tests that failed before it. No existing test changed. After th
 ## Remaining issues
 
 - **The low findings in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105) are open.**
-- **The live app sends no analytics yet.** Neither deployed service has the PostHog key, so PostHog works on the Product Page only.
 - **Budgets alert and do not cap.** The ceilings are three servers and a fixed database size.
 - **Rate-limit counts are kept per server.** With three servers a limit can be three times too generous. The sign-in email limit is exact, because it is counted in Postgres.
 - **Three gaps were accepted on November 18** (`plans/reviews/deployment-trust-boundary.md`). The agent acts with the builder's own GitHub and Google logins, the protected-files check can be bypassed from inside a pull request, and repository admins can bypass the release approval. They are sized for a class project and get reviewed again before access widens.
