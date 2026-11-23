@@ -3,8 +3,9 @@
 // using the browser." The prototype's back link (sm-profile-back), worded as
 // GOV.UK's Back link advises for anything but a simple journey: "Back to"
 // where it goes (plans/reviews/m3-design-audit.md). A real link in a Back
-// landmark at the top of Your account and the privacy page; New steelman's
-// own Cancel goes back the same way, so it keeps one way back, not two.
+// landmark at the top of Your account, the privacy page, and New steelman
+// (drawn as an arrow since Nov 22, settings-design.spec.ts); New steelman's
+// own Cancel goes back the same way.
 
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
@@ -58,12 +59,12 @@ test("M3a-1, M-13: the privacy page leads back to Your account, and New steelman
   await page.goto(`/b/${board.demo.board}`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUESTION);
   await page.getByRole("link", { name: "New steelman" }).click();
-  await expect(back(page)).toHaveCount(0);
+  await expect(back(page)).toHaveText(`Back to ${QUESTION}`);
   await page.getByRole("link", { name: "Cancel" }).click();
   await expect(page).toHaveURL(`/b/${board.demo.board}`);
 });
 
-test("M3a-1, M-13: a long question runs to … on one line on a phone, and the link's text is still the whole name", async ({ board }) => {
+test("M3a-1, M-13: with a long question on a phone, the link's text and tooltip are still the whole name", async ({ board }) => {
   const page = await board.open("maya.chen", { width: 375 });
   // From the privacy page, which isn't a place of its own, so leaving it doesn't replace what's set here.
   await page.goto("/privacy");
@@ -72,9 +73,8 @@ test("M3a-1, M-13: a long question runs to … on one line on a phone, and the l
   const name = "Back to Should every public library in the county open on Sundays and on public holidays too?";
   await expect(back(page)).toHaveText(name);
   await expect(back(page)).toHaveAccessibleName(name);
-  // Cut by the stylesheet, on one line: the text is wider than the space it's drawn in.
-  const span = back(page).locator("span");
-  expect(await span.evaluate((element) => [getComputedStyle(element).textOverflow, element.scrollWidth > element.clientWidth])).toEqual(["ellipsis", true]);
+  // Drawn as an arrow alone since Nov 22 (settings-design.spec.ts), so nothing is cut: the tooltip says the whole name.
+  await expect(back(page)).toHaveAttribute("data-tooltip", name);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "no sideways scroll").toBe(true);
 });
 

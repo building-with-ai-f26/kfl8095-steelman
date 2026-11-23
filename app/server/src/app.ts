@@ -143,6 +143,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   option_not_empty: 409,
   too_few_options: 409,
   too_many_options: 409,
+  option_name_taken: 409,
   version_deleted: 409,
   revision_changed: 409,
   needs_evidence: 409,
@@ -466,7 +467,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     answer(reply, await deleteOption(services, request.params.board, request.person, request.params.id)),
   );
 
-  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id/restore", { config: { limit: "writing" } }, async (request, reply) =>
+  // Restoring undoes a delete, so like Undo it isn't counted toward the writing limit (architecture §7).
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/options/:id/restore", async (request, reply) =>
     answer(reply, await restoreOption(services, request.params.board, request.person, request.params.id)),
   );
 
@@ -495,7 +497,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return answer(reply, await separateWording(services, request.params.board, request.person, request.params.id, body.data.argumentId));
   });
 
-  app.put<{ Params: { board: string; seq: string } }>("/api/boards/:board/changes/:seq/undo", { config: { limit: "writing" } }, async (request, reply) => {
+  // Not counted toward the writing limit: undoing never is (architecture §7), so a way back is always there.
+  app.put<{ Params: { board: string; seq: string } }>("/api/boards/:board/changes/:seq/undo", async (request, reply) => {
     const seq = Number(request.params.seq);
     if (!Number.isSafeInteger(seq) || seq < 1) return reply.code(400).send({ reason: "invalid" });
     return answer(reply, await undoStructure(services, request.params.board, request.person, seq));

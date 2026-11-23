@@ -30,7 +30,7 @@ import { markTourSeen, readTour } from "../api.ts";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
 import { VoteControl } from "./Vote.tsx";
-import { WHY, columns, importanceShown, isLive, isLiveVersion, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
+import { WHY, columns, endQuote, finalArgument, importanceShown, isLive, isLiveVersion, leadWording, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession, leaveOptionsOut } from "./session.ts";
 import type { Held, Restructured, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
@@ -38,6 +38,11 @@ import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
+import { Texture } from "./Texture.tsx";
+import { Wires } from "./Wires.tsx";
+
+/** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
+const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
 
 /** How long a version a link points to stays ringed. */
 const RING_MS = 1_400;
@@ -173,17 +178,16 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     setFocusTo(`[data-node="${CSS.escape(argumentId)}"] .sm-claim-button`);
   };
   const cardControl = (versionId: string, control: "claim" | "menu") => `[data-card="${CSS.escape(versionId)}"] .${control === "claim" ? "sm-claim-button" : "sm-card-menu-button"}`;
-  /** The row's wordings that are still there. */
-  /**
-   * Whether deleting this wording deletes its argument: only when no other wording is left, counting one a moderator
-   * hid, which keeps the argument on the service (writing.ts) and can be restored (M2-4).
-   */
   /**
    * Whether it's its argument's last wording on the service, which decides whether combining makes two arguments one
    * and whether it can be separated (M3a-7): from the rows, not the screen, which may still show a wording someone
    * moved or deleted. A hidden wording counts, as on the service.
    */
   const lastOnService = (version: VersionRow) => !Object.values(view.rows.versions).some((v) => v.argumentId === version.argumentId && v.id !== version.id && !v.deleted);
+  /**
+   * Whether deleting this wording deletes its argument: only when no other wording is left, counting one a moderator
+   * hid, which keeps the argument on the service (writing.ts) and can be restored (M2-4).
+   */
   const isLast = (version: VersionRow) =>
     (view.shown.versions[version.argumentId] ?? []).filter((id) => id !== version.id && !view.rows.versions[id]?.deleted && (view.rows.versions[id]?.hidden || isLiveVersion(view.rows.versions[id]))).length === 0;
 
@@ -215,13 +219,16 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     last: lastOnService(version),
     returnTo,
   });
-  /** The wording an argument leads with on screen, for "Combine here" and the dialog. */
-  const leadOf = (argumentId: string) => view.rows.versions[(view.shown.versions[argumentId] ?? [])[0] ?? ""]?.wording ?? "";
+  /** The wording an argument leads with, for the dialog and the notes: never one that was deleted or has moved out of it. */
+  const leadOf = (argumentId: string) => leadWording(view, argumentId) ?? "";
   const askCombine = (from: Moving, intoId: string) => {
     setMoving(null);
     setAsking({ kind: "combine", versionId: from.versionId, wording: from.wording, intoId, intoWording: leadOf(intoId), last: from.last, returnTo: from.returnTo });
   };
-  const askSeparate = (from: Moving) => setAsking({ kind: "separate", versionId: from.versionId, wording: from.wording, returnTo: from.returnTo });
+  const askSeparate = (from: Moving) => {
+    setMoving(null);
+    setAsking({ kind: "separate", versionId: from.versionId, wording: from.wording, returnTo: from.returnTo });
+  };
   const cancelMove = () => {
     if (!moving) return;
     setMoving(null);
@@ -231,11 +238,21 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   useEffect(() => {
     if (!moving) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") cancelMove();
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      // An Escape that closes something else (a menu, History, a field being typed in) doesn't also cancel the pick.
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest('[role="menu"], [aria-haspopup="menu"][aria-expanded="true"], .sm-drawer, input, textarea, select')) return;
+      cancelMove();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [moving]);
+  // Picking and dragging end when the reader's role no longer allows combining (the service would refuse it).
+  useEffect(() => {
+    if (mayStructure) return;
+    setMoving(null);
+    setDragging(null);
+  }, [mayStructure]);
   const confirmAsking = () => {
     const was = asking;
     setAsking(null);
@@ -301,12 +318,13 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
       if (version.argumentId === row || !isLiveVersion(version)) return null;
       const into = finalArgument(view, version.argumentId);
       const shownInto = Object.values(view.shown.arguments).some((ids) => ids.includes(into)) && into !== row;
-      const lead = shownInto ? leadOf(into) : "";
+      // The argument it joined, by a wording of that argument's own, not by this one.
+      const lead = shownInto ? (leadWording(view, into, version.id) ?? "") : "";
       return (
         <>
           <p className="sm-removed-note">
             <Icon name="merge" />
-            <span>{lead ? `This wording was combined with “${short(lead)}”.` : "This wording moved to another argument."}</span>
+            <span>{lead ? `This wording moved to ${endQuote(lead)}` : "This wording moved to another argument."}</span>
           </p>
           {lead ? (
             <button type="button" className="sm-link-button sm-gone-link cursor-interaction" onClick={() => goTo(into)}>
@@ -535,13 +553,26 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     setOpen(null);
     setExpanded(null);
     setWriting(null);
+    // Strongest case has no rows to pick: a wording being placed is put down.
+    setMoving(null);
+    setDragging(null);
     session.announce(`${editing ? "Your changes were discarded. " : ""}Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.`);
   }, [zoom, session, writing]);
   /** Choosing an argument in Strongest case opens its wording on the board, its row unfolded if the wording doesn't lead it there. */
-  const openFromCase = (item: CaseItem) => showVersion(item.argumentId, item.versionId);
-  /** Opens a wording on the board, from Strongest case or History: its row unfolded if it isn't the leading one, and its card open. */
-  const showVersion = (argumentId: string, versionId: string) => {
-    const at = (view.shown.versions[argumentId] ?? []).indexOf(versionId);
+  const openFromCase = (item: CaseItem) => void showVersion(item.versionId);
+  /**
+   * Opens a wording on the board, from Strongest case or History: its row unfolded if it isn't the leading one, and
+   * its card open. Answers false when the board doesn't show it where it is now, because someone moved it and the
+   * reader hasn't pressed Update: then nothing on the board moves, and a note in the header says how to see it.
+   */
+  const showVersion = (versionId: string): boolean => {
+    const argumentId = view.rows.versions[versionId]?.argumentId;
+    const at = argumentId ? (view.shown.versions[argumentId] ?? []).indexOf(versionId) : -1;
+    if (!argumentId || at < 0) {
+      setNote(NOT_SHOWN_YET);
+      session.announce(NOT_SHOWN_YET);
+      return false;
+    }
     if (writing?.kind === "wording") setWriting(null);
     setOpen(at > 0 ? argumentId : null);
     setExpanded(versionId);
@@ -549,6 +580,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     setArrived(versionId);
     setFocusTo(cardControl(versionId, "claim"));
     onZoom("read");
+    return true;
   };
 
   // History (M3a-4, J-03): a panel beside the board, opened from the question header.
@@ -560,11 +592,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     historyButton.current?.focus();
   }, [session]);
   const openFromHistory = (versionId: string) => {
-    const version = view.rows.versions[versionId];
-    if (!version) return;
-    // Where the panel covers the board, it closes, so the wording can be seen.
-    if (window.matchMedia("(max-width: 1199px)").matches) setHistoryOpen(false);
-    showVersion(version.argumentId, versionId);
+    if (!view.rows.versions[versionId]) return;
+    const shown = showVersion(versionId);
+    // Where the panel covers the board, it closes, so the wording, or the note that says how to see it, can be seen.
+    if (!window.matchMedia("(max-width: 1199px)").matches) return;
+    setHistoryOpen(false);
+    if (!shown) setFocusTo(".sm-link-note button");
   };
 
   const update = () => {
@@ -591,6 +624,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         </span>
       ))}
       <div className={`sm-scene${historyOpen ? " sm-with-drawer" : ""}`}>
+        <Wires view={view} mine={state.mine} />
         <section className="sm-head" aria-label="The question">
           <div className="sm-head-tools">
             <button
@@ -598,7 +632,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
               type="button"
               className="sm-head-button sm-history-button cursor-interaction"
               aria-expanded={historyOpen}
-              aria-controls="sm-history"
+              aria-controls={historyOpen ? "sm-history" : undefined}
               onClick={() => {
                 if (historyOpen) return closeHistory();
                 setHistoryOpen(true);
@@ -639,7 +673,6 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             role={state.role}
             session={session}
             logSeq={state.logSeq}
-            heldOptions={state.optionsLeftOut.length}
             onOpen={openFromHistory}
             onClose={closeHistory}
           />
@@ -649,15 +682,15 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             <div className="sm-board" style={{ "--sm-cols": boardColumns(options, undefined) } as React.CSSProperties}>
               {state.undo && (
                 <div className="sm-board-undo">
-                  <UndoBar held={state.undo} onUndo={undo} />
+                  <UndoBar label={state.undo.label} onUndo={undo} />
                 </div>
               )}
-              {state.optionGone && <OptionUndoBar onUndo={undoOptionDelete} />}
+              {state.optionGone && <UndoBar label={OPTION_DELETED} onUndo={undoOptionDelete} above />}
               <StrongestCase view={view} leftOut={state.leftOut} mine={state.mine} onOpen={openFromCase} />
             </div>
           ) : (
             <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption, addColumn ? (naming ? "naming" : "add") : null) } as React.CSSProperties}>
-              {state.optionGone && <OptionUndoBar onUndo={undoOptionDelete} />}
+              {state.optionGone && <UndoBar label={OPTION_DELETED} onUndo={undoOptionDelete} above />}
               <div className="sm-sides" role="tablist" aria-label="Sides">
                 {options.map((option) => (
                   <button
@@ -701,7 +734,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                   onUndo={undo}
                   structure={structure}
                   mayStructure={mayStructure}
-                  deleteBlocked={options.length <= OPTIONS_PER_BOARD.min ? "A question needs at least two options." : (view.shown.arguments[option.id] ?? []).some((id) => isLive(view.rows.arguments[id])) ? "Move or delete its arguments first." : null}
+                  deleteBlocked={options.length <= OPTIONS_PER_BOARD.min ? "A question needs at least two options." : (view.shown.arguments[option.id] ?? []).some((id) => isLive(view.rows.arguments[id])) ? "Only an empty option can be deleted." : null}
                 />
               ))}
               {addColumn && (
@@ -726,6 +759,8 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
               )}
             </div>
           )}
+          {/* Inside the main region, so a screen reader finds it with the board it's about; it's drawn at the window's foot. */}
+          {state.problem !== null ? <Problem text={state.problem} onDismiss={() => session.dismissProblem()} /> : null}
         </main>
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
@@ -817,6 +852,22 @@ function readingAnchor(open: string | null): { id: string; top: number } | null 
     if (box.bottom > 60) return { id: row.dataset.node!, top: box.top };
   }
   return null;
+}
+
+/**
+ * Why the last thing the reader did wasn't done (M-14), at the foot of the window, above the Update pill: one sentence
+ * and a way to close it, with no icon, as Material's snackbar has it. It isn't a live region: the status line has
+ * already said it to a screen reader.
+ */
+function Problem({ text, onDismiss }: { text: string; onDismiss(): void }) {
+  return (
+    <div className="sm-problem">
+      <span>{text}</span>
+      <button type="button" className="cursor-interaction" aria-label="Dismiss" data-tooltip="Dismiss" onClick={onDismiss}>
+        <Icon name="x" size={15} />
+      </button>
+    </div>
+  );
 }
 
 /** "Too many in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
@@ -922,7 +973,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
   const barAfter = held?.after != null && argumentIds.includes(held.after) ? held.after : null;
   const moved = structure.restructured?.optionId === option.id ? structure.restructured : null;
   const movedAfter = moved?.after != null && argumentIds.includes(moved.after) ? moved.after : null;
-  const movedBar = moved ? <PlainUndoBar label={moved.label} onUndo={structure.undo} /> : null;
+  const movedBar = moved ? <UndoBar label={moved.label} onUndo={structure.undo} /> : null;
   const dragging = structure.dragging?.optionId === option.id ? structure.dragging : null;
   return (
     <>
@@ -946,6 +997,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
           structure.drop(target.classList.contains("sm-drop-split") ? "separate" : target.dataset.node!);
         }}
       >
+        <Texture />
         {first && ranked && (
           <div className="sm-col-vaxis">
             <Axis kind="v" start="more important" end="less important" />
@@ -967,14 +1019,14 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
             Most important first
           </div>
         )}
-        {held && barAfter === null && <UndoBar held={held} onUndo={onUndo} />}
+        {held && barAfter === null && <UndoBar label={held.label} onUndo={onUndo} />}
         {moved && movedAfter === null && movedBar}
         {argumentIds.map((id) => {
           const argument = view.rows.arguments[id];
           return argument ? (
             <Fragment key={id}>
               <Row argument={argument} open={open === id} onToggle={() => onToggle(id)} writer={writer} opening={opening} view={view} state={state} session={session} structure={structure} />
-              {held && barAfter === id && <UndoBar held={held} onUndo={onUndo} />}
+              {held && barAfter === id && <UndoBar label={held.label} onUndo={onUndo} />}
               {moved && movedAfter === id && movedBar}
             </Fragment>
           ) : null;
@@ -1012,11 +1064,12 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
   const versionIds = view.shown.versions[argument.id] ?? [];
   const versions = versionIds.map((id) => view.rows.versions[id]).filter((version) => version !== undefined);
   const lead = versions[0];
+  // Before any return: a row with nothing to show yet (its only wording hidden) draws again when one is restored.
+  const [at, setAt] = useState(0);
   if (!lead) return null;
   const label = short(lead.wording ?? (lead.hidden && !lead.deleted ? "Removed by a moderator" : `Deleted by ${lead.authorName}`));
   const { vote, score } = importanceShown(argument, state.mine);
   const count = versionIds.length;
-  const [at, setAt] = useState(0);
   if (argument.mergedInto !== null) return <MergedRow argument={argument} label={label} view={view} opening={opening} />;
   // While a wording is being placed (M3a-7): the other live arguments in its option take it.
   const placing = structure.picking ?? structure.dragging;
@@ -1049,15 +1102,8 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
             <Card version={lead} opening={opening} row={argument.id} />
           </>
         )}
-        {/* Asked again after a combine, when the reader's two votes disagreed (PRD §5), until they vote: the prototype's note. */}
-        {argument.askedAgain && vote === null ? (
-          <p className="sm-vote-again" role="note">
-            <Icon name="rotate-ccw" />
-            <span>Your votes on the two arguments disagreed, so vote again.</span>
-          </p>
-        ) : null}
         {target && structure.picking ? (
-          <button type="button" className="sm-move-here cursor-interaction" aria-label={`Combine here: same point as “${label}”`} onClick={() => structure.pick(argument.id)}>
+          <button type="button" className="sm-move-here cursor-interaction" aria-label={`Combine here: same point as “${short(leadWording(view, argument.id) ?? label)}”`} onClick={() => structure.pick(argument.id)}>
             <span>
               <Icon name="merge" />
               Combine here
@@ -1065,6 +1111,15 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
           </button>
         ) : null}
       </div>
+      {/* Asked again after a combine, when the reader's two votes disagreed (PRD §5), until they vote: a chip under the
+          card, with the vote it asks for ringed. Why is its hint, and what a screen reader hears. */}
+      {argument.askedAgain && vote === null ? (
+        <p className="sm-vote-again" role="note" data-tooltip="Your votes on the two arguments disagreed.">
+          <Icon name="rotate-ccw" />
+          <span aria-hidden="true">Vote again</span>
+          <span className="sm-sr">Your votes on the two arguments disagreed, so vote again.</span>
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1077,14 +1132,15 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
 function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; label: string; view: ReaderView; opening: Opening }) {
   const into = finalArgument(view, argument.id);
   const shown = Object.values(view.shown.arguments).some((ids) => ids.includes(into));
-  const lead = view.rows.versions[(view.shown.versions[into] ?? [])[0] ?? ""]?.wording ?? null;
+  // Never a wording that was deleted, or that has moved out of that argument since.
+  const lead = leadWording(view, into);
   return (
     <section className="sm-idea sm-merged" data-node={argument.id} aria-label={label}>
       <div className="sm-card-wrap">
         <article className="sm-card sm-removed sm-gone">
           <p className="sm-removed-note">
             <Icon name="merge" />
-            <span>{lead ? `This was combined with “${short(lead)}”.` : "This was combined with another argument."}</span>
+            <span>{lead ? `This was combined with ${endQuote(lead)}` : "This was combined with another argument."}</span>
           </p>
           {shown ? (
             <button type="button" className="sm-link-button sm-gone-link cursor-interaction" onClick={() => opening.menu.goTo(into)}>
@@ -1097,16 +1153,6 @@ function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; 
   );
 }
 
-/** Where an argument's wordings are now: itself, or the argument it was combined into, followed through later combines. */
-function finalArgument(view: ReaderView, argumentId: string): string {
-  let id = argumentId;
-  for (let hops = 0; hops < 50; hops++) {
-    const next = view.rows.arguments[id]?.mergedInto;
-    if (!next) return id;
-    id = next;
-  }
-  return id;
-}
 
 /**
  * An option's header (M3a-2, A-07): its name, and for an Editor or the Owner
@@ -1211,23 +1257,16 @@ function OptionName({ initial, onDone, onCancel }: { initial: string; onDone(nam
   );
 }
 
-/** "You deleted the option. Undo", above the board, for ten seconds (M3a-2). The status line announces it. */
-function OptionUndoBar({ onUndo }: { onUndo(): void }) {
-  return (
-    <div className="sm-board-undo sm-option-undo">
-      <div className="sm-undo">
-        <span>You deleted the option.</span>
-        <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
-          Undo
-        </button>
-      </div>
-    </div>
-  );
-}
+/** What the Undo bar says after an option is deleted (M3a-2). */
+const OPTION_DELETED = "You deleted the option.";
 
-/** "You combined the arguments. Undo", under the row it joined, for ten seconds (M3a-7). The status line announces it. */
-function PlainUndoBar({ label, onUndo }: { label: string; onUndo(): void }) {
-  return (
+/**
+ * What happened, and Undo, for ten seconds; the status line announces it. "Version deleted." sits where the deletion
+ * was, and "You combined the arguments." under the row the wording joined (M3a-7). `above`: over the whole board, as
+ * "You deleted the option." is (M3a-2).
+ */
+function UndoBar({ label, onUndo, above = false }: { label: string; onUndo(): void; above?: boolean }) {
+  const bar = (
     <div className="sm-undo">
       <span>{label}</span>
       <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
@@ -1235,18 +1274,7 @@ function PlainUndoBar({ label, onUndo }: { label: string; onUndo(): void }) {
       </button>
     </div>
   );
-}
-
-/** "Version deleted. Undo", where the deletion was, for ten seconds. The status line announces it. */
-function UndoBar({ held, onUndo }: { held: Held; onUndo(): void }) {
-  return (
-    <div className="sm-undo">
-      <span>{held.label}</span>
-      <button type="button" className="sm-link-button cursor-interaction" onClick={onUndo}>
-        Undo
-      </button>
-    </div>
-  );
+  return above ? <div className="sm-board-undo sm-option-undo">{bar}</div> : bar;
 }
 
 /** The stack beside a card: how many wordings it has, or ≫ when there's no other yet. */

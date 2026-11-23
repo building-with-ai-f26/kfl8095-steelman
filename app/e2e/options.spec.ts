@@ -1,5 +1,5 @@
 // Options on the board (M3a-2; A-07), as the prototype has them: the option
-// header's ⋯ (Options for …) with Rename option and Delete option, renaming in
+// header's ⋯ (Options for …) with Rename and Delete, renaming in
 // place in the header, and a dashed "Add an option" after the last column, as
 // GitHub Projects puts its "+" (read live, Nov 22). Only an Editor or the
 // Owner sees them. Deleting is held for ten seconds with Undo, like deleting a
@@ -42,8 +42,8 @@ test("M3a-2, A-07: the Owner renames an option in its header; another reader see
 
   await menuButton(page, "Yes").click();
   // With two options, the prototype gives that reason first; with three, the arguments are the reason.
-  expect(await menu(page).getByRole("menuitem").allTextContents()).toEqual(["Rename option", "Delete optionA question needs at least two options."]);
-  await menu(page).getByRole("menuitem", { name: "Rename option" }).click();
+  expect(await menu(page).getByRole("menuitem").allTextContents()).toEqual(["Rename", "DeleteA question needs at least two options."]);
+  await menu(page).getByRole("menuitem", { name: "Rename" }).click();
   await expect(nameField(page)).toHaveValue("Yes");
   await expect(nameField(page)).toBeFocused();
   await nameField(page).fill("Yes, every Sunday");
@@ -61,14 +61,14 @@ test("M3a-2, A-07: Escape keeps the old name, and so does an empty one", async (
   const sent = optionWrites(page);
 
   await menuButton(page, "No").click();
-  await menu(page).getByRole("menuitem", { name: "Rename option" }).click();
+  await menu(page).getByRole("menuitem", { name: "Rename" }).click();
   await nameField(page).fill("Something else");
   await nameField(page).press("Escape");
   await expect(page.locator(".sm-column-head h2").nth(1)).toHaveText("No");
   await expect(menuButton(page, "No")).toBeFocused();
 
   await menuButton(page, "No").click();
-  await menu(page).getByRole("menuitem", { name: "Rename option" }).click();
+  await menu(page).getByRole("menuitem", { name: "Rename" }).click();
   await nameField(page).fill("   ");
   await nameField(page).press("Enter");
   await expect(page.locator(".sm-column-head h2").nth(1)).toHaveText("No");
@@ -100,21 +100,21 @@ test("M3a-2, A-07: a board has at most four options, so Add an option goes at fo
   const page = await board.open("maya.chen");
   await addOption(page, "Third");
   await menuButton(page, "Yes").click();
-  await expect(menu(page).getByRole("menuitem", { name: /Delete option/ })).toHaveText("Delete optionMove or delete its arguments first.");
-  await expect(menu(page).getByRole("menuitem", { name: /Delete option/ })).toHaveAttribute("aria-disabled", "true");
+  await expect(menu(page).getByRole("menuitem", { name: /Delete/ })).toHaveText("DeleteOnly an empty option can be deleted.");
+  await expect(menu(page).getByRole("menuitem", { name: /Delete/ })).toHaveAttribute("aria-disabled", "true");
   await page.keyboard.press("Escape");
   await addOption(page, "Fourth");
   await expect(addButton(page)).toHaveCount(0);
 });
 
-test("M3a-2, A-07, J-05: Delete option takes an empty option off at once with Undo, and sends it after ten seconds", async ({ board }) => {
+test("M3a-2, A-07, J-05: Delete takes an empty option off at once with Undo, and sends it after ten seconds", async ({ board }) => {
   const page = await board.open("maya.chen");
   const other = await board.open("tess.b");
   await addOption(page, "Only in winter");
   const sent = optionWrites(page);
 
   await menuButton(page, "Only in winter").click();
-  await menu(page).getByRole("menuitem", { name: "Delete option" }).click();
+  await menu(page).getByRole("menuitem", { name: "Delete" }).click();
   await expect(column(page, "Only in winter")).toHaveCount(0);
   await expect(status(page)).toHaveText("You deleted the option. Undo is available for ten seconds.");
   await page.getByRole("button", { name: "Undo" }).click();
@@ -122,7 +122,7 @@ test("M3a-2, A-07, J-05: Delete option takes an empty option off at once with Un
   expect(sent).toHaveLength(0);
 
   await menuButton(page, "Only in winter").click();
-  await menu(page).getByRole("menuitem", { name: "Delete option" }).click();
+  await menu(page).getByRole("menuitem", { name: "Delete" }).click();
   await page.clock.runFor(UNDO_MS - 1_000);
   expect(sent).toHaveLength(0);
   const answered = page.waitForResponse((response) => response.request().method() === "DELETE" && response.url().includes("/options/"));
@@ -162,7 +162,7 @@ async function onService(board: { api(person: "maya.chen"): { snapshot(): Promis
 
 async function deleteOption(page: Page, name: string): Promise<void> {
   await menuButton(page, name).click();
-  await menu(page).getByRole("menuitem", { name: /Delete option/ }).click();
+  await menu(page).getByRole("menuitem", { name: /Delete/ }).click();
   await expect(column(page, name)).toHaveCount(0);
 }
 
@@ -277,7 +277,7 @@ test("M3a-2, A-07, M-04: leaving a name field keeps the name and leaves the curs
   const sent = optionWrites(page);
 
   await menuButton(page, "No").click();
-  await menu(page).getByRole("menuitem", { name: "Rename option" }).click();
+  await menu(page).getByRole("menuitem", { name: "Rename" }).click();
   await nameField(page).fill("No, never");
   await page.getByRole("region", { name: "The question" }).click({ position: { x: 4, y: 4 } });
   await expect(page.locator(".sm-column-head h2").nth(1)).toHaveText("No, never");
@@ -291,13 +291,13 @@ test("M3a-2, A-07, M-04: leaving a name field keeps the name and leaves the curs
   expect(sent.filter((request) => request.method() === "POST")).toHaveLength(0);
 });
 
-test("M3a-2, A-07: an empty option's Delete says it has no arguments; while one is held at four options, Add an option stays away", async ({ board }) => {
+test("M3a-2, A-07: an empty option's Delete says nothing more; while one is held at four options, Add an option stays away", async ({ board }) => {
   const page = await board.open("maya.chen");
   await addOption(page, "Third");
   await addOption(page, "Fourth");
   await menuButton(page, "Fourth").click();
-  await expect(menu(page).getByRole("menuitem", { name: /Delete option/ })).toHaveText("Delete optionIt has no arguments.");
-  await menu(page).getByRole("menuitem", { name: /Delete option/ }).click();
+  await expect(menu(page).getByRole("menuitem", { name: /Delete/ })).toHaveText("Delete");
+  await menu(page).getByRole("menuitem", { name: /Delete/ }).click();
 
   await expect(column(page, "Fourth")).toHaveCount(0);
   await expect(addButton(page)).toHaveCount(0);

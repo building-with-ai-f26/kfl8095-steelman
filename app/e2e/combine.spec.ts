@@ -3,7 +3,7 @@
 // Owner moves one wording into another argument in its option, by dragging
 // the card's merge handle onto it, or, without a drag, by "Combine with
 // another argument" (the ⋯ menu, or a click on the handle), then "Combine
-// here" on the argument it repeats. "Make it a separate argument" (the menu,
+// here" on the argument it repeats. "Separate…" (the menu,
 // or a drop on the column's "Add an argument") makes it its own argument.
 // Each opens a short dialog first, as Zendesk does before merging tickets and
 // Canny before merging posts: the question, the wordings, and Cancel and the
@@ -43,7 +43,7 @@ test("M3a-7, A-10: the Owner combines a wording from its ⋯ menu, picking the a
   const lead = await find(board, LEAD);
   const study = await find(board, STUDY);
 
-  await chooseFromMenu(page, LEAD, "Combine with another argument");
+  await chooseFromMenu(page, LEAD, "Combine…");
   await expect(column(page, "Yes").getByText("Pick the argument that makes the same point.")).toBeVisible();
   // Only the other arguments in its option offer Combine here; the first has the cursor.
   await expect(column(page, "Yes").locator(".sm-move-here")).toHaveCount(2);
@@ -73,7 +73,7 @@ test("M3a-7, A-10, J-05: Undo puts the wording back where it was", async ({ boar
   const page = await board.open("maya.chen");
   const lead = await find(board, LEAD);
   const before = await rows(page, "Yes");
-  await chooseFromMenu(page, LEAD, "Combine with another argument");
+  await chooseFromMenu(page, LEAD, "Combine…");
   await here(page, STUDY).click();
   await dialog(page).getByRole("button", { name: "Combine" }).click();
   await expect(page.locator(".sm-undo")).toBeVisible();
@@ -106,7 +106,10 @@ test("M3a-7, A-10, PRD §5: dragging an argument's last wording onto another com
   await expect(page.locator(".sm-undo")).toContainText("You combined the arguments.");
   expect(await rows(page, "Yes")).toEqual([LEAD, FAMILY]);
   const note = row(page, FAMILY).getByRole("note");
-  await expect(note).toHaveText("Your votes on the two arguments disagreed, so vote again.");
+  // A chip under the card: "Vote again" to the eye, with why as its hint and as what a screen reader hears.
+  await expect(note.locator("span[aria-hidden]")).toHaveText("Vote again");
+  await expect(note).toHaveAttribute("data-tooltip", "Your votes on the two arguments disagreed.");
+  await expect(note.locator(".sm-sr")).toHaveText("Your votes on the two arguments disagreed, so vote again.");
   await row(page, FAMILY).getByRole("button", { name: "More important if true" }).click();
   await expect(note).toHaveCount(0);
 });
@@ -115,7 +118,7 @@ test("M3a-7, A-10: a wording is separated from its ⋯ menu, and by dropping it 
   const page = await board.open("maya.chen");
   await row(page, LEAD).getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
 
-  await chooseFromMenu(page, SHIFT, "Make it a separate argument");
+  await chooseFromMenu(page, SHIFT, "Separate…");
   await expect(dialog(page)).toHaveAccessibleName("Make this wording its own argument?");
   await expect(dialog(page)).toContainText(SHIFT);
   await dialog(page).getByRole("button", { name: "Separate" }).click();
@@ -185,7 +188,7 @@ test("M3a-7, A-10, M-02: another reader sees a combined argument in its place, s
 
   await expect(row(other, FAMILY)).toBeVisible();
   const gone = column(other, "Yes").locator(".sm-idea.sm-merged");
-  await expect(gone).toContainText(`This was combined with “${short(FAMILY)}”.`);
+  await expect(gone).toContainText(`This was combined with “${short(FAMILY)}”`);
   await expect(pill(other)).toContainText("1 change");
   await gone.getByRole("button", { name: "Go to it" }).click();
   await expect(row(other, FAMILY).locator(".sm-claim-button").first()).toBeFocused();
@@ -217,7 +220,7 @@ test("M3a-7, A-10, M-02: another reader sees one wording moved out of a row they
   await poll(other);
 
   await expect(cardOf(other, SHIFT)).toBeVisible();
-  await expect(column(other, "Yes").locator(".sm-removed-note", { hasText: `This wording was combined with “${short(STUDY)}”.` })).toBeVisible();
+  await expect(column(other, "Yes").locator(".sm-removed-note", { hasText: `This wording moved to “${short(STUDY)}”` })).toBeVisible();
   await expect(pill(other)).toContainText("1 change");
 });
 

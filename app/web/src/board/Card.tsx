@@ -120,7 +120,8 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
       </article>
     );
   }
-  const moved = row !== undefined ? opening.menu.moved(version, row) : null;
+  // An edit in progress stays open when a poll brings someone else's move of this wording: what's typed isn't lost.
+  const moved = row !== undefined && opening.menu.editing !== version.id ? opening.menu.moved(version, row) : null;
   if (moved) {
     return (
       <article className={`sm-card sm-removed sm-gone${face}`} data-card={version.id}>
@@ -220,32 +221,43 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
         <span className="sm-cred-group">
           <Meter yes={shown.yes} no={shown.no} />
         </span>
-        {shown.sourceIds.length > 0 || mayCombine ? (
-          <div className="sm-card-tools">
-            {mayCombine ? (
-              // The prototype's merge handle: drag it onto the argument this one repeats, or press it to pick one (M3a-7).
-              <button
-                type="button"
-                className="sm-source-button sm-merge-handle cursor-interaction"
-                draggable
-                aria-label="Combine with another argument"
-                data-tooltip="Drag it onto the argument it repeats, or press to pick one."
-                onClick={() => opening.menu.combine(shown, "handle")}
-                onDragStart={(event) => {
-                  event.dataTransfer.effectAllowed = "move";
-                  event.dataTransfer.setData("text/plain", version.id);
-                  const face = event.currentTarget.closest(".sm-card");
-                  if (face) event.dataTransfer.setDragImage(face, 30, 20);
-                  opening.menu.dragStart(shown);
-                }}
-                onDragEnd={() => opening.menu.dragEnd()}
-              >
-                <Icon name="merge" />
-              </button>
-            ) : null}
-            {shown.sourceIds.length > 0 ? <SourceCount count={shown.sourceIds.length} /> : null}
-          </div>
-        ) : null}
+        {/* Always drawn: the chevron at its right end opens and closes the card (the builder, Nov 22). */}
+        <div className="sm-card-tools">
+          {mayCombine ? (
+            // The prototype's merge handle: drag it onto the argument this one repeats, or press it to pick one (M3a-7).
+            <button
+              type="button"
+              className="sm-source-button sm-merge-handle cursor-interaction"
+              draggable
+              aria-label="Combine with another argument"
+              data-tooltip="Combine"
+              onClick={() => opening.menu.combine(shown, "handle")}
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", version.id);
+                const face = event.currentTarget.closest(".sm-card");
+                if (face) event.dataTransfer.setDragImage(face, 30, 20);
+                opening.menu.dragStart(shown);
+              }}
+              onDragEnd={() => opening.menu.dragEnd()}
+            >
+              <Icon name="merge" />
+            </button>
+          ) : null}
+          {shown.sourceIds.length > 0 ? <SourceCount count={shown.sourceIds.length} /> : null}
+          {/* The prototype's expand chevron, last at the footer's right: the same as pressing the wording (the builder, Nov 22). */}
+          <button
+            type="button"
+            className="sm-expand cursor-interaction"
+            aria-expanded={open}
+            aria-controls={reveal}
+            aria-label={open ? "Collapse card" : "Expand card"}
+            data-tooltip={open ? "Collapse" : "Expand"}
+            onClick={() => opening.toggle(version.id)}
+          >
+            <Icon name={open ? "chevron-up" : "chevron-down"} />
+          </button>
+        </div>
       </div>
       <div className="sm-card-reveal" id={reveal} hidden={!open}>
         {open ? (
@@ -302,8 +314,8 @@ const MENU_ITEMS: Record<MenuItem, { icon: IconName; label: string }> = {
   edit: { icon: "pencil", label: "Edit wording and context" },
   suggest: { icon: "pen-line", label: "Suggest a revised version" },
   copyLink: { icon: "link", label: "Copy link" },
-  combine: { icon: "merge", label: "Combine with another argument" },
-  separate: { icon: "split", label: "Make it a separate argument" },
+  combine: { icon: "merge", label: "Combine…" },
+  separate: { icon: "split", label: "Separate…" },
   deleteVersion: { icon: "trash-2", label: "Delete version" },
   deleteArgument: { icon: "trash-2", label: "Delete argument" },
   report: { icon: "flag", label: "Report" },
