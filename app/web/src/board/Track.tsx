@@ -89,7 +89,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
                   forward="Better articulated"
                   back="Less well articulated"
                   onVote={(value) => session.act({ kind: "articulation", versionId: version.id, value })}
-                  blocked={whyNot(reader, state.role, "vote")}
+                  blocked={whyNot(reader, state.role, "vote", state.closing?.closed)}
                 />
               )}
             </div>
@@ -98,7 +98,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
         );
       })}
       {/* Someone who can't write isn't offered a new version at all, as in the prototype. */}
-      {whyNot(reader, state.role, "add") ? null : (
+      {whyNot(reader, state.role, "add", state.closing?.closed) ? null : (
         <WordingSlot
           open={writer.writing?.kind === "wording" && writer.writing.argumentId === argumentId}
           draft={writer.draft(key)}

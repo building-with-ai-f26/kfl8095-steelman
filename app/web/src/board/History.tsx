@@ -34,6 +34,8 @@ interface HistoryProps {
   view: ReaderView;
   reader: string | null;
   role: Role | null;
+  /** Whether the board is closed (M3b-5): Restore and Undo are then left out, as the service would refuse them. */
+  closed: boolean;
   session: BoardSession;
   /** The newest change-log row the board has polled: History reads again when it moves, not on every vote. */
   logSeq: number;
@@ -47,7 +49,7 @@ const AS_REASON: Record<string, string> = { spam: "as spam", abuse: "as abusive"
 const A_ROLE: Record<Role, string> = { viewer: "a viewer", voter: "a voter", contributor: "a contributor", editor: "an editor", owner: "the owner" };
 const LINK_CAN: Partial<Record<Role, string>> = { viewer: "view", voter: "vote", contributor: "contribute" };
 
-export function History({ boardId, view, reader, role, session, logSeq, onOpen, onClose }: HistoryProps) {
+export function History({ boardId, view, reader, role, closed, session, logSeq, onOpen, onClose }: HistoryProps) {
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null);
   const [failed, setFailed] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
@@ -82,7 +84,7 @@ export function History({ boardId, view, reader, role, session, logSeq, onOpen, 
   const restorable = newestOfEach(entries ?? []);
   // A combine or separation not yet undone may be undone here, after its ten seconds (M3a-8).
   const undone = new Set((entries ?? []).flatMap((entry) => (entry.detail.undoes === undefined ? [] : [entry.detail.undoes])));
-  const mayUndo = can(reader, role, "structure", { closed: false }) === null;
+  const mayUndo = can(reader, role, "structure", { closed }) === null;
   return (
     <div ref={drawer} className="sm-drawer sm-history-drawer" role="dialog" aria-modal="false" aria-labelledby="sm-history-title" id="sm-history">
       <div className="sm-drawer-head">
@@ -115,7 +117,7 @@ export function History({ boardId, view, reader, role, session, logSeq, onOpen, 
                       {/* Its time, and beside it what can still be done about it, as GitHub puts Revert on a merge's own line. */}
                       <div className="sm-history-meta">
                         <time dateTime={entry.at}>{new Date(entry.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time>
-                        {restorable.has(keyOf(entry)) ? <Restore entry={entry} view={view} reader={reader} role={role} session={session} onDone={restored} /> : null}
+                        {restorable.has(keyOf(entry)) ? <Restore entry={entry} view={view} reader={reader} role={role} closed={closed} session={session} onDone={restored} /> : null}
                         {/* Only a combine's or a separation's own entry: its number is the change the service undoes. */}
                         {mayUndo && (entry.kind === "wording_combined" || entry.kind === "wording_separated") && !undone.has(entry.seq) && undoable(entry, view) ? (
                           <UndoChange entry={entry} view={view} session={session} onDone={restored} />
@@ -139,13 +141,14 @@ interface RestoreProps {
   view: ReaderView;
   reader: string | null;
   role: Role | null;
+  closed: boolean;
   session: BoardSession;
   onDone(): void;
 }
 
-function Restore({ entry, view, reader, role, session, onDone }: RestoreProps) {
+function Restore({ entry, view, reader, role, closed, session, onDone }: RestoreProps) {
   const [busy, setBusy] = useState(false);
-  const may = (action: "structure" | "add" | "hide") => can(reader, role, action, { closed: false }) === null;
+  const may = (action: "structure" | "add" | "hide") => can(reader, role, action, { closed }) === null;
   let restore: (() => Promise<boolean>) | null = null;
   /** What it brings back, for a screen reader, as GOV.UK adds hidden context to a repeated link: "Restore the option “Only in winter”". */
   let what = "";

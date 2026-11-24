@@ -5,7 +5,7 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardOrder, BoardSnapshot, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import type { Access, BoardOrder, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
 import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, renameQuestion, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
@@ -66,6 +66,8 @@ export interface SessionState {
   /** Who can get in, and the reader's own role, as the service last said. */
   access: Access | null;
   role: Role | null;
+  /** Whether the board is closed and when, as the service last said (M3b-5); null when it's open with no closing time. */
+  closing: Closing | null;
   /** Wordings the reader assessed after they changed, so the assessment wasn't counted: until they assess again. */
   stale: readonly string[];
   /** The reader's own deletions, kept off the screen (leaveOut): held for Undo, on their way, or back. */
@@ -100,6 +102,7 @@ export class BoardSession {
     status: "",
     access: null,
     role: null,
+    closing: null,
     stale: [],
     leftOut: [],
     undo: null,
@@ -183,7 +186,7 @@ export class BoardSession {
       this.set({ phase: snapshot, view: null });
       return false;
     }
-    this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question, access: snapshot.access, role: snapshot.role });
+    this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question, access: snapshot.access, role: snapshot.role, closing: snapshot.closing ?? null });
     return true;
   }
 
@@ -729,7 +732,11 @@ export class BoardSession {
           view = showMoved(view, this.movedUnseen);
           this.movedUnseen = null;
         }
-        this.set({ view, role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
+        const wasClosed = this.state.closing?.closed ?? false;
+        const closing = changes.closing ?? null;
+        this.set({ view, role: changes.role, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
+        // Said once, when it changes: the board closed, by hand or by its time, or opened again (M3b-5).
+        if ((closing?.closed ?? false) !== wasClosed) this.announce(closing?.closed ? "This board is closed." : "This board is open again.");
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);

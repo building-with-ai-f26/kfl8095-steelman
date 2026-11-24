@@ -45,6 +45,8 @@ export interface EvidenceBoard {
   sources: Record<string, SourceRow>;
   versions: Record<string, VersionRow>;
   role: Role | null;
+  /** Whether the board is closed (M3b-5): what the service would refuse fades and says so. */
+  closed: boolean;
   /** The reader's own actions not yet back from the service. */
   mine: readonly QueuedAction[];
   /** Wordings whose assessment wasn't counted because they changed first. */
@@ -97,7 +99,8 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   }, [focus]);
 
   // A source form closes when the owner lowers the reader's role below writing (M2-2b), as Board.tsx's drafts do.
-  const mayWrite = can(reader, board.role, "add", { closed: false }) !== "not_allowed";
+  const blockedFromWriting = can(reader, board.role, "add", { closed: board.closed });
+  const mayWrite = blockedFromWriting !== "not_allowed" && blockedFromWriting !== "board_closed";
   useEffect(() => {
     if (!mayWrite) setForm(null);
   }, [mayWrite]);
@@ -185,8 +188,8 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
   /** "Yes" needs evidence someone can open. */
   const canBackUp = cited.some((source) => !source.unavailable);
   // What the reader's role can't do here: faded, saying why (display.ts). A role reason comes before any other.
-  const voteBlocked = whyNot(reader, board.role, "vote");
-  const addBlocked = whyNot(reader, board.role, "add");
+  const voteBlocked = whyNot(reader, board.role, "vote", board.closed);
+  const addBlocked = whyNot(reader, board.role, "add", board.closed);
   /**
    * The reader's own change to this wording's sources, held for Undo or still
    * on its way. It makes a new revision, so an assessment now would judge the
@@ -213,9 +216,9 @@ export function Evidence({ version, board }: { version: VersionRow; board: Evide
               onToggle={(open) => setOpened((all) => (all[source.id] === open ? all : { ...all, [source.id]: open }))}
               mine={source.addedBy === reader}
               editBlocked={addBlocked}
-              mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId)}
-              mayReport={can(reader, board.role, "report", { closed: false }) === null}
-              mayClear={source.report !== undefined && can(reader, board.role, "unreport", { closed: false }, source.report.by) === null}
+              mayRemove={mayUncite(reader, board.role, source.addedBy, version.authorId, board.closed)}
+              mayReport={can(reader, board.role, "report", { closed: board.closed }) === null}
+              mayClear={source.report !== undefined && can(reader, board.role, "unreport", { closed: board.closed }, source.report.by) === null}
               reportedByReader={source.report?.by === reader}
               onEdit={() => openForm(source)}
               onRemove={() => remove(source)}
@@ -483,7 +486,7 @@ export function SourceCount({ count }: { count: number }) {
   );
 }
 
-/** The policy's uncite rule (shared/src/policy.ts): the source's adder, the wording's author, or an Editor or the Owner. A closed board is the service's to refuse. */
-function mayUncite(reader: string | null, role: Role | null, addedBy: string, authorId: string): boolean {
-  return can(reader, role, "uncite", { closed: false }, [addedBy, authorId]) === null;
+/** The policy's uncite rule (shared/src/policy.ts): the source's adder, the wording's author, or an Editor or the Owner, on an open board (M3b-5). */
+function mayUncite(reader: string | null, role: Role | null, addedBy: string, authorId: string, closed: boolean): boolean {
+  return can(reader, role, "uncite", { closed }, [addedBy, authorId]) === null;
 }

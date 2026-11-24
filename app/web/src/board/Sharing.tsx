@@ -7,9 +7,12 @@
 // (M2-2b, Q27), with a menu by each name, as Google Drive and Figma do.
 
 import { useEffect, useRef, useState } from "react";
-import { MEMBER_ROLES } from "@steelman/shared";
-import type { Access, Person, Role } from "@steelman/shared";
+import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
+import { MEMBER_ROLES, can } from "@steelman/shared";
+import type { Access, Closing, Person, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
+import { momentWithZone } from "../when.ts";
+import { WHY, blockedProps } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 const GENERAL = { invited: "Invited only", link: "Anyone with the link" } as const;
@@ -23,8 +26,22 @@ export function initials(name: string): string {
   return (words.length > 1 ? words[0]![0]! + words[1]![0]! : (words[0] ?? name).slice(0, 2)).toUpperCase();
 }
 
-/** @param asked Counts the times Settings' "Sharing and access" asked for the panel (M3b-2): each new count opens it. */
-export function Sharing({ access, role, me, session, asked = 0 }: { access: Access; role: Role; me: string | null; session: BoardSession; asked?: number }) {
+interface SharingProps {
+  access: Access;
+  role: Role;
+  me: string | null;
+  session: BoardSession;
+  /** Counts the times Settings' "Sharing and access" asked for the panel (M3b-2): each new count opens it. */
+  asked?: number;
+  /** Whether the board is closed and when (M3b-5): the pill beside this one says so. */
+  closing?: Closing | null;
+  /** Opens Settings, from the closing pill: the Owner's. */
+  onSettings?: () => void;
+  /** Whether Settings is open, which the Owner's closing pill says, as the Settings button does. */
+  settingsOpen?: boolean;
+}
+
+export function Sharing({ access, role, me, session, asked = 0, closing = null, onSettings, settingsOpen = false }: SharingProps) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (asked > 0) setOpen(true);
@@ -42,6 +59,11 @@ export function Sharing({ access, role, me, session, asked = 0 }: { access: Acce
   const pill = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
   const owner = role === "owner";
+  // The shared rule decides (M3b-5): someone who isn't the Owner sees the settings off; on a closed board the Owner
+  // sees them faded, saying why, as the service would refuse them.
+  const refusal = can(me, role, "share", { closed: closing?.closed ?? false });
+  const lockedBy = refusal === "board_closed" ? WHY.closed : null;
+  const locked = lockedBy ? { ...blockedProps(lockedBy), onMouseDown: stopOpening, onKeyDown: stopChoosing } : {};
   const link = `${window.location.origin}${window.location.pathname}`;
 
   const close = () => {
@@ -106,7 +128,9 @@ export function Sharing({ access, role, me, session, asked = 0 }: { access: Acce
     }
   }
 
-  const change = (next: Partial<Access>) => void session.share({ ...access, ...next });
+  const change = (next: Partial<Access>) => {
+    if (!lockedBy) void session.share({ ...access, ...next });
+  };
   const hint = access.general === "link" ? `Anyone with the link can ${MAY[access.linkRole]}.` : "Only invited people can open it.";
 
   return (
@@ -138,7 +162,7 @@ export function Sharing({ access, role, me, session, asked = 0 }: { access: Acce
                 {people ? (
                   <ul className="sm-people">
                     {people.map((person) => (
-                      <PersonRow key={person.id} person={person} you={person.id === me} owner={owner} onRole={(next) => void setRole(person, next)} />
+                      <PersonRow key={person.id} person={person} you={person.id === me} owner={owner} locked={locked} onRole={(next) => lockedBy || void setRole(person, next)} />
                     ))}
                   </ul>
                 ) : (
@@ -152,13 +176,13 @@ export function Sharing({ access, role, me, session, asked = 0 }: { access: Acce
                     <Icon name={access.general === "link" ? "globe" : "lock"} />
                   </span>
                   <span>
-                    <select aria-label="General access" value={access.general} disabled={!owner} onChange={(event) => change({ general: event.target.value as Access["general"] })}>
+                    <select aria-label="General access" value={access.general} disabled={refusal === "not_allowed"} {...locked} onChange={(event) => change({ general: event.target.value as Access["general"] })}>
                       <option value="invited">{GENERAL.invited}</option>
                       <option value="link">{GENERAL.link}</option>
                     </select>
                   </span>
                   {access.general === "link" ? (
-                    <select aria-label="Link role" value={access.linkRole} disabled={!owner} onChange={(event) => change({ linkRole: event.target.value as Access["linkRole"] })}>
+                    <select aria-label="Link role" value={access.linkRole} disabled={refusal === "not_allowed"} {...locked} onChange={(event) => change({ linkRole: event.target.value as Access["linkRole"] })}>
                       <option value="viewer">{LINK_ROLE.viewer}</option>
                       <option value="voter">{LINK_ROLE.voter}</option>
                       <option value="contributor">{LINK_ROLE.contributor}</option>
@@ -179,12 +203,62 @@ export function Sharing({ access, role, me, session, asked = 0 }: { access: Acce
           </section>
         ) : null}
       </li>
+      {closing ? <ClosingPill closing={closing} onSettings={owner ? onSettings : undefined} settingsOpen={settingsOpen} /> : null}
     </ul>
   );
 }
 
+/** A select that's faded doesn't open: a press on it says why instead (Hints.tsx shows its tooltip). */
+const stopOpening = (event: ReactMouseEvent) => event.preventDefault();
+/** Nor does the keyboard choose in it, though Tab still moves on and the browser's own shortcuts still work. */
+const CHOOSING_KEYS = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End", "PageUp", "PageDown", " ", "Enter"]);
+const stopChoosing = (event: ReactKeyboardEvent) => {
+  const typed = event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+  if (CHOOSING_KEYS.has(event.key) || typed) event.preventDefault();
+};
+
+/**
+ * Beside the sharing pill, with a lock (M3b-5, I-05): "Closed Nov 7", or "Closes Nov 30 at 5 PM EST" while a time is
+ * ahead, in the reader's own zone. The time is in its text, not a title, so it can be read on a phone and from the
+ * keyboard. For the Owner it is a button that opens Settings, as the prototype's pill opens its settings.
+ */
+function ClosingPill({ closing, onSettings, settingsOpen }: { closing: Closing; onSettings?: () => void; settingsOpen: boolean }) {
+  const text = closing.closed ? `Closed ${closedDay(closing)}` : closing.closesAt ? `Closes ${momentWithZone(closing.closesAt, closing.closesAt)}` : null;
+  if (!text) return null;
+  const inner = (
+    <>
+      <Icon name="lock" size={13} />
+      {text}
+    </>
+  );
+  return (
+    <li className="sm-meta-closing">
+      {onSettings ? (
+        <button
+          type="button"
+          className="sm-meta-pill sm-closing-pill cursor-interaction"
+          aria-haspopup="dialog"
+          aria-expanded={settingsOpen}
+          aria-controls={settingsOpen ? "sm-settings" : undefined}
+          onClick={onSettings}
+        >
+          {inner}
+        </button>
+      ) : (
+        <span className="sm-meta-pill sm-closing-pill">{inner}</span>
+      )}
+    </li>
+  );
+}
+
+/** The day it closed: by hand, or at its time, whichever came first. */
+function closedDay(closing: Closing): string {
+  const at = closing.closedAt && (!closing.closesAt || closing.closedAt <= closing.closesAt) ? closing.closedAt : closing.closesAt!;
+  return new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 /** One person on the board: the owner sees a menu of roles by each name but their own; everyone else sees the role. */
-function PersonRow({ person, you, owner, onRole }: { person: Person; you: boolean; owner: boolean; onRole(role: Exclude<Role, "owner">): void }) {
+function PersonRow({ person, you, owner, locked, onRole }: { person: Person; you: boolean; owner: boolean; locked: object; onRole(role: Exclude<Role, "owner">): void }) {
   const name = person.name ?? "No username yet";
   return (
     <li className="sm-person">
@@ -198,7 +272,7 @@ function PersonRow({ person, you, owner, onRole }: { person: Person; you: boolea
       {person.role === "owner" ? (
         <span className="sm-person-role">Owner</span>
       ) : owner ? (
-        <select aria-label={`Access level for ${name}`} value={person.role} onChange={(event) => onRole(event.target.value as Exclude<Role, "owner">)}>
+        <select aria-label={`Access level for ${name}`} value={person.role} {...locked} onChange={(event) => onRole(event.target.value as Exclude<Role, "owner">)}>
           {MEMBER_ROLES.map((each) => (
             <option key={each} value={each}>
               {MEMBER_ROLE[each]}

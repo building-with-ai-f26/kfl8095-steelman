@@ -12,17 +12,20 @@
 import { useEffect, useRef, useState } from "react";
 import { LIMITS, cleanText } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
+import { WHY } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 interface SettingsProps {
   question: string;
+  /** A closed board's question can't be renamed (M3b-5): the field is read only and says why. */
+  closed: boolean;
   session: BoardSession;
   onClose(): void;
   /** Closes the panel and opens Share. */
   onShare(): void;
 }
 
-export function Settings({ question, session, onClose, onShare }: SettingsProps) {
+export function Settings({ question, closed, session, onClose, onShare }: SettingsProps) {
   const [text, setText] = useState(question);
   const [empty, setEmpty] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
@@ -34,6 +37,13 @@ export function Settings({ question, session, onClose, onShare }: SettingsProps)
   useEffect(() => {
     if (document.activeElement !== field.current) setText(question);
   }, [question]);
+  // A board that closes while the Owner types keeps its question: the field goes back to it and is read only (M3b-5).
+  useEffect(() => {
+    if (closed) {
+      setText(question);
+      setEmpty(false);
+    }
+  }, [closed]);
 
   useEffect(() => {
     field.current?.focus();
@@ -46,6 +56,7 @@ export function Settings({ question, session, onClose, onShare }: SettingsProps)
   }, [onClose]);
 
   async function save() {
+    if (closed) return;
     const next = cleanText(text);
     if (next === "") {
       setText(question);
@@ -77,7 +88,9 @@ export function Settings({ question, session, onClose, onShare }: SettingsProps)
             id="sm-question"
             rows={2}
             maxLength={LIMITS.question}
-            aria-describedby={empty ? "sm-question-empty sm-question-hint" : "sm-question-hint"}
+            aria-describedby={[empty ? "sm-question-empty" : "", "sm-question-hint", closed ? WHY.closed.noteId : ""].filter(Boolean).join(" ")}
+            readOnly={closed}
+            {...(closed ? { "data-blocked": "", "data-tooltip": WHY.closed.why } : {})}
             value={text}
             onChange={(event) => {
               setText(event.target.value);
