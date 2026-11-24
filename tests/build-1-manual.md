@@ -1968,6 +1968,20 @@ Build plan M3b-3: the Owner closes a board now, sets or clears a moment it close
 | Left out | The Decision block (I-06, T5). The screens for a closed board and the Owner's controls come in M3b-5 and M3b-6. |
 | Not checked | No screen shows a closed board yet, so there is nothing for a person to try until M3b-5. |
 
+## November 24 — Closing in the simulation (I-05)
+
+Build plan M3b-4: the simulation closes boards by hand and by their time, and checks that a closed board refuses every write.
+
+| Check | Observed result |
+|---|---|
+| The steps | `world.ts`, a helper and not a test file, gains two of the Owner's steps with low weights: close now, and a closing time one or two minutes ahead, which the existing minute step carries the board over. Each is paired with a reopen a few steps later, which also clears the closing time, so the other checks still see enough saved actions. Only one closing is under way at a time. |
+| The checks | `expectedRefusal` answers `board_closed` for each of the seven kinds of action while the board is closed by hand or its time has passed, before whose item it is and what went stale, as the write path orders them; everyone in the simulation may write, so a role too low doesn't arise. Hiding, restoring, combining, separating, undoing, and reporting or clearing a source each gain the closed case. A new check 11 says a closed board refuses every write, closed by hand or by its time. The snapshot reads are given the fake clock. The tally counts boards closed by hand and by time, each kind refused while closed, and each done again after a reopen. |
+| Checked by machine | `app/server/test/simulation/closing.test.ts` has two fixed sequences, each on its own board: closed by hand, and closed by its time. In each, the tally shows the board closed that way, each of the seven kinds refused once while closed and done again after the reopen, and closing sent twice changes nothing the second time. `app/server/test/simulation/planted-closing.test.ts` plants a write path that ignores `closes_at`, and the simulation catches it with check 11 and shrinks the sequence. `simulation.test.ts`, `stale-refusals.test.ts`, and `planted-bugs.test.ts` pass untouched. |
+| Tests first | Both new test files were written first and failed against the old `world.ts`: the fixed sequence because the simulation had no closing step, and the planted bug because nothing noticed it. |
+| Long runs | With the final code, 600 random sequences passed in 212 seconds, and 2,000 with seed 424242 passed in 750 seconds: 984 boards were closed by hand and 64 by their time, and each of the seven kinds was refused while closed (from 83 new arguments to 349 importance votes). An earlier 2,000-sequence run, on the code before the review's fixes and alongside the planted-bug run, ran past its 50-minute limit and printed no check; it may have been shrinking a failure that the fixes removed, or only slow under the load, and it was not reproduced. |
+| Second reader | One medium finding: the first fixed test played both closings on one board, so the actions after the second reopen repeated earlier ones and came back already done, which didn't prove acceptance after a close by time. It is now two sequences on two boards. Low findings fixed: a close step now runs the always-true checks too, the closed case sits in `expectedRefusal` as the row says, and the header counts eleven checks. |
+| Not checked | Nothing here is on a screen. |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
