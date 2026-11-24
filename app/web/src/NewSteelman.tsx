@@ -3,14 +3,16 @@
 // Nov 14: white, with the options side by side like the board's columns
 // (scrolling sideways on a phone), and the settings under them, each an icon
 // and a name. Permissions works (H-02); Space and Collaboration rules (the
-// prototype's "How it runs") are shown where they'll be, marked Later. The sheet is at /new, a button on the list (E-03), and making a
-// board opens it.
+// prototype's "How it runs") are shown where they'll be, marked Later. Wording
+// hints (F-02) show under the question. The sheet is at /new, a button on the
+// list (E-03), and making a board opens it.
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { LIMITS, OPTIONS_PER_BOARD, cleanText } from "@steelman/shared";
 import type { Access } from "@steelman/shared";
 import { createBoard } from "./api.ts";
+import { questionHints } from "./questionHints.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
 import { boardPath } from "./links.ts";
@@ -119,6 +121,13 @@ export function NewSteelman() {
               }}
             />
           </div>
+          {/* The prototype's hints (F-02), worked out again as the person types. The list stays in the page when
+              it's empty, so that a screen reader reads the first hint when it appears. */}
+          <ul className="sm-create-hints" aria-live="polite">
+            {questionHints(question, options).map((hint) => (
+              <li key={hint}>{hint}</li>
+            ))}
+          </ul>
           <div className="sm-create-options" role="group" aria-label="Options">
             {options.map((name, i) => (
               <div key={i} className="sm-create-option" data-invalid={badField === `option-${i}` ? "" : undefined}>
