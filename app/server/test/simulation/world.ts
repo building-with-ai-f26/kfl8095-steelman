@@ -1,8 +1,9 @@
 // The simulation (plans/architecture.md §8): the real write path and the
 // browser's real sync rules, run together in one process against a real
 // database, with a fake clock. fast-check invents a board's worth of random
-// sequences of actions by three readers; after every step, the ten
-// "always true" checks below must hold. When one fails, fast-check shrinks
+// sequences of actions by three readers; after every step, the eleven
+// "always true" checks below must hold (the eleventh, a closed board refuses
+// every write, since M3b-4). When one fails, fast-check shrinks
 // the sequence to the shortest one that still fails and prints it.
 
 import fc from "fast-check";
@@ -17,6 +18,7 @@ import type * as ReadModule from "../../src/read.ts";
 import type * as VotesModule from "../../src/votes.ts";
 import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
+import * as closing from "../../src/closing.ts";
 import * as realModeration from "../../src/moderation.ts";
 import * as sources from "../../src/sources.ts";
 import * as structure from "../../src/structure.ts";
@@ -52,6 +54,13 @@ export type Step =
   | { kind: "separate"; reader: number; target: number }
   | { kind: "undo"; reader: number; target: number }
   | { kind: "minutePasses" }
+  /**
+   * Closing (M3b-4, I-05), the Owner's: now, or at a time a minute or two ahead, which the minute step carries the
+   * board over. Each is paired with a reopen `for` steps later, which also clears the closing time, so the other
+   * checks still see enough saved actions.
+   */
+  | { kind: "close"; for: number }
+  | { kind: "closeAt"; minutes: 1 | 2; for: number }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
   | { kind: "offline"; reader: number }
@@ -81,6 +90,9 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("separate" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("undo" as const), reader, target }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("minutePasses" as const) }) },
+  // Low weights, so most of a sequence runs on an open board.
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("close" as const), for: fc.integer({ min: 1, max: 6 }) }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("closeAt" as const), minutes: fc.constantFrom<1 | 2>(1, 2), for: fc.integer({ min: 1, max: 6 }) }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("offline" as const), reader }) },
@@ -133,10 +145,18 @@ export interface Tally {
   combined: number;
   separated: number;
   undone: number;
+  /** Boards closed by hand, and by their time (M3b-4), counted when each is reopened. */
+  closedByHand: number;
+  closedByTime: number;
+  /** Each kind of action refused because the board was closed, and each done again after a reopen. */
+  closedRefusals: Record<string, number>;
+  acceptedAfterReopen: Record<string, number>;
+  /** Closes sent a second time, which changed nothing. */
+  closeSentTwice: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0, closedByHand: 0, closedByTime: 0, closedRefusals: {}, acceptedAfterReopen: {}, closeSentTwice: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -187,7 +207,7 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
 
   const snapshot = async (person: string) => {
     await code.order.publishOrderIfDue(db, clock, b.board);
-    const s = await code.read.readSnapshot(db, b.board, person, moderates(person));
+    const s = await code.read.readSnapshot(db, b.board, person, moderates(person), clock.now());
     if (!s) throw new Error("board vanished");
     noHiddenText(person, s.versions);
     return s;
@@ -200,11 +220,24 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
   for (const person of people) readers.push({ person, view: openView(await snapshot(person)), online: true, queue: [] });
 
   const lastSeq = async () => Number((await client.query("select last_seq from board where id = $1", [b.board])).rows[0].last_seq);
+  /** Whether the board is closed now, by hand or by its time, from the database and the clock (M3b-4). */
+  const closedNow = async () =>
+    (await client.query("select closed_at is not null or closes_at <= $2 as closed from board where id = $1", [b.board, clock.now()])).rows[0].closed === true;
+  /** Steps until the paired reopen, or null when none is due. */
+  let reopenIn: number | null = null;
+  /** Whether a reopen has happened, so actions done since count as accepted after one. */
+  let reopened = false;
 
   /** Sends one action as a reader, and checks the answer against what the database says should happen. */
   const send = async (r: Reader, action: QueuedAction): Promise<WriteResult> => {
-    const expected = await expectedRefusal(client, r.person, action);
+    const expected = await expectedRefusal(client, r.person, action, await closedNow());
     const result = await perform(code, services, b.board, r.person, action);
+    // Check 11: a closed board, by hand or by its time, refuses every write (M3b-4). The write path says so after a
+    // role too low and before whose item it is or what went stale, so it comes first here: everyone here may write.
+    if (expected === "board_closed") {
+      check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { action, result });
+      tally.closedRefusals[action.kind] = (tally.closedRefusals[action.kind] ?? 0) + 1;
+    } else if (result.status === "done" && reopened) tally.acceptedAfterReopen[action.kind] = (tally.acceptedAfterReopen[action.kind] ?? 0) + 1;
     if (result.status === "done") tally.done++;
     else if (result.status === "already_done") tally.alreadyDone++;
     else if (result.status === "refused") tally.refused[result.reason] = (tally.refused[result.reason] ?? 0) + 1;
@@ -281,8 +314,10 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
       const v = (await client.query("select argument_id, deleted_at from version where id = $1", [versionId])).rows[0];
       const bothLive = (await live(v.argument_id)) && (await live(into));
       const sameOption = (await client.query("select count(distinct option_id)::int as n from argument where id in ($1, $2)", [v.argument_id, into])).rows[0].n === 1;
+      const closed = await closedNow();
       const result = await structure.combineWording(services, b.board, r.person, versionId, into);
       if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may combine", { step, result });
+      else if (closed) check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { step, result });
       else if (v.argument_id === into) check(result.status === "already_done", "9. A combine sent again is already done", { step, result });
       else if (v.deleted_at) check(result.status === "refused" && result.reason === "version_deleted", "9. Combining a deleted wording is refused", { step, result });
       else if (!sameOption) check(result.status === "refused" && result.reason === "not_same_option", "9. A wording is combined only within its option", { step, result });
@@ -297,8 +332,10 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
       const v = (await client.query("select argument_id, deleted_at from version where id = $1", [versionId])).rows[0];
       const others = (await client.query("select count(*)::int as n from version where argument_id = $1 and id <> $2 and deleted_at is null", [v.argument_id, versionId])).rows[0].n;
       const argumentLive = await live(v.argument_id);
+      const closed = await closedNow();
       const result = await structure.separateWording(services, b.board, r.person, versionId, ids.itemId());
       if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may separate", { step, result });
+      else if (closed) check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { step, result });
       else if (v.deleted_at) check(result.status === "refused" && result.reason === "version_deleted", "9. Separating a deleted wording is refused", { step, result });
       else if (!argumentLive) check(result.status === "refused" && result.reason === "argument_deleted", "9. Separating from an argument gone since is refused", { step, result });
       else if (others === 0) check(result.status === "refused" && result.reason === "only_wording", "9. An argument's only wording isn't separated", { step, result });
@@ -315,8 +352,10 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
       )
     ).rows.map((row) => Number(row.seq));
     if (open.length === 0) return null;
+    const closed = await closedNow();
     const result = await structure.undoStructure(services, b.board, r.person, open[step.target % open.length]!);
     if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may undo", { step, result });
+    else if (closed) check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { step, result });
     else
       check(
         result.status === "done" || (result.status === "refused" && ["combined_since", "version_deleted", "argument_deleted"].includes(result.reason)),
@@ -326,10 +365,46 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     return result;
   };
 
+  /** The paired reopen (M3b-4): the Owner reopens the board and clears its closing time. */
+  const reopenNow = async () => {
+    const byHand = (await client.query("select closed_at is not null as hand from board where id = $1", [b.board])).rows[0].hand === true;
+    const closed = await closedNow();
+    const reopenedNow = await closing.reopenBoard(services, b.board, b.ana);
+    check(reopenedNow.status === (closed ? "done" : "already_done"), "11. The Owner reopens a closed board, and reopening an open one is already done", { reopenedNow });
+    if (closed) {
+      if (byHand) tally.closedByHand++;
+      else tally.closedByTime++;
+    }
+    const cleared = await closing.setClosingTime(services, b.board, b.ana, null);
+    check(cleared.status === "done" || cleared.status === "already_done", "11. The Owner clears the closing time", { cleared });
+    check(!(await closedNow()), "11. A reopened board is open", {});
+    reopenIn = null;
+    reopened = true;
+  };
+
   for (const step of steps) {
     tally.steps++;
     if (step.kind === "minutePasses") clock.advance(60_000);
-    else {
+    else if (step.kind === "close" || step.kind === "closeAt") {
+      // One closing at a time: a second one, while the first waits for its reopen, does nothing.
+      if (reopenIn !== null) {
+        // Nothing to do.
+      } else if (step.kind === "close") {
+        const closed = await closedNow();
+        const result = await closing.closeBoard(services, b.board, b.ana);
+        check(result.status === (closed ? "already_done" : "done"), "11. The Owner closes an open board, and closing a closed one is already done", { result });
+        const before = await lastSeq();
+        const again = await closing.closeBoard(services, b.board, b.ana);
+        check(again.status === "already_done" && (await lastSeq()) === before, "5. Sending an action a second time changes nothing", { step, again });
+        tally.closeSentTwice++;
+      } else {
+        const at = new Date(clock.now().getTime() + step.minutes * 60_000);
+        const result = await closing.setClosingTime(services, b.board, b.ana, at);
+        check(result.status === "done", "11. The Owner sets a closing time ahead", { result });
+      }
+      // The reopen comes `for` steps after this one; the countdown below also counts this step, so one more.
+      if (reopenIn === null) reopenIn = step.for + 1;
+    } else {
       const r = readers[step.reader]!;
       switch (step.kind) {
         case "poll":
@@ -370,10 +445,12 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           if (!versionId) break;
           // From the database, not the reader's view, which may be out of date: a wording deleted since can't be hidden.
           const gone = (await client.query("select deleted_at from version where id = $1", [versionId])).rows[0].deleted_at !== null;
+          const closed = await closedNow();
           const result =
             step.kind === "hide" ? await moderation.hideWording(services, b.board, r.person, versionId, "spam") : await moderation.restoreWording(services, b.board, r.person, versionId);
           // Check 9, for moderation: only a moderator may, and a hide or restore of a wording deleted since is refused as stale.
           if (!moderates(r.person)) check(result.status === "refused" && result.reason === "not_allowed", "9. Only an Editor or the Owner may hide or restore", { step, result });
+          else if (closed) check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { step, result });
           else if (gone) check(result.status === "refused" && result.reason === "version_deleted", "9. A hide or restore of a wording deleted since is refused", { step, result });
           else check(result.status === "done" || result.status === "already_done", "9. A moderator's hide or restore of a wording that's there is done", { step, result });
           if (result.status === "done") {
@@ -404,12 +481,14 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
         case "clearSource": {
           if (!r.online) break;
           const reporter = (await client.query("select unavailable_by from source where id = $1", [b.source])).rows[0].unavailable_by as string | null;
+          const closed = await closedNow();
           const result = step.kind === "reportSource" ? await sources.reportUnavailable(services, b.board, r.person, b.source) : await sources.clearUnavailable(services, b.board, r.person, b.source);
           if (result.status === "done") tally.done++;
           else if (result.status === "already_done") tally.alreadyDone++;
           else if (result.status === "refused") tally.refused[result.reason] = (tally.refused[result.reason] ?? 0) + 1;
           // Check 9, for source reports: anyone may report; a report is cleared only by its reporter or the owner; a second one is already done.
-          if (step.kind === "reportSource") check(result.status === (reporter ? "already_done" : "done"), "9. Anyone may report a source; a second report is already done", { step, result });
+          if (closed) check(result.status === "refused" && result.reason === "board_closed", "11. A closed board refuses every write, closed by hand or by its time", { step, result });
+          else if (step.kind === "reportSource") check(result.status === (reporter ? "already_done" : "done"), "9. Anyone may report a source; a second report is already done", { step, result });
           else if (!reporter) check(result.status === "already_done", "9. Clearing an unreported source is already done", { step, result });
           else if (reporter === r.person || moderates(r.person)) check(result.status === "done", "9. The reporter or the owner clears a report", { step, result });
           else check(result.status === "refused" && result.reason === "not_author", "9. Someone else's report is cleared only by the owner", { step, result });
@@ -425,7 +504,10 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
       }
     }
     await alwaysTrue(client, b.board);
+    if (reopenIn !== null && --reopenIn <= 0) await reopenNow();
   }
+  // A sequence never ends closed, so the next starts as every other does.
+  if (reopenIn !== null) await reopenNow();
 }
 
 /** Turns a step into an action on something the reader can see, or null if there's nothing to act on. */
@@ -508,7 +590,12 @@ async function finalArgument(client: pg.Client, argumentId: string): Promise<str
   }
 }
 
-async function expectedRefusal(client: pg.Client, person: string, action: QueuedAction): Promise<RefusalReason | null> {
+/**
+ * @param closed Whether the board is closed now, by hand or by its time (M3b-4). The write path says so after a role
+ *   too low and before whose item it is or what went stale; everyone in the simulation may write, so it comes first.
+ */
+async function expectedRefusal(client: pg.Client, person: string, action: QueuedAction, closed: boolean): Promise<RefusalReason | null> {
+  if (closed) return "board_closed";
   const one = async (query: string, params: unknown[]) => (await client.query(query, params)).rows[0];
   switch (action.kind) {
     // A vote or wording for an argument combined away follows it to where it went (M3a-6, §3).
