@@ -25,7 +25,7 @@ export function Privacy() {
       <TitleBar here="/privacy">
         <h1>Privacy</h1>
       </TitleBar>
-      <p className="sm-privacy-date">Updated November 22, 2026</p>
+      <p className="sm-privacy-date">Updated November 24, 2026</p>
       <p className="sm-privacy-lede">This page says what Steelman keeps about you, who can see it, how long Steelman keeps it, and what you can do about it.</p>
 
       <h2>What we collect</h2>
@@ -33,6 +33,7 @@ export function Privacy() {
         <li>We keep your email, the username you choose, and whether you sign in with an emailed code or with Google.</li>
         <li>We keep the arguments, wordings, context, and sources that you write on the boards you join.</li>
         <li>We keep your importance votes, your wording votes, your assessments of whether a wording’s evidence holds up, and your reports.</li>
+        <li>We keep the comments you write on boards, until you delete them.</li>
         <li>Our server logs record your IP address and browser with each request, and we keep them for 30 days.</li>
         <li>We collect usage analytics unless you turn them off, as Cookies and analytics explains below.</li>
       </ul>
@@ -102,8 +103,8 @@ export function Privacy() {
       <h2>Your choices</h2>
       <ul>
         <li>
-          <b>Download your data</b> and <b>Delete account</b> are in <a href="/account">Your account</a>. Deleting your account removes your email, your ways of signing in, your votes, and your
-          assessments. What you wrote stays on its boards and is credited to deleted_account, so other people’s work keeps its context. A board you own passes to its longest-standing contributor. If
+          <b>Download your data</b> and <b>Delete account</b> are in <a href="/account">Your account</a>. Deleting your account removes your email, your ways of signing in, your votes, your
+          assessments, and the text of your comments. What you wrote stays on its boards and is credited to deleted_account, so other people’s work keeps its context. A board you own passes to its longest-standing contributor. If
           the board’s other members are all voters, or it has no other members, the board is deleted with everything on it.
         </li>
         <li>You can turn analytics off or on in Cookies and analytics above.</li>
@@ -113,7 +114,7 @@ export function Privacy() {
       <p>Steelman isn’t for children under 13.</p>
 
       <h2>Changes to this page</h2>
-      <p>We date each change at the top of this page. When a change affects what we keep about you, we tell people who are signed in.</p>
+      <p>We date each change at the top of this page, so the date shows when what we keep about you last changed.</p>
 
       <h2>Questions</h2>
       <p>

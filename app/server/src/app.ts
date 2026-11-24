@@ -13,6 +13,7 @@ import {
   changesQuery,
   editInput,
   newArgumentInput,
+  newCommentInput,
   newOptionInput,
   renameOptionInput,
   renameQuestionInput,
@@ -46,6 +47,7 @@ import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
+import { addComment, deleteComment } from "./comments.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { renameQuestion } from "./settings.ts";
@@ -597,6 +599,18 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
 
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/versions/:id", async (request, reply) =>
     answer(reply, await deleteWording(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Comments (D-01, M3b-8): add one on the question, an option, or a wording, and delete your own. Counted with
+  // writing until M3b-9 gives comments a limit of their own; deleting isn't counted, as deleting a wording isn't.
+  app.post<{ Params: { board: string } }>("/api/boards/:board/comments", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = newCommentInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await addComment(services, request.params.board, request.person, body.data));
+  });
+
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) =>
+    answer(reply, await deleteComment(services, request.params.board, request.person, request.params.id)),
   );
 
   // Sources (C-01): add a new one to a wording, cite one already on the board, take one off, or edit one.

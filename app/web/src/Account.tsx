@@ -237,6 +237,7 @@ function DeleteForm({ username, onCancel, onDeleted }: { username: string; onCan
         Your email, votes, and assessments are removed. Arguments, wordings, and sources you wrote stay on their boards, credited to <b>{DELETED}</b>.
       </p>
       <p>A board you own passes to its longest-standing contributor. A board with no other contributor is deleted.</p>
+      <p>Your comments are deleted.</p>
       <label>
         {`Type ${username} to confirm`}
         <input
@@ -282,6 +283,7 @@ function Deleted() {
             Your account is deleted
           </h1>
           <p className="sm-auth-text">{`Your email, votes, and assessments are gone. What you wrote stays on its boards, credited to ${DELETED}.`}</p>
+          <p className="sm-auth-text">Your comments are gone too.</p>
           <a className="sm-button sm-solid cursor-interaction" href="/">
             Back to Steelman
           </a>

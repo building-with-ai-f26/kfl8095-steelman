@@ -98,6 +98,15 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("assessed_at")
     .orderBy("version_id")
     .execute();
+  // Their comments (M3b-8): what each is on and what it says. One they deleted has no text left to give.
+  const comments = await db
+    .selectFrom("comment")
+    .select(["id", "board_id", "option_id", "version_id", "body", "created_at"])
+    .where("author_id", "=", person)
+    .where("deleted_at", "is", null)
+    .orderBy("created_at")
+    .orderBy("id")
+    .execute();
   // Their reports (M2-3): reason, note, and when, and whether withdrawn. Not who else reported.
   const reports = await db
     .selectFrom("report")
@@ -171,6 +180,7 @@ export async function exportData(db: Db, clock: Clock, person: string) {
       setAsideByCombine: setAside.map((v) => ({ board: v.board_id, combine: Number(v.seq), from: v.from_id, into: v.into_id, fromValue: v.from_value, intoValue: v.into_value, askedAgain: v.asked_again })),
       evidence: evidence.map((v) => ({ board: v.board_id, version: v.version_id, rev: v.rev, supported: v.supported, at: v.assessed_at.toISOString() })),
     },
+    comments: comments.map((c) => ({ board: c.board_id, comment: c.id, version: c.version_id, option: c.option_id, body: c.body, at: c.created_at.toISOString() })),
     reports: reports.map((r) => ({ board: r.board_id, version: r.version_id, reason: r.reason, note: r.note, at: r.reported_at.toISOString(), withdrawn: r.withdrawn_at?.toISOString() ?? null })),
     sourceReports: sourceReports.map((r) => ({
       board: r.board_id,
@@ -224,12 +234,14 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       union select board_id from source where added_by = ${person} or unavailable_by = ${person}
       union select id from board where created_by = ${person}
       union select board_id from report where reporter_id = ${person} or resolved_by = ${person}
+      union select board_id from comment where author_id = ${person} or hidden_by = ${person}
       order by 1`.execute(trx);
 
     for (const { board_id: boardId } of touched.rows) {
       const seq = Number((await sql<{ seq: string }>`select take_change_number(${boardId}) as seq`.execute(trx)).rows[0]!.seq);
       await withdrawJudgments(trx, boardId, person, seq);
       await deleteReports(trx, boardId, person, seq);
+      await eraseComments(trx, boardId, person, now, seq);
       await credit(trx, boardId, person, seq);
       const stays = await handOver(trx, boardId, person);
       if (!stays) await deleteBoard(trx, boardId, now, seq);
@@ -277,6 +289,21 @@ async function deleteReports(trx: Trx, boardId: string, person: string, seq: num
   const versionIds = (await trx.deleteFrom("report").where("board_id", "=", boardId).where("reporter_id", "=", person).returning("version_id").execute()).map((row) => row.version_id);
   if (versionIds.length > 0) await trx.updateTable("version").set({ changed_seq: seq }).where("id", "in", versionIds).execute();
   await trx.updateTable("report").set({ resolved_by: DELETED_ACCOUNT }).where("board_id", "=", boardId).where("resolved_by", "=", person).execute();
+}
+
+/**
+ * Their comments lose their text and author and stay as deleted rows, as a deleted wording's do (M3b-8; architecture
+ * §2, the deletion table), so a thread with replies still reads. A comment they hid as a moderator is credited to the
+ * stand-in.
+ */
+async function eraseComments(trx: Trx, boardId: string, person: string, now: Date, seq: number): Promise<void> {
+  await trx
+    .updateTable("comment")
+    .set({ body: null, author_id: DELETED_ACCOUNT, deleted_at: sql`coalesce(deleted_at, ${now})`, changed_seq: seq } as never)
+    .where("board_id", "=", boardId)
+    .where("author_id", "=", person)
+    .execute();
+  await trx.updateTable("comment").set({ hidden_by: DELETED_ACCOUNT, changed_seq: seq }).where("board_id", "=", boardId).where("hidden_by", "=", person).execute();
 }
 
 async function withdrawJudgments(trx: Trx, boardId: string, person: string, seq: number): Promise<void> {
@@ -358,6 +385,7 @@ async function deleteBoard(trx: Trx, boardId: string, now: Date, seq: number): P
   await trx.updateTable("option").set({ name: "", changed_seq: seq }).where("board_id", "=", boardId).execute();
   await trx.updateTable("version_revision").set({ wording: null, context: null }).where("board_id", "=", boardId).execute();
   await trx.updateTable("source").set({ name: "", locator: "", finding: "", backs_up: "", limits: "", changed_seq: seq }).where("board_id", "=", boardId).execute();
+  await trx.updateTable("comment").set({ body: null, deleted_at: sql`coalesce(deleted_at, ${now})`, changed_seq: seq } as never).where("board_id", "=", boardId).execute();
   await trx.deleteFrom("importance_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("combine_vote").where("board_id", "=", boardId).execute();
   await trx.deleteFrom("articulation_vote").where("board_id", "=", boardId).execute();

@@ -7,7 +7,8 @@
 // options, M3a-2), Owner (also decides
 // who can get in, changes the board's settings, and closes and reopens it,
 // M3b). Editing and deleting a wording stay its author's, for an
-// Editor too (Q28).
+// Editor too (Q28). Anyone who can read may comment, and only a comment's
+// author deletes it (M3b-8).
 
 export type Role = "viewer" | "voter" | "contributor" | "editor" | "owner";
 
@@ -17,7 +18,7 @@ export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor
 /** The roles a board's link can give. Editor and Owner never come by the link. */
 export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "unreport" | "hide" | "structure" | "settings" | "close";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "unreport" | "hide" | "structure" | "settings" | "close" | "comment" | "uncomment";
 
 interface Rule {
   /** The least role that may do it. */
@@ -69,6 +70,14 @@ export const POLICY: Record<Action, Rule> = {
    * since reopening acts on one.
    */
   close: { least: "owner", openBoard: false, authorOnly: false },
+  /**
+   * Adding a comment on the question, an option, or a wording (D-01, M3b-8), and later replying, resolving, and
+   * reopening (M3b-9): anyone who can read, as permissions.md's matrix has it. Allowed on a closed board
+   * (architecture §7).
+   */
+  comment: { least: "viewer", openBoard: false, authorOnly: false },
+  /** Deleting your own comment (D-01, M3b-8): its author only. Allowed on a closed board, so a person can always take their own words back. */
+  uncomment: { least: "viewer", openBoard: false, authorOnly: true },
 };
 
 /**
