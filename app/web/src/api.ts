@@ -132,6 +132,16 @@ export async function renameQuestion(board: string, question: string): Promise<A
   return answerOf(await call("PUT", `boards/${board}/question`, { question }));
 }
 
+/** Closes the board now, or reopens it (M3b-6, I-05): the Owner's, in Settings. */
+export async function setClosed(board: string, closed: boolean): Promise<Answer> {
+  return answerOf(await call(closed ? "PUT" : "DELETE", `boards/${board}/closed`));
+}
+
+/** Sets the moment the board closes, or clears it with null. A moment that has passed is answered as invalid. */
+export async function setClosingTime(board: string, closesAt: string | null): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/closing`, { closesAt }));
+}
+
 /** `keepalive`, when the tab is closing and the request must finish after the page is gone. */
 export async function deleteOption(board: string, option: string, keepalive = false): Promise<Answer> {
   return answerOf(await call("DELETE", `boards/${board}/options/${encodeURIComponent(option)}`, undefined, keepalive));
