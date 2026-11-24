@@ -135,7 +135,7 @@ test("M3a-9, H-02, M-06: when the service can't sign them out, the card says so 
 
   await another(page).click();
 
-  await expect(card(page).getByRole("alert")).toHaveText("Couldn’t sign you out. Try again.");
+  await expect(card(page).getByRole("alert")).toHaveText("Steelman couldn’t sign you out. Try again.");
   await expect(another(page)).toBeFocused();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("You need access");
   expect((await page.request.get("/api/account")).status()).toBe(200);
@@ -149,6 +149,10 @@ test("M3a-9, H-02, M-06: when the service can't sign them out, the card says so 
 test("M3a-9, H-02, L-01: someone reading a board whose owner turns the link off is shown the card", async ({ site }) => {
   const page = await site.browse();
   await signInByCode(site, page, VISITOR, "lee_visitor");
+  // The keyboard's place is on the board, on a wording.
+  const wording = page.locator(".sm-claim-button", { hasText: LEAD }).first();
+  await wording.focus();
+  await expect(wording).toBeFocused();
 
   // As the owner's change does (server/src/sharing.ts): the board is invited only, and the people who came by the
   // link are no longer members. In that order, so a poll in between can't join them by the link again.
@@ -159,6 +163,8 @@ test("M3a-9, H-02, L-01: someone reading a board whose owner turns the link off 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("You need access", { timeout: 10_000 });
   await expect(card(page)).toContainText(`You’re signed in as ${VISITOR}.`);
   await expect(page.getByText(LEAD)).toHaveCount(0);
+  // The board they were on is gone, so the keyboard's place moves to the card's title, which a screen reader then reads.
+  await expect(page.getByRole("heading", { level: 1, name: "You need access" })).toBeFocused();
 });
 
 boardTest("M3a-9, M-06: a link to a board that doesn't exist still shows “This steelman doesn’t exist”, not the no-access card", async ({ board }) => {
@@ -178,6 +184,10 @@ boardTest("M3a-9, H-02: a tab acting as a test account, which has no email, is s
 
   await boardExpect(page.getByRole("heading", { level: 1 })).toHaveText("You need access");
   await boardExpect(card(page)).toContainText("You’re signed in as maya.chen.");
+  // The title has the keyboard's place from the start. It isn't a control, so no ring is drawn around it.
+  const title = page.getByRole("heading", { level: 1, name: "You need access" });
+  await boardExpect(title).toBeFocused();
+  boardExpect(await title.evaluate((h1) => getComputedStyle(h1).outlineStyle)).toBe("none");
   await boardExpect(page.getByText("Should the café open early?")).toHaveCount(0);
 });
 
