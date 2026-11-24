@@ -15,6 +15,7 @@ import {
   newArgumentInput,
   newOptionInput,
   renameOptionInput,
+  renameQuestionInput,
   newBoardInput,
   newSourceInput,
   newWordingInput,
@@ -44,6 +45,7 @@ import { listPeople, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
+import { renameQuestion } from "./settings.ts";
 import { readHistory } from "./history.ts";
 import { combinePreview, combineWording, separateWording, undoStructure } from "./structure.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
@@ -403,6 +405,13 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = accessInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAccess(services, request.params.board, request.person, body.data));
+  });
+
+  // Board settings (M3b-2, I-01): the Owner renames the question.
+  app.put<{ Params: { board: string } }>("/api/boards/:board/question", { config: { limit: "writing" } }, async (request, reply) => {
+    const body = renameQuestionInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await renameQuestion(services, request.params.board, request.person, body.data.question));
   });
 
   // Report (M2-3): anyone who can read reports a wording, or withdraws their report.

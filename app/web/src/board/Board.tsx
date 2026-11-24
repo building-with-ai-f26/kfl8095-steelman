@@ -37,6 +37,7 @@ import type { Held, Restructured, SessionState } from "./session.ts";
 import { rememberPlace } from "../places.ts";
 import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
+import { Settings } from "./Settings.tsx";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
@@ -577,12 +578,38 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   };
 
   // History (M3a-4, J-03): a panel beside the board, opened from the question header.
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpenNow] = useState(false);
   const historyButton = useRef<HTMLButtonElement>(null);
+  // Settings (M3b-2, I-01), the Owner's, in the same drawer: one panel at a time.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsButton = useRef<HTMLButtonElement>(null);
+  /** Counts the times Settings asked for Share, which opens it. */
+  const [shareAsked, setShareAsked] = useState(0);
+  const setHistoryOpen = (open: boolean) => {
+    if (open) setSettingsOpen(false);
+    setHistoryOpenNow(open);
+  };
   const closeHistory = useCallback(() => {
-    setHistoryOpen(false);
+    setHistoryOpenNow(false);
     session.announce("History closed.");
     historyButton.current?.focus();
+  }, [session]);
+  // Someone who stops being the Owner while the panel is open loses it, and the board takes its room back.
+  useEffect(() => {
+    if (state.role !== "owner") setSettingsOpen(false);
+  }, [state.role]);
+  /** On a phone the Settings button is its icon alone, so its name shows in the hint box; with its word, none is needed. */
+  const [iconOnly, setIconOnly] = useState(() => window.matchMedia("(max-width: 640px)").matches);
+  useEffect(() => {
+    const narrow = window.matchMedia("(max-width: 640px)");
+    const changed = () => setIconOnly(narrow.matches);
+    narrow.addEventListener("change", changed);
+    return () => narrow.removeEventListener("change", changed);
+  }, []);
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    session.announce("The settings panel is closed.");
+    settingsButton.current?.focus();
   }, [session]);
   const openFromHistory = (versionId: string) => {
     if (!view.rows.versions[versionId]) return;
@@ -616,7 +643,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           {why}
         </span>
       ))}
-      <div className={`sm-scene${historyOpen ? " sm-with-drawer" : ""}`}>
+      <div className={`sm-scene${historyOpen || settingsOpen ? " sm-with-drawer" : ""}`}>
         <Wires view={view} mine={state.mine} />
         <section className="sm-head" aria-label="The question">
           <div className="sm-head-tools">
@@ -635,11 +662,33 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
               <Icon name="history" />
               <span>History</span>
             </button>
+            {/* The Owner's only, as Google Docs hides what you can't use. Its word goes on a phone, where its icon is
+                named Settings, as the prototype's head buttons are; History keeps its word (the builder, Nov 22). */}
+            {state.role === "owner" ? (
+              <button
+                ref={settingsButton}
+                type="button"
+                className="sm-head-button sm-settings-button cursor-interaction"
+                aria-expanded={settingsOpen}
+                aria-controls={settingsOpen ? "sm-settings" : undefined}
+                aria-label="Settings"
+                data-tooltip={iconOnly ? "Settings" : undefined}
+                onClick={() => {
+                  if (settingsOpen) return closeSettings();
+                  setHistoryOpenNow(false);
+                  setSettingsOpen(true);
+                  session.announce("The settings panel is open.");
+                }}
+              >
+                <Icon name="settings" />
+                <span aria-hidden="true">Settings</span>
+              </button>
+            ) : null}
           </div>
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
-          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} /> : null}
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} asked={shareAsked} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
@@ -668,6 +717,18 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             logSeq={state.logSeq}
             onOpen={openFromHistory}
             onClose={closeHistory}
+          />
+        ) : null}
+        {settingsOpen && state.role === "owner" ? (
+          <Settings
+            question={state.question}
+            session={session}
+            onClose={closeSettings}
+            onShare={() => {
+              setSettingsOpen(false);
+              session.announce("The settings panel is closed.");
+              setShareAsked((n) => n + 1);
+            }}
           />
         ) : null}
         <main id="sm-content">

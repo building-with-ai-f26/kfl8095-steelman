@@ -276,6 +276,9 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       return `made ${entry.detail.accountName ?? "someone"} ${A_ROLE[entry.detail.role ?? "viewer"]}.`;
     case "option_added":
       return `added ${option}.`;
+    case "question_renamed":
+      // The log keeps no text (invariant 7); the heading says what the question is now.
+      return "renamed the question.";
     case "option_renamed":
       // The log keeps no names (invariant 7), so this says what it's called now, which stays true after later renames.
       return optionName === undefined ? "renamed an option." : `renamed the option now called “${optionName}”.`;

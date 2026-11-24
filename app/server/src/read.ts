@@ -40,7 +40,7 @@ export async function readChanges(db: Db, boardId: string, person: string | null
     .transaction()
     .setIsolationLevel("repeatable read")
     .execute(async (trx) => {
-      const board = await trx.selectFrom("board").select("last_seq").where("id", "=", boardId).executeTakeFirst();
+      const board = await trx.selectFrom("board").select(["last_seq", "question"]).where("id", "=", boardId).executeTakeFirst();
       if (!board) return null;
       const seq = Number(board.last_seq);
       if (seq <= after) return { seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [] };
@@ -51,6 +51,7 @@ export async function readChanges(db: Db, boardId: string, person: string | null
         .where("board_id", "=", boardId)
         .where("changed_seq", ">", String(after))
         .executeTakeFirst();
+      const log = await logRows(trx, boardId, after);
       return {
         seq,
         options: await optionRows(trx, boardId, after),
@@ -58,7 +59,9 @@ export async function readChanges(db: Db, boardId: string, person: string | null
         versions: await versionRows(trx, boardId, person, { after }, moderator),
         sources: await sourceRows(trx, boardId, after),
         order: order ? ({ arguments: order.arguments, versions: order.versions } as BoardOrder) : null,
-        log: await logRows(trx, boardId, after),
+        log,
+        // The question rides along only when it was renamed after S (M3b-2), so an ordinary answer keeps its shape.
+        ...(log.some((row) => row.kind === "question_renamed") ? { question: board.question } : {}),
       };
     });
 }

@@ -26,6 +26,8 @@ export const newArgumentInput = z.strictObject({
 /** A new option, with the ID the browser made for it, and an option's new name (M3a-2, A-07). */
 export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionNameInput });
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
+/** The board's question, renamed in Settings (M3b-2, I-01), by New steelman's rules. */
+export const renameQuestionInput = z.strictObject({ question: questionInput });
 /** Combining a wording into another argument (M3a-6): the one it goes into. */
 export const combineInput = z.strictObject({ into: itemIdInput });
 /**
@@ -252,6 +254,8 @@ export interface BoardChanges {
   /** A newer published order, if there is one. */
   order: BoardOrder | null;
   log: LogRow[];
+  /** The board's question, only when it was renamed after S (M3b-2), so an ordinary answer keeps its shape. */
+  question?: string;
 }
 
 /** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its owner, and when it last changed. */

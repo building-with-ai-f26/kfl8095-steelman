@@ -127,6 +127,11 @@ export async function renameOption(board: string, option: string, name: string):
   return answerOf(await call("PUT", `boards/${board}/options/${encodeURIComponent(option)}`, { name }));
 }
 
+/** Renames the board's question (M3b-2, I-01): the Owner's, in Settings. */
+export async function renameQuestion(board: string, question: string): Promise<Answer> {
+  return answerOf(await call("PUT", `boards/${board}/question`, { question }));
+}
+
 /** `keepalive`, when the tab is closing and the request must finish after the page is gone. */
 export async function deleteOption(board: string, option: string, keepalive = false): Promise<Answer> {
   return answerOf(await call("DELETE", `boards/${board}/options/${encodeURIComponent(option)}`, undefined, keepalive));
