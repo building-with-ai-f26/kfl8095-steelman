@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardOrder, BoardSnapshot, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, renameQuestion, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -50,7 +50,7 @@ export interface SessionState {
   /** Ready, or why the board can't be shown: no such board, no access to it, or signed out. */
   phase: "loading" | Closed | "ready";
   view: ReaderView | null;
-  /** The board's question, as it was when the board opened. */
+  /** The board's question: as it was when the board opened, then as the Owner renames it (M3b-2). */
   question: string;
   /** Actions not yet accepted by the service. */
   waiting: number;
@@ -369,6 +369,20 @@ export class BoardSession {
    */
   addOption(id: string, name: string): Promise<boolean> {
     return this.moderate(() => addOption(this.board, { id, name }), `You added the option “${name}”.`);
+  }
+
+  /**
+   * Renames the board's question (M3b-2, I-01). Not queued: it's sent now, and the heading changes once the service
+   * has it. Refused or unreachable, the old question stays and the message says why.
+   */
+  async renameQuestion(question: string): Promise<boolean> {
+    const answer = await this.ask(() => renameQuestion(this.board, question));
+    if (!answer) return false;
+    this.set({ question });
+    // Already done means another tab made this same rename first: nothing changed here, so nothing is said.
+    if (answer.status === "done") this.announce("The question was renamed.");
+    await this.refresh();
+    return true;
   }
 
   renameOption(id: string, name: string): Promise<boolean> {
@@ -715,7 +729,7 @@ export class BoardSession {
           view = showMoved(view, this.movedUnseen);
           this.movedUnseen = null;
         }
-        this.set({ view, role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}) });
+        this.set({ view, role: changes.role, logSeq, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);

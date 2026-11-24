@@ -23,8 +23,12 @@ export function initials(name: string): string {
   return (words.length > 1 ? words[0]![0]! + words[1]![0]! : (words[0] ?? name).slice(0, 2)).toUpperCase();
 }
 
-export function Sharing({ access, role, me, session }: { access: Access; role: Role; me: string | null; session: BoardSession }) {
+/** @param asked Counts the times Settings' "Sharing and access" asked for the panel (M3b-2): each new count opens it. */
+export function Sharing({ access, role, me, session, asked = 0 }: { access: Access; role: Role; me: string | null; session: BoardSession; asked?: number }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (asked > 0) setOpen(true);
+  }, [asked]);
   /** Everyone on the board; undefined while it's first read, null if it couldn't be. */
   const [people, setPeople] = useState<Person[] | null | undefined>(undefined);
   /** Each read of the list is numbered, so an older answer can't replace a newer one. */

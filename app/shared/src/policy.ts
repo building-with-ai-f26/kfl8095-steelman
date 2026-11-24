@@ -5,7 +5,8 @@
 // Contributor (also writes), Editor (also takes a source off anyone's
 // wording, hides and restores wordings, M2-4, and adds, renames, and deletes
 // options, M3a-2), Owner (also decides
-// who can get in). Editing and deleting a wording stay its author's, for an
+// who can get in, changes the board's settings, and closes and reopens it,
+// M3b). Editing and deleting a wording stay its author's, for an
 // Editor too (Q28).
 
 export type Role = "viewer" | "voter" | "contributor" | "editor" | "owner";
@@ -16,7 +17,7 @@ export const ROLES: readonly Role[] = ["viewer", "voter", "contributor", "editor
 /** The roles a board's link can give. Editor and Owner never come by the link. */
 export const LINK_ROLES = ["viewer", "voter", "contributor"] as const satisfies readonly Role[];
 
-export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "unreport" | "hide" | "structure";
+export type Action = "read" | "vote" | "assess" | "add" | "edit" | "delete" | "uncite" | "share" | "report" | "unreport" | "hide" | "structure" | "settings" | "close";
 
 interface Rule {
   /** The least role that may do it. */
@@ -61,6 +62,13 @@ export const POLICY: Record<Action, Rule> = {
   structure: { least: "editor", openBoard: true, authorOnly: false },
   /** Changing the board's general access, its link role, and each member's role (Share's people list, M2-2b). */
   share: { least: "owner", openBoard: true, authorOnly: false },
+  /** Changing the board's settings, such as renaming its question (I-01, M3b-2): the Owner's, and not once the board is closed. */
+  settings: { least: "owner", openBoard: true, authorOnly: false },
+  /**
+   * Closing the board now or at a set time, and reopening it (I-05, M3b-3): the Owner's. Allowed on a closed board,
+   * since reopening acts on one.
+   */
+  close: { least: "owner", openBoard: false, authorOnly: false },
 };
 
 /**
