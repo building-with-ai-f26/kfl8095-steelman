@@ -67,6 +67,12 @@ body { margin:0; }
   #steelman-study .sm-create-page .sm-create-option { flex:0 0 68%; }
   #steelman-study .sm-create-page .sm-rrow:not(.sm-rrow-later) { flex-wrap:wrap; }
 }
+/* The arrow before each hint (F-02) is drawn, not read out. */
+#steelman-study .sm-create-page .sm-create-hints li::before { content:"→" / ""; }
+/* The prototype hides an empty hint list with display:none, which takes it out of what a screen reader follows, so
+   its first hint might not be read out. Here an empty list stays in the page, out of the grid's flow and out of
+   sight, so the sheet looks as it did. */
+#steelman-study .sm-create-page .sm-create-hints:empty { display:block; position:absolute; width:1px; height:1px; margin:0; overflow:hidden; clip-path:inset(50%); }
 /* The page's one column is as wide as the screen, not as wide as the row of options would like. */
 #steelman-study .sm-create-landing { grid-template-columns:minmax(0, 1fr); }
 /* Settings that come later sit where they will be, quiet, with a Later tag. */

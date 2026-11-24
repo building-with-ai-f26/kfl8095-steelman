@@ -1917,6 +1917,22 @@ Build plan M3b: the backlog was written, with twenty items. B-06 gets no item, b
 | Existing tests (rule 9) | No existing test or saved screenshot changed. |
 | Not checked | A person's view of whether the pressed arrow and the number are feedback enough without the words. The product comparisons in the backlog's rows are from memory until each row checks them live. |
 
+## November 24 — Question wording hints (F-02, F-01)
+
+Build plan M3b-1: New steelman shows the prototype's three wording hints under the question as the person types.
+
+| Check | Observed result |
+|---|---|
+| The hints | A question with a loaded word gets "“obviously” may tilt the question." for the first of obviously, clearly, finally, ridiculous, stupid, just, really, still, and even that it holds as a whole word. A question that starts with Why gets "A question that starts with “Why” assumes an answer. Try starting it with “Should”." An option named exactly Yes or No gets "Name options as positions, not Yes or No." The prototype's Why hint was a fragment, so it is two sentences here (rule 13). |
+| Where they show | The list sits between the question and the options, as in the prototype, and is read out politely. An empty list stays in the page out of sight, so a screen reader reads the first hint when it appears and the sheet looks as it did. The arrow before each hint is not read out. |
+| Checked by machine | `app/web/test/question-hints.test.ts` has ten unit tests: each rule fires and doesn't (a loaded word inside another word, Why later in the question or inside Whyte, Yes please as an option, capitals, extra spaces), two loaded words give one hint, and all three rules give three hints in order. `app/e2e/question-hints.spec.ts` has seven browser tests: the Why hint shows and goes when the question changes, the list sits between the question and the options, an option named No shows its hint, Create steelman still makes the board with three hints showing and no request is sent while typing, the empty sheet shows no hints and the list takes no room, and the accessibility scan passes with hints showing at 1280 and 375 px with no sideways scroll. The saved New steelman screenshots still match. |
+| Tests first | All seventeen tests were written before the hints and failed: the unit tests because `questionHints.ts` didn't exist, and the browser tests because the sheet had no hint list. |
+| Products compared (rule 12) | GOV.UK's text input guidance, read live on November 24, shows hint text as plain text with no dismiss control, placed between the label and the field; the app keeps the prototype's place for the hints, under the field, so it differs from GOV.UK there. Its advice to leave out the full stop is not followed, because rule 13 asks for full sentences. Google Forms' inline validation was compared from memory, since its editor needs an account; it also shows a message under the field that goes when the text changes. |
+| Left out | The audit's double-barreled check and hints in board settings (I-01), as the backlog says. |
+| Second reader | Nothing high or medium was found. After the review, the browser tests also check that an empty list sits outside the sheet's grid and that typing stores nothing in the browser. The ASCII word boundary gives the same false positives the prototype does ("even-handed" gets the "even" hint), and an empty list may be announced as a list with no items; both are left as they are. |
+| The whole check | `npm run check` ran locally on Node 22 with Docker: types, lint, 1,101 unit, service, and simulation tests, and 400 of 401 browser tests passed. The one failure was the Share panel's Tab order in `share-open.spec.ts`, which this change doesn't touch and which failed the same way under load in PR 110; that file passed when run alone. |
+| Not checked | No person has read the hints yet. The hints haven't been seen on staging, which happens after the merge deploys (rule 14). |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.
