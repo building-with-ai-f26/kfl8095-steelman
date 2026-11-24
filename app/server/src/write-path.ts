@@ -16,7 +16,7 @@
 
 import { sql } from "kysely";
 import type { Transaction } from "kysely";
-import { boardIdInput, can } from "@steelman/shared";
+import { boardIdInput, can, closedSince } from "@steelman/shared";
 import type { Action, Clock, RefusalReason, VersionRow, WriteAnswer } from "@steelman/shared";
 import { entryTo } from "./access.ts";
 import type { Database, Db } from "./db/database.ts";
@@ -53,7 +53,8 @@ class RollBack extends Error {
   }
 }
 
-export async function writeToBoard<Loaded>(db: Db, boardId: string, person: string | null, steps: WriteSteps<Loaded>): Promise<WriteResult> {
+/** @param clock The service's clock, which says whether a closing time has passed (M3b-3). */
+export async function writeToBoard<Loaded>(db: Db, clock: Clock, boardId: string, person: string | null, steps: WriteSteps<Loaded>): Promise<WriteResult> {
   // An ID that isn't the shape of one names no board.
   if (!boardIdInput.safeParse(boardId).success) return { status: "not_found" };
   try {
@@ -61,7 +62,7 @@ export async function writeToBoard<Loaded>(db: Db, boardId: string, person: stri
       // 1. Lock.
       const taken = await sql<{ seq: string }>`select take_change_number(${boardId}) as seq`.execute(trx);
       const seq = Number(taken.rows[0]!.seq);
-      const board = await trx.selectFrom("board").select(["closed_at", "deleted_at"]).where("id", "=", boardId).executeTakeFirstOrThrow();
+      const board = await trx.selectFrom("board").select(["closed_at", "closes_at", "deleted_at"]).where("id", "=", boardId).executeTakeFirstOrThrow();
       if (board.deleted_at) throw new RollBack({ status: "not_found" });
 
       // 2. Load.
@@ -70,7 +71,9 @@ export async function writeToBoard<Loaded>(db: Db, boardId: string, person: stri
 
       // 3. May they? (Someone who gets in by the link is recorded as a member when they open the board, not here.)
       const { role } = await entryTo(trx, boardId, person);
-      const refusal = can(person, role, steps.action, { closed: board.closed_at !== null }, steps.authorOf?.(loaded));
+      // Closed by hand, or its closing time has passed by the service's clock: nothing is written when that happens.
+      const closed = closedSince({ closedAt: board.closed_at, closesAt: board.closes_at }, clock.now()) !== null;
+      const refusal = can(person, role, steps.action, { closed }, steps.authorOf?.(loaded));
       if (refusal) throw new RollBack({ status: "refused", reason: refusal });
 
       // 4. Stale?

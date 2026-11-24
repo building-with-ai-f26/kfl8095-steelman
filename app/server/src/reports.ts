@@ -17,7 +17,7 @@ const loadVersion = (boardId: string, versionId: string) => async (trx: Trx) =>
 
 /** Reports a wording, or changes the reason of the person's report on it. */
 export function setReport({ db, clock }: Services, boardId: string, person: string | null, versionId: string, input: { reason: ReportReason; note: string }): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "report",
     load: loadVersion(boardId, versionId),
     // A hidden wording is gone for anyone who could report it, as votes on it are (M2-4).
@@ -44,7 +44,7 @@ export function setReport({ db, clock }: Services, boardId: string, person: stri
 
 /** Withdraws the person's report on a wording. Withdrawing one that isn't open is "already done". */
 export function withdrawReport({ db, clock }: Services, boardId: string, person: string | null, versionId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "report",
     // A wording deleted since can still have its report withdrawn.
     load: loadVersion(boardId, versionId),

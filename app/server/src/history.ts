@@ -124,6 +124,10 @@ function detailOf(kind: string, subject: string, after: unknown, names: Map<stri
     case "wording_uncombined":
     case "wording_unseparated":
       return { undoes: Number(field(after, "undoes")) };
+    case "closing_date_set":
+      // Kept as a number, since the log holds no text (M3b-3).
+      // A row without a usable moment says only that a date was set, rather than breaking all of History.
+      return Number.isFinite(Number(field(after, "at"))) ? { closesAt: new Date(Number(field(after, "at"))).toISOString() } : {};
     case "access_changed":
       return { general: field(after, "general") as "link" | "invited", linkRole: field(after, "linkRole") as Role };
     default:

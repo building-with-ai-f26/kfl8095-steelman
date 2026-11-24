@@ -7,7 +7,7 @@
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { REPORT_REASONS, webLink } from "@steelman/shared";
+import { REPORT_REASONS, closedSince, webLink } from "@steelman/shared";
 import type { ReportReason, ArgumentRow, BoardChanges, BoardOrder, BoardSnapshot, LogRow, OptionRow, SourceRow, VersionRow } from "@steelman/shared";
 import type { Database, Db } from "./db/database.ts";
 
@@ -15,17 +15,21 @@ type Reader = Kysely<Database>;
 
 const vote = (value: number | null): 1 | -1 | null => (value === 1 ? 1 : value === -1 ? -1 : null);
 
-/** @param moderator Whether the reader is an Editor or the Owner, who see a wording's open reports (M2-3). */
-export async function readSnapshot(db: Db, boardId: string, person: string | null, moderator = false): Promise<BoardSnapshot | null> {
+/**
+ * @param moderator Whether the reader is an Editor or the Owner, who see a wording's open reports (M2-3).
+ * @param now The service's time, which says whether a closing time has passed (M3b-3). Without it, as in the older
+ *   callers, only a board closed by hand reads as closed.
+ */
+export async function readSnapshot(db: Db, boardId: string, person: string | null, moderator = false, now?: Date): Promise<BoardSnapshot | null> {
   return db
     .transaction()
     .setIsolationLevel("repeatable read")
     .execute(async (trx) => {
-      const board = await trx.selectFrom("board").select(["id", "question", "closed_at", "last_seq"]).where("id", "=", boardId).executeTakeFirst();
+      const board = await trx.selectFrom("board").select(["id", "question", "closed_at", "closes_at", "last_seq"]).where("id", "=", boardId).executeTakeFirst();
       if (!board) return null;
       const order = await trx.selectFrom("published_order").select(["arguments", "versions"]).where("board_id", "=", boardId).executeTakeFirst();
       return {
-        board: { id: board.id, question: board.question, closed: board.closed_at !== null, seq: Number(board.last_seq) },
+        board: { id: board.id, question: board.question, closed: now ? closedSince({ closedAt: board.closed_at, closesAt: board.closes_at }, now) !== null : board.closed_at !== null, seq: Number(board.last_seq) },
         options: await optionRows(trx, boardId, 0),
         arguments: await argumentRows(trx, boardId, person, 0),
         versions: await versionRows(trx, boardId, person, { after: 0 }, moderator),

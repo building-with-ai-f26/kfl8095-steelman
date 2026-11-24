@@ -32,7 +32,7 @@ const loadOption = (boardId: string, optionId: string) => async (trx: Trx) =>
   (await trx.selectFrom("option").select(["name", "deleted_at"]).where("id", "=", optionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
 
 export function addOption({ db, clock }: Services, boardId: string, person: string | null, input: { id: string; name: string }): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: async () => ({}),
     async change(trx, _loaded, seq) {
@@ -54,7 +54,7 @@ export function addOption({ db, clock }: Services, boardId: string, person: stri
 }
 
 export function renameOption({ db, clock }: Services, boardId: string, person: string | null, optionId: string, name: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: loadOption(boardId, optionId),
     stale: async (_trx, option) => (option.deleted_at ? { refused: "option_deleted" } : null),
@@ -69,7 +69,7 @@ export function renameOption({ db, clock }: Services, boardId: string, person: s
 }
 
 export function deleteOption({ db, clock }: Services, boardId: string, person: string | null, optionId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: loadOption(boardId, optionId),
     async change(trx, option, seq) {
@@ -99,7 +99,7 @@ export function deleteOption({ db, clock }: Services, boardId: string, person: s
  * restoring one that's there is already done.
  */
 export function restoreOption({ db, clock }: Services, boardId: string, person: string | null, optionId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: loadOption(boardId, optionId),
     async change(trx, option, seq) {

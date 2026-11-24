@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput } from "./inputs.ts";
+import type { Closing } from "./closing.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
 import type { Role } from "./policy.ts";
@@ -28,6 +29,8 @@ export const newOptionInput = z.strictObject({ id: itemIdInput, name: optionName
 export const renameOptionInput = z.strictObject({ name: optionNameInput });
 /** The board's question, renamed in Settings (M3b-2, I-01), by New steelman's rules. */
 export const renameQuestionInput = z.strictObject({ question: questionInput });
+/** The moment a board closes (M3b-3, I-05), as an ISO date and time with its offset, or null to clear it. */
+export const closingInput = z.strictObject({ closesAt: z.iso.datetime({ offset: true }).nullable() });
 /** Combining a wording into another argument (M3a-6): the one it goes into. */
 export const combineInput = z.strictObject({ into: itemIdInput });
 /**
@@ -221,6 +224,8 @@ export interface HistoryEntry {
     undoes?: number;
     /** An edit of a source that cleared its "can't be opened" report (C-02). */
     cleared?: true;
+    /** A closing time that was set (M3b-3): the moment, as an ISO date and time. */
+    closesAt?: string;
   };
 }
 
@@ -268,6 +273,8 @@ export interface BoardListing {
   owner: string;
   /** The last write of any kind: a new argument or wording, an edit, a vote, an assessment, a change of sources or access. */
   changedAt: string;
+  /** Only when the board is closed or has a closing time (M3b-3). */
+  closing?: Closing;
 }
 
 /** The list, most recently changed first, with the service's time now, so "3h ago" doesn't depend on the reader's clock. */
@@ -284,6 +291,8 @@ export interface BoardList {
 export interface Standing {
   access: Access;
   role: Role;
+  /** Only when the board is closed or has a closing time (M3b-3), so an open board's answers keep their shape. */
+  closing?: Closing;
 }
 
 /**

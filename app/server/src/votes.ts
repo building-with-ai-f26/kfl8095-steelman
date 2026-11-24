@@ -58,7 +58,7 @@ async function carriedAlong(trx: Trx, person: string, path: string[]): Promise<b
 type Vote = 1 | -1 | null;
 
 export function setImportance({ db, clock }: Services, boardId: string, person: string | null, named: string, value: Vote): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "vote",
     // A vote on an argument combined away applies to the one it went into (M3a-6).
     load: async (trx) => {
@@ -103,7 +103,7 @@ export function setImportance({ db, clock }: Services, boardId: string, person: 
 }
 
 export function setArticulation({ db, clock }: Services, boardId: string, person: string | null, versionId: string, value: Vote): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "vote",
     load: async (trx) =>
       (await trx
@@ -153,7 +153,7 @@ export function setAssessment(
   versionId: string,
   input: { rev: number; supported: boolean | null },
 ): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "assess",
     load: async (trx) =>
       (await trx

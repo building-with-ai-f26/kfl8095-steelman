@@ -33,7 +33,7 @@ interface Wording {
 }
 
 export function addSource({ db, clock }: Services, boardId: string, person: string | null, versionId: string, input: NewSource): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "add",
     load: (trx) => loadWording(trx, boardId, versionId),
     stale: async (trx, wording): Promise<Outcome | null> => {
@@ -70,7 +70,7 @@ export function addSource({ db, clock }: Services, boardId: string, person: stri
 
 /** Cites a source already on the board on one more wording. */
 export function citeSource({ db, clock }: Services, boardId: string, person: string | null, versionId: string, sourceId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "add",
     load: async (trx) => ((await sourceOnBoard(trx, boardId, sourceId)) ? loadWording(trx, boardId, versionId) : null),
     stale: async (_trx, wording) => (wording.cited.includes(sourceId) ? "already_done" : gone(wording)),
@@ -88,7 +88,7 @@ export function citeSource({ db, clock }: Services, boardId: string, person: str
  * cite a source on anyone's wording; the Owner may take any off (policy.ts).
  */
 export function unciteSource({ db, clock }: Services, boardId: string, person: string | null, versionId: string, sourceId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "uncite",
     load: async (trx) => {
       const source = await sourceOnBoard(trx, boardId, sourceId);
@@ -114,7 +114,7 @@ export function unciteSource({ db, clock }: Services, boardId: string, person: s
  * opened, the edit clears the report; a change to anything else leaves it.
  */
 export function editSource({ db, clock }: Services, boardId: string, person: string | null, sourceId: string, input: SourceInput): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "edit",
     load: (trx) => sourceOnBoard(trx, boardId, sourceId),
     authorOf: (source) => source.added_by,
@@ -172,7 +172,7 @@ export function editSource({ db, clock }: Services, boardId: string, person: str
  * A second report, by anyone, changes nothing.
  */
 export function reportUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "report",
     load: (trx) => sourceOnBoard(trx, boardId, sourceId),
     change: async (trx, source, seq) => {
@@ -189,7 +189,7 @@ export function reportUnavailable({ db, clock }: Services, boardId: string, pers
  * source changes nothing. (The person who added the source clears it another way: by changing its link, in `editSource`.)
  */
 export function clearUnavailable({ db, clock }: Services, boardId: string, person: string | null, sourceId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "unreport",
     load: (trx) => sourceOnBoard(trx, boardId, sourceId),
     // Nothing to clear is nobody's report: whoever asks is told it's done already. A mark with no reporter is an Editor's to clear.
