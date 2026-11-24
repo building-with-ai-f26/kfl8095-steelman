@@ -32,6 +32,8 @@ export const LIMITS = {
   report: { most: 20, windowMs: HOUR },
   /** Invitations, by account (M3b-7), counted whatever the answer, so usernames can't be tried one after another. */
   invite: { most: 20, windowMs: HOUR },
+  /** Comments and replies, by account (M3b-9). Resolving, reopening, and deleting aren't counted. */
+  comment: { most: 60, windowMs: HOUR },
 } satisfies Record<string, Limit>;
 
 export type LimitName = keyof typeof LIMITS;
