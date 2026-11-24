@@ -17,6 +17,7 @@ import {
   renameOptionInput,
   renameQuestionInput,
   closingInput,
+  inviteInput,
   closedSince,
   newBoardInput,
   newSourceInput,
@@ -43,7 +44,7 @@ import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
-import { listPeople, setAccess, setRole } from "./sharing.ts";
+import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
@@ -157,6 +158,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   needs_username: 403,
   wrong_origin: 403,
   too_many: 429,
+  already_member: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -469,6 +471,22 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setRole(services, request.params.board, request.person, request.params.account, body.data.role));
   });
+
+  // Inviting by username, and Remove (M3b-7, H-01): the Owner's. An invitation is counted here, whatever the answer,
+  // and never given back, so an unknown username counts too: the shared hook would give back every answer that isn't
+  // 200 (architecture §7).
+  app.post<{ Params: { board: string } }>("/api/boards/:board/invites", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const wait = limiter.take("invite", request.person);
+    if (wait !== null) return reply.code(429).header("retry-after", String(wait)).send({ status: "refused", reason: "too_many", retryAfter: wait });
+    const body = inviteInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await inviteByUsername(services, request.params.board, request.person, body.data.username, body.data.role));
+  });
+
+  app.delete<{ Params: { board: string; account: string } }>("/api/boards/:board/people/:account", async (request, reply) =>
+    answer(reply, await removeMember(services, request.params.board, request.person, request.params.account)),
+  );
 
   app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/arguments/:id/importance", { config: { limit: "voting" } }, async (request, reply) => {
     const body = voteInput.safeParse(request.body);

@@ -19,19 +19,27 @@ test("H-02: clicking the pill opens Share with the cursor on the panel, and noth
   expect(await outlined(owner)).toBeNull();
 });
 
-test("H-02 H-03 M-04: from the keyboard, Tab then reaches Close, each person's access, and General access, and Escape still closes the panel", async ({ board }) => {
+test("H-01 H-02 H-03 M-04: from the keyboard, Tab then reaches Close, the invite row, each person's access and Remove, and General access, and Escape still closes the panel", async ({ board }) => {
   const owner = await board.open("maya.chen");
   await pill(owner).focus();
   await owner.keyboard.press("Enter");
   await expect(panel(owner)).toBeFocused();
 
-  // In the panel's order: its Close button, then the people list's access for each person but the owner (M2-2b; the
-  // builder approved this change, Nov 20), then General access.
+  // In the panel's order: its Close button, then the invite row (M3b-7; the builder approved this change, Nov 24), then
+  // the people list's access and Remove for each person but the owner (M2-2b; approved Nov 20), then General access.
   await owner.keyboard.press("Tab");
   await expect(owner.getByRole("button", { name: "Close sharing" })).toBeFocused();
+  await owner.keyboard.press("Tab");
+  await expect(owner.getByRole("textbox", { name: "Add people" })).toBeFocused();
+  await owner.keyboard.press("Tab");
+  await expect(owner.getByRole("combobox", { name: "Access level for new people" })).toBeFocused();
+  await owner.keyboard.press("Tab");
+  await expect(owner.getByRole("button", { name: "Invite" })).toBeFocused();
   for (const person of ["jordan_w", "lin.zhao", "omar_h", "tess.b"]) {
     await owner.keyboard.press("Tab");
     await expect(owner.getByRole("combobox", { name: `Access level for ${person}` })).toBeFocused();
+    await owner.keyboard.press("Tab");
+    await expect(owner.getByRole("button", { name: `Remove ${person}` })).toBeFocused();
   }
   await owner.keyboard.press("Tab");
 

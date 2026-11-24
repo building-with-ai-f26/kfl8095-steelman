@@ -18,6 +18,9 @@
 import type { HistoryEntry, Role } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 
+/** Change rows that name a person by their account (M2-2b, M3b-7). */
+const PERSON_KINDS = new Set(["role_changed", "member_added", "member_removed"]);
+
 /** Enough for any board in the class trial; older entries wait for paging, if a board ever needs it. */
 const MOST = 500;
 
@@ -34,8 +37,8 @@ export async function readHistory(db: Db, boardId: string): Promise<HistoryEntry
       .execute(),
     additions(db, boardId),
   ]);
-  // A role change names the person by ID; History says their username.
-  const accounts = [...new Set(rows.flatMap((row) => (row.kind === "role_changed" ? [String(field(row.after, "account"))] : [])))];
+  // A role change, an addition, and a removal name the person by ID; History says their username.
+  const accounts = [...new Set(rows.flatMap((row) => (PERSON_KINDS.has(row.kind) ? [String(field(row.after, "account"))] : [])))];
   const names = new Map(
     accounts.length === 0 ? [] : (await db.selectFrom("account").select(["id", "username"]).where("id", "in", accounts).execute()).map((account) => [account.id, account.username ?? ""]),
   );
@@ -112,6 +115,11 @@ function detailOf(kind: string, subject: string, after: unknown, names: Map<stri
       return { version: subject, source: String(field(after, "source")) };
     case "version_deleted":
       return field(after, "argumentDeleted") ? { argumentDeleted: true } : {};
+    case "member_removed": {
+      const name = names.get(String(field(after, "account")));
+      return name ? { accountName: name } : {};
+    }
+    case "member_added":
     case "role_changed": {
       // Someone who came by the link may not have chosen a username yet: the board then says "someone".
       const name = names.get(String(field(after, "account")));

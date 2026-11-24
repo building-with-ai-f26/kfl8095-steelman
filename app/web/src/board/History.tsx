@@ -275,6 +275,11 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       return "created this board.";
     case "access_changed":
       return entry.detail.general === "invited" ? "made the board open only to invited people." : `let anyone with the link ${LINK_CAN[entry.detail.linkRole ?? "viewer"] ?? "view"}.`;
+    // Inviting by username, and Remove (M3b-7, H-01).
+    case "member_added":
+      return `added ${entry.detail.accountName ?? "someone"} as ${A_ROLE[entry.detail.role ?? "viewer"]}.`;
+    case "member_removed":
+      return `removed ${entry.detail.accountName ?? "someone"}.`;
     case "role_changed":
       return `made ${entry.detail.accountName ?? "someone"} ${A_ROLE[entry.detail.role ?? "viewer"]}.`;
     case "option_added":
