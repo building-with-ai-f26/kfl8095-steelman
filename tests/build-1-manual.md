@@ -1903,6 +1903,20 @@ Build plan M3a-9: someone signed in who opens the link of a board they aren't in
 | Products compared (rule 12) | Google Docs' "You need access" page gave the title; its wording was confirmed on Google's help centre on November 24. Naming the signed-in account with "You're signed in as" and offering another account follow Google's page from memory, since the help article doesn't quote that part of the screen. Notion's "No access to this page" was compared from memory only; its help centre confirms a control labelled "No access" and nothing else, so nothing was taken from it. Both products' Request access is left out until there are invitations (M3b) |
 | Known limitations | No real person has read the wording yet. The card hasn't been opened on staging, which happens after the merge deploys (rule 14). Signing in with Google from the card's Sign in screen wasn't tested here; the return to the same link by Google is covered by the older sign-in tests |
 
+## November 24 — M3b's backlog, and vote feedback held by tests (B-06)
+
+Build plan M3b: the backlog was written, with twenty items. B-06 gets no item, because the app already has it, so the backlog's pull request adds the tests that hold it there.
+
+| Check | Observed result |
+|---|---|
+| What B-06 is in the app | The importance axis runs down each column and the articulation axis runs along an unfolded row (M1). A vote shows the pressed arrow and the new number at once, and the status line says it in a sentence (M2-11). The prototype's fading words, "Important." and "Well articulated.", are not built, because they are fragments under rule 13 and the status line already says what happened. |
+| Compared first (AGENTS.md rule 12) | From memory, not read live: Reddit, Stack Overflow, and GitHub's reactions show only the pressed control and the new number after a vote. The design audit of Nov 22 also recommends dropping the words. |
+| New tests | `app/e2e/vote-feedback.spec.ts` has four browser tests, each named B-06: a vote shows at once while the service's answer is held back; an articulation vote shows the same way; both axes read their labels; no word fades in on the card after a vote. All four passed. |
+| Seen to fail | The tests pass on arrival, because they hold what is already built. With `aria-pressed` fixed to false in the vote control, a stray "Important." added to it, and the column axis relabelled, all four failed, each on the line that checks the broken thing. The three files were then restored. |
+| Other checks | Typecheck, lint, and the unit, service, and simulation tests passed locally. The full browser suite was left to CI for this pull request. |
+| Existing tests (rule 9) | No existing test or saved screenshot changed. |
+| Not checked | A person's view of whether the pressed arrow and the number are feedback enough without the words. The product comparisons in the backlog's rows are from memory until each row checks them live. |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

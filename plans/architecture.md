@@ -108,9 +108,9 @@ Names follow the product, not the prototype: the prototype's `idea` is an **argu
 
 | Entity | What it is | Key fields | Prototype origin |
 |---|---|---|---|
-| **account** | A person | `id`, `username` (unique, case-insensitive), `email` (unique; null once deleted), `email_confirmed_at`, `analytics_choice`, `tour_seen_at`, `deleted_at` | `state.me`, `state.myEmail` |
+| **account** | A person | `id`, `username` (unique, case-insensitive), `email` (unique; null once deleted), `email_confirmed_at`, `analytics_choice`, `tour_seen_at`, `email_replies`, `email_closing`, `digest_sent_at` (the two email choices and when the daily email last went; (M3b, proposed Nov 24)), `deleted_at` | `state.me`, `state.myEmail` |
 | **sign_in_method** | Google or email code, linked to an account | `account_id`, `provider`, `provider_subject` | `state.google` |
-| **board** | One steelman: a question | `id` (unguessable; see Links), `question`, `created_by`, `general_access` (invited / link), `link_role`, `rules` (mode, which votes are on, AI switches), `closed_at`, `decision`, `last_seq` | `doc.question` |
+| **board** | One steelman: a question | `id` (unguessable; see Links), `question`, `created_by`, `general_access` (invited / link), `link_role`, `rules` (mode, which votes are on, AI switches), `closed_at` (closed by hand), `closes_at` (the time it closes by itself; (M3b, proposed Nov 24)), `decision`, `last_seq` | `doc.question` |
 | **board_member** | A person's role on a board | `board_id`, `account_id`, `role` (viewer … owner), `joined_via` (link / invite) | `question.people` |
 | **option** | A side | `id`, `board_id`, `name`, `position`, `deleted_at` | `doc.options` |
 | **argument** | A reason within an option, grouping its wordings. Carries **importance** | `id`, `board_id`, `option_id`, `created_by`, `merged_into` (null unless combined away), `status` (published / held / declined), `deleted_at`, `importance` (derived count) | `doc.ideas` |
@@ -121,13 +121,14 @@ Names follow the product, not the prototype: the prototype's `idea` is an **argu
 | **importance_vote** | ±1 on an argument | **key** (`argument_id`, `account_id`), `board_id`, `value`, `at` | `idea.score`, `my` |
 | **articulation_vote** | ±1 on a version | **key** (`version_id`, `account_id`), `board_id`, `value`, `at` | `card.pref` |
 | **assessment** | Yes / no on whether the evidence backs the wording | **key** (`version_id`, `rev`, `account_id`), `board_id`, `supported`, `at` | `card.yes`, `card.no` |
-| **comment** *(T3, modeled now)* | A note on the question, an option, or a version; threaded | `id`, `board_id`, `target`, `parent_id`, `author_id`, `body`, `resolved_at`, `hidden`, `deleted_at` | `doc.comments` |
+| **comment** *(T3, modeled now)* | A note on the question, an option, or a version; threaded one level deep | `id` (made by the browser), `board_id`, `target` (an `option_id`, a `version_id`, or neither for the question, never both; (M3b, proposed Nov 24)), `parent_id`, `author_id`, `body`, `created_at`, `resolved_at`, `hidden` (by, reason, at), `deleted_at`, `changed_seq` | `doc.comments` |
 | **report** | A flag on a version or comment | `id`, `board_id`, `target`, `reporter_id`, `reason`, `note`, `withdrawn_at`, `resolved` (by, how, at) | `card.reports` |
+| **invite** *((M3b, proposed Nov 24))* | An invitation by email that nobody has taken up yet | `id` (made by the service), `board_id`, `email`, `role`, `invited_by`, `invited_at`; one pending invitation per address per board; deleted when taken up, cancelled, or 7 days old | the prototype's pending row in Share |
 | **change** | One row per structural or moderation action, per board, in order: the change log. Votes and assessments are not in it | **key** (`board_id`, `seq`), `at`, `actor_id`, `kind`, `subject` (what it touched), `before` / `after` (only what's needed to show or undo it), `reason` | `doc.log` |
 
 **On every row.** Each option, argument, version, source, and comment row also carries **`changed_seq`**: the board's change number when the row last changed, including a change to its counts. It's indexed with `board_id`, and it is what live updates read (step 3). Every table that belongs to a board carries `board_id`, and a row can only point at rows of the same board (the foreign keys include `board_id`). So "scoped to one board" is something the database checks, not only the code.
 
-**Later, not in the MVP:** `space` and `space_member` (G), `invite` (H-01), `combine_suggestion` (A-11), `notification` (L-06), `ai_check` (K-02, attached to a version *revision*, like an assessment), and a `credit_ledger` per space (K-04). None of them changes the tables above; each adds a table and, at most, a nullable `space_id` on `board`.
+**Later, not in the MVP:** `space` and `space_member` (G), `combine_suggestion` (A-11), `notification` (L-06), `ai_check` (K-02, attached to a version *revision*, like an assessment), and a `credit_ledger` per space (K-04). None of them changes the tables above; each adds a table and, at most, a nullable `space_id` on `board`.
 
 Sources are text and links only. Uploading files isn't in the MVP; if it comes, the file goes to object storage and the `source` row keeps the link.
 
@@ -194,7 +195,8 @@ One sentinel account, **`deleted_account`**, is added by the first deletion (its
 |---|---|
 | Email, sign-in methods, analytics choice | Erased |
 | Importance votes (and those a combine set aside, in `combine_vote`), articulation votes, assessments, reports filed | **Deleted** (counts change accordingly; each affected row is stamped with its board's next change number, so open boards pick up the new counts, and nothing names anyone) |
-| Comments | Deleted. A comment with replies leaves "Comment deleted" in place so the thread still reads (the prototype's behavior) |
+| Comments | Their text and author are erased and each row stays, marked deleted, as a deleted wording's does ((M3b, proposed Nov 24); before, the row was to be deleted). A comment with replies shows "This comment was deleted." in place so the thread still reads (the prototype's behavior) |
+| Invitations they sent, and their two email choices ((M3b, proposed Nov 24)) | Deleted. An invitation sent to their address by someone else is deleted too |
 | Arguments, versions, revisions, sources | **Kept**, with the author changed to `deleted_account` |
 | Change log rows they made | Actor changed to `deleted_account`; any `before` / `after` fields that hold their account ID are scrubbed |
 | Username | Held for 30 days, so nobody can take it straight away, then released by the daily scheduled call (Q6) |
@@ -239,6 +241,8 @@ Every reader's screen is "the board as of change *S*". Keeping up to date is one
 | A version with a higher revision | Shows the new wording in place, marked "edited"; credibility starts over |
 | A row now deleted, hidden, combined away, or moved to another argument | Keeps the item where it is, marked ("Removed by…", "combined with…"), and counts it toward the pill |
 | A newer published order, if there is one | Keeps it aside and counts how far the screen is from it toward the pill |
+| A comment it doesn't have, or one now resolved, deleted, or hidden ((M3b, proposed Nov 24)) | Adds it to its thread or updates it in place; the count on the speech bubble follows |
+| A renamed question, or a closing state ((M3b, proposed Nov 24)) | Shows the new question; fades what a closed board refuses. Both ride on an answer only when there is something to say: a question only when it was renamed after *S*, a closing state only when the board is closed or has a closing time, and comments only when there are some. An answer with none of them is exactly what it was |
 | The board's change number | Remembers it as the new *S* for the next ask |
 
 Because the answer is the rows' current state, not a list of events, the browser never has to apply steps in the right order, and an answer that arrives twice or after a gap does no harm.
@@ -303,8 +307,12 @@ Conflicts are rare by design: **nobody overwrites anybody.** A better wording is
 | New argument in an option | It was deleted (M3a-2; only an empty option can be) | Refuses it | "1 action couldn't be sent: that option was deleted." Your text is lost, since its column is gone |
 | Edit of your own wording | (only you can edit it) | Applies it, unless your queue holds an earlier edit that failed; then it refuses | Your text comes back in the edit form |
 | Anything | The board was closed, or your access changed | Refuses it | "This board closed while you were away", or the access message |
+| A reply ((M3b, proposed Nov 24)) | Its thread was resolved | Refuses it | "This thread was resolved, so your reply wasn’t added." The text stays in the box |
+| A comment ((M3b, proposed Nov 24)) | Its wording was deleted or hidden, or its option was deleted | Refuses it | "This wording was removed, so your comment wasn’t added." The text stays in the box |
 
 Online writes follow the same rules. Being offline just makes staleness more likely.
+
+**Comments aren't queued** ((M3b, proposed Nov 24)). A comment is sent at once; offline, its text stays in the box with a sentence saying it wasn't sent. A draft isn't a vote: sending it later, to a thread that may have moved on, is the person's call. The same goes for the Owner's settings: renaming, closing, and inviting.
 
 ### What it costs at each scale
 
@@ -364,8 +372,8 @@ flowchart LR
 | **Sign-in** | **Better Auth** (an open-source TypeScript library), with its tables in **our** Postgres: Google sign-in, one-time codes by email, sessions in secure cookies | Accounts live in one database, so data export and account deletion touch one place. Standard OpenID Connect for Google, so it's portable. A library handles sessions, CSRF protection, and account linking, which are risky to hand-write. Email sign-in is a 6-digit code, not a link, so it works across devices and mail scanners can't use it up (step 1, Q21) | **Managed identity** (Google Identity Platform, AWS Cognito): a second user store to keep in sync for export and deletion, and lock-in. Cognito's passwordless sign-in also uses one-time codes, so that isn't what separates them. **Hand-written sessions** (following the Lucia guide): most explainable, but security-sensitive code we'd own. ADR 004 |
 | **Database** | **Managed Postgres** (the cloud's own service, step 5) | Holds everything (step 2). Its constraints enforce the invariants; its `LISTEN/NOTIFY` is the later push channel (step 3) | A second store for realtime or caching (step 3 rejected it). ADR 002 |
 | **Live updates** | **Polling the service**, server-sent events later (step 3) | No new component | ADR 003 |
-| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (expired sign-in codes and sessions, usernames due for release). The scheduler also makes two calls that never reach our code: the weekly database export and staging's nightly stop, both straight to Cloud SQL's own API (step 6). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised when the build plan was written: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
-| **Email** | **Resend** for sign-in and email-change codes, sent from our own domain (SPF, DKIM, DMARC set up) | Sign-in by emailed code needs a sender with good delivery to school inboxes | Postmark (strong delivery reputation, but its free plan's 100 a month is too tight). Amazon SES (cheapest, but needs approval to leave its sandbox and more setup). All three take the same kind of API call, so switching is small |
+| **Background jobs** | **None in the MVP.** One **daily scheduled call** to an internal, authenticated endpoint for maintenance (expired sign-in codes and sessions, usernames due for release). The scheduler also makes two calls that never reach our code: the weekly database export and staging's nightly stop, both straight to Cloud SQL's own API (step 6). At T3, **Cloud Tasks**: each job is an HTTP request Cloud Tasks makes to the service, with retries (free tier about 1 million operations a month, *unverified*). Revised when the build plan was written: a worker process reading a Postgres queue (pg-boss) would need an always-on instance, because Cloud Run with request-based billing gives no CPU between requests (documented behavior, not re-checked here) | The MVP has nothing slow: export and deletion take one transaction; the order recalculates lazily; **scheduled closing is lazy too** (a board whose closing time has passed is closed, checked on every read and write, so no timer). Jobs earn their place at T3 with AI checks (seconds to a minute each) and notification emails. Cloud Tasks keeps scale-to-zero and adds no process to run. **(M3b, proposed Nov 24): M3b sends its email without Cloud Tasks.** An invitation email is sent inside the request, awaited, as sign-in codes are. Replies and closing-soon notices go out once a day, in one email per person, from the daily maintenance run, which was built as a Cloud Run job (`steelman-daily`) and not as the internal endpoint this row describes. At class scale that is at most a few dozen emails a day, and a digest keeps inside Resend's free 100 a day. Cloud Tasks waits for M3c's evidence check, which is the first work too slow for a request | pg-boss in Postgres (no new service, but needs an always-on worker). Redis plus a queue library (a second data store) |
+| **Email** | **Resend** for sign-in and email-change codes, and from M3b for invitations and the daily email ((M3b, proposed Nov 24)), sent from our own domain (SPF, DKIM, DMARC set up) | Sign-in by emailed code needs a sender with good delivery to school inboxes | Postmark (strong delivery reputation, but its free plan's 100 a month is too tight). Amazon SES (cheapest, but needs approval to leave its sandbox and more setup). All three take the same kind of API call, so switching is small |
 | **Sources** | **Text and links only.** The server accepts only `http`/`https` links, stores them, and never fetches them in the MVP. Links open with `rel="noopener noreferrer nofollow ugc"` | Nothing to host. "Can't open it?" is a person's report (C-02) | File uploads to object storage (not needed; add if users ask). At T3, the AI check *does* fetch sources, through a guarded fetcher: public addresses only, size and time limits |
 | **Analytics** | **PostHog (US)**, as today, in the browser. Plus **server events** for the actions that matter (vote, assess, write, Update), sent by the service | Already decided. Server events are reliable where the browser's aren't (ad blockers) | — |
 | **AI (T3)** | The evidence check runs as a **job**: the service checks the space's credits, a worker calls the model provider, the result is saved against the version **revision** | Never in a request path, so a slow model never slows the board. Tied to a revision, so an edit makes the old check stale, like assessments | Calling the model during the request (slow, no retry) |
@@ -536,15 +544,17 @@ The prototype already has the rule book: a map from every action to the least ro
 
 1. **One policy table** in the shared TypeScript code: each API action → the minimum board role (Viewer, Voter, Contributor, Editor, Owner), plus the conditions roles alone don't capture:
    - **Author-only:** editing or deleting a version is for its author (Edited mode adds editors later).
-   - **Board state:** a closed board refuses everything except reading and comments.
+   - **Board state:** a closed board refuses everything except reading and comments. (M3b, proposed Nov 24): it also allows deleting your own comment, so a person can always take their own words back, and the Owner's reopening and closing time, since those act on a closed board. A board is closed when it was closed by hand or its closing time has passed, by one shared rule that every read and write asks.
    - **Board rules:** a vote type the board has switched off is refused. In Edited mode, a non-editor's contribution is saved as *held*.
    - **Visibility:** held items are visible only to their author and editors; hidden items' text only to editors and moderators.
 2. **One function, `can(person, action, board, item)`, called by every API handler before it does anything.** The browser uses the same table only to fade controls; it never decides.
 3. **Every query is scoped to a board** the person has access to, so an ID from another board can't be used even if guessed.
-4. **How a role is found:** the person's `board_member` row; failing that, the board's link role if link access is on and their email is confirmed; failing that, no access. Space roles (Admin, Moderator, Member) join this lookup at T4 (G-04). Moderators act with Editor powers on public boards.
+4. **How a role is found:** the person's `board_member` row; failing that, a pending invitation to their confirmed email, which becomes their `board_member` row when they open that board ((M3b, proposed Nov 24); never when they only read their list, and never lowering a role they have); failing that, the board's link role if link access is on and their email is confirmed; failing that, no access. Space roles (Admin, Moderator, Member) join this lookup at T4 (G-04). Moderators act with Editor powers on public boards.
 5. **Tested as a matrix:** one automated test per action × role (Owner, Editor, Contributor, Voter, Viewer, signed out, and non-member), plus the closed-board and held-item cases. This is the prototype's "Preview as" check (P1), made into a test that runs on every pull request.
 
 **Considered and not chosen for the MVP:** Postgres row-level security as a second layer. It's a real safety net, but every query and migration then has to carry the policy too. With one enforcement point and the matrix test, it isn't worth the complexity yet. Revisit if a second service ever writes to the database.
+
+**One write needs no session** ((M3b, proposed Nov 24)): unsubscribing from an email. Mail providers send the one-click request with no cookie and no Origin (RFC 8058), so it is authorised by the link itself: one sealed value for an account and a kind of email, made with `node:crypto` under a key derived from the sign-in secret, with nothing stored. It can only turn that one email setting off, and it answers the same whether the link is good or bad.
 
 **Nobody gets a back door.** There's no "admin sees everything" role in the app. The builder reaches production data only through Cloud SQL with their own Google identity, which is logged, for support and incidents.
 
@@ -581,6 +591,10 @@ The prototype already has the rule book: a map from every action to the least ro
 | Writing: new arguments, new wordings, edits, and sources added | account | 60 an hour | Was 30 for arguments and wordings alone; edits and sources weren't counted, and a busy classmate adds both |
 | Voting: importance, articulation, and assessments | account | 300 a minute | Unchanged. The board's offline queue keeps only the latest choice per item, so coming back online sends at most one per item |
 | Reports | account | 20 an hour | Unchanged; wired in when reports exist (M2-3) |
+| Comments and replies ((M3b, proposed Nov 24)) | account | 60 an hour | The same as writing; a lively thread is a comment a minute. Resolving, reopening, and deleting aren't counted |
+| Invitations, by username or email ((M3b, proposed Nov 24)) | account | 20 an hour, counted even when refused | A class is about that many people. Refused ones count, so the form can't be used to try usernames |
+| Invitation emails to one address ((M3b, proposed Nov 24)) | the address (Postgres, hashed apart from its sign-in codes) | 5 an hour | The sign-in email's number. Counted apart, so invitations can never use up an address's sign-in codes |
+| Invitation emails and daily emails, across the service ((M3b, proposed Nov 24)) | one count (Postgres) | 60 a day | Leaves 40 of Resend's free 100 a day for sign-in codes, which are never counted here. Over it, an invitation is saved and its owner is told to send the link, and a daily email waits a day |
 
 - **Per account, not per network address, for everything that needs an account.** A class shares one address: a per-address limit on votes would have to allow the whole class's, and would then stop no one. Accounts come only through a sign-in, which the two sign-in limits bound.
 - **Deleting, undoing, Share settings, and reading** aren't counted.
@@ -608,15 +622,18 @@ The prototype already has the rule book: a map from every action to the least ro
 | The change log (structural and moderation actions only; it holds no votes) | For the life of the board (it's the audit trail and the undo history) |
 | Database backups / weekly copies | 14 days / 8 weeks |
 | A deleted account's username | Unavailable to others for 30 days, then released |
+| A pending invitation ((M3b, proposed Nov 24)) | 7 days, or until it is taken up or cancelled; then deleted by the daily run |
+| Counts of invitation and daily emails ((M3b, proposed Nov 24)) | A day, as hashed addresses and times beside the sign-in email counts |
+| When a person's daily email last went (`digest_sent_at`; (M3b, proposed Nov 24)) | For the life of the account |
 | Analytics in PostHog | PostHog's plan retention. Anonymous, so not tied to an account or deleted with it (the builder, Nov 15) |
 
 ### What the privacy page will need to say once accounts exist
 
 The current page (`docs/privacy.html`) already promises the core rules: email and username stored; what you write is seen by others on the board; votes and assessments count toward totals but aren't shown as yours; and what deletion removes and keeps. For launch it must add:
 
-1. **What we collect:** account (email, username, sign-in method), what you write, votes and assessments, comments, reports, the analytics choice; server logs (IP address, browser) for 30 days.
-2. **Who sees what:** content and usernames are visible to people with access to the board; votes and assessments are private; emails are seen by no one but you.
-3. **Who processes it for us:** Google Cloud (hosting, US), Google (if you sign in with Google), Resend (sign-in emails), PostHog (analytics, US). At T3, add Stripe (payments; we never see card numbers) and the AI model provider (an evidence check sends the wording and its sources).
+1. **What we collect:** account (email, username, sign-in method), what you write, votes and assessments, comments, reports, the analytics choice; server logs (IP address, browser) for 30 days. (M3b, proposed Nov 24): the email address an owner invites, with the role and who sent it, for 7 days or until it is taken up; and your two email choices.
+2. **Who sees what:** content and usernames are visible to people with access to the board; votes and assessments are private; emails are seen by no one but you. (M3b, proposed Nov 24): an owner who invites you by email already knows that address, and sees your username on the board once you open it.
+3. **Who processes it for us:** Google Cloud (hosting, US), Google (if you sign in with Google), Resend (sign-in emails, and from M3b invitations and the daily email), PostHog (analytics, US). At T3, add Stripe (payments; we never see card numbers) and the AI model provider (an evidence check sends the wording and its sources).
 4. **Cookies:** one essential session cookie; analytics as today, with the opt-out, Global Privacy Control, and Do Not Track.
 5. **Retention:** the table above, in plain words, including the backup delay on deletion.
 6. **Your choices:** download your data, delete your account, turn analytics off, and how to ask a question.
