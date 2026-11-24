@@ -823,8 +823,9 @@ export class BoardSession {
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);
           if (typeof fresh !== "string" && this.state.view) {
-            const { options, arguments: args, versions, sources } = fresh;
-            this.set({ view: receive(this.state.view, { seq: Math.max(fresh.board.seq, this.state.view.seq), options, arguments: args, versions, sources, order: null, log: [] }) });
+            // Comments too (M3b-10): the change number moves to the snapshot's, so one stamped since the poll is sent only here.
+            const { options, arguments: args, versions, sources, comments } = fresh;
+            this.set({ view: receive(this.state.view, { seq: Math.max(fresh.board.seq, this.state.view.seq), options, arguments: args, versions, sources, ...(comments ? { comments } : {}), order: null, log: [] }) });
           }
         }
         this.mineChanged();

@@ -211,6 +211,31 @@ export interface SourceRow {
 }
 
 /**
+ * A comment on the question, an option, or a wording (D-01, M3b-10), or a reply to one. A reply names its thread's
+ * first comment as its parent and has the thread's target.
+ */
+export interface CommentRow {
+  id: string;
+  /** The target: an option, a wording, or neither for the question, never both. */
+  optionId: string | null;
+  versionId: string | null;
+  /** For a reply: its thread's first comment. Null on a first comment. */
+  parentId: string | null;
+  /** Who wrote it, by ID and username: "deleted_account" once they have deleted their account. */
+  authorId: string;
+  authorName: string;
+  /** Null once deleted, since the text is erased, and while hidden. */
+  body: string | null;
+  createdAt: string;
+  /** Set on a thread's first comment while the thread is resolved. */
+  resolved: boolean;
+  deleted: boolean;
+  /** Hidden by a moderator. Nothing hides a comment until M3b-14, which decides who reads its text. */
+  hidden: boolean;
+  changedSeq: number;
+}
+
+/**
  * One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. Most
  * are rows of the change log. A new argument or wording has no such row, so its entry is built from the wording's
  * own row (`argument_added`, `wording_added`; the subject is the wording).
@@ -266,6 +291,8 @@ export interface BoardSnapshot {
   sources: SourceRow[];
   /** The latest published shared order. */
   order: BoardOrder;
+  /** Comments whose subject stands (M3b-10), only when there are some, so a board without them answers as before. */
+  comments?: CommentRow[];
 }
 
 export interface BoardChanges {
@@ -280,6 +307,11 @@ export interface BoardChanges {
   log: LogRow[];
   /** The board's question, only when it was renamed after S (M3b-2), so an ordinary answer keeps its shape. */
   question?: string;
+  /**
+   * Comments stamped after S whose subject stands, and every comment on a subject History's Restore brought back after
+   * S (M3b-10). Only when there are some, so an ordinary answer keeps its shape.
+   */
+  comments?: CommentRow[];
 }
 
 /** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its owner, and when it last changed. */

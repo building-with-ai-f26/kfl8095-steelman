@@ -8,7 +8,7 @@
 // counts update in place, new things join the end, deleted things stay,
 // marked, and nothing moves until the reader presses Update.
 
-import type { ArgumentRow, BoardChanges, BoardSnapshot, OptionRow, SourceRow, VersionRow } from "./api.ts";
+import type { ArgumentRow, BoardChanges, BoardSnapshot, CommentRow, OptionRow, SourceRow, VersionRow } from "./api.ts";
 import type { BoardOrder } from "./order.ts";
 import { staleCount } from "./stale.ts";
 
@@ -17,6 +17,8 @@ export interface BoardRows {
   arguments: Record<string, ArgumentRow>;
   versions: Record<string, VersionRow>;
   sources: Record<string, SourceRow>;
+  /** Every comment the reader has been sent (M3b-10). The helpers in comments.ts leave out those whose subject has gone. */
+  comments: Record<string, CommentRow>;
 }
 
 export interface ReaderView {
@@ -110,16 +112,18 @@ const isLiveVersion = (version: VersionRow | undefined) => version !== undefined
 const byAdded = (a: { createdSeq: number; id: string }, b: { createdSeq: number; id: string }) => a.createdSeq - b.createdSeq || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 function emptyRows(): BoardRows {
-  return { options: {}, arguments: {}, versions: {}, sources: {} };
+  return { options: {}, arguments: {}, versions: {}, sources: {}, comments: {} };
 }
 
-function merge(rows: BoardRows, sent: { options: OptionRow[]; arguments: ArgumentRow[]; versions: VersionRow[]; sources: SourceRow[] }): BoardRows {
+function merge(rows: BoardRows, sent: { options: OptionRow[]; arguments: ArgumentRow[]; versions: VersionRow[]; sources: SourceRow[]; comments?: CommentRow[] }): BoardRows {
   const byId = <T extends { id: string }>(held: Record<string, T>, rowsSent: T[]) => ({ ...held, ...Object.fromEntries(rowsSent.map((row) => [row.id, row])) });
   return {
     options: byId(rows.options, sent.options),
     arguments: byId(rows.arguments, sent.arguments),
     versions: byId(rows.versions, sent.versions),
     sources: byId(rows.sources, sent.sources),
+    // An answer carries comments only when there are some (M3b-10).
+    comments: byId(rows.comments, sent.comments ?? []),
   };
 }
 

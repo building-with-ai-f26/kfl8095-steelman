@@ -1,15 +1,25 @@
 // The simulation (plans/architecture.md §8): the real write path and the
 // browser's real sync rules, run together in one process against a real
 // database, with a fake clock. fast-check invents a board's worth of random
-// sequences of actions by three readers; after every step, the eleven
-// "always true" checks below must hold (the eleventh, a closed board refuses
-// every write, since M3b-4). When one fails, fast-check shrinks
-// the sequence to the shortest one that still fails and prints it.
+// sequences of actions by three readers; after every step, the twelve
+// "always true" checks below must hold: the eleventh, since M3b-4, is that a
+// closed board refuses every write except a comment, and the twelfth, since
+// M3b-10, labelled D-01, is that no reader is handed a comment whose wording
+// or option is gone. When one fails, fast-check shrinks the sequence to the
+// shortest one that still fails and prints it.
+//
+// Comments (M3b-10) are steps too: add one, reply, resolve or reopen, and
+// delete. They aren't refused on a closed board. A comment is sent only while
+// its subject stands, so check 8 compares the comments a caught-up reader
+// holds through the helpers' rule (subjectStands), which the speech bubbles
+// and panel will use (M3b-11 to M3b-14), and check 4 lets a comment through
+// at or below the reader's change number only when History's Restore brought
+// its subject back in that answer.
 
 import fc from "fast-check";
 import type pg from "pg";
-import { enqueue, nextBoardOrder, openView, pressUpdate, receive } from "@steelman/shared";
-import type { BoardCounts, BoardOrder, QueuedAction, Ranked, ReaderView, RefusalReason } from "@steelman/shared";
+import { enqueue, nextBoardOrder, openView, pressUpdate, receive, subjectStands } from "@steelman/shared";
+import type { BoardCounts, BoardOrder, CommentRow, QueuedAction, Ranked, ReaderView, RefusalReason } from "@steelman/shared";
 import { createFakeClock, createSeededIds } from "@steelman/shared/testing";
 import type { FakeClock } from "@steelman/shared/testing";
 import type { Db } from "../../src/db/database.ts";
@@ -19,6 +29,7 @@ import type * as VotesModule from "../../src/votes.ts";
 import type * as WritingModule from "../../src/writing.ts";
 import type { WriteResult } from "../../src/write-path.ts";
 import * as closing from "../../src/closing.ts";
+import * as comments from "../../src/comments.ts";
 import * as realModeration from "../../src/moderation.ts";
 import * as sources from "../../src/sources.ts";
 import * as structure from "../../src/structure.ts";
@@ -61,6 +72,15 @@ export type Step =
    */
   | { kind: "close"; for: number }
   | { kind: "closeAt"; minutes: 1 | 2; for: number }
+  /**
+   * Comments (M3b-10, D-01), by anyone, on a closed board too. Not queued: comments need the service there. A comment
+   * goes on the question, an option, or a wording the reader sees; a reply, a resolve, and a reopen on a thread the
+   * reader holds; a delete on one of the reader's own comments, or with `mine` false on someone else's.
+   */
+  | { kind: "comment"; reader: number; on: "question" | "option" | "wording"; target: number }
+  | { kind: "reply"; reader: number; target: number }
+  | { kind: "resolve"; reader: number; target: number; reopen: boolean }
+  | { kind: "deleteComment"; reader: number; target: number; mine: boolean }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
   | { kind: "offline"; reader: number }
@@ -93,6 +113,10 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   // Low weights, so most of a sequence runs on an open board.
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("close" as const), for: fc.integer({ min: 1, max: 6 }) }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("closeAt" as const), minutes: fc.constantFrom<1 | 2>(1, 2), for: fc.integer({ min: 1, max: 6 }) }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("comment" as const), reader, on: fc.constantFrom<"question" | "option" | "wording">("question", "option", "wording"), target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("reply" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("resolve" as const), reader, target, reopen: fc.boolean() }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("deleteComment" as const), reader, target, mine: fc.boolean() }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("offline" as const), reader }) },
@@ -153,10 +177,22 @@ export interface Tally {
   acceptedAfterReopen: Record<string, number>;
   /** Closes sent a second time, which changed nothing. */
   closeSentTwice: number;
+  /** Comments and replies added, threads resolved and reopened, and comments deleted (M3b-10). */
+  commentsAdded: number;
+  replies: number;
+  resolves: number;
+  reopens: number;
+  commentsDeleted: number;
+  /** Comment steps done while the board was closed, which allows them. */
+  commentsWhileClosed: number;
+  /** Comment steps refused, by reason, kept apart from `refused` so the fixed sequences' counts stay as they were. */
+  commentRefused: Record<string, number>;
+  /** Comments sent again, older than the reader's change number, because Restore brought their subject back. */
+  commentsResent: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0, closedByHand: 0, closedByTime: 0, closedRefusals: {}, acceptedAfterReopen: {}, closeSentTwice: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0, closedByHand: 0, closedByTime: 0, closedRefusals: {}, acceptedAfterReopen: {}, closeSentTwice: 0, commentsAdded: 0, replies: 0, resolves: 0, reopens: 0, commentsDeleted: 0, commentsWhileClosed: 0, commentRefused: {}, commentsResent: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -205,11 +241,17 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     }
   };
 
+  /** No comment reaches a reader while its wording or option is gone (M3b-10). `view` holds the rows as of the same answer. */
+  const noGoneSubject = (person: string, view: ReaderView, sent: CommentRow[]) => {
+    for (const row of sent) check(subjectStands(view.rows, row), "D-01. No reader is handed a comment whose wording or option is gone", { person, row });
+  };
+
   const snapshot = async (person: string) => {
     await code.order.publishOrderIfDue(db, clock, b.board);
     const s = await code.read.readSnapshot(db, b.board, person, moderates(person), clock.now());
     if (!s) throw new Error("board vanished");
     noHiddenText(person, s.versions);
+    noGoneSubject(person, openView(s), s.comments ?? []);
     return s;
   };
   // Each reader has written a wording, so any of them can edit or delete one.
@@ -280,6 +322,14 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     for (const row of [...changes.options, ...changes.arguments, ...changes.versions, ...changes.sources]) {
       check(row.changedSeq > held, "4. No reader is handed a row stamped at or below the change number they hold", { held, row });
     }
+    // A comment may be older than that only when Restore brought its wording or option back in this answer (M3b-10).
+    const restored = new Set(changes.log.filter((row) => row.kind === "version_restored" || row.kind === "option_restored").map((row) => row.subjectId));
+    for (const row of changes.comments ?? []) {
+      if (row.changedSeq > held) continue;
+      const subject = row.versionId ?? row.optionId;
+      check(subject !== null && restored.has(subject), "4. No reader is handed a comment stamped at or below the change number they hold, unless Restore brought its subject back", { held, row });
+      tally.commentsResent++;
+    }
 
     // Check 6: a newly saved order is exactly what the rule gives from the previous order and the counts at that moment.
     const savedAfter = await savedOrder(client, b.board);
@@ -292,6 +342,8 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     // Check 7: a reader's rows never move unless they pressed Update.
     const before = r.view.shown;
     r.view = receive(r.view, changes);
+    // Checked against the rows after the answer, which are the board as of its change number.
+    noGoneSubject(r.person, r.view, changes.comments ?? []);
     for (const [key, list] of [...Object.entries(before.arguments), ...Object.entries(before.versions)]) {
       const now = r.view.shown.arguments[key] ?? r.view.shown.versions[key] ?? [];
       check(list.every((id, i) => now[i] === id), "7. A reader's rows never move unless they press Update", { key, before: list, now });
@@ -365,6 +417,85 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     return result;
   };
 
+  /**
+   * A comment step (M3b-10), checked against what the database says should happen, in the order comments.ts decides
+   * (check 9), and sent a second time to see it changes nothing (check 5). A closed board refuses none of them. Null
+   * when there's nothing to try it on.
+   */
+  const commentStep = async (step: Extract<Step, { kind: "comment" | "reply" | "resolve" | "deleteComment" }>, r: Reader): Promise<WriteResult | null> => {
+    const one = async (query: string, params: unknown[]) => (await client.query(query, params)).rows[0];
+    const held = Object.values(r.view.rows.comments)
+      .filter((row) => subjectStands(r.view.rows, row))
+      .sort((a, x) => (a.createdAt < x.createdAt ? -1 : a.createdAt > x.createdAt ? 1 : a.id < x.id ? -1 : 1));
+    const pick = <T>(list: T[]): T | undefined => (list.length === 0 ? undefined : list[step.target % list.length]);
+    let expected: WriteResult["status"] | RefusalReason;
+    let send: () => Promise<WriteResult>;
+    let count: () => void;
+
+    if (step.kind === "comment" || step.kind === "reply") {
+      let target: { optionId?: string; versionId?: string } = {};
+      let parent: CommentRow | undefined;
+      if (step.kind === "reply") {
+        parent = pick(held.filter((row) => row.parentId === null));
+        if (!parent) return null;
+        target = parent.versionId ? { versionId: parent.versionId } : parent.optionId ? { optionId: parent.optionId } : {};
+      } else if (step.on === "option") {
+        const option = pick(Object.values(r.view.rows.options).filter((row) => !row.deleted).sort((a, x) => a.position - x.position));
+        if (!option) return null;
+        target = { optionId: option.id };
+      } else if (step.on === "wording") {
+        // Any wording the reader sees that isn't deleted, hidden ones too, so a comment on one is refused.
+        const versionId = pick(Object.values(r.view.shown.versions).flat().filter((id) => r.view.rows.versions[id] && !r.view.rows.versions[id]!.deleted));
+        if (!versionId) return null;
+        target = { versionId };
+      }
+      const input = { id: ids.itemId(), ...target, ...(parent ? { parentId: parent.id } : {}), body: step.kind === "reply" ? "A reply." : "A comment." };
+      expected = "done";
+      if (target.versionId) {
+        const v = await one("select deleted_at, hidden_at from version where id = $1", [target.versionId]);
+        if (v.deleted_at || v.hidden_at) expected = "version_deleted";
+      } else if (target.optionId) {
+        if ((await one("select deleted_at from option where id = $1", [target.optionId])).deleted_at) expected = "option_deleted";
+      }
+      if (expected === "done" && parent) {
+        const p = await one("select parent_id, resolved_at, deleted_at, hidden_at from comment where id = $1", [parent.id]);
+        if (p.parent_id !== null) expected = "not_a_thread";
+        else if (p.deleted_at || p.hidden_at) expected = "thread_deleted";
+        else if (p.resolved_at) expected = "thread_resolved";
+      }
+      send = () => comments.addComment(services, b.board, r.person, input);
+      count = () => (step.kind === "reply" ? tally.replies++ : tally.commentsAdded++);
+    } else if (step.kind === "resolve") {
+      const thread = pick(held.filter((row) => row.parentId === null));
+      if (!thread) return null;
+      const t = await one("select parent_id, resolved_at, deleted_at, hidden_at from comment where id = $1", [thread.id]);
+      if (t.parent_id !== null) expected = "not_a_thread";
+      else if ((t.resolved_at !== null) !== step.reopen) expected = "already_done";
+      else if (t.deleted_at || t.hidden_at) expected = "thread_deleted";
+      else expected = "done";
+      send = () => (step.reopen ? comments.reopenThread : comments.resolveThread)(services, b.board, r.person, thread.id);
+      count = () => (step.reopen ? tally.reopens++ : tally.resolves++);
+    } else {
+      const comment = pick(held.filter((row) => !row.deleted && (row.authorId === r.person) === step.mine));
+      if (!comment) return null;
+      const c = await one("select author_id, deleted_at from comment where id = $1", [comment.id]);
+      expected = c.author_id !== r.person ? "not_author" : c.deleted_at ? "already_done" : "done";
+      send = () => comments.deleteComment(services, b.board, r.person, comment.id);
+      count = () => tally.commentsDeleted++;
+    }
+
+    const result = await send();
+    const got = result.status === "refused" ? result.reason : result.status;
+    check(got === expected, "9. A comment step is done, or refused for the reason the database gives, on an open board or a closed one", { step, expected, result });
+    if (result.status === "done") {
+      count();
+      const before = await lastSeq();
+      const again = await send();
+      check(again.status === "already_done" && (await lastSeq()) === before, "5. Sending an action a second time changes nothing", { step, again });
+    }
+    return result;
+  };
+
   /** The paired reopen (M3b-4): the Owner reopens the board and clears its closing time. */
   const reopenNow = async () => {
     const byHand = (await client.query("select closed_at is not null as hand from board where id = $1", [b.board])).rows[0].hand === true;
@@ -419,8 +550,12 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           r.view = pressUpdate(r.view);
           {
             // Check 8: a reader who catches up and presses Update has exactly the board a newly arrived reader gets.
+            // The caught-up reader's comments go through the rule the screen uses: one whose wording or option has gone
+            // since is still held but never shown (M3b-10). The new reader's side is compared as it comes.
             const fresh = openView(await snapshot(r.person));
-            check(JSON.stringify(sorted(r.view)) === JSON.stringify(sorted(fresh)), "8. A caught-up reader who presses Update sees what a new reader sees", { caughtUp: r.view, fresh });
+            const shownComments = Object.fromEntries(Object.entries(r.view.rows.comments).filter(([, row]) => subjectStands(r.view.rows, row)));
+            const caughtUp = { ...r.view, rows: { ...r.view.rows, comments: shownComments } };
+            check(JSON.stringify(sorted(caughtUp)) === JSON.stringify(sorted(fresh)), "8. A caught-up reader who presses Update sees what a new reader sees", { caughtUp, fresh });
             tally.updatesCompared++;
           }
           break;
@@ -473,6 +608,22 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
             if (step.kind === "combine") tally.combined++;
             else if (step.kind === "separate") tally.separated++;
             else tally.undone++;
+            await poll(r);
+          }
+          break;
+        }
+        case "comment":
+        case "reply":
+        case "resolve":
+        case "deleteComment": {
+          if (!r.online) break;
+          const result = await commentStep(step, r);
+          if (!result) break;
+          if (result.status === "done") tally.done++;
+          else if (result.status === "already_done") tally.alreadyDone++;
+          else if (result.status === "refused") tally.commentRefused[result.reason] = (tally.commentRefused[result.reason] ?? 0) + 1;
+          if (result.status === "done") {
+            if (await closedNow()) tally.commentsWhileClosed++;
             await poll(r);
           }
           break;
