@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardOrder, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -641,6 +641,40 @@ export class BoardSession {
     if (this.state.restructured) this.set({ restructured: null });
   }
 
+  /**
+   * Adds someone by their username (M3b-7, H-01). Not queued: it's sent now. Answers null when they were added, or
+   * the sentence the panel shows under the field when they weren't.
+   */
+  async invite(username: string, role: Exclude<Role, "owner">): Promise<string | null> {
+    const name = username.trim().replace(/^@/, "").toLowerCase();
+    if (!name) return "Type who you want to add.";
+    let answer: Answer;
+    try {
+      answer = await invite(this.board, name, role);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return "Couldn’t reach Steelman. Try again.";
+    }
+    if (answer.status === "not_found" || answer.status === "invalid") return `No one is called ${name}. Check the username.`;
+    if (answer.status === "already_done" || (answer.status === "refused" && answer.reason === "already_member")) return `${name} already has access.`;
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return tooManyMessage(answer.retryAfter);
+    if (answer.status !== "done") return answer.status === "refused" ? refusalNote(answer) : "Type a username.";
+    this.announce(`${name} can ${CAN[role]}.`);
+    await this.refresh();
+    return null;
+  }
+
+  /** Removes a member (M3b-7, H-01), at once and with no confirmation, as Google Drive does. */
+  async removeMember(person: Person): Promise<boolean> {
+    const answer = await this.ask(() => removeMember(this.board, person.id));
+    if (!answer) return false;
+    const name = person.name ?? "That person";
+    const byLink = this.state.access?.general === "link" ? ` ${name} can still open this steelman with the link.` : "";
+    this.announce(`${name} no longer has access.${byLink}`);
+    await this.refresh();
+    return true;
+  }
+
   /** The board's History (M3a-4, J-03), newest first, or null when it can't be read now. */
   history(): Promise<HistoryEntry[] | null> {
     return readHistory(this.board);
@@ -863,6 +897,9 @@ export function voteNote(action: QueuedAction): string | null {
   if (action.kind === "articulation") return action.value === null ? "You took back your articulation vote." : `You voted this wording ${action.value === 1 ? "better" : "less well"} articulated.`;
   return null;
 }
+
+/** What each role may do, as the sentence after an invitation says it: "lin.zhao can contribute." */
+const CAN: Record<Exclude<Role, "owner">, string> = { viewer: "view", voter: "vote", contributor: "contribute", editor: "edit" };
 
 /** What the reader is told when the service refuses something they did. */
 function refusalNote(answer: Answer): string {

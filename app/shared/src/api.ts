@@ -3,7 +3,7 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
-import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput } from "./inputs.ts";
+import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput, USERNAME } from "./inputs.ts";
 import type { Closing } from "./closing.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
@@ -79,6 +79,17 @@ export const MEMBER_ROLES = ["viewer", "voter", "contributor", "editor"] as cons
 
 /** The owner sets someone's role on the board. */
 export const memberRoleInput = z.strictObject({ role: z.enum(MEMBER_ROLES) });
+/**
+ * Adding someone to a board by their username, at a role (M3b-7, H-01). Usernames are kept in lower case, so the
+ * capitals and a leading @ someone types don't count.
+ */
+export const inviteInput = z.strictObject({
+  username: z
+    .string()
+    .transform((typed) => typed.trim().replace(/^@/, "").toLowerCase())
+    .pipe(z.string().min(1).max(USERNAME.max)),
+  role: z.enum(MEMBER_ROLES),
+});
 
 /** Someone on the board, as Share's people list shows them: by username, never by email. */
 export interface Person {
@@ -347,7 +358,9 @@ export type RefusalReason =
   /** A write carrying a session cookie came from another site, or didn't say where from (cross-site request forgery). */
   | "wrong_origin"
   /** Over a rate limit (architecture §7): nothing was saved; `retryAfter` says how many seconds until it would be. */
-  | "too_many";
+  | "too_many"
+  /** The person invited is the board's Owner, who has access already (M3b-7). */
+  | "already_member";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

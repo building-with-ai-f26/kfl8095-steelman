@@ -1,9 +1,10 @@
 // Who can get in (H-02): the pill under the question, and the Share panel it
 // opens, in the prototype's markup (shareMarkup in
 // docs/prototype/source/steelman-refined.html): People with access, General
-// access, and the link. Inviting people by name (H-01) and Preview (H-05)
-// come later. Everyone sees the panel; only the owner can change it, and in
-// the people list the owner sets each member's role, from Viewer to Editor
+// access, and the link. The Owner adds people by username and removes them
+// (H-01, M3b-7); invitations by email and Preview (H-05) come later. Everyone
+// sees the panel; only the owner can change it, and in the people list the
+// owner sets each member's role, from Viewer to Editor
 // (M2-2b, Q27), with a menu by each name, as Google Drive and Figma do.
 
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ import type { Access, Closing, Person, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { closedDay, momentWithZone } from "../when.ts";
 import { WHY, blockedProps } from "./display.ts";
+import type { Blocked } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
 const GENERAL = { invited: "Invited only", link: "Anyone with the link" } as const;
@@ -103,6 +105,16 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
     if (open) void readPeople();
   }, [open]);
 
+  /** Removes someone, at once (M3b-7): off the list, and the keyboard back in Add people, as the prototype does. */
+  async function remove(person: Person) {
+    if (lockedBy) return;
+    if (await session.removeMember(person)) {
+      setPeople((list) => list?.filter((each) => each.id !== person.id));
+      void readPeople();
+    }
+    panel.current?.querySelector<HTMLInputElement>("#sm-invite-field")?.focus();
+  }
+
   async function setRole(person: Person, next: Exclude<Role, "owner">) {
     const shown = (role: Role) => setPeople((list) => list?.map((each) => (each.id === person.id ? { ...each, role } : each)));
     shown(next);
@@ -157,12 +169,22 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
               </button>
             </div>
             <div className="sm-share-body">
+              {owner ? <InviteRow session={session} lockedBy={lockedBy} onAdded={() => void readPeople()} /> : null}
               <section aria-labelledby="sm-people-title">
                 <h3 id="sm-people-title">People with access</h3>
                 {people ? (
                   <ul className="sm-people">
                     {people.map((person) => (
-                      <PersonRow key={person.id} person={person} you={person.id === me} owner={owner} locked={locked} onRole={(next) => lockedBy || void setRole(person, next)} />
+                      <PersonRow
+                        key={person.id}
+                        person={person}
+                        you={person.id === me}
+                        owner={owner}
+                        locked={locked}
+                        lockedBy={lockedBy}
+                        onRole={(next) => lockedBy || void setRole(person, next)}
+                        onRemove={() => void remove(person)}
+                      />
                     ))}
                   </ul>
                 ) : (
@@ -252,7 +274,17 @@ function ClosingPill({ closing, onSettings, settingsOpen }: { closing: Closing; 
 }
 
 /** One person on the board: the owner sees a menu of roles by each name but their own; everyone else sees the role. */
-function PersonRow({ person, you, owner, locked, onRole }: { person: Person; you: boolean; owner: boolean; locked: object; onRole(role: Exclude<Role, "owner">): void }) {
+interface PersonRowProps {
+  person: Person;
+  you: boolean;
+  owner: boolean;
+  locked: object;
+  lockedBy: Blocked | null;
+  onRole(role: Exclude<Role, "owner">): void;
+  onRemove(): void;
+}
+
+function PersonRow({ person, you, owner, locked, lockedBy, onRole, onRemove }: PersonRowProps) {
   const name = person.name ?? "No username yet";
   return (
     <li className="sm-person">
@@ -276,6 +308,111 @@ function PersonRow({ person, you, owner, locked, onRole }: { person: Person; you
       ) : (
         <span className="sm-person-role">{MEMBER_ROLE[person.role]}</span>
       )}
+      {/* A button of its own at the row's end, as GitHub's collaborator rows have and as the prototype's × is: not an
+          entry in the role menu, which saves on every change, so an arrow key could remove someone (M3b-7). */}
+      {owner && person.role !== "owner" ? (
+        <button
+          type="button"
+          className="sm-person-remove cursor-interaction"
+          aria-label={`Remove ${person.name ?? "someone without a username"}`}
+          data-tooltip={lockedBy?.why ?? "Remove"}
+          {...(lockedBy ? { "aria-disabled": true, "data-blocked": "", "aria-describedby": lockedBy.noteId } : {})}
+          onClick={() => lockedBy || onRemove()}
+        >
+          <Icon name="x" />
+        </button>
+      ) : null}
     </li>
+  );
+}
+
+/**
+ * The prototype's invite row, above People with access, as Google Drive's Add people is (M3b-7, H-01): a field for a
+ * username, the role they'll have (it starts at "can contribute"), and Invite. Enter invites too. A problem shows
+ * under the field and is read out, as GOV.UK's error message is. No names are suggested while typing: that would make
+ * a directory of every account, and Google suggests only your own contacts.
+ */
+function InviteRow({ session, lockedBy, onAdded }: { session: BoardSession; lockedBy: Blocked | null; onAdded(): void }) {
+  const [typed, setTyped] = useState("");
+  const [role, setRole] = useState<Exclude<Role, "owner">>("contributor");
+  const [problem, setProblem] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  // Counts attempts, so the same problem twice is a new alert and is read out again.
+  const [attempt, setAttempt] = useState(0);
+  const field = useRef<HTMLInputElement>(null);
+  const locked = lockedBy ? blockedProps(lockedBy) : {};
+
+  async function send() {
+    if (lockedBy || busy) return;
+    setAttempt((n) => n + 1);
+    if (!typed.trim()) {
+      setProblem("Type who you want to add.");
+      field.current?.focus();
+      return;
+    }
+    setBusy(true);
+    let refused: string | null;
+    try {
+      refused = await session.invite(typed, role);
+    } finally {
+      setBusy(false);
+    }
+    setProblem(refused);
+    if (refused) return field.current?.focus();
+    setTyped("");
+    onAdded();
+    field.current?.focus();
+  }
+
+  return (
+    <div className="sm-share-invite">
+      <div className="sm-share-field" data-invalid={problem ? "" : undefined}>
+        <input
+          ref={field}
+          id="sm-invite-field"
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder="Username"
+          aria-label="Add people"
+          aria-invalid={problem ? true : undefined}
+          aria-describedby={[problem ? "sm-invite-error" : "", lockedBy?.noteId ?? ""].filter(Boolean).join(" ") || undefined}
+          readOnly={lockedBy !== null}
+          {...(lockedBy ? { "aria-disabled": true, "data-blocked": "", "data-tooltip": lockedBy.why } : {})}
+          value={typed}
+          onChange={(event) => {
+            setTyped(event.target.value);
+            setProblem(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              void send();
+            }
+          }}
+        />
+        <select
+          aria-label="Access level for new people"
+          value={role}
+          {...locked}
+          {...(lockedBy ? { onMouseDown: stopOpening, onKeyDown: stopChoosing } : {})}
+          onChange={(event) => lockedBy || setRole(event.target.value as Exclude<Role, "owner">)}
+        >
+          {MEMBER_ROLES.map((each) => (
+            <option key={each} value={each}>
+              {MEMBER_ROLE[each]}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button type="button" className="sm-button sm-solid cursor-interaction" disabled={busy} {...locked} onClick={() => void send()}>
+        Invite
+      </button>
+      {problem ? (
+        <p key={attempt} className="sm-field-error" id="sm-invite-error" role="alert">
+          {problem}
+        </p>
+      ) : null}
+    </div>
   );
 }

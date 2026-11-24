@@ -217,6 +217,16 @@ export async function readCombinePreview(board: string, version: string, into: s
   }
 }
 
+/** Adds someone to the board by their username, at a role (M3b-7, H-01): the Owner's. */
+export async function invite(board: string, username: string, role: Exclude<Person["role"], "owner">): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/invites`, { username, role }));
+}
+
+/** Removes a member from the board (M3b-7, H-01): the Owner's. */
+export async function removeMember(board: string, account: string): Promise<Answer> {
+  return answerOf(await call("DELETE", `boards/${board}/people/${encodeURIComponent(account)}`));
+}
+
 /** The owner sets someone's role. Not queued, like setAccess. */
 export async function setRole(board: string, account: string, role: Exclude<Person["role"], "owner">): Promise<Answer> {
   const response = await call("PUT", `boards/${board}/people/${encodeURIComponent(account)}`, { role });
