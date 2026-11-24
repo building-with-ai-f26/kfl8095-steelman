@@ -3,7 +3,7 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
-import { OPTIONS_PER_BOARD, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput, USERNAME } from "./inputs.ts";
+import { OPTIONS_PER_BOARD, commentBodyInput, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput, USERNAME } from "./inputs.ts";
 import type { Closing } from "./closing.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
@@ -47,6 +47,11 @@ export const separateInput = z.strictObject({ argumentId: itemIdInput });
 
 /** A new wording of an existing argument. */
 export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
+
+/** A new comment (M3b-8, D-01): on an option, a wording, or, with neither, the question; never both. */
+export const newCommentInput = z
+  .strictObject({ id: itemIdInput, optionId: itemIdInput.optional(), versionId: itemIdInput.optional(), body: commentBodyInput })
+  .refine((comment) => comment.optionId === undefined || comment.versionId === undefined, { message: "A comment has one target or none." });
 
 /** An edit names the revision it started from. */
 export const editInput = z.strictObject({ baseRev: z.number().int().min(1), wording: wordingInput, context: contextInput });

@@ -4,7 +4,7 @@ This is the Build 3 security audit of Steelman, run on November 22, 2026, in the
 
 ## The app
 
-Steelman is an app with sign-in. People sign in with Google or a 6-digit code sent by email, and there are no passwords. Boards, wordings, votes, and accounts are stored in Postgres. The app makes no AI calls yet and stores no files.
+Steelman is an app with sign-in. People sign in with Google or a 6-digit code sent by email, and there are no passwords. Boards, wordings, votes, comments, and accounts are stored in Postgres. The app makes no AI calls yet and stores no files.
 
 - **Production:** https://app.steelman-argument.com (Google Cloud project `steelman-production`). It runs the November 23 release, which includes the fixes below.
 - **Staging:** https://staging.steelman-argument.com (project `steelman-staging`). It runs `main`, and a release copies its image to production unchanged.

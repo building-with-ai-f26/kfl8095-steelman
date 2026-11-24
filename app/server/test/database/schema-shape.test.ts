@@ -11,7 +11,7 @@ import { useTestDatabase } from "../support/database.ts";
 const db = useTestDatabase({ migrated: true });
 const ids = createSeededIds(307);
 
-const BOARD_TABLES = ["option", "argument", "version", "version_revision", "revision_source", "source", "importance_vote", "articulation_vote", "assessment", "change", "published_order", "report", "combine_vote"];
+const BOARD_TABLES = ["option", "argument", "version", "version_revision", "revision_source", "source", "importance_vote", "articulation_vote", "assessment", "change", "published_order", "report", "combine_vote", "comment"];
 const STAMPED_TABLES = ["option", "argument", "version", "source", "published_order"];
 
 describe("the shape of the schema", () => {

@@ -21,6 +21,9 @@ export const LIMITS = {
   sourceLimits: 300,
 } as const;
 
+/** Most characters in a comment (M3b-8). Not in the prototype's LIMITS: the prototype's comment box has no maxlength. */
+export const COMMENT_MAX = 1000;
+
 /** A board has between two and four options. */
 export const OPTIONS_PER_BOARD = { min: 2, max: 4 } as const;
 
@@ -39,6 +42,12 @@ export const questionInput = required(LIMITS.question);
 export const optionNameInput = required(LIMITS.optionName);
 export const wordingInput = required(LIMITS.wording);
 export const contextInput = optional(LIMITS.context);
+
+/** A comment's text: its line breaks are kept and only its ends are trimmed, unlike a wording's (M3b-8). */
+export const commentBodyInput = z
+  .string()
+  .transform((text) => text.replace(/\r\n?/g, "\n").trim())
+  .pipe(z.string().min(1).max(COMMENT_MAX));
 
 /**
  * A piece of evidence. `strictObject`: a field nobody defined is refused, not
