@@ -222,6 +222,11 @@ export async function invite(board: string, username: string, role: Exclude<Pers
   return answerOf(await call("POST", `boards/${board}/invites`, { username, role }));
 }
 
+/** Adds a comment (M3b-11, D-01) on the question, an option, or a wording: sent at once, never queued. */
+export async function addComment(board: string, comment: { id: string; optionId?: string; versionId?: string; body: string }): Promise<Answer> {
+  return answerOf(await call("POST", `boards/${board}/comments`, comment));
+}
+
 /** Removes a member from the board (M3b-7, H-01): the Owner's. */
 export async function removeMember(board: string, account: string): Promise<Answer> {
   return answerOf(await call("DELETE", `boards/${board}/people/${encodeURIComponent(account)}`));

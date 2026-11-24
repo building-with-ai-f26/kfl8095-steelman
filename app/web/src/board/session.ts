@@ -5,8 +5,8 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardOrder, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import type { Access, BoardOrder, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, addComment, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -661,6 +661,33 @@ export class BoardSession {
     if (answer.status !== "done") return answer.status === "refused" ? refusalNote(answer) : "Type a username.";
     this.announce(`${name} can ${CAN[role]}.`);
     await this.refresh();
+    return null;
+  }
+
+  /**
+   * Adds a comment on the question, an option, or a wording (M3b-11, D-01). Not queued: it's sent now, and when it
+   * can't be added its text stays in the box (architecture §3). Answers null once it's added, or the sentence the
+   * panel shows when it isn't. The same ID with the same text is safe to send again: the service answers that it's
+   * already done.
+   */
+  async addComment(target: CommentTarget, id: string, body: string): Promise<string | null> {
+    const text = body.trim();
+    if (!text) return "Write a comment first.";
+    const on = target === "question" ? {} : target;
+    let answer: Answer;
+    try {
+      answer = await addComment(this.board, { id, ...on, body: text });
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return "You’re offline, so your comment wasn’t sent. It is still in the box.";
+    }
+    if (answer.status === "invalid") return "Write a comment first.";
+    if (answer.status === "not_found" || (answer.status === "refused" && (answer.reason === "version_deleted" || answer.reason === "option_deleted"))) return "This wording was removed, so your comment wasn’t added.";
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return tooManyMessage(answer.retryAfter);
+    if (answer.status === "refused") return refusalNote(answer);
+    this.announce("Your comment was added.");
+    // Not waited for: the box is free for the next comment while the poll brings this one in.
+    void this.refresh();
     return null;
   }
 
