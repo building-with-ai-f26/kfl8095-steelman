@@ -111,8 +111,10 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const [drafts, setDrafts] = useState<Record<string, DraftText>>({});
   const keep = (key: string, draft: DraftText) => setDrafts((all) => ({ ...all, [key]: draft }));
   const reader = useReader();
+  // A closed board (M3b-5, I-05), as the service last said: what it would refuse fades and says so.
+  const closed = state.closing?.closed ?? false;
   // Options (M3a-2): an Editor or the Owner may add, rename, and delete them.
-  const mayStructure = can(reader, state.role, "structure", { closed: false }) === null;
+  const mayStructure = can(reader, state.role, "structure", { closed }) === null;
   /** The ID of a new option being named, before it's sent; null otherwise. */
   const [naming, setNaming] = useState<string | null>(null);
   /** A new option's ID, once added by Enter, so its "Add an argument" gets the cursor when it arrives. */
@@ -187,11 +189,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
 
   // When the owner lowers the reader's role below writing, an open draft or edit closes, as the prototype's role
   // switch does, so they don't go on typing something the service would refuse (M2-2b). Kept drafts stay kept.
-  const mayWrite = whyNot(reader, state.role, "add") === null;
+  const mayWrite = whyNot(reader, state.role, "add", closed) === null;
   useEffect(() => {
     if (!mayWrite && writing !== null) {
       setWriting(null);
-      session.announce("Your role on this board changed: you can no longer write here.");
+      // A board that closed has said so already (session.ts), once.
+      if (!closed) session.announce("Your role on this board changed: you can no longer write here.");
     }
   }, [mayWrite]);
 
@@ -292,8 +295,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const menu: CardMenu = {
     items: (version) =>
       version.hidden
-        ? ["copyLink", ...moderationItem(version, reader, state.role)]
-        : [...versionMenu(version, reader, state.role, isLast(version), { others: others(version), last: lastOnService(version) }), ...reportItem(version, reader, state.role), ...moderationItem(version, reader, state.role)],
+        ? ["copyLink", ...moderationItem(version, reader, state.role, closed)]
+        : [
+            ...versionMenu(version, reader, state.role, isLast(version), { others: others(version), last: lastOnService(version) }, closed),
+            ...reportItem(version, reader, state.role, closed),
+            ...moderationItem(version, reader, state.role, closed),
+          ],
     combine(version, via) {
       const from = placing(version, via === "handle" ? `[data-card="${CSS.escape(version.id)}"] .sm-merge-handle` : cardControl(version.id, "menu"));
       setMoving(from);
@@ -397,6 +404,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
       sources: view.rows.sources,
       versions: view.rows.versions,
       role: state.role,
+      closed,
       mine: state.mine,
       stale: state.stale,
       removing: state.undo?.action.kind === "uncite" ? state.undo.action : null,
@@ -606,6 +614,11 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     narrow.addEventListener("change", changed);
     return () => narrow.removeEventListener("change", changed);
   }, []);
+  const openSettings = () => {
+    setHistoryOpenNow(false);
+    setSettingsOpen(true);
+    session.announce("The settings panel is open.");
+  };
   const closeSettings = useCallback(() => {
     setSettingsOpen(false);
     session.announce("The settings panel is closed.");
@@ -673,12 +686,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
                 aria-controls={settingsOpen ? "sm-settings" : undefined}
                 aria-label="Settings"
                 data-tooltip={iconOnly ? "Settings" : undefined}
-                onClick={() => {
-                  if (settingsOpen) return closeSettings();
-                  setHistoryOpenNow(false);
-                  setSettingsOpen(true);
-                  session.announce("The settings panel is open.");
-                }}
+                onClick={() => (settingsOpen ? closeSettings() : openSettings())}
               >
                 <Icon name="settings" />
                 <span aria-hidden="true">Settings</span>
@@ -688,7 +696,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
-          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} asked={shareAsked} /> : null}
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} asked={shareAsked} closing={state.closing} onSettings={openSettings} settingsOpen={settingsOpen} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
@@ -713,6 +721,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             view={view}
             reader={reader}
             role={state.role}
+            closed={closed}
             session={session}
             logSeq={state.logSeq}
             onOpen={openFromHistory}
@@ -722,6 +731,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
         {settingsOpen && state.role === "owner" ? (
           <Settings
             question={state.question}
+            closed={closed}
             session={session}
             onClose={closeSettings}
             onShare={() => {
@@ -1093,7 +1103,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
           onChange={(draft) => writer.change(key, draft)}
           onClose={writer.close}
           onAdd={(draft) => writer.addArgument(option.id, draft)}
-          blocked={whyNot(reader, state.role, "add")}
+          blocked={whyNot(reader, state.role, "add", state.closing?.closed)}
           dropLabel={dragging && !dragging.last ? "Make it a separate argument" : undefined}
         />
       </section>
@@ -1145,7 +1155,7 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
         forward="More important if true"
         back="Less important if true"
         onVote={(value) => session.act({ kind: "importance", argumentId: argument.id, value })}
-        blocked={whyNot(reader, state.role, "vote")}
+        blocked={whyNot(reader, state.role, "vote", state.closing?.closed)}
       />
       <div className="sm-card-wrap">
         {open ? (

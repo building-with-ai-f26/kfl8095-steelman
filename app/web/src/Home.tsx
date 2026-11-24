@@ -77,6 +77,13 @@ function Post({ board, now }: { board: BoardListing; now: string }) {
           <time dateTime={board.changedAt} title={fullDate(board.changedAt)}>
             Updated {ago(board.changedAt, now)}
           </time>
+          {/* The prototype's small pill for a closed board (M3b-5, I-05). */}
+          {board.closing?.closed ? (
+            <span className="sm-post-closed">
+              <Icon name="lock" />
+              Closed
+            </span>
+          ) : null}
         </div>
         <h2>
           <a className="cursor-interaction" href={boardPath(board.id)}>

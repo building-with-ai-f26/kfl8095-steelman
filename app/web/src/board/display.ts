@@ -16,11 +16,17 @@ export interface Blocked {
 export const WHY = {
   vote: { why: "Voting and assessing evidence need “can vote” access.", noteId: "sm-why-vote" },
   add: { why: "Writing and editing need “can contribute” access.", noteId: "sm-why-write" },
+  /** A closed board (M3b-5, I-05), in a full sentence where the prototype's tooltip says "Closed." */
+  closed: { why: "This board is closed.", noteId: "sm-why-closed" },
 } as const satisfies Record<string, Blocked>;
 
-/** Why the reader's role can't vote (or assess) or write, or null when it can. A closed board or a missing role is the service's to refuse. */
-export function whyNot(reader: string | null, role: Role | null, action: "vote" | "add"): Blocked | null {
-  return can(reader, role, action, { closed: false }) === "not_allowed" ? WHY[action] : null;
+/**
+ * Why the reader can't vote (or assess) or write, or null when they can: their role, or a closed board (M3b-5), in the
+ * service's order, so a role too low is said first. A missing role is the service's to refuse.
+ */
+export function whyNot(reader: string | null, role: Role | null, action: "vote" | "add", closed = false): Blocked | null {
+  const refusal = can(reader, role, action, { closed });
+  return refusal === "not_allowed" ? WHY[action] : refusal === "board_closed" ? WHY.closed : null;
 }
 
 /**
@@ -108,8 +114,9 @@ export type MenuItem = "edit" | "suggest" | "copyLink" | "combine" | "separate" 
  *   be combined with, and whether it's its argument's last wording on the service (the screen may still show one
  *   someone moved). Without it, the menu offers neither combining nor separating.
  */
-export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean, place?: { others: boolean; last?: boolean }): MenuItem[] {
-  const board = { closed: false };
+export function versionMenu(version: VersionRow, reader: string | null, role: Role | null, lastWording: boolean, place?: { others: boolean; last?: boolean }, closed = false): MenuItem[] {
+  // On a closed board (M3b-5) only Copy link is left: a menu leaves out what can't be done, as it does for a role.
+  const board = { closed };
   const items: MenuItem[] = ["copyLink"];
   if (can(reader, role, "edit", board, version.authorId) === null) items.push("edit");
   else if (can(reader, role, "add", board) === null) items.push("suggest");
@@ -126,8 +133,8 @@ export function versionMenu(version: VersionRow, reader: string | null, role: Ro
  * (M2-3): Report, to anyone who can read someone else's wording, or Withdraw
  * your report once they have; nothing for their own wording.
  */
-export function reportItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
-  if (version.hidden || reader === version.authorId || can(reader, role, "report", { closed: false }) !== null) return [];
+export function reportItem(version: VersionRow, reader: string | null, role: Role | null, closed = false): MenuItem[] {
+  if (version.hidden || reader === version.authorId || can(reader, role, "report", { closed }) !== null) return [];
   return [version.myReport ? "withdrawReport" : "report"];
 }
 
@@ -135,8 +142,8 @@ export function reportItem(version: VersionRow, reader: string | null, role: Rol
  * An Editor's and the Owner's (M2-4): Hide on someone else's wording, Restore on one hidden; after Report, below the
  * same rule. Not on their own, as the prototype's modItems: their own they edit or delete.
  */
-export function moderationItem(version: VersionRow, reader: string | null, role: Role | null): MenuItem[] {
-  if (version.deleted || reader === version.authorId || can(reader, role, "hide", { closed: false }) !== null) return [];
+export function moderationItem(version: VersionRow, reader: string | null, role: Role | null, closed = false): MenuItem[] {
+  if (version.deleted || reader === version.authorId || can(reader, role, "hide", { closed }) !== null) return [];
   return [version.hidden ? "restore" : "hide"];
 }
 
