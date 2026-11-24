@@ -23,7 +23,7 @@ interface NewArgument {
 }
 
 export function addArgument({ db, clock }: Services, boardId: string, person: string | null, input: NewArgument): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "add",
     load: async (trx) => (await trx.selectFrom("option").select(["id", "deleted_at"]).where("id", "=", input.optionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null,
     // Queued offline for an option that was deleted meanwhile (M3a-2): refused, and the reader is told why.
@@ -52,7 +52,7 @@ export function addWording(
   argumentId: string,
   input: { id: string; wording: string; context: string },
 ): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "add",
     // A wording for an argument combined away is added to the one it went into: drafts follow their argument (M3a-6, §3).
     load: (trx) => argumentNow(trx, boardId, argumentId),
@@ -105,7 +105,7 @@ export function editWording(
   versionId: string,
   input: { baseRev: number; wording: string; context: string },
 ): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "edit",
     load: async (trx) =>
       (await trx
@@ -190,7 +190,7 @@ export function editWording(
  * an argument's last wording deletes the argument too.
  */
 export function deleteWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "delete",
     load: async (trx) =>
       (await trx.selectFrom("version").select(["author_id", "argument_id", "deleted_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null,

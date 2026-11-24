@@ -9,13 +9,13 @@
 // withdrawn leaves no time behind, so it doesn't count.
 
 import { sql } from "kysely";
-import { ROLES } from "@steelman/shared";
+import { ROLES, closingOf } from "@steelman/shared";
 import type { BoardListing, Clock, Role } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 
 export async function listBoards(db: Db, clock: Clock, person: string): Promise<{ now: string; boards: BoardListing[] }> {
-  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date }>`
-    select b.id, b.question, m.role, owner.username as owner,
+  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date; closed_at: Date | null; closes_at: Date | null }>`
+    select b.id, b.question, m.role, owner.username as owner, b.closed_at, b.closes_at,
       greatest(
         b.created_at,
         (select max(at) from change where board_id = b.id),
@@ -57,6 +57,13 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
       role: board.role as Role,
       owner: board.owner,
       changedAt: new Date(board.changed_at).toISOString(),
+      // Only for a board that's closed or has a closing time (M3b-3), so other listings keep their shape.
+      ...closingKey(board, clock),
     })),
   };
+}
+
+function closingKey(board: { closed_at: Date | null; closes_at: Date | null }, clock: Clock): Pick<BoardListing, "closing"> {
+  const closing = closingOf({ closedAt: board.closed_at && new Date(board.closed_at), closesAt: board.closes_at && new Date(board.closes_at) }, clock.now());
+  return closing ? { closing } : {};
 }

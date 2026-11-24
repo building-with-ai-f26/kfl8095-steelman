@@ -14,7 +14,7 @@ const loadVersion = (boardId: string, versionId: string) => async (trx: Trx) =>
   (await trx.selectFrom("version").select(["deleted_at", "hidden_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
 
 export function hideWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string, reason: ReportReason): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "hide",
     load: loadVersion(boardId, versionId),
     stale: async (_trx, version) => (version.deleted_at ? { refused: "version_deleted" } : null),
@@ -40,7 +40,7 @@ export function hideWording({ db, clock }: Services, boardId: string, person: st
 }
 
 export function restoreWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "hide",
     load: loadVersion(boardId, versionId),
     stale: async (_trx, version) => (version.deleted_at ? { refused: "version_deleted" } : null),

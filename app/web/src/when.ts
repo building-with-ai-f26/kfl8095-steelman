@@ -22,3 +22,15 @@ export function shortDate(at: string): string {
 export function fullDate(at: string): string {
   return new Date(at).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
+
+/**
+ * A moment, as "Nov 30 at 5 PM EST" (or "5:30 PM"), in the reader's own time zone, named, as Google Calendar names
+ * an event's: for a board's closing time (M3b-3). The year shows only when it isn't the year of `from`, such as
+ * when the time was set.
+ */
+export function momentWithZone(at: string, from: string): string {
+  const when = new Date(at);
+  const day = when.toLocaleDateString("en-US", { month: "short", day: "numeric", ...(when.getFullYear() === new Date(from).getFullYear() ? {} : { year: "numeric" }) });
+  const time = when.toLocaleTimeString("en-US", { hour: "numeric", ...(when.getMinutes() === 0 ? {} : { minute: "2-digit" }), timeZoneName: "short" });
+  return `${day} at ${time}`;
+}

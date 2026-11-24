@@ -8,7 +8,7 @@ import { writeToBoard } from "./write-path.ts";
 import type { Services, WriteResult } from "./write-path.ts";
 
 export function renameQuestion({ db, clock }: Services, boardId: string, person: string | null, question: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "settings",
     load: async (trx) => (await trx.selectFrom("board").select("question").where("id", "=", boardId).executeTakeFirst()) ?? null,
     async change(trx, board, seq) {

@@ -25,7 +25,7 @@ import { OPTIONS_PER_BOARD, can } from "@steelman/shared";
 import type { HistoryEntry, ReaderView, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { versionPath } from "../links.ts";
-import { shortDate } from "../when.ts";
+import { momentWithZone, shortDate } from "../when.ts";
 import { endQuote, endsSentence, isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
@@ -276,6 +276,15 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       return `made ${entry.detail.accountName ?? "someone"} ${A_ROLE[entry.detail.role ?? "viewer"]}.`;
     case "option_added":
       return `added ${option}.`;
+    // Closing the board (M3b-3, I-05).
+    case "board_closed":
+      return "closed the board.";
+    case "board_reopened":
+      return "reopened the board.";
+    case "closing_date_set":
+      return entry.detail.closesAt ? `set the board to close on ${momentWithZone(entry.detail.closesAt, entry.at)}.` : "set a closing date.";
+    case "closing_date_cleared":
+      return "removed the closing date.";
     case "question_renamed":
       // The log keeps no text (invariant 7); the heading says what the question is now.
       return "renamed the question.";

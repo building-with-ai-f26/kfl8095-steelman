@@ -61,7 +61,7 @@ async function setVote(trx: Trx, boardId: string, argumentId: string, account: s
 }
 
 export function combineWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string, intoId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: async (trx) => {
       const version = await trx.selectFrom("version").select(["argument_id", "deleted_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst();
@@ -135,7 +135,7 @@ async function mergeArguments(trx: Trx, m: { boardId: string; seq: number; now: 
 }
 
 export function separateWording({ db, clock }: Services, boardId: string, person: string | null, versionId: string, newId: string): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: async (trx) => {
       const version = await trx.selectFrom("version").select(["argument_id", "deleted_at"]).where("id", "=", versionId).where("board_id", "=", boardId).executeTakeFirst();
@@ -166,7 +166,7 @@ export function separateWording({ db, clock }: Services, boardId: string, person
 
 /** Undoes a combine or a separation, by its change number. Undoing one already undone is already done. */
 export function undoStructure({ db, clock }: Services, boardId: string, person: string | null, undoSeq: number): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "structure",
     load: async (trx) =>
       (await trx.selectFrom("change").select(["kind", "subject_id", "after"]).where("board_id", "=", boardId).where("seq", "=", String(undoSeq)).executeTakeFirst()) ?? null,

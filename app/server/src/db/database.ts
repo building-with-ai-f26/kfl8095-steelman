@@ -38,6 +38,8 @@ export interface Database {
     created_by: string;
     created_at: Date;
     closed_at: Date | null;
+    /** The moment the Owner set the board to close (migration 0013), or null. */
+    closes_at: Date | null;
     tick_seconds: Generated<number>;
     last_seq: ColumnType<string, never, never>;
     /** "invited" or "link" (migration 0008). */

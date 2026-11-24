@@ -14,7 +14,7 @@ import type { Services, WriteResult } from "./write-path.ts";
 
 /** The owner changes who can get in. Setting what's already set is "already done". */
 export async function setAccess({ db, clock }: Services, boardId: string, person: string | null, next: Access): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "share",
     load: async (trx) => {
       const board = await trx.selectFrom("board").select(["general_access", "link_role"]).where("id", "=", boardId).executeTakeFirst();
@@ -70,7 +70,7 @@ export async function listPeople(db: Db, boardId: string): Promise<Person[]> {
  * already have is "already done".
  */
 export async function setRole({ db, clock }: Services, boardId: string, person: string | null, account: string, role: Exclude<Role, "owner">): Promise<WriteResult> {
-  return writeToBoard(db, boardId, person, {
+  return writeToBoard(db, clock, boardId, person, {
     action: "share",
     load: async (trx) =>
       (await trx

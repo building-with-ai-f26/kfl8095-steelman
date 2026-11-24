@@ -16,6 +16,8 @@ import {
   newOptionInput,
   renameOptionInput,
   renameQuestionInput,
+  closingInput,
+  closedSince,
   newBoardInput,
   newSourceInput,
   newWordingInput,
@@ -46,6 +48,7 @@ import { setReport, withdrawReport } from "./reports.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { renameQuestion } from "./settings.ts";
+import { closeBoard, closingFor, reopenBoard, setClosingTime } from "./closing.ts";
 import { readHistory } from "./history.ts";
 import { combinePreview, combineWording, separateWording, undoStructure } from "./structure.ts";
 import { addSource, citeSource, clearUnavailable, editSource, reportUnavailable, unciteSource } from "./sources.ts";
@@ -364,7 +367,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   async function letIn(boardId: string, person: string | null, reply: FastifyReply): Promise<Role | null> {
     // An ID that isn't the shape of one names no board, and isn't worth asking the database about.
     const board = boardIdInput.safeParse(boardId).success
-      ? await db.selectFrom("board").select("closed_at").where("id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst()
+      ? await db.selectFrom("board").select(["closed_at", "closes_at"]).where("id", "=", boardId).where("deleted_at", "is", null).executeTakeFirst()
       : undefined;
     if (!board) {
       void reply.code(404).send({ reason: "not_found" });
@@ -373,7 +376,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const entry = await entryTo(db, boardId, person);
     // Someone coming by the link is recorded as they open it, which checks the link again (joinByLink).
     const role = entry.joiningByLink ? await joinByLink(db, clock, boardId, person!) : entry.role;
-    const reason = can(person, role, "read", { closed: board.closed_at !== null });
+    const reason = can(person, role, "read", { closed: closedSince({ closedAt: board.closed_at, closesAt: board.closes_at }, clock.now()) !== null });
     if (reason) {
       void reply.code(STATUS_FOR[reason]).send({ status: "refused", reason });
       return null;
@@ -385,9 +388,12 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
     await publishOrderIfDue(db, clock, request.params.board);
-    const snapshot = await readSnapshot(db, request.params.board, request.person, moderates(role));
+    // One moment for the whole answer, so its board.closed and its closing can't disagree.
+    const now = clock.now();
+    const snapshot = await readSnapshot(db, request.params.board, request.person, moderates(role), now);
     const access = await accessOf(db, request.params.board);
-    return snapshot && access ? { ...snapshot, access, role } : reply.code(404).send({ reason: "not_found" });
+    const closing = await closingFor(db, now, request.params.board);
+    return snapshot && access ? { ...snapshot, access, role, ...(closing ? { closing } : {}) } : reply.code(404).send({ reason: "not_found" });
   });
 
   app.get<{ Params: { board: string } }>("/api/boards/:board/changes", async (request, reply) => {
@@ -398,7 +404,10 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     await publishOrderIfDue(db, clock, request.params.board);
     const changes = await readChanges(db, request.params.board, request.person, query.data.after, moderates(role));
     const access = await accessOf(db, request.params.board);
-    return changes && access ? { ...changes, access, role } : reply.code(404).send({ reason: "not_found" });
+    // On every answer while the board is closed or has a closing time, so a reader learns the time has passed
+    // although nothing was written when it did (M3b-3).
+    const closing = await closingFor(db, clock.now(), request.params.board);
+    return changes && access ? { ...changes, access, role, ...(closing ? { closing } : {}) } : reply.code(404).send({ reason: "not_found" });
   });
 
   app.put<{ Params: { board: string } }>("/api/boards/:board/access", async (request, reply) => {
@@ -412,6 +421,18 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = renameQuestionInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await renameQuestion(services, request.params.board, request.person, body.data.question));
+  });
+
+  // Closing (M3b-3, I-05): the Owner closes the board now, reopens it, or sets or clears the moment it closes.
+  app.put<{ Params: { board: string } }>("/api/boards/:board/closed", async (request, reply) => answer(reply, await closeBoard(services, request.params.board, request.person)));
+  app.delete<{ Params: { board: string } }>("/api/boards/:board/closed", async (request, reply) => answer(reply, await reopenBoard(services, request.params.board, request.person)));
+  app.put<{ Params: { board: string } }>("/api/boards/:board/closing", async (request, reply) => {
+    const body = closingInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    const at = body.data.closesAt === null ? null : new Date(body.data.closesAt);
+    // A moment that isn't ahead is refused: Close now closes at once (Google Forms and Classroom take no past time).
+    if (at && at.getTime() <= clock.now().getTime()) return reply.code(400).send({ reason: "invalid" });
+    return answer(reply, await setClosingTime(services, request.params.board, request.person, at));
   });
 
   // Report (M2-3): anyone who can read reports a wording, or withdraws their report.
@@ -509,7 +530,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.get<{ Params: { board: string; id: string }; Querystring: { into?: string } }>("/api/boards/:board/versions/:id/combine", async (request, reply) => {
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
-    const refused = can(request.person, role, "structure", { closed: false });
+    const closing = await closingFor(db, clock.now(), request.params.board);
+    const refused = can(request.person, role, "structure", { closed: closing?.closed ?? false });
     if (refused) return reply.code(STATUS_FOR[refused]).send({ status: "refused", reason: refused });
     const into = itemIdInput.safeParse(request.query.into);
     if (!into.success) return reply.code(400).send({ reason: "invalid" });
