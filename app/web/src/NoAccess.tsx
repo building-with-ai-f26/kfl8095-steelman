@@ -16,7 +16,11 @@ export function NoAccess() {
   const [who, setWho] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [failed, setFailed] = useState(false);
+  const title = useRef<HTMLHeadingElement>(null);
   const another = useRef<HTMLButtonElement>(null);
+  // The card can take a board's place while someone reads it (the owner turns the link off), and what they were on
+  // is gone. The keyboard's place moves to the title, as on a new page, and a screen reader reads it.
+  useEffect(() => title.current?.focus(), []);
   useEffect(() => {
     let showing = true;
     void readMyAccount().then(
@@ -53,7 +57,9 @@ export function NoAccess() {
 
   return (
     <AuthCard label="No access">
-      <h1 className="sm-auth-title sm-auth-signin">You need access</h1>
+      <h1 ref={title} tabIndex={-1} className="sm-auth-title sm-auth-signin sm-quiet-focus">
+        You need access
+      </h1>
       <p className="sm-auth-text">You don’t have access to this steelman. The owner hasn’t shared it with this account.</p>
       {who !== null && (
         <p className="sm-auth-text">
@@ -72,7 +78,7 @@ export function NoAccess() {
       </div>
       {failed && (
         <p className="sm-field-error" role="alert">
-          Couldn’t sign you out. Try again.
+          Steelman couldn’t sign you out. Try again.
         </p>
       )}
     </AuthCard>
