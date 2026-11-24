@@ -132,6 +132,8 @@ body { margin:0; }
 
 /* Share takes the cursor itself when it opens (Sharing.tsx); the panel's own edge already shows where it is. */
 #steelman-study .sm-share:focus { outline:none; }
+/* The no-access card's title takes it too, when the card appears (NoAccess.tsx). A title isn't a control, so no ring is drawn around it. */
+#steelman-study .sm-auth-title.sm-quiet-focus:focus { outline:none; }
 
 /* Phones (M-03). The prototype hides your account button on a board at 480 px and below, to leave room for the
    board's tools; then a phone has no way from a board to Your account. The top bar has room for it. */
@@ -190,8 +192,6 @@ body { margin:0; }
 
 /* The back arrow (M3a-1, M-13; drawn in pages.css): min-width 0, so it never widens the page's grid. */
 #steelman-study .sm-back { min-width: 0; max-width: 100%; margin: 0 0 10px; }
-#steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
-#steelman-study .sm-dead-end p { margin: 0; }
 
 /* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
    in the prototype's head button, widened as its comment button is. */
