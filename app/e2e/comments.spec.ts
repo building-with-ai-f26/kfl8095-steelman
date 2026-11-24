@@ -423,3 +423,14 @@ test.describe("in New York's time zone", () => {
     await expect(head).toHaveScreenshot("comments-head-375.png");
   });
 });
+
+test("D-01, H-01: at 375 px the header's new layout leaves Share's role menus in one column", async ({ board }) => {
+  const page = await board.open("maya.chen", { width: 375 });
+  await page.locator(".sm-head .sm-meta-vis .sm-meta-pill").click();
+  await page.clock.runFor(500);
+  const menus = page.getByRole("dialog", { name: "Share" }).locator(".sm-people select");
+  await expect(menus.first()).toBeVisible();
+  const lefts = await menus.evaluateAll((all) => all.map((menu) => Math.round(menu.getBoundingClientRect().left)));
+  expect(lefts.length).toBeGreaterThan(1);
+  expect(new Set(lefts).size).toBe(1);
+});

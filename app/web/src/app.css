@@ -223,7 +223,7 @@ body { margin:0; }
    the first, and a closing pill below it may run on under them, so "Closes Nov 16 at 8 AM EST" stays on one line. */
 @media(max-width:640px) {
   #steelman-study .sm-head .sm-head-tools { align-self:start; margin:8px -8px -6px 0; }
-  #steelman-study .sm-head .sm-question-meta li + li { flex:none; width:max-content; max-width:calc(100vw - 56px); }
+  #steelman-study .sm-head .sm-question-meta > li + li { flex:none; width:max-content; max-width:calc(100vw - 56px); }
 }
 /* The drawer History, Settings, and Comments share (M3b-11) is fixed to the window at every width, as Figma's and
    Notion's comment sidebars are, so a panel opened far down the board opens in view. The prototype anchors its panel
