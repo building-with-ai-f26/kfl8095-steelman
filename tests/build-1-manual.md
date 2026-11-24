@@ -1889,6 +1889,20 @@ The builder tested M3a locally and asked for these changes. Each with tests writ
 | Checked in a browser | On both sites `/api/config` returns the key, the first-visit notice appears with Turn off and OK, an event is sent, and the session recorder loads |
 | Known limitations | `terraform apply` could not set the key: it reuses the revision name the last deploy gave the service, and Cloud Run answers 409. Terraform cannot change the service's settings until that is fixed |
 
+## November 24 — A friendlier no-access screen (H-02, M-06)
+
+Build plan M3a-9: someone signed in who opens the link of a board they aren't invited to sees a card in place of two plain lines.
+
+| Item | Result |
+|---|---|
+| The card | The card is the one "This steelman doesn't exist" uses. Its title is "You need access". It says "You don't have access to this steelman. The owner hasn't shared it with this account." and "You're signed in as" with the person's email. Its button is Go to Your steelmen and its link is Sign in with another account |
+| Checked by machine | `app/e2e/no-access.spec.ts` has ten browser tests. A visitor signs in by email code, opens an invited-only board's link, and sees the card with their email and both ways on, at 1280 and 375 px, with no sideways scroll and a clean axe scan. Go to Your steelmen opens the list. Sign in with another account ends the session, shows Sign in at the same link, and shows the board at that link once a member signs in. The same person signing in again sees the card again. When the service can't sign them out, the card says "Couldn't sign you out. Try again." and they stay signed in. Someone reading a board is shown the card when the owner turns the link off. A link to a board that doesn't exist still shows "This steelman doesn't exist". A tab acting as a test account shows that account's username, because test accounts have no email |
+| Tests first | Eight of the tests were written before the card and failed because the old screen had no "You need access" title. The missing-board test passed before and after, as it should. The test of a test account signing out was added after the card was built |
+| The whole check | `npm run check` passed locally on Node 22 with Docker: 1,091 unit, service, and simulation tests and 390 browser tests. `git diff --check` reported nothing. The two older tests that expect "You don't have access to this steelman." and Go to Your steelmen pass unchanged |
+| Guards | The protected-files guard lists `plans/build-plan.md`, because the row is marked `✅ built` as the other M3a rows are and the guard accepts only `✅ done`. Marking it `✅ done` makes the feature-to-test check fail, because C-03 has no test yet. The builder decides |
+| Products compared (rule 12) | Google Docs' "You need access" page gave the title; its wording was confirmed on Google's help centre on November 24. Naming the signed-in account with "You're signed in as" and offering another account follow Google's page from memory, since the help article doesn't quote that part of the screen. Notion's "No access to this page" was compared from memory only; its help centre confirms a control labelled "No access" and nothing else, so nothing was taken from it. Both products' Request access is left out until there are invitations (M3b) |
+| Known limitations | No real person has read the wording yet. The card hasn't been opened on staging, which happens after the merge deploys (rule 14). Signing in with Google from the card's Sign in screen wasn't tested here; the return to the same link by Google is covered by the older sign-in tests |
+
 ## Limits
 
 - No participant comprehension study or retention evidence.

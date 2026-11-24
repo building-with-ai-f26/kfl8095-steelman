@@ -190,8 +190,6 @@ body { margin:0; }
 
 /* The back arrow (M3a-1, M-13; drawn in pages.css): min-width 0, so it never widens the page's grid. */
 #steelman-study .sm-back { min-width: 0; max-width: 100%; margin: 0 0 10px; }
-#steelman-study .sm-dead-end { display: grid; justify-items: start; gap: 8px; }
-#steelman-study .sm-dead-end p { margin: 0; }
 
 /* History (M3a-4) says its name in words beside its icon, as the audit asks (plans/reviews/m3-design-audit.md),
    in the prototype's head button, widened as its comment button is. */

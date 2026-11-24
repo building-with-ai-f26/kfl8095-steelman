@@ -14,6 +14,7 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { OPTIONS_PER_BOARD, can, cleanText, leaveOut } from "@steelman/shared";
 import type { ArgumentRow, CaseItem, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
+import { NoAccess } from "../NoAccess.tsx";
 import { NotFound } from "../NotFound.tsx";
 import { useReader } from "../reader.ts";
 import { boardPath, versionPath } from "../links.ts";
@@ -70,15 +71,7 @@ export function Board({ boardId, version = null, zoom = "read", onZoom = () => {
   const view = useMemo(() => (state.view ? leaveOptionsOut(leaveOut(state.view, state.leftOut), state.optionsLeftOut) : null), [state.view, state.leftOut, state.optionsLeftOut]);
 
   if (state.phase === "missing") return <NotFound />;
-  if (state.phase === "no_access")
-    return (
-      <main className="sm-meta sm-dead-end">
-        <p>You don’t have access to this steelman.</p>
-        <a className="sm-link-button cursor-interaction" href="/">
-          Go to Your steelmen
-        </a>
-      </main>
-    );
+  if (state.phase === "no_access") return <NoAccess />;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!view) return null;
   return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
