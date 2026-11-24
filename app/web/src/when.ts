@@ -23,6 +23,17 @@ export function fullDate(at: string): string {
   return new Date(at).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
+/** The day a board closed (M3b-5): by hand, or at its time, whichever came first, as "Nov 7". */
+export function closedDay(closing: { closedAt: string | null; closesAt: string | null }): string {
+  const at = closing.closedAt && (!closing.closesAt || closing.closedAt <= closing.closesAt) ? closing.closedAt : closing.closesAt!;
+  return new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** The short name of the reader's time zone at a moment, as "EST" or "EDT". */
+export function zoneName(at: Date): string {
+  return new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(at).find((part) => part.type === "timeZoneName")?.value ?? "";
+}
+
 /**
  * A moment, as "Nov 30 at 5 PM EST" (or "5:30 PM"), in the reader's own time zone, named, as Google Calendar names
  * an event's: for a board's closing time (M3b-3). The year shows only when it isn't the year of `from`, such as

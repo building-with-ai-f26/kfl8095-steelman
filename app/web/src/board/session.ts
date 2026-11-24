@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardOrder, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, renameQuestion, restoreOption, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { Unreachable, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -132,6 +132,8 @@ export class BoardSession {
   private stopped = false;
   /** The owner's access changes: whether one is being sent, the latest not yet sent, and what the service last accepted. */
   private sharing = false;
+  /** While the Owner's own close or reopen is being read back, which says so in its own words (M3b-6). */
+  private closingOwn = false;
   private wanted: Access | null = null;
   private accepted: Access | null = null;
   /** Counts the owner's changes, so a poll that started before one doesn't put the old access back. */
@@ -385,6 +387,52 @@ export class BoardSession {
     // Already done means another tab made this same rename first: nothing changed here, so nothing is said.
     if (answer.status === "done") this.announce("The question was renamed.");
     await this.refresh();
+    return true;
+  }
+
+  /**
+   * Closes the board now, or reopens it (M3b-6, I-05): the Owner's, sent at once and not queued, with no confirmation.
+   * Once the service has it, the board is read again and the status line says what happened.
+   */
+  async setClosed(closed: boolean): Promise<boolean> {
+    const answer = await this.ask(() => setClosed(this.board, closed));
+    if (!answer) return false;
+    this.closingOwn = true;
+    try {
+      await this.refresh();
+    } finally {
+      this.closingOwn = false;
+    }
+    this.announce(closed ? "The board is closed." : "The board is open again.");
+    return true;
+  }
+
+  /**
+   * Sets the moment the board closes, or clears it with null (M3b-6). Answers "past" when the service says the moment
+   * has passed, which the panel says under the field, and false when it couldn't be sent, which the message says.
+   */
+  async setClosingTime(closesAt: string | null, said: string): Promise<true | false | "past"> {
+    let answer: Answer;
+    try {
+      answer = await setClosingTime(this.board, closesAt);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      this.fail("Couldn’t reach Steelman. Try again.");
+      return false;
+    }
+    if (answer.status === "invalid") return "past";
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) {
+      this.fail(tooManyMessage(answer.retryAfter));
+      return false;
+    }
+    if (answer.status !== "done" && answer.status !== "already_done") {
+      this.fail(refusalNote(answer));
+      return false;
+    }
+    this.worked();
+    // Not quieted as Close now is: a new time on a board its time had closed opens it again, which is news.
+    await this.refresh();
+    this.announce(said);
     return true;
   }
 
@@ -736,7 +784,7 @@ export class BoardSession {
         const closing = changes.closing ?? null;
         this.set({ view, role: changes.role, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
         // Said once, when it changes: the board closed, by hand or by its time, or opened again (M3b-5).
-        if ((closing?.closed ?? false) !== wasClosed) this.announce(closing?.closed ? "This board is closed." : "This board is open again.");
+        if ((closing?.closed ?? false) !== wasClosed && !this.closingOwn) this.announce(closing?.closed ? "This board is closed." : "This board is open again.");
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
         if (moderates(changes.role) !== wasModerator) {
           const fresh = await readBoard(this.board);

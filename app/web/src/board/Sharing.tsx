@@ -11,7 +11,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent
 import { MEMBER_ROLES, can } from "@steelman/shared";
 import type { Access, Closing, Person, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
-import { momentWithZone } from "../when.ts";
+import { closedDay, momentWithZone } from "../when.ts";
 import { WHY, blockedProps } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 
@@ -249,12 +249,6 @@ function ClosingPill({ closing, onSettings, settingsOpen }: { closing: Closing; 
       )}
     </li>
   );
-}
-
-/** The day it closed: by hand, or at its time, whichever came first. */
-function closedDay(closing: Closing): string {
-  const at = closing.closedAt && (!closing.closesAt || closing.closedAt <= closing.closesAt) ? closing.closedAt : closing.closesAt!;
-  return new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 /** One person on the board: the owner sees a menu of roles by each name but their own; everyone else sees the role. */

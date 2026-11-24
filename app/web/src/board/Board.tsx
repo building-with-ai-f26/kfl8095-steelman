@@ -732,6 +732,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           <Settings
             question={state.question}
             closed={closed}
+            closing={state.closing}
             session={session}
             onClose={closeSettings}
             onShare={() => {
