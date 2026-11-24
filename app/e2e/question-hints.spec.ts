@@ -51,8 +51,9 @@ test("F-02: an option named No shows its hint", async ({ board }) => {
   await expect(hints(page).getByRole("listitem")).toHaveText([YES_NO]);
 });
 
-test("F-02: with hints showing, Create steelman still makes the board, and the hints send nothing", async ({ board }) => {
+test("F-02: with hints showing, Create steelman still makes the board, and the hints send and store nothing", async ({ board }) => {
   const page = await sheet(board);
+  const stored = await page.evaluate(() => [localStorage.length, sessionStorage.length]);
   const sent: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("/api/")) sent.push(`${request.method()} ${new URL(request.url()).pathname}`);
@@ -63,6 +64,7 @@ test("F-02: with hints showing, Create steelman still makes the board, and the h
   await option(page, 2).fill("No");
   await expect(hints(page).getByRole("listitem")).toHaveCount(3);
   expect(sent).toEqual([]);
+  expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual(stored);
 
   await page.getByRole("button", { name: "Create steelman" }).click();
   await expect(page).toHaveURL(/\/b\/[A-Za-z0-9_-]{12}$/);
@@ -77,6 +79,8 @@ test("F-02: the empty sheet shows no hints and the list takes no room", async ({
   await expect(hints(page)).toHaveCount(1);
   const box = await hints(page).boundingBox();
   expect(box === null || box.height <= 1).toBe(true);
+  // Out of the sheet's grid, so it adds no gap between the question and the options.
+  expect(await hints(page).evaluate((list) => getComputedStyle(list).position)).toBe("absolute");
 });
 
 for (const width of [1280, 375]) {
