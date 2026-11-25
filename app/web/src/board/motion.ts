@@ -82,7 +82,7 @@ export function duration(name: keyof typeof FALLBACK, from: Element = document.d
 }
 
 /** A curve token, the settle or the ease, falling back to the ease where the browser can't read it. */
-function curve(name: "settle" | "ease", from: Element): string {
+export function curve(name: "settle" | "ease", from: Element): string {
   const value = window.getComputedStyle(from).getPropertyValue(`--sm-${name}`).trim();
   // An easing the browser can't read makes animate() throw, and linear() is newer than the rest of the app needs.
   if (value && (typeof CSS === "undefined" || CSS.supports("animation-timing-function", value))) return value;

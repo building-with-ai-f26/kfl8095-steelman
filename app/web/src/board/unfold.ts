@@ -274,8 +274,8 @@ function removeAfter(element: HTMLElement, animations: Animation[], ms: number):
   void Promise.all(animations.map((animation) => animation.finished)).then(end, end);
 }
 
-/** Drops every attribute that names an element or takes the cursor, from the copy and everything in it. */
-function strip(copy: HTMLElement): HTMLElement {
+/** Drops every attribute that names an element or takes the cursor, from the copy and everything in it (settle.ts uses it too). */
+export function strip(copy: HTMLElement): HTMLElement {
   for (const element of [copy, ...copy.querySelectorAll("*")]) {
     for (const { name } of [...element.attributes]) {
       if (name === "id" || name === "for" || name === "name" || name === "tabindex" || name.startsWith("data-") || name.startsWith("aria-")) element.removeAttribute(name);
@@ -285,7 +285,8 @@ function strip(copy: HTMLElement): HTMLElement {
   return copy;
 }
 
-function place(element: HTMLElement, rect: Rect): void {
+/** Draws a copy at a rect in its layer's own pixels. */
+export function place(element: HTMLElement, rect: Rect): void {
   Object.assign(element.style, { position: "absolute", boxSizing: "border-box", margin: "0", left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
 }
 
