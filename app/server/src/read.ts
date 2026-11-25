@@ -4,11 +4,18 @@
 //
 // Both read inside one "repeatable read" transaction, so the change number
 // and the rows come from the same moment.
+//
+// Comments (M3b-10) ride on both only when there are some, so an answer on a
+// board without them keeps its shape. They're sent only while their subject
+// stands: none on a deleted or hidden wording or a deleted option. When
+// History's Restore brings a wording or an option back after S, the answer
+// sends its comments again, however old, since a reader who arrived while it
+// was gone never had them.
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { REPORT_REASONS, closedSince, webLink } from "@steelman/shared";
-import type { ReportReason, ArgumentRow, BoardChanges, BoardOrder, BoardSnapshot, LogRow, OptionRow, SourceRow, VersionRow } from "@steelman/shared";
+import type { ReportReason, ArgumentRow, BoardChanges, BoardOrder, BoardSnapshot, CommentRow, LogRow, OptionRow, SourceRow, VersionRow } from "@steelman/shared";
 import type { Database, Db } from "./db/database.ts";
 
 type Reader = Kysely<Database>;
@@ -28,6 +35,7 @@ export async function readSnapshot(db: Db, boardId: string, person: string | nul
       const board = await trx.selectFrom("board").select(["id", "question", "closed_at", "closes_at", "last_seq"]).where("id", "=", boardId).executeTakeFirst();
       if (!board) return null;
       const order = await trx.selectFrom("published_order").select(["arguments", "versions"]).where("board_id", "=", boardId).executeTakeFirst();
+      const comments = await commentRows(trx, boardId, 0, []);
       return {
         board: { id: board.id, question: board.question, closed: now ? closedSince({ closedAt: board.closed_at, closesAt: board.closes_at }, now) !== null : board.closed_at !== null, seq: Number(board.last_seq) },
         options: await optionRows(trx, boardId, 0),
@@ -35,6 +43,7 @@ export async function readSnapshot(db: Db, boardId: string, person: string | nul
         versions: await versionRows(trx, boardId, person, { after: 0 }, moderator),
         sources: await sourceRows(trx, boardId, 0),
         order: order ? { arguments: order.arguments, versions: order.versions } as BoardOrder : { arguments: {}, versions: {} },
+        ...(comments.length > 0 ? { comments } : {}),
       };
     });
 }
@@ -56,6 +65,9 @@ export async function readChanges(db: Db, boardId: string, person: string | null
         .where("changed_seq", ">", String(after))
         .executeTakeFirst();
       const log = await logRows(trx, boardId, after);
+      // Brought back by History's Restore after S, so their comments go again (M3b-10). Deleting a wording is final.
+      const restored = log.filter((row) => row.kind === "version_restored" || row.kind === "option_restored").map((row) => row.subjectId);
+      const comments = await commentRows(trx, boardId, after, restored);
       return {
         seq,
         options: await optionRows(trx, boardId, after),
@@ -66,6 +78,7 @@ export async function readChanges(db: Db, boardId: string, person: string | null
         log,
         // The question rides along only when it was renamed after S (M3b-2), so an ordinary answer keeps its shape.
         ...(log.some((row) => row.kind === "question_renamed") ? { question: board.question } : {}),
+        ...(comments.length > 0 ? { comments } : {}),
       };
     });
 }
@@ -247,6 +260,54 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
     addedByName: row.added_by_name ?? "",
     unavailable: row.unavailable_at !== null,
     ...(row.unavailable_at && row.unavailable_by ? { report: { by: row.unavailable_by, byName: row.unavailable_by_name ?? "", at: row.unavailable_at.toISOString() } } : {}),
+    changedSeq: Number(row.changed_seq),
+  }));
+}
+
+/**
+ * Comments stamped after `after`, and every comment on a subject in `restored`, oldest first: only those whose subject
+ * stands, a wording neither deleted nor hidden and an option not deleted (M3b-10).
+ */
+async function commentRows(db: Reader, boardId: string, after: number, restored: string[]): Promise<CommentRow[]> {
+  const result = await sql<{
+    id: string;
+    option_id: string | null;
+    version_id: string | null;
+    parent_id: string | null;
+    author_id: string;
+    author_name: string | null;
+    body: string | null;
+    created_at: Date;
+    resolved: boolean;
+    deleted: boolean;
+    hidden: boolean;
+    changed_seq: string;
+  }>`
+    select c.id, c.option_id, c.version_id, c.parent_id, c.author_id, author.username as author_name, c.body, c.created_at,
+           c.resolved_at is not null as resolved, c.deleted_at is not null as deleted, c.hidden_at is not null as hidden, c.changed_seq
+    from comment c
+    join account author on author.id = c.author_id
+    left join version v on v.board_id = c.board_id and v.id = c.version_id
+    left join option o on o.board_id = c.board_id and o.id = c.option_id
+    where c.board_id = ${boardId}
+      and (c.changed_seq > ${after} or c.version_id = any(${restored}) or c.option_id = any(${restored}))
+      and (c.version_id is null or (v.deleted_at is null and v.hidden_at is null))
+      and (c.option_id is null or o.deleted_at is null)
+    order by c.created_at, c.id`.execute(db);
+  return result.rows.map((row) => ({
+    id: row.id,
+    optionId: row.option_id,
+    versionId: row.version_id,
+    parentId: row.parent_id,
+    authorId: row.author_id,
+    // Only an account with a username can write (app.ts), and a deleted account's comments go to "deleted_account".
+    authorName: row.author_name ?? "",
+    // Erased when deleted already (invariant 6). Nothing hides a comment until M3b-14, which decides who reads it.
+    body: row.deleted || row.hidden ? null : row.body,
+    createdAt: row.created_at.toISOString(),
+    resolved: row.resolved,
+    deleted: row.deleted,
+    hidden: row.hidden,
     changedSeq: Number(row.changed_seq),
   }));
 }

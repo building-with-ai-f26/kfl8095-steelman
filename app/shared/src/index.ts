@@ -38,6 +38,7 @@ export type {
   Access,
   ArgumentRow,
   CombinePreview,
+  CommentRow,
   BoardChanges,
   BoardList,
   BoardListing,
@@ -56,6 +57,8 @@ export type {
 } from "./api.ts";
 export { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved } from "./sync.ts";
 export type { BoardRows, ReaderView } from "./sync.ts";
+export { openCount, subjectStands, threadsOn } from "./comments.ts";
+export type { CommentTarget, Thread } from "./comments.ts";
 export { CASE_SIZE, strongestCase } from "./strongest.ts";
 export { closedSince, closingOf } from "./closing.ts";
 export type { Closing } from "./closing.ts";

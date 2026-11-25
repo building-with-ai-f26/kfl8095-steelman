@@ -5,8 +5,11 @@
 //
 // "When it last changed" is the latest of every write's own time: the board's
 // creation, the change log (edits, deletions, sources, access), new arguments
-// and wordings, and the votes and assessments as they stand. A vote that was
-// withdrawn leaves no time behind, so it doesn't count.
+// and wordings, the votes and assessments as they stand, and each comment's
+// times: added, resolved, and deleted (M3b-10), since comments add nothing to
+// the change log. A vote that was withdrawn leaves no time behind, so it
+// doesn't count, and nor does reopening a thread, which clears its resolved
+// time. A comment counts even when its wording or option has gone since.
 
 import { sql } from "kysely";
 import { ROLES, closingOf } from "@steelman/shared";
@@ -23,7 +26,8 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
         (select max(created_at) from version where board_id = b.id),
         (select max(voted_at) from importance_vote where board_id = b.id),
         (select max(voted_at) from articulation_vote where board_id = b.id),
-        (select max(assessed_at) from assessment where board_id = b.id)
+        (select max(assessed_at) from assessment where board_id = b.id),
+        (select max(greatest(created_at, resolved_at, deleted_at)) from comment where board_id = b.id)
       ) as changed_at
     from board_member m
     join board b on b.id = m.board_id
