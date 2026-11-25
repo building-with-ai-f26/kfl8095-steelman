@@ -799,6 +799,9 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             draft={commentDrafts[commentKey] ?? ""}
             onDraft={(text) => setCommentDrafts((all) => ({ ...all, [commentKey]: text }))}
             onSend={sendComment}
+            onReply={(thread, id, body) => session.addReply(commentsOn, thread, id, body)}
+            onResolve={(thread, resolved) => session.setResolved(thread, resolved)}
+            onDelete={(id) => session.deleteComment(id)}
             announce={(text) => session.announce(text)}
             onClose={closeComments}
           />

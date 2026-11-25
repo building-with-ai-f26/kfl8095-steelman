@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardOrder, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addComment, addOption, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { Unreachable, addComment, addOption, deleteComment, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -689,6 +689,82 @@ export class BoardSession {
     // Not waited for: the box is free for the next comment while the poll brings this one in.
     void this.refresh();
     return null;
+  }
+
+  /**
+   * Replies to a thread (M3b-12, D-01), sent with the thread's own subject. Not queued, like a comment: answers null
+   * once it's added, or the sentence the reply form shows when it isn't, with the text still in its box. A reply to a
+   * thread someone resolved meanwhile is refused (architecture §3), and the board is read again so the thread shows it.
+   */
+  async addReply(target: CommentTarget, parentId: string, id: string, body: string): Promise<string | null> {
+    const text = body.trim();
+    if (!text) return "Write a reply first.";
+    const on = target === "question" ? {} : target;
+    let answer: Answer;
+    try {
+      answer = await addComment(this.board, { id, ...on, parentId, body: text });
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return "You’re offline, so your reply wasn’t sent. It is still in the box.";
+    }
+    if (answer.status === "done" || answer.status === "already_done") {
+      this.announce("Your reply was added.");
+      void this.refresh();
+      return null;
+    }
+    void this.refresh();
+    if (answer.status === "invalid") return "Write a reply first.";
+    if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return tooManyMessage(answer.retryAfter);
+    if (answer.status === "refused" && answer.reason === "thread_resolved") return "This thread was resolved, so your reply wasn’t added.";
+    if (answer.status === "refused" && answer.reason === "thread_deleted") return "This comment was deleted, so your reply wasn’t added.";
+    if (answer.status === "not_found" || (answer.status === "refused" && (answer.reason === "version_deleted" || answer.reason === "option_deleted"))) return "This wording was removed, so your reply wasn’t added.";
+    return refusalNote(answer);
+  }
+
+  /**
+   * Resolves a thread by its first comment, or with `false` reopens it (M3b-12, D-01). Each says what the thread
+   * should be, so pressing it twice is safe. Answers null once it's done, or the sentence that says why it wasn't.
+   */
+  async setResolved(threadId: string, resolved: boolean): Promise<string | null> {
+    let answer: Answer;
+    try {
+      answer = await setResolved(this.board, threadId, resolved);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return resolved ? "You’re offline, so the thread wasn’t resolved." : "You’re offline, so the thread wasn’t reopened.";
+    }
+    if (answer.status === "done" || answer.status === "already_done") {
+      this.announce(resolved ? "The thread is resolved. It is under Resolved." : "The thread is open again.");
+      void this.refresh();
+      return null;
+    }
+    void this.refresh();
+    if (answer.status === "not_found") return "This comment is no longer on the board.";
+    if (answer.status === "refused" && answer.reason === "thread_deleted") return resolved ? "This comment was deleted, so its thread can’t be resolved." : "This comment was deleted, so its thread can’t be reopened.";
+    return refusalNote(answer);
+  }
+
+  /**
+   * Deletes the reader's own comment (M3b-12, D-01), after the panel has asked. Its text and author are erased and
+   * its place kept (architecture §2). Answers null once it's deleted, or the sentence that says why it wasn't.
+   */
+  async deleteComment(id: string): Promise<string | null> {
+    let answer: Answer;
+    try {
+      answer = await deleteComment(this.board, id);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return "You’re offline, so your comment wasn’t deleted.";
+    }
+    if (answer.status === "done" || answer.status === "already_done") {
+      this.announce("Your comment was deleted.");
+      void this.refresh();
+      return null;
+    }
+    void this.refresh();
+    if (answer.status === "not_found") return "This comment is no longer on the board.";
+    if (answer.status === "refused" && answer.reason === "not_author") return "Only the person who wrote a comment can delete it.";
+    return refusalNote(answer);
   }
 
   /** Removes a member (M3b-7, H-01), at once and with no confirmation, as Google Drive does. */
