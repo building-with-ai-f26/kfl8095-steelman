@@ -6,22 +6,43 @@
 // ⋯ menu (Card.tsx): the arrow keys, Home, and End move between items; Escape
 // closes it and puts the cursor back on ⋯; Tab, a click elsewhere, or a scroll
 // of something holding ⋯ closes it.
+//
+// Hiding a column (M3d-6, A-08) adds the prototype's "Hide this column" and
+// "Show only this column" after Rename and Delete, so the menu still opens on
+// Rename. A role below Editor gets the two items alone, in the same menu
+// named "Column view", from a button of its own. Neither is offered at 640 px
+// and narrower, where the board shows one side at a time.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../icons.tsx";
 
-interface OptionMenuProps {
-  trigger: RefObject<HTMLButtonElement | null>;
+/** Rename and Delete, for an Editor or the Owner (M3a-2). */
+export interface StructureItems {
   /** Why Delete can't be used, or null when it can. */
   deleteBlocked: string | null;
   onRename(): void;
   onDelete(): void;
+}
+
+/** Hide this column and Show only this column (M3d-6), for every role wider than 640 px. */
+export interface ColumnViewItems {
+  /** Whether this is the only column showing: then Hide says why it can't be used, and Show only isn't offered. */
+  onlyOne: boolean;
+  onHide(): void;
+  onSolo(): void;
+}
+
+interface OptionMenuProps {
+  trigger: RefObject<HTMLButtonElement | null>;
+  /** Rename and Delete; without them the menu is Column view. */
+  structure: StructureItems | null;
+  columnView: ColumnViewItems | null;
   onClose(): void;
 }
 
-export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose }: OptionMenuProps) {
+export function OptionMenu({ trigger, structure, columnView, onClose }: OptionMenuProps) {
   const menu = useRef<HTMLDivElement>(null);
   const root = document.getElementById("sm-content");
 
@@ -76,27 +97,61 @@ export function OptionMenu({ trigger, deleteBlocked, onRename, onDelete, onClose
 
   if (!root) return null;
   return createPortal(
-    <div ref={menu} className="sm-menu" role="menu" aria-label="Option settings">
-      <button type="button" role="menuitem" className="sm-menu-item cursor-interaction" onClick={onRename}>
-        <Icon name="pencil" />
-        <span>Rename</span>
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        className="sm-menu-item cursor-interaction"
-        data-action="delete-card"
-        aria-disabled={deleteBlocked ? true : undefined}
-        onClick={() => {
-          if (!deleteBlocked) onDelete();
-        }}
-      >
-        <Icon name="trash-2" />
-        <span>
-          Delete
-          {deleteBlocked ? <small>{deleteBlocked}</small> : null}
-        </span>
-      </button>
+    <div ref={menu} className="sm-menu" role="menu" aria-label={structure ? "Option settings" : "Column view"}>
+      {structure ? (
+        <>
+          <button type="button" role="menuitem" className="sm-menu-item cursor-interaction" onClick={structure.onRename}>
+            <Icon name="pencil" />
+            <span>Rename</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="sm-menu-item cursor-interaction"
+            data-action="delete-card"
+            aria-disabled={structure.deleteBlocked ? true : undefined}
+            onClick={() => {
+              if (!structure.deleteBlocked) structure.onDelete();
+            }}
+          >
+            <Icon name="trash-2" />
+            <span>
+              Delete
+              {structure.deleteBlocked ? <small>{structure.deleteBlocked}</small> : null}
+            </span>
+          </button>
+        </>
+      ) : null}
+      {/* Which columns a reader hides stays in this browser, so PostHog's autocapture leaves these two out. */}
+      {columnView ? (
+        <>
+          <button
+            type="button"
+            role="menuitem"
+            className="sm-menu-item cursor-interaction ph-no-capture"
+            data-action="hide-col"
+            aria-disabled={columnView.onlyOne ? true : undefined}
+            onClick={() => {
+              if (!columnView.onlyOne) columnView.onHide();
+            }}
+          >
+            <Icon name="eye-off" />
+            <span>
+              Hide this column
+              <small>{columnView.onlyOne ? "At least one column stays visible." : "It folds to a strip. Click the strip to bring it back."}</small>
+            </span>
+          </button>
+          {columnView.onlyOne ? null : (
+            <button type="button" role="menuitem" className="sm-menu-item cursor-interaction ph-no-capture" data-action="solo-col" onClick={columnView.onSolo}>
+              <Icon name="maximize-2" />
+              <span>
+                Show only this column
+                <small>This hides the other columns.</small>
+              </span>
+            </button>
+          )}
+        </>
+      ) : null}
     </div>,
     root,
   );

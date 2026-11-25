@@ -148,8 +148,9 @@ function drawWires(svg: SVGSVGElement, scene: HTMLElement): void {
     return { x: b.left - origin.left, y: b.top - origin.top, w: b.width, h: b.height };
   };
   const question = scene.querySelector(".sm-head");
-  // A column that isn't shown (the other side, on a phone) has no wire.
-  const columns: WireColumn[] = [...scene.querySelectorAll<HTMLElement>(".sm-board .sm-column")]
+  // A column that isn't shown (the other side, on a phone) has no wire. A hidden column's strip (M3d-6) has one to its
+  // head, as the prototype's drawLinks draws it.
+  const columns: WireColumn[] = [...scene.querySelectorAll<HTMLElement>(".sm-board .sm-column, .sm-board .sm-col-hidden")]
     .filter((column) => column.offsetParent !== null)
     .flatMap((column) => {
       const head = column.querySelector(".sm-column-head");

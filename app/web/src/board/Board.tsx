@@ -8,7 +8,9 @@
 // (M3d-5, unfold.ts). The reader's own combine, separation, and their Undo
 // settle in place: the wording fades out where it was, a stack's count
 // settles, and a new row rises in, while the rows below take their places at
-// once (M3d-7, settle.ts).
+// once (M3d-7, settle.ts). A reader may hide a column, or show only one
+// (M3d-6, hidden-columns.ts): it folds to a strip that brings it back, and
+// the columns ease to their new widths.
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -61,7 +63,9 @@ import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
 import { Wires, redrawWhile } from "./Wires.tsx";
-import { beforeToggle, holdReveal, playReveal, playToggle, stopRowMotion } from "./unfold.ts";
+import { beforeColumns, beforeToggle, holdReveal, playColumns, playReveal, playToggle, stopRowMotion } from "./unfold.ts";
+import { argumentCount, argumentsLabel, firstVisible, hiddenOf, readHidden, saveHidden } from "./hidden-columns.ts";
+import type { ColumnViewItems } from "./OptionMenu.tsx";
 import type { RowToggle } from "./unfold.ts";
 import { beforeSettle, playSettle, readySettle, stopSettling } from "./settle.ts";
 import type { Settling } from "./settle.ts";
@@ -119,6 +123,27 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   // The importance axis only means something once a column has two arguments to rank.
   const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
   const [arrival] = useState(() => (linkedComment ? commentArrivalFor(view, linkedComment, state.commentLink) : arrivalFor(view, linked)));
+  /** At 640 px and narrower: the board shows one side at a time, and the Settings button is its icon alone. */
+  const [narrow, setNarrow] = useState(() => window.matchMedia("(max-width: 640px)").matches);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 640px)");
+    const changed = () => setNarrow(query.matches);
+    query.addEventListener("change", changed);
+    return () => query.removeEventListener("change", changed);
+  }, []);
+  /**
+   * The options this reader has hidden on this board, as this browser keeps them (M3d-6). A link into a hidden column
+   * brings the column back, as the prototype's prepareReveal does, before the board is first drawn.
+   */
+  const [savedHidden, setSavedHidden] = useState(() => {
+    const saved = readHidden(boardId);
+    if (!arrival.side || !saved.includes(arrival.side)) return saved;
+    const kept = saved.filter((id) => id !== arrival.side);
+    saveHidden(boardId, kept);
+    return kept;
+  });
+  const hidden = hiddenOf(options, savedHidden, narrow);
+  const firstShown = firstVisible(options, hidden);
   const [chosenSide, setSide] = useState(arrival.side ?? options[0]?.id);
   // The side shown on a phone: the one chosen, or the first while that one is deleted (M3a-2).
   const side = options.some((option) => option.id === chosenSide) ? chosenSide : options[0]?.id;
@@ -131,9 +156,14 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const [note, setNote] = useState(arrival.note);
   const dismiss = useRef<HTMLButtonElement>(null);
   const [writing, setWriting] = useState<Writing>(null);
-  /** Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>". */
+  /**
+   * Drafts kept for later, by where they were started: "w:<argument>" or "a:<option>"; or "e:<version>", an edit whose
+   * column was hidden while it was open (M3d-6).
+   */
   const [drafts, setDrafts] = useState<Record<string, DraftText>>({});
   const keep = (key: string, draft: DraftText) => setDrafts((all) => ({ ...all, [key]: draft }));
+  /** The edit open now, as last typed, so a hide can keep it (M3d-6); null until the reader types. */
+  const editText = useRef<{ versionId: string; draft: DraftText } | null>(null);
   const reader = useReader();
   // A closed board (M3b-5, I-05), as the service last said: what it would refuse fades and says so.
   const closed = state.closing?.closed ?? false;
@@ -194,6 +224,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const goTo = (argumentId: string) => {
     const optionId = view.rows.arguments[argumentId]?.optionId;
     if (optionId) setSide(optionId);
+    reveal(optionId);
     document.querySelector(`[data-node="${CSS.escape(argumentId)}"]`)?.scrollIntoView({ block: "center", inline: "nearest" });
     setFocusTo(`[data-node="${CSS.escape(argumentId)}"] .sm-claim-button`);
   };
@@ -365,7 +396,23 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     report: (version, reason, note) => void session.report(version.id, { reason, note }),
     withdrawReport: (version) => void session.withdrawReport(version.id),
     editing: writing?.kind === "edit" ? writing.versionId : null,
-    edit: (versionId) => setWriting({ kind: "edit", versionId }),
+    edit(versionId) {
+      // An edit kept when its column was hidden opens again as the reader left it (M3d-6).
+      const key = `e:${versionId}`;
+      const kept = drafts[key];
+      editText.current = kept ? { versionId, draft: kept } : null;
+      if (kept)
+        setDrafts((all) => {
+          const rest = { ...all };
+          delete rest[key];
+          return rest;
+        });
+      setWriting({ kind: "edit", versionId });
+    },
+    editDraft: (versionId) => (editText.current?.versionId === versionId ? editText.current.draft : undefined),
+    editChange(versionId, draft) {
+      editText.current = { versionId, draft };
+    },
     save(version, draft) {
       setWriting(null);
       setFocusTo(cardControl(version.id, "claim"));
@@ -518,8 +565,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   // column (on a phone, the only one shown); when it ends, the board is as it was.
   const [retake] = useState(() => new URLSearchParams(window.location.search).has("tour"));
   const [tour, setTour] = useState<{ steps: TourStep[]; at: number; was: { open: string | null; expanded: string | null } } | null>(null);
-  const latest = useRef({ view, open, expanded });
-  latest.current = { view, open, expanded };
+  const latest = useRef({ view, open, expanded, hidden });
+  latest.current = { view, open, expanded, hidden };
   const showStep = (step: TourStep) => {
     setOpen(step.kind === "articulation" ? step.argumentId : null);
     setExpanded(null);
@@ -534,7 +581,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     let gone = false;
     void readTour().then((seen) => {
       if (gone || seen === null || (seen && !retake)) return;
-      const steps = tourSteps(latest.current.view);
+      const steps = tourSteps(latest.current.view, latest.current.hidden);
       // An empty board has nothing to point at: the tour waits for one that has.
       if (steps.length === 0) return;
       // A page load opens on the board view; this only makes sure.
@@ -610,6 +657,85 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const detail = useRef<{ opened: string | null; closing: ReturnType<typeof holdReveal> } | null>(null);
   /** The reader's own combine, separation, or Undo of one, as the screen was when it was sent (M3d-7). */
   const settling = useRef<Settling | null>(null);
+  /** The board's columns as drawn before the reader's own hide, Show only, or strip, and the strips that appear (M3d-6). */
+  const columnsWere = useRef<{ template: string; strips: string[] } | null>(null);
+  /**
+   * Closes what's open in columns that are becoming strips. A row unfolded there folds at once, the version open there
+   * closes, and a wording being placed from there is put down. A draft there closes and is kept, as the prototype keeps
+   * it, and so does an edit in progress: Edit on that wording again brings its text back.
+   */
+  const closeIn = (going: ReadonlySet<string>) => {
+    if (going.size === 0) return;
+    const optionOf = (argumentId: string | undefined) => (argumentId ? view.rows.arguments[argumentId]?.optionId : undefined);
+    if (openOption && going.has(openOption)) setOpen(null);
+    if (openVersion !== null && going.has(optionOf(view.rows.versions[openVersion]?.argumentId) ?? "")) setExpanded(null);
+    const writingIn = writing === null ? undefined : writing.kind === "argument" ? writing.optionId : optionOf(writing.kind === "wording" ? writing.argumentId : view.rows.versions[writing.versionId]?.argumentId);
+    if (writingIn !== undefined && going.has(writingIn)) {
+      const typed = editText.current;
+      if (writing?.kind === "edit" && typed?.versionId === writing.versionId) keep(`e:${typed.versionId}`, typed.draft);
+      setWriting(null);
+    }
+    if (moving && going.has(moving.optionId)) setMoving(null);
+  };
+  /**
+   * Hides these options and shows the rest, and remembers it in this browser; what's open in a column that hides
+   * closes first (closeIn). Answers false, changing nothing, when the columns drawn would stay as they are.
+   * `motion`: the reader's own choice, which eases the columns; a link, Strongest case, History, or Go to it shows a
+   * column at once, as they open rows at once.
+   */
+  const setHidden = (next: string[], motion: boolean): boolean => {
+    const drawn = hiddenOf(options, next, narrow);
+    if (drawn.size === hidden.size && [...drawn].every((id) => hidden.has(id))) return false;
+    const going = new Set([...drawn].filter((id) => !hidden.has(id)));
+    closeIn(going);
+    const root = scene.current;
+    if (motion && root) {
+      // A row still rising in from a separation stands at its place first (M3d-7), as Compare does.
+      stopSettling(root);
+      const template = beforeColumns(root);
+      columnsWere.current = template === null ? null : { template, strips: [...going] };
+    }
+    setSavedHidden(next);
+    saveHidden(boardId, next);
+    return true;
+  };
+  // Widening the window past 640 px draws the columns saved as hidden as strips again, so what's open in them closes,
+  // as a hide closes it.
+  const wasNarrow = useRef(narrow);
+  useEffect(() => {
+    const was = wasNarrow.current;
+    wasNarrow.current = narrow;
+    if (was && !narrow) closeIn(hidden);
+  }, [narrow]);
+  /**
+   * The options hidden as drawn now, which every change starts from: an option saved as hidden that is deleted, or that
+   * shows because every other option is saved as hidden too, is forgotten at the next change.
+   */
+  const drawnHidden = [...hidden];
+  /** The control that opens an option's menu: its ⋯, or Column view below Editor. */
+  const menuOf = (optionId: string) => `#sm-col-${CSS.escape(optionId)} .sm-column-tools [aria-haspopup='menu']`;
+  const hideColumn = (option: OptionRow) => {
+    if (!setHidden([...drawnHidden.filter((id) => id !== option.id), option.id], true)) return;
+    session.announce(`${option.name} is hidden. Its strip brings it back.`);
+    setFocusTo(`.sm-col-hidden[data-option="${CSS.escape(option.id)}"] .sm-column-head`);
+  };
+  const soloColumn = (option: OptionRow) => {
+    if (!setHidden(options.filter((other) => other.id !== option.id).map((other) => other.id), true)) return;
+    session.announce(`Only ${option.name} is showing. The other options are strips at the side.`);
+    setFocusTo(menuOf(option.id));
+  };
+  const showColumn = (option: OptionRow) => {
+    if (!setHidden(drawnHidden.filter((id) => id !== option.id), true)) return;
+    session.announce(`${option.name} is showing again.`);
+    setFocusTo(menuOf(option.id));
+  };
+  /** Brings an option's column back when something opens a wording in it, as the prototype's prepareReveal does. */
+  const reveal = (optionId: string | undefined) => {
+    if (optionId && hidden.has(optionId)) setHidden(drawnHidden.filter((id) => id !== optionId), false);
+  };
+  /** Hide this column and Show only this column, for every role, wider than 640 px (M3d-6). */
+  const columnView = (option: OptionRow): ColumnViewItems | null =>
+    narrow ? null : { onlyOne: options.length - hidden.size <= 1, onHide: () => hideColumn(option), onSolo: () => soloColumn(option) };
   useEffect(
     () =>
       session.onMove((versionId, next) => {
@@ -636,10 +762,14 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   useLayoutEffect(() => {
     const toggled = rowToggle.current;
     const shown = detail.current;
+    const widths = columnsWere.current;
     rowToggle.current = null;
     detail.current = null;
+    columnsWere.current = null;
     const root = scene.current;
     if (!root) return;
+    // A column the reader hid or brought back eases the columns to their new widths (M3d-6).
+    if (widths) redrawWhile(playColumns(root, widths.template, widths.strips));
     if (toggled) redrawWhile(playToggle(root, toggled));
     if (shown) redrawWhile(playReveal(root, shown.opened, shown.closing));
   });
@@ -740,6 +870,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     setOpen(at > 0 ? argumentId : null);
     setExpanded(versionId);
     setSide(view.rows.arguments[argumentId]!.optionId);
+    reveal(view.rows.arguments[argumentId]!.optionId);
     setArrived(versionId);
     setFocusTo(cardControl(versionId, "claim"));
     onZoom("read");
@@ -771,13 +902,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     if (state.role !== "owner") setSettingsOpen(false);
   }, [state.role]);
   /** On a phone the Settings button is its icon alone, so its name shows in the hint box; with its word, none is needed. */
-  const [iconOnly, setIconOnly] = useState(() => window.matchMedia("(max-width: 640px)").matches);
-  useEffect(() => {
-    const narrow = window.matchMedia("(max-width: 640px)");
-    const changed = () => setIconOnly(narrow.matches);
-    narrow.addEventListener("change", changed);
-    return () => narrow.removeEventListener("change", changed);
-  }, []);
+  const iconOnly = narrow;
   const openSettings = () => {
     setHistoryOpenNow(false);
     setCommentsOn(null);
@@ -1005,7 +1130,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
               <StrongestCase view={view} leftOut={state.leftOut} mine={state.mine} onOpen={openFromCase} />
             </div>
           ) : (
-            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption, addColumn ? (naming ? "naming" : "add") : null) } as React.CSSProperties}>
+            <div className="sm-board" style={{ "--sm-cols": boardColumns(options, openOption && !hidden.has(openOption) ? openOption : undefined, addColumn ? (naming ? "naming" : "add") : null, hidden) } as React.CSSProperties}>
               {state.optionGone && <UndoBar label={OPTION_DELETED} onUndo={undoOptionDelete} above />}
               <div className="sm-sides" role="tablist" aria-label="Sides">
                 {options.map((option) => (
@@ -1027,11 +1152,14 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
                   </button>
                 ))}
               </div>
-              {options.map((option, index) => (
+              {options.map((option, index) =>
+                hidden.has(option.id) ? (
+                  <HiddenColumn key={option.id} option={option} count={argumentCount(view, option.id)} gap={index > 0} onShow={() => showColumn(option)} />
+                ) : (
                 <Column
                   key={option.id}
                   option={option}
-                  first={index === 0}
+                  first={option.id === firstShown}
                   ranked={ranked}
                   on={option.id === side}
                   gap={index > 0}
@@ -1055,8 +1183,10 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
                   structure={structure}
                   mayStructure={mayStructure}
                   deleteBlocked={options.length <= OPTIONS_PER_BOARD.min ? "A question needs at least two options." : (view.shown.arguments[option.id] ?? []).some((id) => isLive(view.rows.arguments[id])) ? "Only an empty option can be deleted." : null}
+                  columnView={columnView(option)}
                 />
-              ))}
+                ),
+              )}
               {addColumn && (
                 <>
                   <div className="sm-col-gap" aria-hidden="true" />
@@ -1186,10 +1316,14 @@ export interface Writer {
   addArgument(optionId: string, draft: DraftText): void;
 }
 
-/** While a row is unfolded, its column takes most of the width, and the others keep a readable one. */
-function boardColumns(options: OptionRow[], wide: string | undefined, extra: "add" | "naming" | null = null): string {
-  const rest = wide ? `minmax(${options.length === 2 ? 260 : 200}px,1fr)` : "minmax(0,1fr)";
-  const columns = options.map((option) => (option.id === wide ? "minmax(0,2.6fr)" : rest)).join(" 32px ");
+/**
+ * While a row is unfolded, its column takes most of the width, and the others keep a readable one. A hidden column is
+ * a 44 px strip (M3d-6), as the prototype's boardColumns draws it, so the columns keep their count and ease between.
+ */
+function boardColumns(options: OptionRow[], wide: string | undefined, extra: "add" | "naming" | null = null, hidden: ReadonlySet<string> = new Set()): string {
+  const shown = options.filter((option) => !hidden.has(option.id)).length;
+  const rest = wide ? `minmax(${shown === 2 ? 260 : 200}px,1fr)` : "minmax(0,1fr)";
+  const columns = options.map((option) => (hidden.has(option.id) ? "44px" : option.id === wide ? "minmax(0,2.6fr)" : rest)).join(" 32px ");
   // After the last option, the prototype's dashed "Add an option", or the new option being named (M3a-2).
   return extra === "add" ? `${columns} 20px max-content` : extra === "naming" ? `${columns} 32px ${rest}` : columns;
 }
@@ -1289,6 +1423,8 @@ interface ColumnProps {
   mayStructure: boolean;
   /** Why this option can't be deleted, or null when it can. */
   deleteBlocked: string | null;
+  /** Hide this column and Show only this column (M3d-6), or null at 640 px and narrower. */
+  columnView: ColumnViewItems | null;
 }
 
 /** A wording being placed: by picking (its menu, or a press on its handle) or by a drag (M3a-7). */
@@ -1316,7 +1452,7 @@ interface Structure {
   undo(): void;
 }
 
-function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, structure, mayStructure, deleteBlocked }: ColumnProps) {
+function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, structure, mayStructure, deleteBlocked, columnView }: ColumnProps) {
   const reader = useReader();
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
@@ -1355,7 +1491,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
             <Axis kind="v" start="more important" end="less important" />
           </div>
         )}
-        <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} bubbles={opening.comments} />
+        <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} columnView={columnView} session={session} bubbles={opening.comments} />
         {structure.picking?.optionId === option.id ? (
           // Not a live region: the cursor is already on the first Combine here, and the status line has said this.
           <div className="sm-move-banner">
@@ -1505,19 +1641,59 @@ function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; 
   );
 }
 
+/**
+ * A hidden column (M3d-6, A-08): the prototype's 44 px dark strip, a button
+ * with an eye, the option's name written downwards, and its argument count,
+ * as Trello's collapsed list folds to a narrow strip with its name. A click
+ * brings the column back, as Google Sheets' hidden-column marker does. Its
+ * name says what it shows too, "Show Yes, 3 arguments", so that the name
+ * holds every word drawn on it (WCAG's label in name).
+ */
+function HiddenColumn({ option, count, gap, onShow }: { option: OptionRow; count: number; gap: boolean; onShow(): void }) {
+  return (
+    <>
+      {gap && <div className="sm-col-gap" aria-hidden="true" />}
+      <section className="sm-col-hidden" id={`sm-col-${option.id}`} data-option={option.id} aria-label={`${option.name} (hidden)`}>
+        {/* It shows the option's name, which someone wrote, so PostHog's autocapture leaves it out. */}
+        <button type="button" className="sm-column-head cursor-interaction ph-no-capture" aria-label={`Show ${option.name}, ${argumentsLabel(count)}`} data-tooltip="Show column" onClick={onShow}>
+          <Icon name="eye" />
+          <span className="sm-col-hidden-name">{option.name}</span>{" "}
+          <span className="sm-col-hidden-count">{argumentsLabel(count)}</span>
+        </button>
+      </section>
+    </>
+  );
+}
 
 /**
  * An option's header (M3a-2, A-07): its name, its speech bubble for everyone
  * (M3b-11, D-01), and for an Editor or the Owner the prototype's ⋯, "Options
  * for …", with Rename option and Delete option. Renaming happens in the
- * header itself.
+ * header itself. Hide this column and Show only this column (M3d-6) follow
+ * Rename and Delete in the ⋯; wherever the ⋯ isn't drawn (a role below Editor,
+ * or a closed board), they have a button of their own, "Column view for …",
+ * with the eye-off icon.
  */
-function OptionHead({ option, mayStructure, deleteBlocked, session, bubbles }: { option: OptionRow; mayStructure: boolean; deleteBlocked: string | null; session: BoardSession; bubbles: CommentBubbles }) {
+function OptionHead({ option, mayStructure, deleteBlocked, columnView, session, bubbles }: { option: OptionRow; mayStructure: boolean; deleteBlocked: string | null; columnView: ColumnViewItems | null; session: BoardSession; bubbles: CommentBubbles }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const back = () => window.setTimeout(() => trigger.current?.focus());
   const close = useCallback(() => setMenuOpen(false), []);
+  // The menu closes before a column hides or shows; the board puts the cursor where it goes.
+  const view = columnView
+    ? {
+        onlyOne: columnView.onlyOne,
+        onHide: () => {
+          setMenuOpen(false);
+          columnView.onHide();
+        },
+        onSolo: () => {
+          setMenuOpen(false);
+          columnView.onSolo();
+        },
+      }
+    : null;
   return (
     <div className={`sm-column-head${bubbles.on === `o:${option.id}` ? " sm-commenting" : ""}`}>
       {renaming ? (
@@ -1555,19 +1731,41 @@ function OptionHead({ option, mayStructure, deleteBlocked, session, bubbles }: {
             <Icon name="ellipsis" />
           </button>
           )}
-          {mayStructure && menuOpen && (
+          {!mayStructure && view && (
+            // Its name carries the option's, which someone wrote, so PostHog's autocapture leaves it out.
+            <button
+              ref={trigger}
+              type="button"
+              className="sm-head-button cursor-interaction ph-no-capture"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label={`Column view for ${option.name}`}
+              data-tooltip="Column view"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <Icon name="eye-off" />
+            </button>
+          )}
+          {menuOpen && (mayStructure || view) && (
             <OptionMenu
               trigger={trigger}
-              deleteBlocked={deleteBlocked}
+              structure={
+                mayStructure
+                  ? {
+                      deleteBlocked,
+                      onRename: () => {
+                        setMenuOpen(false);
+                        setRenaming(true);
+                      },
+                      onDelete: () => {
+                        setMenuOpen(false);
+                        session.holdOptionDelete({ id: option.id, name: option.name });
+                      },
+                    }
+                  : null
+              }
+              columnView={view}
               onClose={close}
-              onRename={() => {
-                setMenuOpen(false);
-                setRenaming(true);
-              }}
-              onDelete={() => {
-                setMenuOpen(false);
-                session.holdOptionDelete({ id: option.id, name: option.name });
-              }}
             />
           )}
         </div>
