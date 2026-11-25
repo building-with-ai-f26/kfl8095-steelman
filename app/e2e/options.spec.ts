@@ -200,7 +200,7 @@ test("M3a-2, A-07: a reader who had the option on screen sees it leave on the ne
   await expect.poll(() => onService(board)).toEqual(["Yes", "No"]);
   await poll(other);
 
-  expect(await heads(other)).toEqual(["Yes", "No"]);
+  await expect.poll(() => heads(other)).toEqual(["Yes", "No"]);
   await expect(other.locator(".sm-fresh")).toBeHidden();
 });
 
