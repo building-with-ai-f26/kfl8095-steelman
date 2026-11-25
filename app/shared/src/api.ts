@@ -48,9 +48,12 @@ export const separateInput = z.strictObject({ argumentId: itemIdInput });
 /** A new wording of an existing argument. */
 export const newWordingInput = z.strictObject({ id: itemIdInput, wording: wordingInput, context: contextInput });
 
-/** A new comment (M3b-8, D-01): on an option, a wording, or, with neither, the question; never both. */
+/**
+ * A new comment (M3b-8, D-01): on an option, a wording, or, with neither, the question; never both. A reply
+ * (M3b-9) also names its thread's first comment as `parentId`, and the same target as that thread.
+ */
 export const newCommentInput = z
-  .strictObject({ id: itemIdInput, optionId: itemIdInput.optional(), versionId: itemIdInput.optional(), body: commentBodyInput })
+  .strictObject({ id: itemIdInput, optionId: itemIdInput.optional(), versionId: itemIdInput.optional(), parentId: itemIdInput.optional(), body: commentBodyInput })
   .refine((comment) => comment.optionId === undefined || comment.versionId === undefined, { message: "A comment has one target or none." });
 
 /** An edit names the revision it started from. */
@@ -365,7 +368,15 @@ export type RefusalReason =
   /** Over a rate limit (architecture §7): nothing was saved; `retryAfter` says how many seconds until it would be. */
   | "too_many"
   /** The person invited is the board's Owner, who has access already (M3b-7). */
-  | "already_member";
+  | "already_member"
+  /** A reply, resolve, or reopen named a reply: only a thread's first comment can be replied to, resolved, or reopened (M3b-9). */
+  | "not_a_thread"
+  /** A reply named another target than its thread's (M3b-9). */
+  | "not_same_thread"
+  /** The thread was resolved, so a reply to it isn't added (M3b-9, architecture §3). */
+  | "thread_resolved"
+  /** The thread's first comment was deleted by its author or hidden by a moderator, so it takes no reply, resolve, or reopen (M3b-9). */
+  | "thread_deleted";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

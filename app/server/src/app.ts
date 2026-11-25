@@ -47,7 +47,7 @@ import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
-import { addComment, deleteComment } from "./comments.ts";
+import { addComment, deleteComment, reopenThread, resolveThread } from "./comments.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { renameQuestion } from "./settings.ts";
@@ -161,6 +161,10 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   wrong_origin: 403,
   too_many: 429,
   already_member: 409,
+  not_a_thread: 409,
+  not_same_thread: 409,
+  thread_resolved: 409,
+  thread_deleted: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -601,9 +605,10 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     answer(reply, await deleteWording(services, request.params.board, request.person, request.params.id)),
   );
 
-  // Comments (D-01, M3b-8): add one on the question, an option, or a wording, and delete your own. Counted with
-  // writing until M3b-9 gives comments a limit of their own; deleting isn't counted, as deleting a wording isn't.
-  app.post<{ Params: { board: string } }>("/api/boards/:board/comments", { config: { limit: "writing" } }, async (request, reply) => {
+  // Comments (D-01, M3b-8 and M3b-9): add one on the question, an option, or a wording, or a reply to a thread, and
+  // delete your own. Comments and replies count against a limit of their own; deleting isn't counted, as deleting a
+  // wording isn't.
+  app.post<{ Params: { board: string } }>("/api/boards/:board/comments", { config: { limit: "comment" } }, async (request, reply) => {
     const body = newCommentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await addComment(services, request.params.board, request.person, body.data));
@@ -611,6 +616,14 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
 
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) =>
     answer(reply, await deleteComment(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Resolving and reopening a thread (D-01, M3b-9): anyone who can comment, on any thread. Neither is counted.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id/resolved", async (request, reply) =>
+    answer(reply, await resolveThread(services, request.params.board, request.person, request.params.id)),
+  );
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id/resolved", async (request, reply) =>
+    answer(reply, await reopenThread(services, request.params.board, request.person, request.params.id)),
   );
 
   // Sources (C-01): add a new one to a wording, cite one already on the board, take one off, or edit one.
