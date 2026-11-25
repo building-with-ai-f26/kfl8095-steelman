@@ -76,6 +76,8 @@ async function rang(page: Page, what: `comment:${string}` | `card:${string}`): P
 }
 
 async function expectNoAxeViolations(page: Page): Promise<void> {
+  // Scan what the reader settles on, not a frame of the ring or a rise-in.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 }
