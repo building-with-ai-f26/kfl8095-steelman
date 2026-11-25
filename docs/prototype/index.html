@@ -1864,12 +1864,21 @@ html&gt;body{padding:0}&lt;/style&gt;
   --sm-tex-dots:url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; width=&#x27;18&#x27; height=&#x27;18&#x27;%3E%3Ccircle cx=&#x27;9&#x27; cy=&#x27;9&#x27; r=&#x27;1&#x27; fill=&#x27;%23242424&#x27; fill-opacity=&#x27;.24&#x27;/%3E%3C/svg%3E&quot;);
   --sm-tex-linen:url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; width=&#x27;6&#x27; height=&#x27;6&#x27;%3E%3Cpath d=&#x27;M0 6L6 0M-1 1L1-1M5 7L7 5&#x27; stroke=&#x27;%23242424&#x27; stroke-opacity=&#x27;.1&#x27;/%3E%3Cpath d=&#x27;M0 0L6 6M-1 5L1 7M5-1L7 1&#x27; stroke=&#x27;%23242424&#x27; stroke-opacity=&#x27;.05&#x27;/%3E%3C/svg%3E&quot;);
 
-  /* Motion: three speeds and one curve. Fast for hovers, medium for panels and small reveals,
-     slow for zooming, unfolding, and reordering. Reduced-motion users get instant changes. */
+  /* Motion: three speeds and two curves. Fast is for hovers, medium for panels and small reveals,
+     and slow for zooming, unfolding, and reordering. Reduced-motion users get instant changes. */
   --sm-fast:120ms;
   --sm-medium:200ms;
   --sm-slow:420ms;
+  /* The ease is for panels, hovers, and reveals: quick to start, gentle to stop, with no overshoot. */
   --sm-ease:cubic-bezier(.2,.7,.2,1);
+  /* The settle is for a card set down in a new place: a short spring, sampled with linear(), that
+     passes its mark by about 4 percent at the halfway point and comes to rest. The builder approved
+     it on Nov 24, although the brief had one curve with no overshoot (plans/build-plan.md, M3d-2). */
+  --sm-settle:linear(0, .059, .194, .36, .526, .674, .795, .888, .955, .999, 1.024, 1.037, 1.04, 1.038, 1.032, 1.026, 1.019, 1.013, 1.008, 1.004, 1.002 83.33%, 1);
+  /* Timings that were written into the code before they were tokens, with the same values. */
+  --sm-leave:160ms;            /* a closing drawer&#x27;s fade: --sm-medium less a little, so a new one isn&#x27;t kept waiting */
+  --sm-fold:220ms;             /* a resolved thread or a deleted reply folding away */
+  --sm-ring:1400ms;            /* how long the version a link points to stays ringed */
 
   /* Elevation: everything raised above the canvas casts a soft, layered drop shadow */
   --sm-shadow-sm:0 1px 2px #0000001a;                                                /* list items, headers, vote controls: barely lifted */
@@ -1877,6 +1886,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   --sm-shadow-hover:0 2px 4px #0000001f,0 10px 24px #0000001f;
   --sm-shadow-panel:0 1px 2px #00000012;                                             /* option columns */
   --sm-shadow-lg:0 3px 6px #0000002e,0 16px 36px #00000038;                         /* floating only: menus, Share, comments, the create sheet */
+  --sm-lift:0 4px 8px #00000024,0 14px 30px #0000002b;                              /* a card while it moves: lifted off the board, below a floating panel */
 
   /* Texture: grayscale paper grain laid over surfaces */
   --sm-grain:url(&quot;data:image/svg+xml,%3Csvg viewBox=&#x27;0 0 180 180&#x27; xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%3E%3Cfilter id=&#x27;grain&#x27;%3E%3CfeTurbulence type=&#x27;fractalNoise&#x27; baseFrequency=&#x27;.85&#x27; numOctaves=&#x27;3&#x27; stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix type=&#x27;saturate&#x27; values=&#x27;0&#x27;/%3E%3CfeComponentTransfer%3E%3CfeFuncA type=&#x27;linear&#x27; slope=&#x27;.085&#x27;/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Cpath fill=&#x27;%23fff&#x27; filter=&#x27;url(%23grain)&#x27; d=&#x27;M0 0h180v180H0z&#x27;/%3E%3C/svg%3E&quot;);

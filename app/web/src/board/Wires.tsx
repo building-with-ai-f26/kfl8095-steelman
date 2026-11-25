@@ -10,10 +10,15 @@
 // anything inside it changes (a draft or an evidence form opening, History
 // opening), and when an unfolded row is scrolled sideways. Each burst of
 // changes is drawn once, once the browser has applied it, and a redraw of the
-// same layout writes nothing. The prototype also redraws on every animation
-// frame while its own motion plays (folding, reordering, zooming); the board
-// here has none of that motion, so there's nothing to animate, with or without
-// reduced motion.
+// same layout writes nothing.
+//
+// A move played with Web Animations (web/src/board/motion.ts, M-15) changes
+// no attribute and no size, so none of the above sees it. While cards move,
+// redrawWhile() redraws the wires on every animation frame until the moves
+// finish, as the prototype's animateWires() does, so each wire stays on its
+// card. The textures stay static, as the brief asks: they're painted again
+// once, at the final layout, when the last move ends. Under reduced motion
+// there are no moves, so there's nothing to follow.
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type { QueuedAction, ReaderView } from "@steelman/shared";
@@ -26,6 +31,36 @@ import type { Box, WireColumn } from "./wires.ts";
 const SVG = "http://www.w3.org/2000/svg";
 /** The decoration itself, whose own redraws aren't changes to redraw for. */
 const DECORATION = ".sm-links, canvas.sm-texture";
+
+/** Every Wires on the page: a redraw of its wires alone, for each frame of a move, and its usual full redraw. */
+const mounted = new Set<{ follow(): void; redraw(): void }>();
+/** How many moves are still running. */
+let moves = 0;
+let frame = 0;
+
+/**
+ * Redraws the wires on every animation frame until the given animations finish or are cancelled, then redraws the
+ * wires and the textures once more at the final layout. Nulls, which play() returns under reduced motion, are skipped.
+ */
+export function redrawWhile(animations: readonly (Animation | null)[]): void {
+  const running = animations.filter((animation): animation is Animation => animation !== null);
+  if (!running.length) return;
+  moves += running.length;
+  const ended = () => {
+    moves -= 1;
+    if (moves) return;
+    window.cancelAnimationFrame(frame);
+    frame = 0;
+    for (const wires of mounted) wires.redraw();
+  };
+  for (const animation of running) void animation.finished.then(ended, ended);
+  if (!frame) frame = window.requestAnimationFrame(tick);
+}
+
+function tick(): void {
+  frame = moves ? window.requestAnimationFrame(tick) : 0;
+  for (const wires of mounted) wires.follow();
+}
 
 export function Wires({ view, mine }: { view: ReaderView; mine: readonly QueuedAction[] }) {
   const links = useRef<SVGSVGElement>(null);
@@ -42,7 +77,8 @@ export function Wires({ view, mine }: { view: ReaderView; mine: readonly QueuedA
       pending = false;
       if (!svg.isConnected) return;
       drawWires(svg, scene);
-      paintTextures(scene, latest.current);
+      // While cards move, the textures wait for the final layout (redrawWhile).
+      if (!moves) paintTextures(scene, latest.current);
     };
     const schedule = () => {
       if (pending) return;
@@ -50,6 +86,8 @@ export function Wires({ view, mine }: { view: ReaderView; mine: readonly QueuedA
       queueMicrotask(draw);
     };
     redraw.current = schedule;
+    const wires = { follow: () => svg.isConnected && drawWires(svg, scene), redraw: schedule };
+    mounted.add(wires);
     const resized = new ResizeObserver(schedule);
     resized.observe(scene);
     const changed = new MutationObserver((records) => {
@@ -63,6 +101,7 @@ export function Wires({ view, mine }: { view: ReaderView; mine: readonly QueuedA
     void document.fonts?.ready.then(schedule);
     draw();
     return () => {
+      mounted.delete(wires);
       redraw.current = () => {};
       resized.disconnect();
       changed.disconnect();

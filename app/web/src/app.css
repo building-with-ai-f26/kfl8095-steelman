@@ -233,7 +233,7 @@ body { margin:0; }
 /* While the Update pill shows, the drawer stops above it, so the pill never covers Comment. */
 #steelman-study .sm-surface:has(> .sm-fresh:not([hidden])) .sm-drawer { max-height:calc(100vh - var(--sm-drawer-top, 69px) - 68px); }
 /* A closing drawer fades out as it faded in (drawer.ts keeps a copy for the fade); with reduced motion it just goes. */
-#steelman-study .sm-drawer.sm-leaving:not([hidden]) { animation:sm-leave 160ms var(--sm-ease) forwards; pointer-events:none; }
+#steelman-study .sm-drawer.sm-leaving:not([hidden]) { animation:sm-leave var(--sm-leave) var(--sm-ease) forwards; pointer-events:none; }
 @keyframes sm-leave { from { opacity:1; translate:0 0; } to { opacity:0; translate:0 4px; } }
 /* Comments keeps its head and its box in place and scrolls the threads between them. */
 #steelman-study .sm-comments-drawer { overflow:hidden; }
@@ -260,7 +260,7 @@ body { margin:0; }
 #steelman-study .sm-comments-body .sm-comment .sm-comment-problem { margin:6px 0 0 29px; font-size:12px; }
 /* A thread resolved or deleted, or a reply deleted, folds away (Comments.tsx keeps a copy for it); with reduced motion
    there is no copy. The copy's height closes to nothing, and the gap after it with it. */
-#steelman-study .sm-comments-body .sm-fold { display:grid; grid-template-rows:1fr; overflow:hidden; pointer-events:none; animation:sm-fold 220ms var(--sm-ease) forwards; }
+#steelman-study .sm-comments-body .sm-fold { display:grid; grid-template-rows:1fr; overflow:hidden; pointer-events:none; animation:sm-fold var(--sm-fold) var(--sm-ease) forwards; }
 #steelman-study .sm-comments-body .sm-fold > * { min-height:0; overflow:hidden; }
 #steelman-study .sm-comments-body .sm-thread > .sm-fold { animation-name:sm-fold-reply; }
 @keyframes sm-fold { to { grid-template-rows:0fr; opacity:0; margin-bottom:-14px; } }
