@@ -43,7 +43,7 @@ import type { TourStep } from "./tour-steps.ts";
 import { markTourSeen, readTour } from "../api.ts";
 import type { DraftText } from "./Forms.tsx";
 import { Track, TrackAxis } from "./Track.tsx";
-import { VoteControl } from "./Vote.tsx";
+import { VoteControl, pollRecount } from "./Vote.tsx";
 import { WHY, columns, endQuote, finalArgument, importanceShown, isLive, isLiveVersion, leadWording, moderationItem, reportItem, short, versionMenu, whyNot } from "./display.ts";
 import { BoardSession, leaveOptionsOut } from "./session.ts";
 import type { Held, Restructured, SessionState } from "./session.ts";
@@ -56,6 +56,7 @@ import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop } from "./drawer.ts";
 import { captureRects, drawnRect, duration, flip, stopMoves } from "./motion.ts";
+import { cardsFor, ring, stopRings } from "./vote-motion.ts";
 import type { Rects } from "./motion.ts";
 import { LeavingCopies, arrive, comeBack, copyOf, measure } from "./Leaving.tsx";
 import type { Arriving, Leaving } from "./Leaving.tsx";
@@ -643,6 +644,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const anchor = useRef<{ id: string; top: number } | null>(null);
   // Where every row and card was drawn when Update was pressed, so that they move from there into the new order.
   const shuffle = useRef<Rects | null>(null);
+  /** The wordings that polls brought added or reworded before Update was pressed, which it rings (M3d-8). */
+  const rings = useRef<string[]>([]);
   const scene = useRef<HTMLDivElement>(null);
   /** The reader's own additions on their way (M3d-4), by the new card's version ID: only these rise in when they arrive. */
   const arriving = useRef(new Map<string, Arriving>());
@@ -782,14 +785,29 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     anchor.current = null;
     shuffle.current = null;
     const root = scene.current;
-    // A shuffle still running stops first, so that the row being read is measured where it lies.
-    if (before && root) stopMoves(root);
+    // A shuffle still running stops first, so that the row being read is measured where it lies, and so does an earlier
+    // Update's ring, so that each card's own shadow is the one it settles in.
+    const rung = rings.current;
+    rings.current = [];
+    if (before && root) {
+      stopMoves(root);
+      stopRings();
+    }
     if (held) {
       const now = document.querySelector(`[data-node="${held.id}"]`)?.getBoundingClientRect().top;
       if (now !== undefined && now !== held.top) window.scrollBy(0, now - held.top);
     }
     // Measured after the scroll, as the rects before it were, so the row being read has no offset and stays still.
-    if (before && root) redrawWhile(flip(before, root, { lift: true, travel: true }).animations);
+    if (before && root) {
+      redrawWhile(flip(before, root, { lift: true, travel: true }).animations);
+      // Each card someone else added or reworded since the last Update is ringed where it's drawn now (M3d-8); the
+      // reader's own, from this tab or another, isn't.
+      const others = rung.flatMap((id) => {
+        const version = view.rows.versions[id];
+        return version && version.authorId !== reader && isLiveVersion(version) ? [version] : [];
+      });
+      ring(cardsFor(root, others));
+    }
   }, [view.shown]);
 
   // The reader's own addition rises in once its card is drawn, and the slot after it makes room; other people's
@@ -988,6 +1006,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     settling.current = null;
     anchor.current = readingAnchor(open);
     if (scene.current) shuffle.current = captureRects(scene.current);
+    rings.current = session.takeChanged();
     const gone = writing?.kind === "wording" ? view.rows.arguments[writing.argumentId] : undefined;
     if (gone && !isLive(gone)) {
       // Drafts follow their argument; when it's gone, the draft becomes a new argument in the same column.
@@ -1580,6 +1599,7 @@ function Row({ argument, open, onToggle, writer, opening, view, state, session, 
         back="Less important if true"
         onVote={(value) => session.act({ kind: "importance", argumentId: argument.id, value })}
         blocked={whyNot(reader, state.role, "vote", state.closing?.closed)}
+        polled={pollRecount(state, argument.id)}
       />
       <div className="sm-card-wrap">
         {open ? (

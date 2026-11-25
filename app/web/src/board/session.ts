@@ -5,7 +5,7 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardOrder, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import type { Access, BoardChanges, BoardOrder, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
 import { Unreachable, addComment, addOption, deleteComment, setCommentHidden, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
@@ -92,6 +92,12 @@ export interface SessionState {
    * of the window until they dismiss it or something they do works (M-14); null when there's nothing to say.
    */
   problem: string | null;
+  /**
+   * The counts the latest poll changed because people voted, by argument ID for importance and by wording ID for
+   * articulation, with the view that poll drew, so that those numbers roll while that view is shown (M3d-8). A count a
+   * combine, a separation, or an edit changed isn't among them; null before any poll.
+   */
+  recounted: { view: ReaderView; ids: ReadonlySet<string> } | null;
 }
 
 export class BoardSession {
@@ -117,6 +123,7 @@ export class BoardSession {
     logSeq: 0,
     restructured: null,
     problem: null,
+    recounted: null,
   };
   private readonly listeners = new Set<() => void>();
   private queue: QueuedAction[] = [];
@@ -130,6 +137,8 @@ export class BoardSession {
   private restructureTimer: number | undefined;
   /** How many times Update has been pressed: a screen kept from before one is out of date. */
   private updates = 0;
+  /** The wordings polls have brought added or with new text since the last Update, which Update rings (M3d-8). */
+  private changedSinceUpdate = new Set<string>();
   /** The reader's own combine or separation the rows don't show yet (the read after it failed): the wording that moved. */
   private movedUnseen: string | null = null;
   /** Told before the reader's own combine, separation, or its undo is sent, and just before it shows (M3d-7). */
@@ -299,10 +308,21 @@ export class BoardSession {
     else this.act(action);
   }
 
+  /**
+   * The wordings that arrived on a poll since the last Update, added or with new words, which the board rings when
+   * Update draws them (M3d-8), and forgets them. The board leaves out the reader's own, by author.
+   */
+  takeChanged(): string[] {
+    const ids = [...this.changedSinceUpdate];
+    this.changedSinceUpdate.clear();
+    return ids;
+  }
+
   /** Update: draws the board in the newest shared order. */
   update(status = "Board updated."): void {
     if (!this.state.view) return;
     this.updates++;
+    this.changedSinceUpdate.clear();
     // An Undo bar still showing keeps its Undo, but no longer the screen from before: Update has redrawn it.
     const restructured = this.state.restructured ? { ...this.state.restructured, before: null } : null;
     this.set({ view: pressUpdate(this.state.view), status, restructured });
@@ -984,6 +1004,7 @@ export class BoardSession {
         const accessSettled = !this.sharing && shares === this.shareCount;
         const wasModerator = moderates(this.state.role);
         const logSeq = Math.max(this.state.logSeq, ...changes.log.map((row) => row.seq));
+        const recountedIds = this.noteChanges(this.state.view, changes);
         let view = receive(this.state.view, changes);
         // The reader's own move, whose rows a failed read kept back: shown as theirs now, not marked as someone else's.
         const movedNow = this.movedUnseen !== null && changes.versions.some((version) => version.id === this.movedUnseen) ? this.movedUnseen : null;
@@ -994,7 +1015,7 @@ export class BoardSession {
         }
         const wasClosed = this.state.closing?.closed ?? false;
         const closing = changes.closing ?? null;
-        this.set({ view, role: changes.role, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
+        this.set({ view, recounted: { view, ids: recountedIds }, role: changes.role, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
         // Said once, when it changes: the board closed, by hand or by its time, or opened again (M3b-5).
         if ((closing?.closed ?? false) !== wasClosed && !this.closingOwn) this.announce(closing?.closed ? "This board is closed." : "This board is open again.");
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
@@ -1015,6 +1036,42 @@ export class BoardSession {
     } finally {
       this.schedulePoll();
     }
+  }
+
+  /**
+   * What a poll's answer changes, from the rows held before it (M3d-8). Wordings added, or whose words changed, are kept
+   * for Update's ring. It answers the counts that changed because people voted: an argument's importance, unless it
+   * gained or lost an argument combined into it or a wording in this answer, and a wording's articulation, unless it
+   * moved or was edited. An answer older than what's held changes nothing.
+   */
+  private noteChanges(held: ReaderView, changes: BoardChanges): Set<string> {
+    const recounted = new Set<string>();
+    if (changes.seq < held.seq) return recounted;
+    const rows = held.rows;
+    const restructured = new Set<string>();
+    for (const argument of changes.arguments) {
+      const was = rows.arguments[argument.id];
+      if (!was || was.mergedInto === argument.mergedInto) continue;
+      restructured.add(argument.id);
+      if (argument.mergedInto) restructured.add(argument.mergedInto);
+      if (was.mergedInto) restructured.add(was.mergedInto);
+    }
+    for (const version of changes.versions) {
+      const was = rows.versions[version.id];
+      const reworded = was !== undefined && (was.wording !== version.wording || was.context !== version.context);
+      if (!version.deleted && !version.hidden && (!was || (reworded && !was.hidden))) this.changedSinceUpdate.add(version.id);
+      if (!was) continue;
+      if (was.argumentId !== version.argumentId || was.rev !== version.rev) restructured.add(was.argumentId).add(version.argumentId).add(version.id);
+    }
+    for (const argument of changes.arguments) {
+      const was = rows.arguments[argument.id];
+      if (was && !restructured.has(argument.id) && was.importance !== argument.importance) recounted.add(argument.id);
+    }
+    for (const version of changes.versions) {
+      const was = rows.versions[version.id];
+      if (was && !restructured.has(version.id) && was.articulation !== version.articulation) recounted.add(version.id);
+    }
+    return recounted;
   }
 
   private readonly cameOnline = () => {

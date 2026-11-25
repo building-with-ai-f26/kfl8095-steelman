@@ -357,3 +357,7 @@ body { margin:0; }
    hidden. It skips screen readers and the cursor, and clips at the scene's edges. Its motion is Web Animations, so
    reduced motion draws no copy at all. */
 #steelman-study .sm-settling-layer { position:absolute; inset:0; z-index:2; overflow:clip; pointer-events:none; }
+/* The old number of a vote that changed (M3d-8, vote-motion.ts): a copy over the number, which slides out while the
+   new one slides in. It's drawn only while its animation plays, which sets its opacity, so at rest it's invisible and
+   takes no space; it skips screen readers and the cursor, and reduced motion draws no copy at all. */
+#steelman-study .sm-vote-roll { position:absolute; display:grid; place-items:center; box-sizing:border-box; margin:0; opacity:0; pointer-events:none; font-variant-numeric:tabular-nums; }
