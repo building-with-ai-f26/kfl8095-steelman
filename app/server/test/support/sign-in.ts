@@ -99,8 +99,13 @@ export function withCookies(cookie: string | undefined, setCookies: string[]): s
   return [...jar.values()].join("; ");
 }
 
-/** Call once at the top of a test file, after `useTestDatabase`. */
-export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: number; google?: boolean; behindProxy?: boolean } = {}): SignInApi {
+/**
+ * Call once at the top of a test file, after `useTestDatabase`. `origin` is the
+ * site the service believes it is (what APP_ORIGIN sets when deployed); it is
+ * ORIGIN unless a test says otherwise, and the test then acts like a browser on it.
+ */
+export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: number; google?: boolean; behindProxy?: boolean; origin?: string } = {}): SignInApi {
+  const site = options.origin ?? ORIGIN;
   const clock = createFakeClock(new Date(NOON));
   const move = { advance: clock.advance, set: clock.set };
   clock.advance = (milliseconds) => {
@@ -126,7 +131,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
       mode: options.mode ?? "test",
       ...(options.behindProxy ? { behindProxy: true } : {}),
       signIn: {
-        origin: ORIGIN,
+        origin: site,
         // Not a secret: it signs cookies in a throwaway test database only.
         secret: "test-only-signing-key-not-a-secret-0000000000",
         email: outboxEmail(outbox),
@@ -146,7 +151,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
     return app;
   };
 
-  const request: SignInApi["request"] = async (method, url, { cookie, origin = ORIGIN, body, forwardedFor } = {}) => {
+  const request: SignInApi["request"] = async (method, url, { cookie, origin = site, body, forwardedFor } = {}) => {
     const headers: Record<string, string> = {};
     if (forwardedFor !== undefined) headers["x-forwarded-for"] = forwardedFor;
     if (cookie) headers.cookie = cookie;
@@ -175,7 +180,7 @@ export function useSignIn(db: TestDatabase, options: { mode?: Mode; seed?: numbe
   const requestCode: SignInApi["requestCode"] = (email, extra) => request("POST", "/api/auth/email-otp/send-verification-otp", { ...extra, body: { email, type: "sign-in" } });
   const signIn: SignInApi["signIn"] = (email, code) => request("POST", "/api/auth/sign-in/email-otp", { body: { email, otp: code ?? codeFor(email) } });
 
-  const signInWithGoogle: SignInApi["signInWithGoogle"] = async (account, { callbackURL = `${ORIGIN}/`, cookie, finishWith = (cookies: string) => cookies } = {}) => {
+  const signInWithGoogle: SignInApi["signInWithGoogle"] = async (account, { callbackURL = `${site}/`, cookie, finishWith = (cookies: string) => cookies } = {}) => {
     const fake = google;
     if (!fake) throw new Error("Pass { google: true } to useSignIn to sign in with the stand-in for Google");
     const started = await request("POST", "/api/auth/sign-in/social", { cookie, body: { provider: "google", callbackURL } });

@@ -1,4 +1,4 @@
-# Steelman's production environment: GCP project steelman-production, at https://app.steelman-argument.com.
+# Steelman's production environment: GCP project steelman-production, at https://steelman-argument.com.
 # Everything is in ../modules/steelman; infra/README.md says how to apply it.
 
 terraform {
@@ -41,7 +41,7 @@ module "steelman" {
 
   project_id            = "steelman-production"
   environment           = "production"
-  domain                = "app.steelman-argument.com"
+  domain                = "steelman-argument.com"
   google_client_id      = "1029089358609-f0m56dpc56ulpq5vm0l5nct16klg2ope.apps.googleusercontent.com"
   monthly_budget_usd    = 25
   export_bucket_project = "steelman-staging" # the weekly export outlives this project

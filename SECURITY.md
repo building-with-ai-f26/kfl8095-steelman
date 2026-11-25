@@ -6,7 +6,7 @@ This is the Build 3 security audit of Steelman, run on November 22, 2026, in the
 
 Steelman is an app with sign-in. People sign in with Google or a 6-digit code sent by email, and there are no passwords. Boards, wordings, votes, comments, and accounts are stored in Postgres. The app makes no AI calls yet and stores no files.
 
-- **Production:** https://app.steelman-argument.com (Google Cloud project `steelman-production`). It runs the November 23 release, which includes the fixes below.
+- **Production:** https://app.steelman-argument.com (Google Cloud project `steelman-production`), where this audit checked it. It runs the November 23 release, which includes the fixes below. Build plan M3d-12 moves production to https://steelman-argument.com when the builder runs its steps (`infra/README.md`, "Moving production to steelman-argument.com"), and app.steelman-argument.com then forwards there.
 - **Staging:** https://staging.steelman-argument.com (project `steelman-staging`). It runs `main`, and a release copies its image to production unchanged.
 
 Each check below says where it ran. The checks ran on November 22, when production still ran the November 17 release. The builder released `main` to production on November 23, and the two-account test and the fixes were then checked there.
