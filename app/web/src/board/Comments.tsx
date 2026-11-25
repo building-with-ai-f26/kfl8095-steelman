@@ -17,6 +17,14 @@
 // and puts a button before its Cancel link (design-system.service.gov.uk
 // components/button, read live Nov 24).
 //
+// M3b-13 adds Link on every standing comment, between Resolve and Delete as
+// in the prototype, which copies the comment's address and says "Link
+// copied.", the sentence a version's Copy link uses. GitHub ("Copy link") and
+// Google Docs ("Get link to this comment") also offer a comment's address,
+// from memory, not confirmed live. A panel opened by a comment's link starts on that comment:
+// its resolved threads unfolded when its thread is resolved, the comment in
+// view, ringed once, and focused, so a screen reader reads its name.
+//
 // The speech bubble that opens it is here too: on each card, each option's
 // header, and the question's header, named as the prototype names it.
 
@@ -100,10 +108,17 @@ interface CommentsProps {
   onResolve(threadId: string, resolved: boolean): Promise<string | null>;
   /** Deletes the reader's own comment (M3b-12): null once it's deleted, or why it wasn't. */
   onDelete(id: string): Promise<string | null>;
+  /** Copies a comment's address (M3b-13) and says so. */
+  onCopyLink(id: string): void;
+  /** The comment a link opened the panel on (M3b-13), read once, when the panel opens; null when it opened otherwise. */
+  arrive?: string | null;
   /** Says a sentence on the status line. */
   announce(text: string): void;
   onClose(): void;
 }
+
+/** How long the comment a link points to stays ringed, as a version's card does (Board.tsx). */
+const RING_MS = 1_400;
 
 const KINDS = { question: "Question", option: "Option", version: "Version" } as const;
 
@@ -118,7 +133,7 @@ interface Folding {
   reply: CommentRow | null;
 }
 
-export function Comments({ target, view, question, reader, draft, onDraft, onSend, onReply, onResolve, onDelete, announce, onClose }: CommentsProps) {
+export function Comments({ target, view, question, reader, draft, onDraft, onSend, onReply, onResolve, onDelete, onCopyLink, arrive = null, announce, onClose }: CommentsProps) {
   const drawer = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const replyField = useRef<HTMLTextAreaElement>(null);
@@ -136,7 +151,13 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
   // The form and its text as last drawn, so a reply that's added doesn't take away what was typed while it was sent.
   const latestReply = useRef({ to: replyTo, draft: replyDraft });
   latestReply.current = { to: replyTo, draft: replyDraft };
-  const [showResolved, setShowResolved] = useState(false);
+  const kind = target === "question" ? "question" : "optionId" in target ? "option" : "version";
+  const about = target === "question" ? question : "optionId" in target ? (view.rows.options[target.optionId]?.name ?? "") : (view.rows.versions[target.versionId]?.wording ?? "This version was removed.");
+  const all = threadsOn(view.rows, target);
+  // A link to a comment in a resolved thread opens with the resolved threads shown, as the prototype's openLink does.
+  const [showResolved, setShowResolved] = useState(() => arrive !== null && all.some((thread) => thread.comment.resolved && [thread.comment, ...thread.replies].some((c) => c.id === arrive)));
+  /** The comment a link points to, ringed for a moment when the panel opens. */
+  const [ringed, setRinged] = useState(arrive);
   /** The comment whose Delete is asking first. */
   const [confirming, setConfirming] = useState<string | null>(null);
   /** Why Resolve, Reopen, or Delete didn't happen, under that comment. */
@@ -145,9 +166,6 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
   const [focus, setFocus] = useState<{ selector: string } | null>(null);
   const busy = useRef(false);
 
-  const kind = target === "question" ? "question" : "optionId" in target ? "option" : "version";
-  const about = target === "question" ? question : "optionId" in target ? (view.rows.options[target.optionId]?.name ?? "") : (view.rows.versions[target.versionId]?.wording ?? "This version was removed.");
-  const all = threadsOn(view.rows, target);
   // A thread with its reply form or a Delete question open stays where it is, even when someone resolves it
   // meanwhile, so the draft and the sentence that says why it wasn't added stay in view, beside the thread's Reopen,
   // and the cursor isn't lost.
@@ -247,12 +265,21 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
     onClose();
   };
   useEffect(() => {
-    field.current?.focus();
+    // Opened by a comment's link, the comment takes the cursor, in the middle of the threads; otherwise the box does.
+    const linked = arrive ? body.current?.querySelector<HTMLElement>(`[data-comment="${CSS.escape(arrive)}"]`) : null;
+    if (linked) {
+      linked.scrollIntoView({ block: "center" });
+      linked.focus({ preventScroll: true });
+    } else field.current?.focus();
+    const ring = arrive ? window.setTimeout(() => setRinged(null), RING_MS) : undefined;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented && drawer.current?.contains(document.activeElement)) escape.current();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(ring);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   const submit = async () => {
@@ -383,6 +410,7 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
           reply: !reply && !thread.comment.resolved ? () => openReply(thread.comment.id) : undefined,
           resolve: !reply ? () => void resolve(thread.comment.id, !thread.comment.resolved) : undefined,
           resolved: thread.comment.resolved,
+          link: () => onCopyLink(comment.id),
           delete: comment.authorId === reader ? () => askDelete(comment.id) : undefined,
         }
       : null;
@@ -394,6 +422,8 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
         reply={reply}
         fresh={reply && !ghost && !seen.has(comment.id) && seen.has(thread.comment.id)}
         ghost={ghost}
+        linked={!ghost && comment.id === arrive}
+        ringed={!ghost && comment.id === ringed}
         actions={actions}
         asking={!ghost && confirming === comment.id ? { yes: () => void confirmDelete(comment.id), no: () => cancelDelete(comment.id) } : null}
         problem={!ghost && actionProblem?.id === comment.id ? actionProblem.text : null}
@@ -550,6 +580,8 @@ interface CommentActions {
   resolve?: () => void;
   /** Whether its thread is resolved, so the button says Reopen. */
   resolved: boolean;
+  /** Copies the comment's address (M3b-13): on every standing comment. */
+  link?: () => void;
   delete?: () => void;
 }
 
@@ -563,6 +595,8 @@ function CommentItem({
   reply = false,
   fresh = false,
   ghost = false,
+  linked = false,
+  ringed = false,
   actions = null,
   asking = null,
   problem = null,
@@ -573,6 +607,10 @@ function CommentItem({
   fresh?: boolean;
   /** A copy folding away: its buttons are drawn, but carry nothing the panel looks for. */
   ghost?: boolean;
+  /** The comment a link opened the panel on, which can take the cursor (M3b-13). */
+  linked?: boolean;
+  /** Ringed for a moment, as the comment a link points to. */
+  ringed?: boolean;
   actions?: CommentActions | null;
   asking?: { yes(): void; no(): void } | null;
   problem?: string | null;
@@ -582,7 +620,12 @@ function CommentItem({
   const text = comment.deleted ? "This comment was deleted." : comment.body === null ? "A moderator hid this comment." : comment.body;
   const asked = `sm-confirm-${comment.id}`;
   return (
-    <article className={`sm-comment${reply ? " sm-reply" : ""}${fresh ? " sm-comment-new" : ""}`} data-comment={ghost ? undefined : comment.id} aria-label={comment.deleted ? "Deleted comment" : `Comment by ${who}`}>
+    <article
+      className={`sm-comment${reply ? " sm-reply" : ""}${fresh ? " sm-comment-new" : ""}${ringed ? " sm-arrived" : ""}`}
+      data-comment={ghost ? undefined : comment.id}
+      tabIndex={linked ? -1 : undefined}
+      aria-label={comment.deleted ? "Deleted comment" : `Comment by ${who}`}
+    >
       <header>
         <span className={`sm-avatar${mine ? " sm-you" : ""}`} aria-hidden="true">
           {initials(comment.authorName)}
@@ -605,7 +648,7 @@ function CommentItem({
             Cancel
           </button>
         </div>
-      ) : actions && (actions.reply || actions.resolve || actions.delete) ? (
+      ) : actions && (actions.reply || actions.resolve || actions.link || actions.delete) ? (
         <div className="sm-comment-actions">
           {actions.reply ? (
             <button type="button" className="sm-link-button cursor-interaction" data-reply={ghost ? undefined : comment.id} onClick={actions.reply}>
@@ -615,6 +658,11 @@ function CommentItem({
           {actions.resolve ? (
             <button type="button" className="sm-link-button cursor-interaction" onClick={actions.resolve}>
               {actions.resolved ? "Reopen" : "Resolve"}
+            </button>
+          ) : null}
+          {actions.link ? (
+            <button type="button" className="sm-link-button cursor-interaction" data-link={ghost ? undefined : comment.id} onClick={actions.link}>
+              Link
             </button>
           ) : null}
           {actions.delete ? (

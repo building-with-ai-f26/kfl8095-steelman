@@ -236,6 +236,13 @@ export interface CommentRow {
 }
 
 /**
+ * Where a link to a comment leads (M3b-13, D-01, M-06), as GET /api/boards/:board/comments/:id answers it: the
+ * comment stands, it was deleted (or never was on this board), or its wording or option is gone. Only the state, never
+ * the comment's text or author.
+ */
+export type CommentLinkState = "stands" | "deleted" | "subject_removed";
+
+/**
  * One entry in a board's History (M3a-4, J-03): who did what, when, to what, and why; never what anyone wrote. Most
  * are rows of the change log. A new argument or wording has no such row, so its entry is built from the wording's
  * own row (`argument_added`, `wording_added`; the subject is the wording).

@@ -5,8 +5,8 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardOrder, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addComment, addOption, deleteComment, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import type { Access, BoardOrder, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import { Unreachable, addComment, addOption, deleteComment, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -68,6 +68,11 @@ export interface SessionState {
   role: Role | null;
   /** Whether the board is closed and when, as the service last said (M3b-5); null when it's open with no closing time. */
   closing: Closing | null;
+  /**
+   * What the service said of the comment the board's link points to (M3b-13), asked once, as the board opens, and only
+   * when the board didn't send that comment; null otherwise.
+   */
+  commentLink: CommentLinkState | null;
   /** Wordings the reader assessed after they changed, so the assessment wasn't counted: until they assess again. */
   stale: readonly string[];
   /** The reader's own deletions, kept off the screen (leaveOut): held for Undo, on their way, or back. */
@@ -103,6 +108,7 @@ export class BoardSession {
     access: null,
     role: null,
     closing: null,
+    commentLink: null,
     stale: [],
     leftOut: [],
     undo: null,
@@ -139,7 +145,11 @@ export class BoardSession {
   /** Counts the owner's changes, so a poll that started before one doesn't put the old access back. */
   private shareCount = 0;
 
-  constructor(private readonly board: string) {}
+  /** @param comment The comment the board's link points to (M3b-13), if it was a comment's link. */
+  constructor(
+    private readonly board: string,
+    private readonly comment: string | null = null,
+  ) {}
 
   // ── For React (useSyncExternalStore) ──
   subscribe = (listener: () => void) => {
@@ -171,7 +181,7 @@ export class BoardSession {
     window.addEventListener("pagehide", this.pageHide);
     document.addEventListener("visibilitychange", this.visibilityChanged);
     try {
-      const snapshot = await readBoard(this.board);
+      const snapshot = await this.firstRead();
       if (this.stopped) return;
       if (!this.opened(snapshot)) return;
     } catch (error) {
@@ -180,6 +190,19 @@ export class BoardSession {
       this.set({ offline: true });
     }
     this.schedulePoll();
+  }
+
+  /**
+   * The board's first read. For a comment's link (M3b-13) whose comment the board didn't send, the service is also
+   * asked where it leads, since it sends no comment whose subject is gone; the answer is in place before the board
+   * shows, so the board opens on the right note at once.
+   */
+  private async firstRead(): Promise<(BoardSnapshot & Standing) | Closed> {
+    const snapshot = await readBoard(this.board);
+    const comment = this.comment;
+    if (typeof snapshot === "string" || comment === null || (snapshot.comments ?? []).some((row) => row.id === comment)) return snapshot;
+    this.state = { ...this.state, commentLink: await readCommentLink(this.board, comment) };
+    return snapshot;
   }
 
   /** Shows the board just read, or why it can't be. Returns whether it's showing. */
@@ -899,7 +922,7 @@ export class BoardSession {
     window.clearTimeout(this.pollTimer);
     try {
       if (this.state.phase === "loading") {
-        if (!this.opened(await readBoard(this.board))) return;
+        if (!this.opened(await this.firstRead())) return;
       } else if (this.state.view) {
         const shares = this.shareCount;
         // Only what was sent before asking is in the answer: what's sent meanwhile stays the reader's until a later one.
