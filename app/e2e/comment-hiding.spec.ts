@@ -273,6 +273,8 @@ for (const width of [1280, 375]) {
     await board.api("maya.chen").put(`comments/${hidden}/hidden`, { reason: "spam" });
     await board.setRole("jordan_w", "editor");
     const scan = async (page: Page) => {
+      // Scan what the reader settles on, not a frame of a rise-in (as M3b-12's scan does).
+      await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
