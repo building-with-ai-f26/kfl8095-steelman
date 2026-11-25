@@ -38,6 +38,7 @@ export type {
   Access,
   ArgumentRow,
   CombinePreview,
+  CommentLinkState,
   CommentRow,
   BoardChanges,
   BoardList,

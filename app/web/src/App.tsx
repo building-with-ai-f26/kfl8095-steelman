@@ -21,7 +21,7 @@ import type { TestUser } from "./testUser.ts";
 import { forgetPlaces } from "./places.ts";
 
 /**
- * Links look like /b/<board ID>, or /b/<board ID>/v/<version ID> (links.ts).
+ * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
  * Anything outside /b/ is the home page, the list of your steelmen (E-03),
  * except New steelman's sheet (F-01), at /new.
  */
@@ -73,7 +73,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
           )}
         >
           {link.kind === "board" ? (
-            <Board boardId={link.board} version={link.version} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
+            <Board boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
           ) : link.kind === "account" ? (
             <Account />
           ) : link.kind === "unknown" ? (

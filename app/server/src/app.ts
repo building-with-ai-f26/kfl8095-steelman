@@ -47,7 +47,7 @@ import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
-import { addComment, deleteComment, reopenThread, resolveThread } from "./comments.ts";
+import { addComment, commentLink, deleteComment, reopenThread, resolveThread } from "./comments.ts";
 import { hideWording, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { renameQuestion } from "./settings.ts";
@@ -612,6 +612,14 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = newCommentInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await addComment(services, request.params.board, request.person, body.data));
+  });
+
+  // Where a comment's link leads (M3b-13, D-01, M-06): its state only, for anyone who can read the board. It answers 200
+  // for an unknown comment too, so following a link to one logs no failed request in the browser.
+  app.get<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    return { comment: await commentLink(db, request.params.board, request.params.id) };
   });
 
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) =>
