@@ -132,6 +132,8 @@ export class BoardSession {
   private updates = 0;
   /** The reader's own combine or separation the rows don't show yet (the read after it failed): the wording that moved. */
   private movedUnseen: string | null = null;
+  /** Told before the reader's own combine, separation, or its undo is sent, and just before it shows (M3d-7). */
+  private moveListeners = new Set<(versionId: string, next: ReaderView | null) => void>();
   private tooManyTimer: number | undefined;
   /** Polls since the tab was hidden. */
   private hiddenPolls = 0;
@@ -157,6 +159,23 @@ export class BoardSession {
     return () => this.listeners.delete(listener);
   };
   snapshot = () => this.state;
+
+  /**
+   * Calls the listener twice for the reader's own combine, separation, or its undo, from the bar or from History
+   * (M3d-7): with the wording's ID and null as it's sent, while the screen still shows the wording where it was, and
+   * with the view about to be shown just before it's shown. One the service refuses gets only the first call. Other
+   * people's changes, and Update, never call it.
+   */
+  onMove = (listener: (versionId: string, next: ReaderView | null) => void) => {
+    this.moveListeners.add(listener);
+    return () => {
+      this.moveListeners.delete(listener);
+    };
+  };
+
+  private willMove(versionId: string, next: ReaderView | null): void {
+    for (const listener of this.moveListeners) listener(versionId, next);
+  }
 
   private set(change: Partial<SessionState>): void {
     this.state = { ...this.state, ...change };
@@ -577,6 +596,7 @@ export class BoardSession {
     this.endRestructured();
     const updates = this.updates;
     const shownBefore = this.state.view?.shown ?? null;
+    this.willMove(versionId, null);
     const answer = await this.ask(request);
     if (!answer) return false;
     await this.refresh();
@@ -589,6 +609,7 @@ export class BoardSession {
     this.movedUnseen = unseen ? versionId : null;
     // The reader's own change shows at once, as their deletion does; others see it on their next Update.
     const moved = unseen ? view : showMoved(view, versionId);
+    if (!unseen) this.willMove(versionId, moved);
     const version = moved.rows.versions[versionId];
     const argument = version ? moved.rows.arguments[version.argumentId] : undefined;
     if (answer.status !== "done") {
@@ -614,6 +635,7 @@ export class BoardSession {
     if (!held) return false;
     this.endRestructured();
     const updates = this.updates;
+    this.willMove(held.versionId, null);
     const answer = await this.ask(() => undoChange(this.board, held.seq));
     if (!answer) {
       // Not taken: the bar comes back for another ten seconds, so there's still a way to try again.
@@ -640,7 +662,9 @@ export class BoardSession {
       return;
     }
     this.movedUnseen = null;
-    this.set({ view: before ? putBack(view, before) : showMoved(view, versionId) });
+    const next = before ? putBack(view, before) : showMoved(view, versionId);
+    this.willMove(versionId, next);
+    this.set({ view: next });
   }
 
   /**
@@ -651,6 +675,7 @@ export class BoardSession {
     if (this.state.restructured?.seq === seq) return this.undoRestructure();
     // Another change's undo: the bar's screen from before is out of date now, so the bar goes.
     this.endRestructured();
+    this.willMove(versionId, null);
     const answer = await this.ask(() => undoChange(this.board, seq));
     if (!answer) return false;
     await this.refresh();
@@ -961,9 +986,11 @@ export class BoardSession {
         const logSeq = Math.max(this.state.logSeq, ...changes.log.map((row) => row.seq));
         let view = receive(this.state.view, changes);
         // The reader's own move, whose rows a failed read kept back: shown as theirs now, not marked as someone else's.
-        if (this.movedUnseen !== null && changes.versions.some((version) => version.id === this.movedUnseen)) {
-          view = showMoved(view, this.movedUnseen);
+        const movedNow = this.movedUnseen !== null && changes.versions.some((version) => version.id === this.movedUnseen) ? this.movedUnseen : null;
+        if (movedNow !== null) {
+          view = showMoved(view, movedNow);
           this.movedUnseen = null;
+          this.willMove(movedNow, view);
         }
         const wasClosed = this.state.closing?.closed ?? false;
         const closing = changes.closing ?? null;

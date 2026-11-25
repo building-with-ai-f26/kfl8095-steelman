@@ -5,7 +5,10 @@
 // and nothing else moves them. What the reader adds rises in, and what they
 // delete leaves through a copy of its card (M3d-4, Leaving.tsx). Compare and
 // Fold unfold and fold a row, and a card's details ease open and shut
-// (M3d-5, unfold.ts).
+// (M3d-5, unfold.ts). The reader's own combine, separation, and their Undo
+// settle in place: the wording fades out where it was, a stack's count
+// settles, and a new row rises in, while the rows below take their places at
+// once (M3d-7, settle.ts).
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -18,6 +21,7 @@
 // panel is open, as the prototype keeps c= in its address.
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { OPTIONS_PER_BOARD, can, cleanText, leaveOut, openCount } from "@steelman/shared";
 import type { ArgumentRow, CaseItem, CommentLinkState, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
@@ -59,6 +63,8 @@ import { Texture } from "./Texture.tsx";
 import { Wires, redrawWhile } from "./Wires.tsx";
 import { beforeToggle, holdReveal, playReveal, playToggle, stopRowMotion } from "./unfold.ts";
 import type { RowToggle } from "./unfold.ts";
+import { beforeSettle, playSettle, readySettle, stopSettling } from "./settle.ts";
+import type { Settling } from "./settle.ts";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
 const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
@@ -602,6 +608,27 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const rowToggle = useRef<RowToggle | null>(null);
   /** The card details the reader just opened, and a copy of the ones that just closed (M3d-5). */
   const detail = useRef<{ opened: string | null; closing: ReturnType<typeof holdReveal> } | null>(null);
+  /** The reader's own combine, separation, or Undo of one, as the screen was when it was sent (M3d-7). */
+  const settling = useRef<Settling | null>(null);
+  useEffect(
+    () =>
+      session.onMove((versionId, next) => {
+        const root = scene.current;
+        const was = session.snapshot().view;
+        const sent = settling.current?.versionId === versionId ? settling.current : null;
+        if (!root || !was) settling.current = null;
+        else if (next === null) {
+          // The session has just taken away an earlier move's Undo bar, and the dialog has just closed: React draws
+          // that first, so that the wording's card is measured where the reader sees it next.
+          flushSync(() => undefined);
+          settling.current = beforeSettle(root, versionId, was.shown);
+        } else {
+          const taken = sent ?? beforeSettle(root, versionId, was.shown);
+          settling.current = taken ? readySettle(root, taken, was, next) : null;
+        }
+      }),
+    [session],
+  );
 
   // Compare and Fold unfold and fold the row from where it was drawn, and a card's wording or chevron eases its
   // details open or shut (M3d-5). Only the reader's own toggles leave anything behind for this, so the tour, a link,
@@ -659,6 +686,17 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
       arrival.queued ||= queued;
       measure(arrival);
     }
+  });
+
+  // The reader's own combine or separation, or its Undo from the bar or History, settles in place once the session
+  // shows it (M3d-7). Nothing is left behind for other people's changes or Update, so those never play this.
+  useLayoutEffect(() => {
+    const move = settling.current;
+    // Until the move is about to show, and while the session still holds the view it replaces, there's nothing to play.
+    if (!move?.next || state.view === move.was) return;
+    settling.current = null;
+    const root = scene.current;
+    if (root && state.view === move.next) redrawWhile(playSettle(root, move));
   });
 
   useEffect(() => {
@@ -816,8 +854,13 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   };
 
   const update = () => {
-    // A row still unfolding or folding stops first, so that the shuffle measures it where it lies (M3d-5).
+    // A row still unfolding or folding stops first, so that the shuffle measures it where it lies (M3d-5), and so does
+    // a combine or separation still settling (M3d-7).
     stopRowMotion(scene.current);
+    stopSettling(scene.current);
+    // A move still being sent forgets the screen it was sent from, which the shuffle redraws: once it shows, it plays
+    // from the screen as Update left it, and copies no card from where it was before.
+    settling.current = null;
     anchor.current = readingAnchor(open);
     if (scene.current) shuffle.current = captureRects(scene.current);
     const gone = writing?.kind === "wording" ? view.rows.arguments[writing.argumentId] : undefined;
@@ -994,7 +1037,9 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
                   gap={index > 0}
                   open={open}
                   onToggle={(id) => {
-                    // The screen as it's drawn now, which the unfold or fold starts from (M3d-5).
+                    // The screen as it's drawn now, which the unfold or fold starts from (M3d-5), once a row still
+                    // rising in from a separation stands at its place (M3d-7).
+                    stopSettling(scene.current);
                     rowToggle.current = scene.current ? beforeToggle(scene.current, open, id) : null;
                     // Folding a row closes the version open in it, unless it's the one still showing.
                     if (open === id && openVersion !== null && (view.shown.versions[id] ?? []).indexOf(openVersion) > 0) setExpanded(null);
@@ -1040,6 +1085,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
         <LeavingCopies leaving={leaving} onLeft={left} />
         {/* A folding row's versions, copied where they were, slide back into its lead card here (M3d-5, unfold.ts). */}
         <div className="sm-folding-layer ph-no-capture" aria-hidden="true" inert />
+        {/* The wording a combine or separation took away fades out where it was, copied here (M3d-7, settle.ts). */}
+        <div className="sm-settling-layer ph-no-capture" aria-hidden="true" inert />
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
       {/* The pill sits above everything, so it waits for the tour: Update would move the cards the tour points at. */}
