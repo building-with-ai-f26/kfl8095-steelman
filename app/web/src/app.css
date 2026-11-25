@@ -258,6 +258,12 @@ body { margin:0; }
 #steelman-study .sm-comments-body .sm-comment-confirm { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:8px 0 0 29px; font-size:12px; font-weight:600; }
 #steelman-study .sm-comments-body .sm-comment-confirm .sm-button { min-height:28px; padding:0 10px; font-size:12px; font-weight:600; }
 #steelman-study .sm-comments-body .sm-comment .sm-comment-problem { margin:6px 0 0 29px; font-size:12px; }
+/* The comment a link points to (M3b-13) is ringed as a linked card is, then the ring fades once, over the 1.4 s the
+   ring lasts; with reduced motion it stays still for that time instead. It takes the cursor without the focus outline,
+   as the no-access card's title does (M3a-9), since a page that opens on it hasn't been used by keyboard yet. */
+#steelman-study .sm-comments-body .sm-comment[tabindex="-1"]:focus:not(.sm-arrived) { outline:none; }
+#steelman-study .sm-comments-body .sm-comment.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; border-radius:4px; animation:sm-comment-ring 1400ms var(--sm-ease) both; }
+@keyframes sm-comment-ring { 0% { outline-color:transparent; } 20% { outline-color:var(--sm-ink); } 100% { outline-color:transparent; } }
 /* A thread resolved or deleted, or a reply deleted, folds away (Comments.tsx keeps a copy for it); with reduced motion
    there is no copy. The copy's height closes to nothing, and the gap after it with it. */
 #steelman-study .sm-comments-body .sm-fold { display:grid; grid-template-rows:1fr; overflow:hidden; pointer-events:none; animation:sm-fold 220ms var(--sm-ease) forwards; }
