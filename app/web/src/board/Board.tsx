@@ -10,7 +10,10 @@
 // settles, and a new row rises in, while the rows below take their places at
 // once (M3d-7, settle.ts). A reader may hide a column, or show only one
 // (M3d-6, hidden-columns.ts): it folds to a strip that brings it back, and
-// the columns ease to their new widths.
+// the columns ease to their new widths. Switching between Board and
+// Strongest case scales the scene from the centred card, and Escape on
+// Strongest case goes back to Board; a board opened from the list grows out
+// of its post's miniature (M3d-9, zoom.ts).
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -69,6 +72,8 @@ import { argumentCount, argumentsLabel, firstVisible, hiddenOf, readHidden, save
 import type { ColumnViewItems } from "./OptionMenu.tsx";
 import type { RowToggle } from "./unfold.ts";
 import { beforeSettle, playSettle, readySettle, stopSettling } from "./settle.ts";
+import { growFrom, zoomInto } from "./zoom.ts";
+import { noteAddress, showBoard, takeOpening } from "../opening.ts";
 import type { Settling } from "./settle.ts";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
@@ -83,7 +88,8 @@ interface BoardProps {
   /** The comment the link that opened the board points to (M3b-13). */
   comment?: string | null;
   zoom?: Zoom;
-  onZoom?(zoom: Zoom): void;
+  /** Switches views: from the card given (the one Strongest case opens), or else the centred card (M3d-9). */
+  onZoom?(zoom: Zoom, card?: string | null): void;
   /** Told when the board itself is on screen, and when it's gone: the switch shows only then. */
   onShown?(shown: boolean): void;
 }
@@ -94,6 +100,9 @@ export function Board({ boardId, version = null, comment = null, zoom = "read", 
     void session.start();
     return () => session.stop();
   }, [session]);
+  // Back and the wordmark leave the board inside the page only while nothing waits to send (M3d-9). The session says
+  // so in every phase, since one signed out or refused by a poll can still hold actions.
+  useEffect(() => showBoard(boardId, () => session.quiet()), [boardId, session]);
   const state = useSyncExternalStore(session.subscribe, session.snapshot);
   // The reader's own deletions are off the screen at once: wordings, and options (M3a-2).
   const view = useMemo(() => (state.view ? leaveOptionsOut(leaveOut(state.view, state.leftOut), state.optionsLeftOut) : null), [state.view, state.leftOut, state.optionsLeftOut]);
@@ -115,7 +124,7 @@ interface BoardViewProps {
   state: SessionState;
   session: BoardSession;
   zoom: Zoom;
-  onZoom(zoom: Zoom): void;
+  onZoom(zoom: Zoom, card?: string | null): void;
   onShown(shown: boolean): void;
 }
 
@@ -544,6 +553,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   useEffect(() => {
     const path = linkedPath ?? (openVersion ? versionPath(boardId, openVersion) : boardPath(boardId));
     if (window.location.pathname !== path) window.history.replaceState(window.history.state, "", path + window.location.search + window.location.hash);
+    // Back with actions waiting puts this address back before the page loads (M3d-9).
+    noteAddress(boardId, window.location.pathname + window.location.search + window.location.hash);
   }, [boardId, openVersion, linkedPath]);
 
   // A link's version comes into view and rings; a link to one that's gone puts the cursor on its note.
@@ -851,6 +862,15 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     onShown(true);
     return () => onShown(false);
   }, [onShown]);
+  // Opened from the list, the board grows out of its post's miniature (M3d-9) and says which board it is.
+  const surface = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const from = takeOpening(boardId);
+    if (!from) return;
+    if (surface.current) redrawWhile([growFrom(surface.current, from)]);
+    session.announce(`Opened “${state.question}”.`);
+    // Once, when the board first shows.
+  }, []);
   // Where Your account and the other detours lead back to (M3a-1): this board, at the version open as it's left.
   useEffect(() => rememberPlace(() => ({ path: window.location.pathname, name: state.question })), [state.question]);
   // Switching views says where the reader is now. Strongest case closes what's open on the board, as the
@@ -869,6 +889,31 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     setDragging(null);
     session.announce(`${editing ? "Your changes were discarded. " : ""}Strongest case: each option’s most important arguments, in their best wording. Choose one to open it on the board.`);
   }, [zoom, session, writing]);
+  // Switching views scales the scene from the centred card (M3d-9). It plays once the cursor and the arrival's scroll
+  // have put the new view where it's drawn without motion, so that it ends there.
+  const zoomShown = useRef(zoom);
+  const escaped = useRef(false);
+  useEffect(() => {
+    if (zoomShown.current === zoom) return;
+    zoomShown.current = zoom;
+    if (scene.current) redrawWhile([zoomInto(scene.current, zoom)]);
+    if (escaped.current) document.querySelector<HTMLElement>(".sm-zoom [aria-pressed='true']")?.focus({ preventScroll: true });
+    escaped.current = false;
+  }, [zoom]);
+  // Escape on Strongest case returns to Board, with the cursor on the View switch, unless it closes something else.
+  useEffect(() => {
+    if (zoom !== "case") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest('[role="menu"], [role="dialog"], [aria-expanded="true"], .sm-drawer, input, textarea, select')) return;
+      event.preventDefault();
+      escaped.current = true;
+      onZoom("read");
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [zoom, onZoom]);
   /** Choosing an argument in Strongest case opens its wording on the board, its row unfolded if the wording doesn't lead it there. */
   const openFromCase = (item: CaseItem) => void showVersion(item.versionId);
   /**
@@ -891,7 +936,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     reveal(view.rows.arguments[argumentId]!.optionId);
     setArrived(versionId);
     setFocusTo(cardControl(versionId, "claim"));
-    onZoom("read");
+    onZoom("read", versionId);
     return true;
   };
 
@@ -1021,7 +1066,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   };
 
   return (
-    <div className="sm-surface">
+    <div ref={surface} className="sm-surface">
       {/* What a faded control says to a screen reader: each names one of these by aria-describedby. */}
       {Object.values(WHY).map(({ why, noteId }) => (
         <span key={noteId} id={noteId} hidden>

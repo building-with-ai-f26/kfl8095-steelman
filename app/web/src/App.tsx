@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Account } from "./Account.tsx";
 import { Hints } from "./Hints.tsx";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
@@ -6,7 +6,7 @@ import { Board } from "./board/Board.tsx";
 import type { Zoom } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
 import { Home } from "./Home.tsx";
-import { NEW_PATH, readLink } from "./links.ts";
+import { NEW_PATH, boardPath, readLink } from "./links.ts";
 import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
@@ -19,22 +19,88 @@ import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
 import { forgetPlaces } from "./places.ts";
+import { cameFromList, forgetOpening, lastAddress, leavesQuietly, noteReturn, plainClick } from "./opening.ts";
+import { beforeZoom, holdBoard, putAway } from "./board/zoom.ts";
 
 /**
  * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
  * Anything outside /b/ is the home page, the list of your steelmen (E-03),
  * except New steelman's sheet (F-01), at /new.
+ *
+ * A board opened from the list by a plain click, and the way back to the list
+ * from it, change the page inside this one, with the browser's history
+ * (M3d-9, opening.ts), so that the board grows out of its miniature and
+ * shrinks back into it. Every other way between pages loads the page.
  */
-export function App({ path = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
+export function App({ path: first = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
+  const [path, setPath] = useState(first);
   const link = readLink(path);
   const board = link.kind === "board" ? link.board : undefined;
   /** The board's view (E-01): the whole board, or each option's strongest case. */
   const [zoom, setZoom] = useState<Zoom>("read");
   /** The switch shows only while a board is on screen, not on its not-found or no-access page. */
   const [boardShown, setBoardShown] = useState(false);
-  // The wordmark leads home, to the list of your steelmen (E-03), as the prototype's does.
+  const shownPath = useRef(path);
+  shownPath.current = path;
+  const zoomShown = useRef(zoom);
+  zoomShown.current = zoom;
+  /** Each page opens on the whole board, as a page load does. */
+  const show = useCallback((next: string) => {
+    setPath(next);
+    setZoom("read");
+  }, []);
+  /** Switching views scales the scene from the centred card, or from the card Strongest case opens (M3d-9). */
+  const zoomTo = useCallback((level: Zoom, card: string | null = null) => {
+    if (zoomShown.current === level) return;
+    beforeZoom(level, card);
+    setZoom(level);
+  }, []);
+  /** A post's question opens its board inside the page, with its own entry in the browser's history. */
+  const open = useCallback(
+    (next: string) => {
+      putAway();
+      window.history.pushState(null, "", next);
+      // A board opens at its top, as a page load opens it.
+      window.scrollTo(0, 0);
+      show(next);
+    },
+    [show],
+  );
+  // Back and Forward between the list and a board opened from it. A board with actions waiting is left by loading
+  // the page, so the browser asks first (Q20): its address goes back, and the page then loads the one asked for.
+  useEffect(() => {
+    const popped = () => {
+      const was = readLink(shownPath.current);
+      const next = window.location.pathname;
+      const going = readLink(next);
+      forgetOpening();
+      putAway();
+      if (was.kind === "board" && !(going.kind === "board" && going.board === was.board)) {
+        if (!leavesQuietly()) {
+          window.history.pushState(null, "", lastAddress(was.board) ?? boardPath(was.board));
+          window.location.assign(next);
+          return;
+        }
+        if (going.kind === "home" && cameFromList(was.board)) noteReturn(was.board, holdBoard(was.board));
+      }
+      show(next);
+    };
+    window.addEventListener("popstate", popped);
+    return () => window.removeEventListener("popstate", popped);
+  }, [show]);
+  // The wordmark leads home, to the list of your steelmen (E-03), as the prototype's does. From a board opened from
+  // the list it goes back there, as Back does, so that the board shrinks into its post.
   const wordmark = (
-    <a className="sm-wordmark" href="/" aria-label="steelman. Your steelmen">
+    <a
+      className="sm-wordmark"
+      href="/"
+      aria-label="steelman. Your steelmen"
+      onClick={(event) => {
+        if (!board || !plainClick(event) || !cameFromList(board) || !leavesQuietly()) return;
+        event.preventDefault();
+        window.history.back();
+      }}
+    >
       <Logo />
       {/* On a phone the prototype shows only the logo while a board is open, leaving room for the view switch. */}
       <span className="sm-wordmark-text">steelman.</span>
@@ -55,7 +121,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
             <header className="sm-site">
               {wordmark}
               <div className="sm-site-tools">
-                {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={setZoom} /> : null}
+                {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={zoomTo} /> : null}
                 {signedIn && (board || link.kind === "home") ? (
                   <a className="sm-share-button cursor-interaction" href={NEW_PATH} aria-label="New steelman">
                     <Icon name="plus" size={14} />
@@ -73,7 +139,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
           )}
         >
           {link.kind === "board" ? (
-            <Board boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={setZoom} onShown={setBoardShown} />
+            <Board key={link.board} boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={zoomTo} onShown={setBoardShown} />
           ) : link.kind === "account" ? (
             <Account />
           ) : link.kind === "unknown" ? (
@@ -81,7 +147,7 @@ export function App({ path = typeof window === "undefined" ? "/" : window.locati
           ) : link.kind === "new" ? (
             <NewSteelman />
           ) : (
-            <Home />
+            <Home onOpen={open} />
           )}
         </SignedIn>
       )}

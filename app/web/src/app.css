@@ -361,3 +361,5 @@ body { margin:0; }
    new one slides in. It's drawn only while its animation plays, which sets its opacity, so at rest it's invisible and
    takes no space; it skips screen readers and the cursor, and reduced motion draws no copy at all. */
 #steelman-study .sm-vote-roll { position:absolute; display:grid; place-items:center; box-sizing:border-box; margin:0; opacity:0; pointer-events:none; font-variant-numeric:tabular-nums; }
+/* A board's copy shrinking into its post on the list (M3d-9, zoom.ts): over the window, never in the reader's way. */
+#steelman-study .sm-closing-layer { position:fixed; inset:0; z-index:60; overflow:clip; pointer-events:none; }
