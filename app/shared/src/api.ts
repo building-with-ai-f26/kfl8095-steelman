@@ -224,14 +224,16 @@ export interface CommentRow {
   /** Who wrote it, by ID and username: "deleted_account" once they have deleted their account. */
   authorId: string;
   authorName: string;
-  /** Null once deleted, since the text is erased, and while hidden. */
+  /** Null once deleted, since the text is erased; while hidden, null for anyone below Editor (M3b-14). */
   body: string | null;
   createdAt: string;
   /** Set on a thread's first comment while the thread is resolved. */
   resolved: boolean;
   deleted: boolean;
-  /** Hidden by a moderator. Nothing hides a comment until M3b-14, which decides who reads its text. */
+  /** Hidden by an Editor or the Owner (M3b-14), who still read its text; nobody else does. */
   hidden: boolean;
+  /** Why it was hidden, one of the report reasons; left out when it isn't hidden, or was hidden without one. */
+  hiddenReason?: ReportReason;
   changedSeq: number;
 }
 
@@ -415,7 +417,11 @@ export type RefusalReason =
   /** The thread was resolved, so a reply to it isn't added (M3b-9, architecture §3). */
   | "thread_resolved"
   /** The thread's first comment was deleted by its author or hidden by a moderator, so it takes no reply, resolve, or reopen (M3b-9). */
-  | "thread_deleted";
+  | "thread_deleted"
+  /** An Editor or the Owner doesn't hide, or restore, a comment of their own (M3b-14). */
+  | "own_comment"
+  /** A comment its author deleted can't be hidden or restored: its text is erased already (M3b-14). */
+  | "comment_deleted";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

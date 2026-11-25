@@ -15,6 +15,12 @@
 // and panel will use (M3b-11 to M3b-14), and check 4 lets a comment through
 // at or below the reader's change number only when History's Restore brought
 // its subject back in that answer.
+//
+// Hiding and restoring a comment (M3b-14, D-01, J-02) are steps too, Ana's
+// alone, as a moderator's are, and refused on a closed board. With them comes
+// a check of their own, numbered with check 10 since it guards the same rule
+// for comments: no hidden comment's text reaches anyone but an Editor or the
+// Owner, in a snapshot or in changes.
 
 import fc from "fast-check";
 import type pg from "pg";
@@ -41,7 +47,7 @@ export interface ServerCode {
   writing: typeof WritingModule;
   read: typeof ReadModule;
   order: typeof OrderModule;
-  /** Hide and restore (M2-4). Left out, the real module. */
+  /** Hide and restore (M2-4), of a comment too (M3b-14). Left out, the real module. */
   moderation?: typeof realModeration;
 }
 
@@ -81,6 +87,9 @@ export type Step =
   | { kind: "reply"; reader: number; target: number }
   | { kind: "resolve"; reader: number; target: number; reopen: boolean }
   | { kind: "deleteComment"; reader: number; target: number; mine: boolean }
+  /** A moderator's (M3b-14): hide a comment the reader holds, or restore a hidden one. Only Ana may; not on a closed board. */
+  | { kind: "hideComment"; reader: number; target: number }
+  | { kind: "restoreComment"; reader: number; target: number }
   | { kind: "poll"; reader: number }
   | { kind: "update"; reader: number }
   | { kind: "offline"; reader: number }
@@ -117,6 +126,8 @@ export const stepArbitrary: fc.Arbitrary<Step> = fc.oneof(
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("reply" as const), reader, target }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("resolve" as const), reader, target, reopen: fc.boolean() }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("deleteComment" as const), reader, target, mine: fc.boolean() }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("hideComment" as const), reader, target }) },
+  { weight: 1, arbitrary: fc.record({ kind: fc.constant("restoreComment" as const), reader, target }) },
   { weight: 4, arbitrary: fc.record({ kind: fc.constant("poll" as const), reader }) },
   { weight: 2, arbitrary: fc.record({ kind: fc.constant("update" as const), reader }) },
   { weight: 1, arbitrary: fc.record({ kind: fc.constant("offline" as const), reader }) },
@@ -189,10 +200,13 @@ export interface Tally {
   commentRefused: Record<string, number>;
   /** Comments sent again, older than the reader's change number, because Restore brought their subject back. */
   commentsResent: number;
+  /** Comments hidden and restored (M3b-14), kept apart from `hidden` and `restored`, which count wordings. */
+  commentsHidden: number;
+  commentsRestored: number;
 }
 
 export function emptyTally(): Tally {
-  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0, closedByHand: 0, closedByTime: 0, closedRefusals: {}, acceptedAfterReopen: {}, closeSentTwice: 0, commentsAdded: 0, replies: 0, resolves: 0, reopens: 0, commentsDeleted: 0, commentsWhileClosed: 0, commentRefused: {}, commentsResent: 0 };
+  return { sequences: 0, steps: 0, done: 0, alreadyDone: 0, refused: {}, queuedOffline: 0, updatesCompared: 0, ordersPublished: 0, hidden: 0, restored: 0, sourceReports: 0, sourceClears: 0, combined: 0, separated: 0, undone: 0, closedByHand: 0, closedByTime: 0, closedRefusals: {}, acceptedAfterReopen: {}, closeSentTwice: 0, commentsAdded: 0, replies: 0, resolves: 0, reopens: 0, commentsDeleted: 0, commentsWhileClosed: 0, commentRefused: {}, commentsResent: 0, commentsHidden: 0, commentsRestored: 0 };
 }
 
 class CheckFailed extends Error {}
@@ -241,6 +255,12 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     }
   };
 
+  /** Check 10, for comments (M3b-14): no hidden comment's text reaches anyone but a moderator. */
+  const noHiddenCommentText = (person: string, rows: CommentRow[]) => {
+    if (moderates(person)) return;
+    for (const row of rows) if (row.hidden) check(row.body === null, "10. No hidden comment's text reaches anyone but an Editor or the Owner", { person, row });
+  };
+
   /** No comment reaches a reader while its wording or option is gone (M3b-10). `view` holds the rows as of the same answer. */
   const noGoneSubject = (person: string, view: ReaderView, sent: CommentRow[]) => {
     for (const row of sent) check(subjectStands(view.rows, row), "D-01. No reader is handed a comment whose wording or option is gone", { person, row });
@@ -251,6 +271,7 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     const s = await code.read.readSnapshot(db, b.board, person, moderates(person), clock.now());
     if (!s) throw new Error("board vanished");
     noHiddenText(person, s.versions);
+    noHiddenCommentText(person, s.comments ?? []);
     noGoneSubject(person, openView(s), s.comments ?? []);
     return s;
   };
@@ -316,6 +337,7 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
     const changes = await code.read.readChanges(db, b.board, r.person, held, moderates(r.person));
     if (!changes) throw new Error("board vanished");
     noHiddenText(r.person, changes.versions);
+    noHiddenCommentText(r.person, changes.comments ?? []);
 
     // Check 4: no reader is ever handed a change number at or below the one they hold.
     check(changes.seq >= held, "4. No reader is handed a change number below the one they hold", { held, seq: changes.seq });
@@ -624,6 +646,46 @@ export async function playSequence(code: ServerCode, { db, client }: { db: Db; c
           else if (result.status === "refused") tally.commentRefused[result.reason] = (tally.commentRefused[result.reason] ?? 0) + 1;
           if (result.status === "done") {
             if (await closedNow()) tally.commentsWhileClosed++;
+            await poll(r);
+          }
+          break;
+        }
+        case "hideComment":
+        case "restoreComment": {
+          if (!r.online) break;
+          const restore = step.kind === "restoreComment";
+          // Hide picks among the comments the reader holds that aren't deleted, restore among the hidden ones.
+          const candidates = Object.values(r.view.rows.comments)
+            .filter((row) => subjectStands(r.view.rows, row) && !row.deleted && row.hidden === restore)
+            .sort((a, x) => (a.createdAt < x.createdAt ? -1 : a.createdAt > x.createdAt ? 1 : a.id < x.id ? -1 : 1));
+          const comment = candidates.length === 0 ? undefined : candidates[step.target % candidates.length];
+          if (!comment) break;
+          // From the database, not the reader's view, which may be out of date, in the write path's order.
+          const c = (await client.query("select author_id, deleted_at, hidden_at from comment where id = $1", [comment.id])).rows[0];
+          const expected: WriteResult["status"] | RefusalReason = !moderates(r.person)
+            ? "not_allowed"
+            : (await closedNow())
+              ? "board_closed"
+              : c.deleted_at
+                ? "comment_deleted"
+                : c.author_id === r.person
+                  ? "own_comment"
+                  : (c.hidden_at !== null) === !restore
+                    ? "already_done"
+                    : "done";
+          const sendIt = () => (restore ? moderation.restoreComment(services, b.board, r.person, comment.id) : moderation.hideComment(services, b.board, r.person, comment.id, "spam"));
+          const result = await sendIt();
+          const got = result.status === "refused" ? result.reason : result.status;
+          check(got === expected, "9. A hide or restore of a comment is done, or refused for the reason the database gives", { step, expected, result });
+          if (result.status === "done") tally.done++;
+          else if (result.status === "already_done") tally.alreadyDone++;
+          else if (result.status === "refused") tally.commentRefused[result.reason] = (tally.commentRefused[result.reason] ?? 0) + 1;
+          if (result.status === "done") {
+            const before = await lastSeq();
+            const again = await sendIt();
+            check(again.status === "already_done" && (await lastSeq()) === before, "5. Sending an action a second time changes nothing", { step, again });
+            if (restore) tally.commentsRestored++;
+            else tally.commentsHidden++;
             await poll(r);
           }
           break;

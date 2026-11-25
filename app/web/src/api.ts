@@ -254,6 +254,12 @@ export async function deleteComment(board: string, comment: string): Promise<Ans
   return answerOf(await call("DELETE", `boards/${board}/comments/${encodeURIComponent(comment)}`));
 }
 
+/** An Editor or the Owner hides someone else's comment with a reason (M3b-14, D-01, J-02), or with `null` restores it. Not queued. */
+export async function setCommentHidden(board: string, comment: string, reason: ReportReason | null): Promise<Answer> {
+  const path = `boards/${board}/comments/${encodeURIComponent(comment)}/hidden`;
+  return answerOf(reason ? await call("PUT", path, { reason }) : await call("DELETE", path));
+}
+
 /** Removes a member from the board (M3b-7, H-01): the Owner's. */
 export async function removeMember(board: string, account: string): Promise<Answer> {
   return answerOf(await call("DELETE", `boards/${board}/people/${encodeURIComponent(account)}`));

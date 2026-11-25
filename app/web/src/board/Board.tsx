@@ -704,6 +704,19 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const scene = useRef<HTMLDivElement>(null);
   const drawerOpen = historyOpen || settingsOpen || commentsOn !== null;
   useDrawerTop(scene, drawerOpen);
+  /**
+   * A comment named in History (M3b-14) opens Comments on its thread, focused and ringed, as its link does; History
+   * closes, as opening Comments closes it. History links only a comment the reader holds whose thread can open.
+   */
+  const openCommentFromHistory = (commentId: string) => {
+    const landing = commentLanding(view.rows, commentId, null);
+    if (landing.kind !== "thread") return;
+    setHistoryOpenNow(false);
+    setSettingsOpen(false);
+    setCommentsOn(landing.target);
+    setLinkedThread({ id: commentId, key: targetKey(landing.target) });
+    session.announce("The comments panel is open.");
+  };
   const openFromHistory = (versionId: string) => {
     if (!view.rows.versions[versionId]) return;
     const shown = showVersion(versionId);
@@ -806,6 +819,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
             session={session}
             logSeq={state.logSeq}
             onOpen={openFromHistory}
+            onOpenComment={openCommentFromHistory}
             onClose={closeHistory}
           />
         ) : null}
@@ -823,6 +837,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
             onResolve={(thread, resolved) => session.setResolved(thread, resolved)}
             onDelete={(id) => session.deleteComment(id)}
             onCopyLink={(id) => copyLink(commentPath(boardId, id))}
+            mayHide={can(reader, state.role, "hide", { closed }) === null}
+            onHide={(id, reason) => session.setCommentHidden(id, reason)}
             arrive={onLinkedThread ? linkedThread.id : null}
             announce={(text) => session.announce(text)}
             onClose={closeComments}
