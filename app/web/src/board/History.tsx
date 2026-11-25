@@ -18,17 +18,22 @@
 //
 // Undo, on a combine or a separation not yet undone (M3a-8, J-04), for an
 // Editor or the Owner: as GitHub offers Revert on a merge long after it.
+//
+// A comment hidden or restored (M3b-14) is "a comment", linked to it when the
+// reader holds it and its thread can open. Its words are never shown here,
+// and it has no Restore here: the comment's own Restore is in its panel.
 
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { OPTIONS_PER_BOARD, can } from "@steelman/shared";
 import type { HistoryEntry, ReaderView, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
-import { versionPath } from "../links.ts";
+import { commentPath, versionPath } from "../links.ts";
 import { momentWithZone, shortDate } from "../when.ts";
 import { endQuote, endsSentence, isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 import { useDrawerExit } from "./drawer.ts";
+import { commentLanding } from "./comment-link.ts";
 
 interface HistoryProps {
   boardId: string;
@@ -42,6 +47,8 @@ interface HistoryProps {
   logSeq: number;
   /** Opens a wording on the board. */
   onOpen(versionId: string): void;
+  /** Opens Comments on a comment's thread (M3b-14). */
+  onOpenComment?(commentId: string): void;
   onClose(): void;
 }
 
@@ -50,7 +57,7 @@ const AS_REASON: Record<string, string> = { spam: "as spam", abuse: "as abusive"
 const A_ROLE: Record<Role, string> = { viewer: "a viewer", voter: "a voter", contributor: "a contributor", editor: "an editor", owner: "the owner" };
 const LINK_CAN: Partial<Record<Role, string>> = { viewer: "view", voter: "vote", contributor: "contribute" };
 
-export function History({ boardId, view, reader, role, closed, session, logSeq, onOpen, onClose }: HistoryProps) {
+export function History({ boardId, view, reader, role, closed, session, logSeq, onOpen, onOpenComment = () => undefined, onClose }: HistoryProps) {
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null);
   const [failed, setFailed] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
@@ -115,7 +122,7 @@ export function History({ boardId, view, reader, role, closed, session, logSeq, 
                     </span>
                     <div className="sm-history-entry">
                       <p>
-                        <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen)}
+                        <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen, onOpenComment)}
                       </p>
                       {/* Its time, and beside it what can still be done about it, as GitHub puts Revert on a merge's own line. */}
                       <div className="sm-history-meta">
@@ -235,7 +242,7 @@ function undoable(entry: HistoryEntry, view: ReaderView): boolean {
 }
 
 /** What the entry says after its actor's name: a sentence, naming things from the rows the reader holds. */
-function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (versionId: string) => void): ReactNode {
+function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (versionId: string) => void, onOpenComment: (commentId: string) => void): ReactNode {
   const optionName = view.rows.options[entry.subjectId]?.name;
   const option = optionName === undefined ? "an option" : `the option “${optionName}”`;
   const sourceId = entry.detail.source ?? entry.subjectId;
@@ -273,6 +280,23 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       {quote}
     </a>
   );
+  /** A comment, linked when the reader holds it and its thread can open; never by its words (invariant 7). */
+  const aComment = (commentId: string): ReactNode =>
+    commentLanding(view.rows, commentId, null).kind === "thread" ? (
+      <a
+        href={commentPath(boardId, commentId)}
+        className="cursor-interaction"
+        onClick={(event) => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          onOpenComment(commentId);
+        }}
+      >
+        a comment
+      </a>
+    ) : (
+      "a comment"
+    );
   switch (entry.kind) {
     case "board_created":
       return "created this board.";
@@ -323,6 +347,15 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
       );
     case "version_restored":
       return <>restored {wording(entry.subjectId, true)}</>;
+    // Hiding a comment (M3b-14, D-01, J-02).
+    case "comment_hidden":
+      return (
+        <>
+          hid {aComment(entry.subjectId)} {AS_REASON[entry.reason ?? "other"] ?? AS_REASON.other}.
+        </>
+      );
+    case "comment_restored":
+      return <>restored {aComment(entry.subjectId)}.</>;
     case "source_added":
       return `added ${source}.`;
     case "source_cited":

@@ -17,15 +17,32 @@
 // and puts a button before its Cancel link (design-system.service.gov.uk
 // components/button, read live Nov 24).
 //
+// M3b-13 adds Link on every standing comment, between Resolve and Delete as
+// in the prototype, which copies the comment's address and says "Link
+// copied.", the sentence a version's Copy link uses. GitHub ("Copy link") and
+// Google Docs ("Get link to this comment") also offer a comment's address,
+// from memory, not confirmed live. A panel opened by a comment's link starts on that comment:
+// its resolved threads unfolded when its thread is resolved, the comment in
+// view, ringed once, and focused, so a screen reader reads its name.
+//
+// M3b-14 adds Hide, for an Editor or the Owner, last among the buttons on
+// someone else's comment, as in the prototype. It puts the report reasons and
+// Cancel in place of the buttons, under the wording menu's "Hide it as", as
+// GitHub's "Hide comment" asks for a reason first (from memory, not confirmed
+// live). Everyone else then reads a sentence in the comment's place, "A
+// moderator removed this comment as spam."; Editors and the Owner read the
+// sentence and the text struck through, with Restore, its only button.
+//
 // The speech bubble that opens it is here too: on each card, each option's
 // header, and the question's header, named as the prototype names it.
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { threadsOn } from "@steelman/shared";
-import type { CommentRow, CommentTarget, ReaderView, Thread } from "@steelman/shared";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { REPORT_REASONS, threadsOn } from "@steelman/shared";
+import type { CommentRow, CommentTarget, ReaderView, ReportReason, Thread } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { browserIds } from "../system.ts";
 import { fullDate } from "../when.ts";
+import { REASONS } from "./Card.tsx";
 import { initials } from "./Sharing.tsx";
 import { useDrawerExit } from "./drawer.ts";
 import { duration, reducedMotion } from "./motion.ts";
@@ -101,12 +118,31 @@ interface CommentsProps {
   onResolve(threadId: string, resolved: boolean): Promise<string | null>;
   /** Deletes the reader's own comment (M3b-12): null once it's deleted, or why it wasn't. */
   onDelete(id: string): Promise<string | null>;
+  /** Copies a comment's address (M3b-13) and says so. */
+  onCopyLink(id: string): void;
+  /** Whether the reader may hide and restore someone else's comment (M3b-14): an Editor or the Owner, on an open board. */
+  mayHide?: boolean;
+  /** Hides a comment with a reason, or with `null` restores it (M3b-14): null once it's done, or why it wasn't. */
+  onHide?(id: string, reason: ReportReason | null): Promise<string | null>;
+  /** The comment a link opened the panel on (M3b-13), read once, when the panel opens; null when it opened otherwise. */
+  arrive?: string | null;
   /** Says a sentence on the status line. */
   announce(text: string): void;
   onClose(): void;
 }
 
+/** How long the comment a link points to stays ringed, as a version's card does (Board.tsx). */
+const RING_MS = 1_400;
+
 const KINDS = { question: "Question", option: "Option", version: "Version" } as const;
+
+/** What a hidden comment says in its place (M3b-14), by its reason; Something else, or no reason, names none. */
+const REMOVED: Record<ReportReason, string> = {
+  spam: "A moderator removed this comment as spam.",
+  abuse: "A moderator removed this comment as abusive.",
+  offtopic: "A moderator removed this comment as off-topic.",
+  other: "A moderator removed this comment.",
+};
 
 /** A thread or a reply that just left the open list, drawn for a moment as it folds away. */
 interface Folding {
@@ -116,7 +152,7 @@ interface Folding {
   reply: CommentRow | null;
 }
 
-export function Comments({ target, view, question, reader, draft, onDraft, onSend, onReply, onResolve, onDelete, announce, onClose }: CommentsProps) {
+export function Comments({ target, view, question, reader, draft, onDraft, onSend, onReply, onResolve, onDelete, onCopyLink, mayHide = false, onHide, arrive = null, announce, onClose }: CommentsProps) {
   const drawer = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const replyField = useRef<HTMLTextAreaElement>(null);
@@ -134,22 +170,31 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
   // The form and its text as last drawn, so a reply that's added doesn't take away what was typed while it was sent.
   const latestReply = useRef({ to: replyTo, draft: replyDraft });
   latestReply.current = { to: replyTo, draft: replyDraft };
-  const [showResolved, setShowResolved] = useState(false);
+  const kind = target === "question" ? "question" : "optionId" in target ? "option" : "version";
+  const about = target === "question" ? question : "optionId" in target ? (view.rows.options[target.optionId]?.name ?? "") : (view.rows.versions[target.versionId]?.wording ?? "This version was removed.");
+  const all = threadsOn(view.rows, target);
+  // A link to a comment in a resolved thread opens with the resolved threads shown, as the prototype's openLink does.
+  const [showResolved, setShowResolved] = useState(() => arrive !== null && all.some((thread) => thread.comment.resolved && [thread.comment, ...thread.replies].some((c) => c.id === arrive)));
+  /** The comment a link points to, ringed for a moment when the panel opens. */
+  const [ringed, setRinged] = useState(arrive);
   /** The comment whose Delete is asking first. */
   const [confirming, setConfirming] = useState<string | null>(null);
+  /** The comment whose Hide is showing the reasons (M3b-14). */
+  const [picking, setPicking] = useState<string | null>(null);
+  /** The comment whose Delete question or Hide's reasons opened while its thread was open, which keeps the thread in place. */
+  const [holding, setHolding] = useState<string | null>(null);
   /** Why Resolve, Reopen, or Delete didn't happen, under that comment. */
   const [actionProblem, setActionProblem] = useState<{ id: string; text: string } | null>(null);
   /** Where the focus goes once the panel has drawn what an action changed. */
   const [focus, setFocus] = useState<{ selector: string } | null>(null);
   const busy = useRef(false);
 
-  const kind = target === "question" ? "question" : "optionId" in target ? "option" : "version";
-  const about = target === "question" ? question : "optionId" in target ? (view.rows.options[target.optionId]?.name ?? "") : (view.rows.versions[target.versionId]?.wording ?? "This version was removed.");
-  const all = threadsOn(view.rows, target);
-  // A thread with its reply form or a Delete question open stays where it is, even when someone resolves it
+  // A thread with its reply form, a Delete question, or Hide's reasons open stays where it is, even when someone resolves it
   // meanwhile, so the draft and the sentence that says why it wasn't added stay in view, beside the thread's Reopen,
-  // and the cursor isn't lost.
-  const held = (thread: Thread) => thread.comment.id === replyTo || thread.comment.id === confirming || thread.replies.some((reply) => reply.id === confirming);
+  // and the cursor isn't lost. Only a thread that was open when they opened is held: a resolved one stays under its toggle.
+  const asking = holding !== null && (holding === confirming || holding === picking) ? holding : null;
+  const held = (thread: Thread) =>
+    thread.comment.id === replyTo || (asking !== null && (thread.comment.id === asking || thread.replies.some((reply) => reply.id === asking)));
   const threads = all.filter((thread) => !thread.comment.resolved || held(thread));
   const resolved = all.filter((thread) => thread.comment.resolved && !held(thread));
 
@@ -221,36 +266,49 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
     if (from && !from.isConnected && (document.activeElement === null || document.activeElement === document.body)) field.current?.focus();
   });
 
-  // A reply form or a Delete question whose comment has left the board (deleted elsewhere) is put away.
-  const live = new Set(all.flatMap((thread) => [thread.comment, ...thread.replies]).filter((c) => !c.deleted && c.body !== null).map((c) => c.id));
+  // A reply form, a Delete question, or Hide's reasons whose comment has left the board (deleted or hidden elsewhere)
+  // is put away.
+  const live = new Set(all.flatMap((thread) => [thread.comment, ...thread.replies]).filter((c) => !c.deleted && !c.hidden && c.body !== null).map((c) => c.id));
   const threadIds = new Set(all.map((thread) => thread.comment.id));
   const staleConfirm = confirming !== null && !live.has(confirming);
+  const stalePick = picking !== null && (!live.has(picking) || !mayHide);
   const staleReply = replyTo !== null && !threadIds.has(replyTo);
   useEffect(() => {
     if (staleConfirm) setConfirming(null);
+    if (stalePick) setPicking(null);
     if (staleReply) {
       setReplyTo(null);
       setReplyDraft("");
       setReplyProblem(null);
     }
-  }, [staleConfirm, staleReply]);
+  }, [staleConfirm, stalePick, staleReply]);
 
-  // Escape closes what's open inside the panel first: the question Delete asks, then the reply form, as the
-  // prototype does; only then the panel.
+  // Escape closes what's open inside the panel first: the question Delete asks, Hide's reasons, then the reply form,
+  // as the prototype does; only then the panel.
   const escape = useRef<() => void>(() => undefined);
   escape.current = () => {
     const root = drawer.current;
     if (confirming && root?.querySelector(`[data-confirm="${CSS.escape(confirming)}"]`)) return cancelDelete(confirming);
+    if (picking && root?.querySelector(`[data-reasons="${CSS.escape(picking)}"]`)) return cancelHide(picking);
     if (replyTo && root?.querySelector("#sm-reply")) return cancelReply(replyTo);
     onClose();
   };
   useEffect(() => {
-    field.current?.focus();
+    // Opened by a comment's link, the comment takes the cursor, in the middle of the threads; otherwise the box does.
+    const linked = arrive ? body.current?.querySelector<HTMLElement>(`[data-comment="${CSS.escape(arrive)}"]`) : null;
+    if (linked) {
+      linked.scrollIntoView({ block: "center" });
+      linked.focus({ preventScroll: true });
+    } else field.current?.focus();
+    const ring = arrive ? window.setTimeout(() => setRinged(null), RING_MS) : undefined;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented && drawer.current?.contains(document.activeElement)) escape.current();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(ring);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   const submit = async () => {
@@ -345,8 +403,10 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
     }
   };
 
-  const askDelete = (id: string) => {
+  const askDelete = (id: string, open: boolean) => {
+    setPicking(null);
     setConfirming(id);
+    setHolding(open ? id : null);
     setActionProblem(null);
     setFocus({ selector: `[data-confirm="${CSS.escape(id)}"] [data-cancel]` });
   };
@@ -373,17 +433,55 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
     }
   };
 
+  // Hide (M3b-14): the reasons open in place of the buttons, with the focus on Cancel, as Delete's question does.
+  const askHide = (id: string, open: boolean) => {
+    setConfirming(null);
+    setPicking(id);
+    setHolding(open ? id : null);
+    setActionProblem(null);
+    setFocus({ selector: `[data-reasons="${CSS.escape(id)}"] [data-cancel]` });
+  };
+  function cancelHide(id: string) {
+    setPicking(null);
+    setFocus({ selector: `[data-hide="${CSS.escape(id)}"]` });
+  }
+  /** Hides a comment with a reason, or with `null` restores it; the focus goes to the button that undoes it. */
+  const setHidden = async (id: string, reason: ReportReason | null) => {
+    if (busy.current || !onHide) return;
+    busy.current = true;
+    try {
+      const why = await onHide(id, reason);
+      setPicking(null);
+      if (why === null) {
+        setActionProblem(null);
+        setFocus({ selector: reason ? `[data-restore="${CSS.escape(id)}"]` : `[data-hide="${CSS.escape(id)}"]` });
+      } else {
+        setActionProblem({ id, text: why });
+        announce(why);
+        setFocus({ selector: reason ? `[data-hide="${CSS.escape(id)}"]` : `[data-restore="${CSS.escape(id)}"]` });
+      }
+    } finally {
+      busy.current = false;
+    }
+  };
+
   /** One comment, with the buttons it offers and, when it's asking or something wasn't done, that sentence. */
   const item = (comment: CommentRow, thread: Thread, reply: boolean, ghost = false) => {
-    const standing = !comment.deleted && comment.body !== null;
-    const actions = standing
+    const standing = !comment.deleted && !comment.hidden && comment.body !== null;
+    // Hide and Restore are an Editor's or the Owner's, on someone else's comment; a hidden comment offers only Restore.
+    const moderates = mayHide && comment.authorId !== reader && !comment.deleted;
+    const actions: CommentActions | null = standing
       ? {
           reply: !reply && !thread.comment.resolved ? () => openReply(thread.comment.id) : undefined,
           resolve: !reply ? () => void resolve(thread.comment.id, !thread.comment.resolved) : undefined,
           resolved: thread.comment.resolved,
-          delete: comment.authorId === reader ? () => askDelete(comment.id) : undefined,
+          link: () => onCopyLink(comment.id),
+          delete: comment.authorId === reader ? () => askDelete(comment.id, !thread.comment.resolved) : undefined,
+          hide: moderates ? () => askHide(comment.id, !thread.comment.resolved) : undefined,
         }
-      : null;
+      : comment.hidden && moderates
+        ? { resolved: false, restore: () => void setHidden(comment.id, null) }
+        : null;
     return (
       <CommentItem
         key={comment.id}
@@ -392,8 +490,11 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
         reply={reply}
         fresh={reply && !ghost && !seen.has(comment.id) && seen.has(thread.comment.id)}
         ghost={ghost}
+        linked={!ghost && comment.id === arrive}
+        ringed={!ghost && comment.id === ringed}
         actions={actions}
         asking={!ghost && confirming === comment.id ? { yes: () => void confirmDelete(comment.id), no: () => cancelDelete(comment.id) } : null}
+        picking={!ghost && standing && picking === comment.id ? { pick: (reason) => void setHidden(comment.id, reason), no: () => cancelHide(comment.id) } : null}
         problem={!ghost && actionProblem?.id === comment.id ? actionProblem.text : null}
       />
     );
@@ -548,7 +649,13 @@ interface CommentActions {
   resolve?: () => void;
   /** Whether its thread is resolved, so the button says Reopen. */
   resolved: boolean;
+  /** Copies the comment's address (M3b-13): on every standing comment. */
+  link?: () => void;
   delete?: () => void;
+  /** Opens the reasons to hide it (M3b-14): an Editor's or the Owner's, on someone else's comment. */
+  hide?: () => void;
+  /** Restores a hidden comment (M3b-14): its only button. */
+  restore?: () => void;
 }
 
 /**
@@ -561,8 +668,11 @@ function CommentItem({
   reply = false,
   fresh = false,
   ghost = false,
+  linked = false,
+  ringed = false,
   actions = null,
   asking = null,
+  picking = null,
   problem = null,
 }: {
   comment: CommentRow;
@@ -571,16 +681,36 @@ function CommentItem({
   fresh?: boolean;
   /** A copy folding away: its buttons are drawn, but carry nothing the panel looks for. */
   ghost?: boolean;
+  /** The comment a link opened the panel on, which can take the cursor (M3b-13). */
+  linked?: boolean;
+  /** Ringed for a moment, as the comment a link points to. */
+  ringed?: boolean;
   actions?: CommentActions | null;
   asking?: { yes(): void; no(): void } | null;
+  /** Hide's reasons, open in place of the buttons (M3b-14). */
+  picking?: { pick(reason: ReportReason): void; no(): void } | null;
   problem?: string | null;
 }) {
   const mine = comment.authorId === reader;
   const who = mine ? "You" : comment.authorName;
-  const text = comment.deleted ? "This comment was deleted." : comment.body === null ? "A moderator hid this comment." : comment.body;
   const asked = `sm-confirm-${comment.id}`;
+  const reasonsLabel = `sm-reasons-${comment.id}`;
+  // A comment hidden or restored while the panel is open fades its new text in, once (reduced motion: no fade).
+  const [swaps, setSwaps] = useState(0);
+  const wasHidden = useRef(comment.hidden);
+  useLayoutEffect(() => {
+    if (wasHidden.current === comment.hidden) return;
+    wasHidden.current = comment.hidden;
+    setSwaps((n) => n + 1);
+  }, [comment.hidden]);
+  const swapped = swaps > 0 ? " sm-comment-swapped" : "";
   return (
-    <article className={`sm-comment${reply ? " sm-reply" : ""}${fresh ? " sm-comment-new" : ""}`} data-comment={ghost ? undefined : comment.id} aria-label={comment.deleted ? "Deleted comment" : `Comment by ${who}`}>
+    <article
+      className={`sm-comment${reply ? " sm-reply" : ""}${fresh ? " sm-comment-new" : ""}${ringed ? " sm-arrived" : ""}`}
+      data-comment={ghost ? undefined : comment.id}
+      tabIndex={linked ? -1 : undefined}
+      aria-label={comment.deleted ? "Deleted comment" : `Comment by ${who}`}
+    >
       <header>
         <span className={`sm-avatar${mine ? " sm-you" : ""}`} aria-hidden="true">
           {initials(comment.authorName)}
@@ -591,8 +721,32 @@ function CommentItem({
         </time>
       </header>
       {/* ph-no-capture: a comment's text is what someone wrote (M-08). */}
-      <p className={`ph-no-capture${comment.body === null ? " sm-comment-deleted" : ""}`}>{text}</p>
-      {asking ? (
+      {comment.deleted ? (
+        <p className="ph-no-capture sm-comment-deleted">This comment was deleted.</p>
+      ) : comment.hidden ? (
+        <Fragment key={swaps}>
+          <p className={`sm-comment-deleted${swapped}`}>{REMOVED[comment.hiddenReason && REPORT_REASONS.includes(comment.hiddenReason) ? comment.hiddenReason : "other"]}</p>
+          {/* Only an Editor or the Owner is sent a hidden comment's text, struck through so it reads as removed. */}
+          {comment.body !== null ? <p className={`ph-no-capture sm-removed-claim${swapped}`}>{comment.body}</p> : null}
+        </Fragment>
+      ) : (
+        <p key={swaps} className={`ph-no-capture${swapped}`}>
+          {comment.body}
+        </p>
+      )}
+      {picking ? (
+        <div className="sm-comment-reasons" role="group" aria-labelledby={reasonsLabel} data-reasons={comment.id}>
+          <span id={reasonsLabel}>Hide it as</span>
+          {REPORT_REASONS.map((reason) => (
+            <button key={reason} type="button" className="sm-link-button cursor-interaction" onClick={() => picking.pick(reason)}>
+              {REASONS[reason].label}
+            </button>
+          ))}
+          <button type="button" className="sm-link-button cursor-interaction" data-cancel onClick={picking.no}>
+            Cancel
+          </button>
+        </div>
+      ) : asking ? (
         // The question is a span, not a second paragraph, so the comment's text stays its one paragraph.
         <div className="sm-comment-confirm" role="group" aria-labelledby={asked} data-confirm={comment.id}>
           <span id={asked}>Delete this comment?</span>
@@ -603,7 +757,7 @@ function CommentItem({
             Cancel
           </button>
         </div>
-      ) : actions && (actions.reply || actions.resolve || actions.delete) ? (
+      ) : actions && (actions.reply || actions.resolve || actions.link || actions.delete || actions.hide || actions.restore) ? (
         <div className="sm-comment-actions">
           {actions.reply ? (
             <button type="button" className="sm-link-button cursor-interaction" data-reply={ghost ? undefined : comment.id} onClick={actions.reply}>
@@ -615,9 +769,24 @@ function CommentItem({
               {actions.resolved ? "Reopen" : "Resolve"}
             </button>
           ) : null}
+          {actions.link ? (
+            <button type="button" className="sm-link-button cursor-interaction" data-link={ghost ? undefined : comment.id} onClick={actions.link}>
+              Link
+            </button>
+          ) : null}
           {actions.delete ? (
             <button type="button" className="sm-link-button cursor-interaction" data-delete={ghost ? undefined : comment.id} onClick={actions.delete}>
               Delete
+            </button>
+          ) : null}
+          {actions.hide ? (
+            <button type="button" className="sm-link-button cursor-interaction" data-hide={ghost ? undefined : comment.id} onClick={actions.hide}>
+              Hide
+            </button>
+          ) : null}
+          {actions.restore ? (
+            <button type="button" className="sm-link-button cursor-interaction" data-restore={ghost ? undefined : comment.id} onClick={actions.restore}>
+              Restore
             </button>
           ) : null}
         </div>
