@@ -5,6 +5,14 @@
 // · Spam" in its place. Each is a flag change, safe to send twice, and a
 // change row with who, and for a hide, why. Hiding resolves the open
 // reports on the wording.
+//
+// M3b-14 (D-01, J-02) hides and restores a comment the same way, with the
+// same `hide` action, so not on a closed board. A moderator doesn't hide or
+// restore a comment of their own, which policy.ts can't say (its authorOnly
+// means the opposite), so the service refuses it. A comment its author
+// deleted is refused too: its text is erased, so there is nothing to review.
+// Unlike the rest of what comments do (comments.ts), each is a change row,
+// `comment_hidden` with its reason and `comment_restored`, holding no text.
 
 import type { ReportReason } from "@steelman/shared";
 import { writeToBoard } from "./write-path.ts";
@@ -51,6 +59,50 @@ export function restoreWording({ db, clock }: Services, boardId: string, person:
       await trx
         .insertInto("change")
         .values({ board_id: boardId, seq, at: now, actor_id: person!, kind: "version_restored", subject_kind: "version", subject_id: versionId })
+        .execute();
+      return "done";
+    },
+  });
+}
+
+const loadComment = (boardId: string, commentId: string) => async (trx: Trx) =>
+  (await trx.selectFrom("comment").select(["author_id", "deleted_at", "hidden_at"]).where("id", "=", commentId).where("board_id", "=", boardId).executeTakeFirst()) ?? null;
+
+/** Deleted first, then your own: a deleted comment's author is still recorded, but its text is gone either way. */
+const commentStale = (person: string | null) => async (_trx: Trx, comment: { author_id: string; deleted_at: Date | null; hidden_at: Date | null }) =>
+  comment.deleted_at ? { refused: "comment_deleted" as const } : comment.author_id === person ? { refused: "own_comment" as const } : null;
+
+export function hideComment({ db, clock }: Services, boardId: string, person: string | null, commentId: string, reason: ReportReason): Promise<WriteResult> {
+  return writeToBoard(db, clock, boardId, person, {
+    action: "hide",
+    load: loadComment(boardId, commentId),
+    stale: commentStale(person),
+    async change(trx, comment, seq) {
+      // A flag: setting it again, for whatever reason, is the same as once.
+      if (comment.hidden_at) return "already_done";
+      const now = clock.now();
+      await trx.updateTable("comment").set({ hidden_at: now, hidden_by: person!, hidden_reason: reason, changed_seq: seq }).where("id", "=", commentId).execute();
+      await trx
+        .insertInto("change")
+        .values({ board_id: boardId, seq, at: now, actor_id: person!, kind: "comment_hidden", subject_kind: "comment", subject_id: commentId, reason })
+        .execute();
+      return "done";
+    },
+  });
+}
+
+export function restoreComment({ db, clock }: Services, boardId: string, person: string | null, commentId: string): Promise<WriteResult> {
+  return writeToBoard(db, clock, boardId, person, {
+    action: "hide",
+    load: loadComment(boardId, commentId),
+    stale: commentStale(person),
+    async change(trx, comment, seq) {
+      if (!comment.hidden_at) return "already_done";
+      const now = clock.now();
+      await trx.updateTable("comment").set({ hidden_at: null, hidden_by: null, hidden_reason: null, changed_seq: seq }).where("id", "=", commentId).execute();
+      await trx
+        .insertInto("change")
+        .values({ board_id: boardId, seq, at: now, actor_id: person!, kind: "comment_restored", subject_kind: "comment", subject_id: commentId })
         .execute();
       return "done";
     },

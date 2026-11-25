@@ -196,7 +196,7 @@ test("D-01: with every thread resolved, the panel says so above the toggle, not 
   await expect(questionBubble(page)).toHaveAccessibleName("Comment on this question");
 });
 
-test("D-01: only your own comments offer Delete, in the prototype's order after Reply and Resolve", async ({ board }) => {
+test("D-01, M-06: only your own comments offer Delete, in the prototype's order after Reply, Resolve, and Link", async ({ board }) => {
   const theirs = await commentOnQuestion(board, "omar_h", "Do other libraries open on Sundays?");
   await replyOnQuestion(board, "jordan_w", theirs, "Two of the four in the county do.");
   await commentOnQuestion(board, "jordan_w", "Who would staff it?");
@@ -204,9 +204,9 @@ test("D-01: only your own comments offer Delete, in the prototype's order after 
   await openQuestion(page);
 
   const names = (item: Locator) => item.locator(".sm-comment-actions").getByRole("button").allInnerTexts();
-  expect(await names(comment(page, "omar_h", "Sundays"))).toEqual(["Reply", "Resolve"]);
-  expect(await names(comment(page, "You", "Two of the four"))).toEqual(["Delete"]);
-  expect(await names(comment(page, "You", "Who would staff it?"))).toEqual(["Reply", "Resolve", "Delete"]);
+  expect(await names(comment(page, "omar_h", "Sundays"))).toEqual(["Reply", "Resolve", "Link"]);
+  expect(await names(comment(page, "You", "Two of the four"))).toEqual(["Link", "Delete"]);
+  expect(await names(comment(page, "You", "Who would staff it?"))).toEqual(["Reply", "Resolve", "Link", "Delete"]);
 });
 
 for (const width of [1280, 375]) {

@@ -35,7 +35,7 @@ export async function readSnapshot(db: Db, boardId: string, person: string | nul
       const board = await trx.selectFrom("board").select(["id", "question", "closed_at", "closes_at", "last_seq"]).where("id", "=", boardId).executeTakeFirst();
       if (!board) return null;
       const order = await trx.selectFrom("published_order").select(["arguments", "versions"]).where("board_id", "=", boardId).executeTakeFirst();
-      const comments = await commentRows(trx, boardId, 0, []);
+      const comments = await commentRows(trx, boardId, 0, [], moderator);
       return {
         board: { id: board.id, question: board.question, closed: now ? closedSince({ closedAt: board.closed_at, closesAt: board.closes_at }, now) !== null : board.closed_at !== null, seq: Number(board.last_seq) },
         options: await optionRows(trx, boardId, 0),
@@ -67,7 +67,7 @@ export async function readChanges(db: Db, boardId: string, person: string | null
       const log = await logRows(trx, boardId, after);
       // Brought back by History's Restore after S, so their comments go again (M3b-10). Deleting a wording is final.
       const restored = log.filter((row) => row.kind === "version_restored" || row.kind === "option_restored").map((row) => row.subjectId);
-      const comments = await commentRows(trx, boardId, after, restored);
+      const comments = await commentRows(trx, boardId, after, restored, moderator);
       return {
         seq,
         options: await optionRows(trx, boardId, after),
@@ -267,8 +267,9 @@ async function sourceRows(db: Reader, boardId: string, after: number): Promise<S
 /**
  * Comments stamped after `after`, and every comment on a subject in `restored`, oldest first: only those whose subject
  * stands, a wording neither deleted nor hidden and an option not deleted (M3b-10).
+ * @param moderator Whether the reader is an Editor or the Owner, who read a hidden comment's text (M3b-14).
  */
-async function commentRows(db: Reader, boardId: string, after: number, restored: string[]): Promise<CommentRow[]> {
+async function commentRows(db: Reader, boardId: string, after: number, restored: string[], moderator = false): Promise<CommentRow[]> {
   const result = await sql<{
     id: string;
     option_id: string | null;
@@ -281,10 +282,12 @@ async function commentRows(db: Reader, boardId: string, after: number, restored:
     resolved: boolean;
     deleted: boolean;
     hidden: boolean;
+    hidden_reason: string | null;
     changed_seq: string;
   }>`
     select c.id, c.option_id, c.version_id, c.parent_id, c.author_id, author.username as author_name, c.body, c.created_at,
-           c.resolved_at is not null as resolved, c.deleted_at is not null as deleted, c.hidden_at is not null as hidden, c.changed_seq
+           c.resolved_at is not null as resolved, c.deleted_at is not null as deleted, c.hidden_at is not null as hidden,
+           c.hidden_reason, c.changed_seq
     from comment c
     join account author on author.id = c.author_id
     left join version v on v.board_id = c.board_id and v.id = c.version_id
@@ -302,12 +305,15 @@ async function commentRows(db: Reader, boardId: string, after: number, restored:
     authorId: row.author_id,
     // Only an account with a username can write (app.ts), and a deleted account's comments go to "deleted_account".
     authorName: row.author_name ?? "",
-    // Erased when deleted already (invariant 6). Nothing hides a comment until M3b-14, which decides who reads it.
-    body: row.deleted || row.hidden ? null : row.body,
+    // Erased when deleted already (invariant 6). A hidden comment's text is kept, and only an Editor or the Owner
+    // reads it (M3b-14, architecture §7), as for a hidden wording.
+    body: row.deleted || (row.hidden && !moderator) ? null : row.body,
     createdAt: row.created_at.toISOString(),
     resolved: row.resolved,
     deleted: row.deleted,
     hidden: row.hidden,
+    // Only while hidden, so a comment that isn't keeps its shape.
+    ...(row.hidden && (REPORT_REASONS as readonly string[]).includes(row.hidden_reason ?? "") ? { hiddenReason: row.hidden_reason as ReportReason } : {}),
     changedSeq: Number(row.changed_seq),
   }));
 }
