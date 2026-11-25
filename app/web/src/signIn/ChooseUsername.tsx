@@ -7,6 +7,7 @@ import type { FormEvent } from "react";
 import { RESERVED_USERNAMES, USERNAME, isAllowedUsername } from "@steelman/shared";
 import { chooseUsername } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
+import { busyButton } from "../busy.ts";
 
 const SHAPE = `Use ${USERNAME.min} to ${USERNAME.max} letters, numbers, or underscores.`;
 
@@ -76,7 +77,7 @@ export function ChooseUsername({ email, onChosen }: { email: string; onChosen: (
           </p>
         ) : null}
         <p className="sm-field-hint sm-auth-hint">Shown on everything you write. You can’t change it later.</p>
-        <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
+        <button type="submit" className="sm-button sm-solid cursor-interaction" {...busyButton(busy)}>
           Continue
         </button>
       </form>

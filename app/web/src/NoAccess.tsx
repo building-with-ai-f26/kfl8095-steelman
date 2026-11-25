@@ -9,6 +9,7 @@ import { readMyAccount } from "./api.ts";
 import { forgetPlaces } from "./places.ts";
 import { signOut } from "./signIn/account.ts";
 import { AuthCard } from "./signIn/AuthCard.tsx";
+import { busyButton } from "./busy.ts";
 import { forgetTestUser } from "./testUser.ts";
 
 export function NoAccess() {
@@ -72,7 +73,7 @@ export function NoAccess() {
       </a>
       {/* Drawn as the sign-in card's "Use a different email" is. */}
       <div className="sm-auth-links">
-        <button ref={another} type="button" className="sm-link-button cursor-interaction" disabled={signingOut} onClick={() => void signInAsAnother()}>
+        <button ref={another} type="button" className="sm-link-button cursor-interaction" {...busyButton(signingOut)} onClick={() => void signInAsAnother()}>
           Sign in with another account
         </button>
       </div>

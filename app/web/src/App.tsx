@@ -21,6 +21,7 @@ import type { TestUser } from "./testUser.ts";
 import { forgetPlaces } from "./places.ts";
 import { cameFromList, forgetOpening, lastAddress, leavesQuietly, noteReturn, plainClick } from "./opening.ts";
 import { beforeZoom, holdBoard, putAway } from "./board/zoom.ts";
+import { watchPageChanges } from "./paging.ts";
 
 /**
  * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
@@ -30,7 +31,9 @@ import { beforeZoom, holdBoard, putAway } from "./board/zoom.ts";
  * A board opened from the list by a plain click, and the way back to the list
  * from it, change the page inside this one, with the browser's history
  * (M3d-9, opening.ts), so that the board grows out of its miniature and
- * shrinks back into it. Every other way between pages loads the page.
+ * shrinks back into it. Every other way between pages loads the page, and
+ * between Home, New steelman, Your account, and the privacy page the browser
+ * draws the new page rising over the old (M3d-11, paging.ts).
  */
 export function App({ path: first = typeof window === "undefined" ? "/" : window.location.pathname }: { path?: string }) {
   const [path, setPath] = useState(first);
@@ -66,6 +69,8 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
     },
     [show],
   );
+  // The page transition between the pages outside a board (M3d-11).
+  useEffect(() => watchPageChanges(), []);
   // Back and Forward between the list and a board opened from it. A board with actions waiting is left by loading
   // the page, so the browser asks first (Q20): its address goes back, and the page then loads the one asked for.
   useEffect(() => {

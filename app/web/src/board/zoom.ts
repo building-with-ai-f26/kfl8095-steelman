@@ -165,13 +165,14 @@ export function holdBoard(board: string): Closing | null {
 
 /**
  * Shrinks the copy into a rect in the window (the post's miniature), fading to 0.6, and takes it off the page when it
- * ends. With no rect, or one off screen, the copy goes at once, and the page changes as it does without motion.
+ * ends. With no rect, or one off screen, nothing shrinks: the copy fades out where it is, as the old page does in the
+ * ordinary page transition (M3d-11), and Home rises into place under it.
  */
 export function shrinkInto(closing: Closing, into: Rect | null): Animation | null {
   const { layer, copy, from } = closing;
   const onScreen = into !== null && into.width > 0 && into.top + into.height > 0 && into.top < window.innerHeight && into.left + into.width > 0 && into.left < window.innerWidth;
   if (!onScreen) {
-    layer.remove();
+    fadeAway(layer);
     return null;
   }
   const k = into.width / from.width;
@@ -186,6 +187,21 @@ export function shrinkInto(closing: Closing, into: Rect | null): Animation | nul
   if (!animation) layer.remove();
   else void animation.finished.then(() => layer.remove(), () => layer.remove());
   return animation;
+}
+
+/**
+ * Fades the copy's layer out on --sm-medium (app.css, sm-closing-fade) and takes it off the page as the fade ends. The
+ * fade is CSS, on the layer itself, so no Web Animation starts on the copy, which only a shrink plays.
+ */
+function fadeAway(layer: HTMLElement): void {
+  const remove = () => layer.remove();
+  // Only the layer's own fade: the board's copy may play animations of its own, whose ends bubble up to it.
+  const ended = (event: AnimationEvent) => event.target === layer && remove();
+  layer.addEventListener("animationend", ended);
+  layer.addEventListener("animationcancel", ended);
+  layer.classList.add("sm-closing-fade");
+  // In case its animation never ends (a tab in the background): --sm-medium and a little more.
+  window.setTimeout(remove, duration("medium", layer) + 40);
 }
 
 /** Takes away any copy still over the page, when another board opens before it has finished. */

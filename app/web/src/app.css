@@ -451,3 +451,60 @@ body { margin:0; }
 /* Share's invite field holds its input and its role together in one edge, so the ring goes around that edge while
    the input has the cursor, as the field's own darker edge already says; the role, a select, rings itself. */
 #steelman-study .sm-share-field:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:1px; }
+
+/* M3d-11, M-15: the pages change with a short crossfade and rise (paging.ts). Between Home, New steelman, Your
+   account, and the privacy page, the browser's view transition holds a picture of the old page still and draws the
+   new page rising over it with the prototype's entrance (a fade and a 4 px rise) on --sm-medium. The header and the
+   analytics notice are pictures of their own, so they stand still. A page's own entrance (New steelman's sheet) waits
+   while the page itself arrives, so the page arrives once. Under reduced motion nothing plays. The pages opt in to the
+   transition in index.html, which the browser reads before it draws the arriving page. */
+:root:active-view-transition #steelman-study .sm-site { view-transition-name: sm-site; }
+:root:active-view-transition #steelman-study .sm-analytics-notice { view-transition-name: sm-notice; }
+::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
+::view-transition-new(root) { animation: sm-enter var(--sm-medium) var(--sm-ease) both; }
+#steelman-study .sm-create.sm-arrived:not([hidden]) { animation: none; }
+/* Back from a board opened from the list, with its post off screen (zoom.ts): the board's copy fades out over the list
+   as it rises (Home.tsx), the same change inside the page. */
+#steelman-study .sm-closing-layer.sm-closing-fade { animation: sm-page-out var(--sm-medium) var(--sm-ease) forwards; }
+@keyframes sm-page-out { to { opacity: 0; } }
+
+/* M3d-11, E-03: skeleton posts while the list's first read is on its way (Home.tsx), in the list's own layout: the
+   page and its column are the list's own, and each placeholder has a post's edge, padding, and miniature, so the
+   posts replace them where they stand. They wait and pulse as the board's skeleton does (M3d-10): nothing for twice
+   --sm-slow, then a fade-in on --sm-medium and a gentle pulse; the prototype's reduced-motion rule stops both. */
+#steelman-study .sm-feed-skeleton-posts { display:grid; gap:12px; animation:sm-skeleton-in var(--sm-medium) var(--sm-ease) calc(var(--sm-slow) * 2) both; }
+#steelman-study .sm-feed-skeleton-post { display:grid; grid-template-columns:minmax(0,1fr) 172px; gap:14px; padding:16px 18px; border:1px solid var(--sm-line); border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+#steelman-study .sm-feed-skeleton-body { display:grid; align-content:start; min-width:0; }
+#steelman-study .sm-feed-skeleton-bar { display:block; height:12px; border-radius:3px; background:color-mix(in srgb, var(--sm-line) 70%, var(--sm-card)); animation:sm-skeleton-pulse calc(var(--sm-slow) * 4) var(--sm-ease) infinite alternate; }
+#steelman-study .sm-feed-skeleton-meta { width:140px; max-width:60%; height:10px; margin-top:2px; }
+#steelman-study .sm-feed-skeleton-question { width:72%; height:22px; margin:12px 0 14px; border-radius:4px; }
+#steelman-study .sm-feed-skeleton-options { display:flex; flex-wrap:wrap; gap:6px; }
+#steelman-study .sm-feed-skeleton-option { width:104px; height:24px; border-radius:6px; }
+#steelman-study .sm-feed-skeleton-thumb { align-self:start; height:116px; box-sizing:border-box; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-paper); }
+@media(max-width:640px) {
+  #steelman-study .sm-feed-skeleton-post { grid-template-columns:minmax(0,1fr); padding:16px 14px; }
+  #steelman-study .sm-feed-skeleton-thumb { display:none; }
+}
+
+/* M3d-11, E-03: a list post lifts a pixel under the pointer, in the prototype's hover shadow, and settles back to its
+   resting shadow as it's pressed, as a card on the board does (M3d-10). The lift is the `translate` property, so the
+   post's place in the list doesn't change. Only where a pointer hovers. */
+#steelman-study .sm-feed .sm-post { transition:background-color var(--sm-fast) var(--sm-ease), border-color var(--sm-fast) var(--sm-ease), box-shadow var(--sm-fast) var(--sm-ease), translate var(--sm-fast) var(--sm-ease); }
+@media(hover:hover) {
+  #steelman-study .sm-feed .sm-post:hover { translate:0 -1px; }
+}
+#steelman-study .sm-feed .sm-post:has(h2 a:active) { translate:0 0; box-shadow:var(--sm-shadow-sm); }
+
+/* M3d-11, M-15: one press for every button, New steelman's + Option and remove-option buttons included: it scales
+   to 97 percent while it's held and comes back on --sm-fast, as the vote arrows press (M3d-8) but smaller, since these
+   are larger. `scale` adds to any transform, and it doesn't move the button's place in the layout. The remove-option
+   buttons are named in a list of their own, so the rule's weight stays that of a single class. One busy state (busy.ts): a button waiting on an answer keeps its colour and
+   shows a waiting cursor, and after twice --sm-slow (Primer shows nothing for a wait under about a second) it pulses
+   slowly between its colour and the disabled look. Under reduced motion it shows the disabled look and stays still. */
+#steelman-study :is(.sm-button, .sm-share-button, .sm-create-add), #steelman-study .sm-create-option button { transition:background-color var(--sm-fast) var(--sm-ease), color var(--sm-fast) var(--sm-ease), border-color var(--sm-fast) var(--sm-ease), box-shadow var(--sm-fast) var(--sm-ease), opacity var(--sm-fast) var(--sm-ease), transform var(--sm-fast) var(--sm-ease), scale var(--sm-fast) var(--sm-ease); }
+#steelman-study :is(.sm-button, .sm-share-button, .sm-create-add):not(:disabled):active, #steelman-study .sm-create-option button:not(:disabled):active { scale:.97; }
+#steelman-study button[data-busy] { opacity:1; cursor:progress; animation:sm-busy calc(var(--sm-slow) * 2) var(--sm-ease) calc(var(--sm-slow) * 2) infinite alternate; }
+@keyframes sm-busy { to { opacity:.45; } }
+@media (prefers-reduced-motion: reduce) {
+  #steelman-study button[data-busy] { opacity:.45; }
+}

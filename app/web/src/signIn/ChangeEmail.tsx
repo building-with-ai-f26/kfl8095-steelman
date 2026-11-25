@@ -7,6 +7,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { changeEmail, emailChangeCode } from "./account.ts";
 import { CodeBoxes } from "./CodeBoxes.tsx";
+import { busyButton } from "../busy.ts";
+import { useRowEntrance } from "../rows.ts";
 
 const MESSAGES = {
   noEmail: "Enter your new email.",
@@ -15,10 +17,13 @@ const MESSAGES = {
   tooManyEmails: "We’ve sent too many codes to this address. Try again in an hour.",
   noCode: "Enter the 6-digit code.",
   wrongCode: "That code isn’t right.",
-  tooManyTries: "Too many wrong tries. Send a new code.",
+  tooManyTries: "You entered a wrong code too many times. Send a new code.",
   expired: "That code has expired. Send a new code.",
   taken: "Another account already uses this email.",
-  unreachable: "Couldn’t reach Steelman. Try again.",
+  // Said for no reply and for an error reply alike (account.ts answers "failed" for both), so they blame neither the
+  // connection nor the service.
+  sendFailed: "Steelman couldn’t send the code. Try again.",
+  changeFailed: "Steelman couldn’t change your email. Try again.",
 } as const;
 
 /** Five wrong tries cancel a code, as for signing in (plans/architecture.md §7). */
@@ -33,6 +38,8 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  /** Whether the wait is for a new code, so the busy state is on Send a new code rather than on Change email (M3d-11). */
+  const [resending, setResending] = useState(false);
   const [wrongTries, setWrongTries] = useState(0);
   /** Set once the code can't work any more, so trying again says why. */
   const [codeGone, setCodeGone] = useState<"" | "expired" | "tooManyTries">("");
@@ -42,6 +49,8 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
   const cancelled = useRef(false);
   const errorId = useId();
   const sentId = useId();
+  const row = useRef<HTMLDivElement>(null);
+  useRowEntrance(row);
 
   // The cursor goes to each step's field, and back to Change when the steps close.
   useEffect(() => {
@@ -59,11 +68,12 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
 
   async function sendCode(to: string, again: boolean) {
     setBusy(true);
+    setResending(again);
     const answer = await emailChangeCode(to);
     // Cancelled while it was asking: the answer is no longer wanted.
     if (cancelled.current) return;
     if (answer === "too_many") return fail(MESSAGES.tooManyEmails);
-    if (answer === "failed") return fail(MESSAGES.unreachable);
+    if (answer === "failed") return fail(MESSAGES.sendFailed);
     setStep({ at: "code", to });
     setCode("");
     setWrongTries(0);
@@ -86,6 +96,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
   async function submitCode(to: string) {
     if (!/^\d{6}$/.test(code)) return fail(MESSAGES.noCode);
     setBusy(true);
+    setResending(false);
     const answer = await changeEmail(to, code);
     if (answer === "changed") {
       setBusy(false);
@@ -96,7 +107,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
       return;
     }
     if (answer === "taken") return fail(MESSAGES.taken);
-    if (answer === "failed") return fail(MESSAGES.unreachable);
+    if (answer === "failed") return fail(MESSAGES.changeFailed);
     const gone = answer === "expired" ? "expired" : answer === "too_many_tries" ? "tooManyTries" : codeGone;
     if (gone) {
       setCodeGone(gone);
@@ -129,7 +140,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
 
   return (
     <>
-      <div className="sm-rrow">
+      <div ref={row} className="sm-rrow">
         <span className="sm-rrow-label">Email</span>
         {step.at !== "new" && (
           <span className="sm-rrow-control">
@@ -167,7 +178,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
             <button type="button" className="sm-button cursor-interaction" onClick={() => close()}>
               Cancel
             </button>
-            <button type="button" className="sm-button sm-solid cursor-interaction" disabled={busy} onClick={submitEmail}>
+            <button type="button" className="sm-button sm-solid cursor-interaction" {...busyButton(busy)} onClick={submitEmail}>
               Send code
             </button>
           </div>
@@ -195,7 +206,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
           </label>
           {errorLine}
           <div className="sm-auth-links">
-            <button type="button" className="sm-link-button cursor-interaction" disabled={busy} onClick={() => {
+            <button type="button" className="sm-link-button cursor-interaction" {...busyButton(busy && resending)} disabled={busy} onClick={() => {
                 cancelled.current = false;
                 void sendCode(step.to, true);
               }}>
@@ -206,7 +217,7 @@ export function ChangeEmail({ email, onChanged, onStatus }: { email: string; onC
             <button type="button" className="sm-button cursor-interaction" onClick={() => close("Your email hasn’t changed.")}>
               Cancel
             </button>
-            <button type="button" className="sm-button sm-solid cursor-interaction" disabled={busy} onClick={() => void submitCode(step.to)}>
+            <button type="button" className="sm-button sm-solid cursor-interaction" {...busyButton(busy && !resending)} disabled={busy} onClick={() => void submitCode(step.to)}>
               Change email
             </button>
           </div>

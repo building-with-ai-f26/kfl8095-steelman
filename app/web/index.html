@@ -11,6 +11,12 @@
     <!-- The browser's own bar: --sm-card under a light system theme, --sm-ink under a dark one. -->
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdfdfd" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#242424" />
+    <!-- The page transition between Home, New steelman, Your account, and the privacy page (M3d-11, paging.ts and
+         app.css). The browser reads this before it draws the arriving page, so it can't wait for the stylesheet. -->
+    <style>
+      @view-transition { navigation: auto; }
+      @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+    </style>
   </head>
   <body>
     <div id="root"></div>
