@@ -7,6 +7,10 @@
 // move ends in exactly the layout the page has without motion, and a saved
 // screenshot taken after it is unchanged. Timings and curves come from
 // docs/design/tokens.css, read when they're used, never when this file loads.
+// Update's shuffle (M3d-3) adds flip()'s `travel`, under which a moving row
+// grows by 1 percent while it travels and a row moving up passes over one
+// moving down, stopMoves(), which stops a shuffle still running, and
+// drawnRect(), which measures a traveling row without its growth.
 //
 // The curves follow Material Design 3's guidance on easing and duration and
 // Apple's Human Interface Guidelines on motion: short and physical, and gone
@@ -21,6 +25,8 @@ const STAGGER_MS = 20;
 const MOST_TURNS = 12;
 /** A move smaller than this is no move at all. */
 const STILL_PX = 0.5;
+/** How far a traveling element grows halfway through its move, as a sheet of paper lifted off the desk (M3d-3). */
+const TRAVEL_SCALE = 1.01;
 /** The values the app used before these were tokens, for a stylesheet that doesn't have them. */
 const FALLBACK = { fast: 120, medium: 200, slow: 420, leave: 160, fold: 220, ring: 1400 };
 const EASE = "cubic-bezier(.2,.7,.2,1)";
@@ -46,6 +52,12 @@ export interface FlipOptions {
    * its face, so a row that moves lifts its card, never the whole row.
    */
   lift?: boolean;
+  /**
+   * Whether each moving element scales to 1.01 halfway through its move and back to 1 as it lands, and an element
+   * moving toward the top passes over one moving down, as Update's shuffle asks (M3d-3). The scale starts and ends at
+   * 1 and the raise lasts only as long as the move, so the first frame is the old place and the last is the layout.
+   */
+  travel?: boolean;
 }
 
 export interface Flipped {
@@ -97,10 +109,29 @@ export function play(element: Element, keyframes: Keyframe[] | PropertyIndexedKe
 export function captureRects(root: ParentNode, selector = BOARD_MOVERS): Rects {
   const rects = new Map<string | Element, Rect>();
   for (const element of root.querySelectorAll(selector)) {
-    const { left, top, width, height } = element.getBoundingClientRect();
-    if (width || height) rects.set(keyOf(element), { left, top, width, height });
+    const rect = drawnRect(element);
+    if (rect.width || rect.height) rects.set(keyOf(element), rect);
   }
   return rects;
+}
+
+/**
+ * Where an element is drawn, in viewport pixels, at its own size. A traveling element is drawn up to 1 percent larger
+ * about its centre, which the next flip() doesn't play, so the rect keeps the centre and the move and leaves out the
+ * element's own `scale`. A second Update during a shuffle then starts each row from where it's seen, and holds the row
+ * being read still, instead of shifting it by half the growth (M3d-3).
+ */
+export function drawnRect(element: Element): Rect {
+  const box = element.getBoundingClientRect();
+  // A browser, or a test's stand-in, that has no `scale` draws nothing grown.
+  const scale: string | undefined = window.getComputedStyle(element).scale;
+  const [x = 1, y = x] = (scale ?? "none").split(" ").map(Number);
+  const sx = Number.isFinite(x) && x > 0 ? x : 1;
+  const sy = Number.isFinite(y) && y > 0 ? y : sx;
+  if (sx === 1 && sy === 1) return { left: box.left, top: box.top, width: box.width, height: box.height };
+  const width = box.width / sx;
+  const height = box.height / sy;
+  return { left: box.left + (box.width - width) / 2, top: box.top + (box.height - height) / 2, width, height };
 }
 
 /** Each element's own move and its card's lift, so that a later flip() cancels them and no other animation. */
@@ -114,13 +145,9 @@ const moving = new WeakMap<Element, Animation[]>();
  * element is cancelled first, so that a second change still ends at the final layout.
  */
 export function flip(before: Rects, root: ParentNode & Element, options: FlipOptions = {}): Flipped {
-  const { selector = BOARD_MOVERS, stagger = STAGGER_MS, lift = false } = options;
-  const elements = [...root.querySelectorAll(selector)];
+  const { selector = BOARD_MOVERS, stagger = STAGGER_MS, lift = false, travel = false } = options;
   // Earlier moves first, so that every rect below is the element's own place.
-  for (const element of elements) {
-    for (const animation of moving.get(element) ?? []) animation.cancel();
-    moving.delete(element);
-  }
+  const elements = stopMoves(root, selector);
   const arrivals: Element[] = [];
   const offsets = new Map<Element, { x: number; y: number; now: Rect }>();
   for (const element of elements) {
@@ -156,7 +183,8 @@ export function flip(before: Rects, root: ParentNode & Element, options: FlipOpt
     // The shadow the card is set down in, read before anything plays on it.
     const face = lift ? faceOf(element) : null;
     const resting = face ? window.getComputedStyle(face).boxShadow : "";
-    const animation = play(element, [{ transform: `translate(${round(x)}px, ${round(y)}px)` }, { transform: "none" }], timing);
+    const from = `translate(${round(x)}px, ${round(y)}px)`;
+    const animation = play(element, travel ? traveling(element, from, x, y) : [{ transform: from }, { transform: "none" }], timing);
     if (!animation) return;
     const started = [animation];
     // A card that moves within its row lifts on its own move, so its row doesn't lift it a second time.
@@ -172,6 +200,36 @@ export function flip(before: Rects, root: ParentNode & Element, options: FlipOpt
     animations.push(...started);
   });
   return { arrivals, animations };
+}
+
+/**
+ * Stops every move flip() started on the elements under the root that match the selector, so that each is drawn at
+ * its own place again, and returns those elements. Update calls it before it measures the row the reader is reading,
+ * so that a second Update during a shuffle measures that row where it lies and not partway through its move.
+ */
+export function stopMoves(root: ParentNode, selector = BOARD_MOVERS): Element[] {
+  const elements = [...root.querySelectorAll(selector)];
+  for (const element of elements) {
+    for (const animation of moving.get(element) ?? []) animation.cancel();
+    moving.delete(element);
+  }
+  return elements;
+}
+
+/**
+ * A traveling move's keyframes: from the old offset at scale 1, through 1.01 halfway, to none at scale 1. An element
+ * moving toward the start of reading order, up or else to the left, is raised one above its resting z-index for as
+ * long as it moves, so that it passes over the ones moving the other way; nothing holds the raise after the end.
+ */
+function traveling(element: Element, from: string, x: number, y: number): Keyframe[] {
+  const rising = y >= STILL_PX || (Math.abs(y) < STILL_PX && x >= STILL_PX);
+  const resting = Number.parseInt(window.getComputedStyle(element).zIndex, 10);
+  const raise: Keyframe = rising ? { zIndex: String((Number.isFinite(resting) ? resting : 0) + 1) } : {};
+  return [
+    { transform: from, scale: "1", ...raise },
+    { scale: String(TRAVEL_SCALE), offset: 0.5 },
+    { transform: "none", scale: "1", ...raise },
+  ];
 }
 
 /**

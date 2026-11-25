@@ -1,6 +1,8 @@
 // The board screen (M0-6): the prototype's markup, drawn from what the
 // reader holds (session.ts). Rows sit where `view.shown` puts them; counts
-// change in place; the pill counts what Update would change.
+// change in place; the pill counts what Update would change. Update shuffles
+// the rows from where they were into the new order (M3d-3, motion.ts flip()),
+// and nothing else moves them.
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -41,11 +43,12 @@ import { Settings } from "./Settings.tsx";
 import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop } from "./drawer.ts";
-import { duration } from "./motion.ts";
+import { captureRects, drawnRect, duration, flip, stopMoves } from "./motion.ts";
+import type { Rects } from "./motion.ts";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
-import { Wires } from "./Wires.tsx";
+import { Wires, redrawWhile } from "./Wires.tsx";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
 const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
@@ -540,14 +543,26 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     },
   };
   const anchor = useRef<{ id: string; top: number } | null>(null);
+  // Where every row and card was drawn when Update was pressed, so that they move from there into the new order.
+  const shuffle = useRef<Rects | null>(null);
+  const scene = useRef<HTMLDivElement>(null);
 
-  // Update holds the row you're reading still on screen while the others move around it.
+  // Update holds the row you're reading still on screen while the others move around it (M3d-3). The view's order
+  // changes on polls too, but only Update leaves rects behind, so other people's votes never move anything.
   useLayoutEffect(() => {
     const held = anchor.current;
+    const before = shuffle.current;
     anchor.current = null;
-    if (!held) return;
-    const now = document.querySelector(`[data-node="${held.id}"]`)?.getBoundingClientRect().top;
-    if (now !== undefined && now !== held.top) window.scrollBy(0, now - held.top);
+    shuffle.current = null;
+    const root = scene.current;
+    // A shuffle still running stops first, so that the row being read is measured where it lies.
+    if (before && root) stopMoves(root);
+    if (held) {
+      const now = document.querySelector(`[data-node="${held.id}"]`)?.getBoundingClientRect().top;
+      if (now !== undefined && now !== held.top) window.scrollBy(0, now - held.top);
+    }
+    // Measured after the scroll, as the rects before it were, so the row being read has no offset and stays still.
+    if (before && root) redrawWhile(flip(before, root, { lift: true, travel: true }).animations);
   }, [view.shown]);
 
   useEffect(() => {
@@ -680,7 +695,6 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     session.announce("This wording was removed, so its comments are closed.");
     if (inside) question.current?.focus();
   }, [view.rows, commentsOn, state.leftOut, state.optionsLeftOut]);
-  const scene = useRef<HTMLDivElement>(null);
   const drawerOpen = historyOpen || settingsOpen || commentsOn !== null;
   useDrawerTop(scene, drawerOpen);
   const openFromHistory = (versionId: string) => {
@@ -694,6 +708,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
 
   const update = () => {
     anchor.current = readingAnchor(open);
+    if (scene.current) shuffle.current = captureRects(scene.current);
     const gone = writing?.kind === "wording" ? view.rows.arguments[writing.argumentId] : undefined;
     if (gone && !isLive(gone)) {
       // Drafts follow their argument; when it's gone, the draft becomes a new argument in the same column.
@@ -988,10 +1003,11 @@ function boardColumns(options: OptionRow[], wide: string | undefined, extra: "ad
 /** The row Update keeps in place: the unfolded one, else the first at least partly in view. */
 function readingAnchor(open: string | null): { id: string; top: number } | null {
   const unfolded = open ? document.querySelector(`[data-node="${open}"]`) : null;
-  if (unfolded) return { id: open!, top: unfolded.getBoundingClientRect().top };
+  // Measured as captureRects() measures, so that a row still growing in a shuffle is held at its own size (M3d-3).
+  if (unfolded) return { id: open!, top: drawnRect(unfolded).top };
   for (const row of document.querySelectorAll<HTMLElement>("[data-node]")) {
-    const box = row.getBoundingClientRect();
-    if (box.bottom > 60) return { id: row.dataset.node!, top: box.top };
+    const box = drawnRect(row);
+    if (box.top + box.height > 60) return { id: row.dataset.node!, top: box.top };
   }
   return null;
 }
