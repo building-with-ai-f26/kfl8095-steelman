@@ -222,9 +222,22 @@ export async function invite(board: string, username: string, role: Exclude<Pers
   return answerOf(await call("POST", `boards/${board}/invites`, { username, role }));
 }
 
-/** Adds a comment (M3b-11, D-01) on the question, an option, or a wording: sent at once, never queued. */
-export async function addComment(board: string, comment: { id: string; optionId?: string; versionId?: string; body: string }): Promise<Answer> {
+/**
+ * Adds a comment (M3b-11, D-01) on the question, an option, or a wording, or with `parentId` a reply to a thread
+ * (M3b-12), which names its thread's own subject too: sent at once, never queued.
+ */
+export async function addComment(board: string, comment: { id: string; optionId?: string; versionId?: string; parentId?: string; body: string }): Promise<Answer> {
   return answerOf(await call("POST", `boards/${board}/comments`, comment));
+}
+
+/** Resolves a thread by its first comment (M3b-12, D-01), or with `false` reopens it. Not queued. */
+export async function setResolved(board: string, comment: string, resolved: boolean): Promise<Answer> {
+  return answerOf(await call(resolved ? "PUT" : "DELETE", `boards/${board}/comments/${encodeURIComponent(comment)}/resolved`));
+}
+
+/** Deletes the reader's own comment (M3b-12, D-01): its text is erased and its place kept. Not queued. */
+export async function deleteComment(board: string, comment: string): Promise<Answer> {
+  return answerOf(await call("DELETE", `boards/${board}/comments/${encodeURIComponent(comment)}`));
 }
 
 /** Removes a member from the board (M3b-7, H-01): the Owner's. */

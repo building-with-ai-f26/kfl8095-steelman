@@ -245,6 +245,26 @@ body { margin:0; }
 /* A comment that arrives while the panel is open rises in, lit for a moment, as a new panel does. */
 #steelman-study .sm-comment-new { animation:sm-enter var(--sm-medium) var(--sm-ease), sm-comment-lit var(--sm-slow) var(--sm-ease); }
 @keyframes sm-comment-lit { from { background-color:var(--sm-soft); } }
+/* Replies, resolving, and deleting (M3b-12), all inside the comments panel. A comment's buttons are the prototype's
+   small text buttons, at least 24 px tall so each is easy to hit (WCAG 2.5.8). */
+#steelman-study .sm-comments-body .sm-comment-actions { flex-wrap:wrap; align-items:center; margin-top:4px; }
+#steelman-study .sm-comments-body .sm-comment-actions .sm-link-button { min-height:24px; }
+/* A resolved thread keeps the prototype's dashed edge but not its 70% strength, so its text keeps 4.5:1 contrast. */
+#steelman-study .sm-comments-body .sm-thread.sm-resolved { opacity:1; }
+#steelman-study .sm-comments-body .sm-resolved-toggle { justify-self:start; }
+/* The reply form, the question Delete asks, and resolved threads shown by the toggle rise in as a new comment does. */
+#steelman-study .sm-comments-body :is(.sm-reply-form, .sm-comment-confirm, .sm-thread.sm-unfolding) { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+#steelman-study .sm-comments-body .sm-reply-form .sm-field-error { margin:0; }
+#steelman-study .sm-comments-body .sm-comment-confirm { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:8px 0 0 29px; font-size:12px; font-weight:600; }
+#steelman-study .sm-comments-body .sm-comment-confirm .sm-button { min-height:28px; padding:0 10px; font-size:12px; font-weight:600; }
+#steelman-study .sm-comments-body .sm-comment .sm-comment-problem { margin:6px 0 0 29px; font-size:12px; }
+/* A thread resolved or deleted, or a reply deleted, folds away (Comments.tsx keeps a copy for it); with reduced motion
+   there is no copy. The copy's height closes to nothing, and the gap after it with it. */
+#steelman-study .sm-comments-body .sm-fold { display:grid; grid-template-rows:1fr; overflow:hidden; pointer-events:none; animation:sm-fold 220ms var(--sm-ease) forwards; }
+#steelman-study .sm-comments-body .sm-fold > * { min-height:0; overflow:hidden; }
+#steelman-study .sm-comments-body .sm-thread > .sm-fold { animation-name:sm-fold-reply; }
+@keyframes sm-fold { to { grid-template-rows:0fr; opacity:0; margin-bottom:-14px; } }
+@keyframes sm-fold-reply { to { grid-template-rows:0fr; opacity:0; margin-bottom:-10px; } }
 /* A bubble's number rises in when it changes. */
 #steelman-study .sm-comment-count { animation:sm-enter var(--sm-medium) var(--sm-ease); }
 /* The card's bubble is drawn as the prototype's sources button, under a class of its own; an empty one keeps full

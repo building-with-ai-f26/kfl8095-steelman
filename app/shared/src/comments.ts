@@ -38,8 +38,8 @@ export function subjectStands(rows: BoardRows, comment: CommentRow): boolean {
  * The threads on a target, oldest first. A deleted reply is left out, and so is a deleted first comment with no reply
  * left; a deleted first comment with replies stays, so its thread still reads. This departs from the prototype in one
  * sequence: when a first comment is deleted while it has replies and those replies are deleted afterwards, the
- * prototype keeps the empty "This comment was deleted." thread, and this leaves it out. Whether to match it is left
- * to M3b-12.
+ * prototype keeps the empty "This comment was deleted." thread, and this leaves it out. M3b-12 kept this rule, as its
+ * row says: a first comment with replies stays as "This comment was deleted.", and any other is removed.
  */
 export function threadsOn(rows: BoardRows, target: CommentTarget): Thread[] {
   // Some older tests build a reader's rows without comments.
