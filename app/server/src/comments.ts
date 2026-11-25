@@ -3,7 +3,9 @@
 // resolves or reopens one, on a closed board too; and deletes their own. All
 // go through the write path. None adds a row to the change log, as the
 // prototype logs none: the comment table is the only place that holds one
-// (invariant 7 keeps what people write out of the log anyway).
+// (invariant 7 keeps what people write out of the log anyway). Hiding and
+// restoring a comment (M3b-14) are a moderator's, in moderation.ts, and each
+// does add a change row, which holds no text.
 //
 // A thread is a first comment and the replies under it, one level deep: a
 // reply names its thread's first comment as its parent and the same target.
@@ -17,7 +19,13 @@
 // the browser made, so a repeat finds it already there, even if its thread
 // was resolved since; resolve, reopen, and delete set a flag to what it
 // already is.
+//
+// M3b-13 adds one read, commentLink, which says where a comment's link leads
+// without sending the comment itself.
 
+import { itemIdInput } from "@steelman/shared";
+import type { CommentLinkState } from "@steelman/shared";
+import type { Db } from "./db/database.ts";
 import { writeToBoard } from "./write-path.ts";
 import type { Outcome, Services, Trx, WriteResult } from "./write-path.ts";
 
@@ -170,4 +178,29 @@ export function reopenThread({ db, clock }: Services, boardId: string, person: s
       return "done";
     },
   });
+}
+
+/**
+ * Where a comment's link leads (M3b-13, D-01, M-06), for someone already let in to read the board: only the comment's
+ * state, never its text or its author. The snapshot leaves out comments whose subject is gone (read.ts), so without
+ * this a browser can't tell a comment on a deleted wording from one that never was. "deleted" covers a deleted
+ * comment, an ID that isn't the shape of one, and one this board doesn't have, so the answer never says whether a
+ * comment is on another board (architecture §7). A deleted comment reads as deleted even when its subject is gone
+ * too. Otherwise its subject decides, as commentRows sends it: a wording deleted or hidden, or an option deleted, is
+ * "subject_removed", for a moderator too.
+ */
+export async function commentLink(db: Db, boardId: string, commentId: string): Promise<CommentLinkState> {
+  if (!itemIdInput.safeParse(commentId).success) return "deleted";
+  const found = await db
+    .selectFrom("comment as c")
+    .leftJoin("version as v", (join) => join.onRef("v.board_id", "=", "c.board_id").onRef("v.id", "=", "c.version_id"))
+    .leftJoin("option as o", (join) => join.onRef("o.board_id", "=", "c.board_id").onRef("o.id", "=", "c.option_id"))
+    .select(["c.deleted_at", "c.version_id", "c.option_id", "v.deleted_at as version_deleted", "v.hidden_at as version_hidden", "o.deleted_at as option_deleted"])
+    .where("c.board_id", "=", boardId)
+    .where("c.id", "=", commentId)
+    .executeTakeFirst();
+  if (!found || found.deleted_at) return "deleted";
+  if (found.version_id !== null && (found.version_deleted || found.version_hidden)) return "subject_removed";
+  if (found.option_id !== null && found.option_deleted) return "subject_removed";
+  return "stands";
 }

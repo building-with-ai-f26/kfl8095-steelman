@@ -8,16 +8,18 @@
 //
 // Its address (M-06) is the board's, or the open version's while one is
 // open. It changes in place (history.replaceState), as the prototype's
-// does, so Back leaves the board instead of closing cards one by one.
+// does, so Back leaves the board instead of closing cards one by one. Opened
+// by a comment's link (M3b-13), it is the comment's while that comment's
+// panel is open, as the prototype keeps c= in its address.
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { OPTIONS_PER_BOARD, can, cleanText, leaveOut, openCount } from "@steelman/shared";
-import type { ArgumentRow, CaseItem, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
+import type { ArgumentRow, CaseItem, CommentLinkState, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NoAccess } from "../NoAccess.tsx";
 import { NotFound } from "../NotFound.tsx";
 import { useReader } from "../reader.ts";
-import { boardPath, versionPath } from "../links.ts";
+import { boardPath, commentPath, versionPath } from "../links.ts";
 import { browserIds } from "../system.ts";
 import { Card } from "./Card.tsx";
 import type { CardMenu, Opening } from "./Card.tsx";
@@ -39,6 +41,7 @@ import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
 import { Settings } from "./Settings.tsx";
 import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx";
+import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop } from "./drawer.ts";
 import { duration } from "./motion.ts";
@@ -56,14 +59,16 @@ export type Zoom = "read" | "case";
 interface BoardProps {
   boardId: string;
   version?: string | null;
+  /** The comment the link that opened the board points to (M3b-13). */
+  comment?: string | null;
   zoom?: Zoom;
   onZoom?(zoom: Zoom): void;
   /** Told when the board itself is on screen, and when it's gone: the switch shows only then. */
   onShown?(shown: boolean): void;
 }
 
-export function Board({ boardId, version = null, zoom = "read", onZoom = () => {}, onShown = () => {} }: BoardProps) {
-  const [session] = useState(() => new BoardSession(boardId));
+export function Board({ boardId, version = null, comment = null, zoom = "read", onZoom = () => {}, onShown = () => {} }: BoardProps) {
+  const [session] = useState(() => new BoardSession(boardId, comment));
   useEffect(() => {
     void session.start();
     return () => session.stop();
@@ -76,13 +81,15 @@ export function Board({ boardId, version = null, zoom = "read", onZoom = () => {
   if (state.phase === "no_access") return <NoAccess />;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (!view) return null;
-  return <BoardView boardId={boardId} linked={version} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
+  return <BoardView boardId={boardId} linked={version} linkedComment={comment} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
 }
 
 interface BoardViewProps {
   boardId: string;
   /** The version the link that opened the board points to. */
   linked: string | null;
+  /** The comment the link that opened the board points to (M3b-13). */
+  linkedComment: string | null;
   view: ReaderView;
   state: SessionState;
   session: BoardSession;
@@ -91,11 +98,11 @@ interface BoardViewProps {
   onShown(shown: boolean): void;
 }
 
-function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
+function BoardView({ boardId, linked, linkedComment, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
   const options = columns(view);
   // The importance axis only means something once a column has two arguments to rank.
   const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
-  const [arrival] = useState(() => arrivalFor(view, linked));
+  const [arrival] = useState(() => (linkedComment ? commentArrivalFor(view, linkedComment, state.commentLink) : arrivalFor(view, linked)));
   const [chosenSide, setSide] = useState(arrival.side ?? options[0]?.id);
   // The side shown on a phone: the one chosen, or the first while that one is deleted (M3a-2).
   const side = options.some((option) => option.id === chosenSide) ? chosenSide : options[0]?.id;
@@ -104,7 +111,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   /** The version opened by its wording, one at a time. It counts as open only while it's on screen. */
   const [expanded, setExpanded] = useState<string | null>(arrival.version);
   const openVersion = expanded !== null && onScreen(view, open, expanded) ? expanded : null;
-  const [arrived, setArrived] = useState<string | null>(arrival.version);
+  const [arrived, setArrived] = useState<string | null>(arrival.version ?? arrival.ring);
   const [note, setNote] = useState(arrival.note);
   const dismiss = useRef<HTMLButtonElement>(null);
   const [writing, setWriting] = useState<Writing>(null);
@@ -399,14 +406,33 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   };
 
   // Comments (M3b-11, D-01), in the same drawer: on the question, an option, or a wording.
-  const [commentsOn, setCommentsOn] = useState<CommentTarget | null>(null);
+  const [commentsOn, setCommentsOn] = useState<CommentTarget | null>(arrival.comments?.target ?? null);
   const commentKey = commentsOn ? targetKey(commentsOn) : null;
+  /**
+   * The comment a link opened its panel on (M3b-13), with its subject's key: the address is the comment's while that
+   * panel is open. Once the panel closes or shows another subject, it's forgotten, as the prototype forgets
+   * linkComment, so opening the same subject again by its bubble keeps the board's address.
+   */
+  const [linkedThread, setLinkedThread] = useState(arrival.comments ? { id: arrival.comments.comment, key: targetKey(arrival.comments.target) } : null);
+  const onLinkedThread = linkedThread !== null && linkedThread.key === commentKey;
+  useEffect(() => {
+    if (linkedThread && !onLinkedThread) setLinkedThread(null);
+  }, [linkedThread, onLinkedThread]);
   /** What the reader has typed for each subject, kept while the board is open (Google Docs keeps a draft too). */
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   /** The ID each draft was last sent with, so sending the same text again is safe (the service answers it's done). */
   const commentIds = useRef<Record<string, { id: string; body: string }>>({});
   // The speech bubbles: each subject's open count, from the comments the reader holds (M3b-10).
   const bubbles: CommentBubbles = { count: (target) => openCount(view.rows, target), on: commentKey, open: (target) => openComments(target) };
+  /** Copies an address on this site, a version's or a comment's, and says so, or says what it is when copying isn't allowed. */
+  const copyLink = (path: string) => {
+    const link = new URL(path, window.location.origin).href;
+    const copied = navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject(new Error("No clipboard"));
+    copied.then(
+      () => session.announce("Link copied."),
+      () => session.announce(`Copying isn’t allowed here. The link is ${link}`),
+    );
+  };
   const opening: Opening = {
     open: openVersion,
     arrived,
@@ -430,23 +456,17 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
       announce: (text) => session.announce(text),
     },
     toggle: (id) => setExpanded(openVersion === id ? null : id),
-    copyLink(id) {
-      const link = new URL(versionPath(boardId, id), window.location.origin).href;
-      const copied = navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject(new Error("No clipboard"));
-      copied.then(
-        () => session.announce("Link copied."),
-        () => session.announce(`Copying isn’t allowed here. The link is ${link}`),
-      );
-    },
+    copyLink: (id) => copyLink(versionPath(boardId, id)),
     menu,
     comments: bubbles,
   };
 
-  // The address follows what's open.
+  // The address follows what's open: the linked comment while its panel is open, else the open version, else the board.
+  const linkedPath = onLinkedThread ? commentPath(boardId, linkedThread.id) : null;
   useEffect(() => {
-    const path = openVersion ? versionPath(boardId, openVersion) : boardPath(boardId);
+    const path = linkedPath ?? (openVersion ? versionPath(boardId, openVersion) : boardPath(boardId));
     if (window.location.pathname !== path) window.history.replaceState(window.history.state, "", path + window.location.search + window.location.hash);
-  }, [boardId, openVersion]);
+  }, [boardId, openVersion, linkedPath]);
 
   // A link's version comes into view and rings; a link to one that's gone puts the cursor on its note.
   useEffect(() => {
@@ -458,7 +478,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   }, [arrived]);
   useEffect(() => {
     if (arrival.note) dismiss.current?.focus();
-    if (linked) session.announce(`${arrival.note ? `${arrival.note} ` : ""}Opened “${state.question}”.`);
+    if (linked || linkedComment) session.announce(`${arrival.note ? `${arrival.note} ` : ""}Opened “${state.question}”.`);
     // Once, when the board first shows.
   }, []);
   const question = useRef<HTMLHeadingElement>(null);
@@ -683,6 +703,19 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   const scene = useRef<HTMLDivElement>(null);
   const drawerOpen = historyOpen || settingsOpen || commentsOn !== null;
   useDrawerTop(scene, drawerOpen);
+  /**
+   * A comment named in History (M3b-14) opens Comments on its thread, focused and ringed, as its link does; History
+   * closes, as opening Comments closes it. History links only a comment the reader holds whose thread can open.
+   */
+  const openCommentFromHistory = (commentId: string) => {
+    const landing = commentLanding(view.rows, commentId, null);
+    if (landing.kind !== "thread") return;
+    setHistoryOpenNow(false);
+    setSettingsOpen(false);
+    setCommentsOn(landing.target);
+    setLinkedThread({ id: commentId, key: targetKey(landing.target) });
+    session.announce("The comments panel is open.");
+  };
   const openFromHistory = (versionId: string) => {
     if (!view.rows.versions[versionId]) return;
     const shown = showVersion(versionId);
@@ -785,6 +818,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             session={session}
             logSeq={state.logSeq}
             onOpen={openFromHistory}
+            onOpenComment={openCommentFromHistory}
             onClose={closeHistory}
           />
         ) : null}
@@ -801,6 +835,10 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             onReply={(thread, id, body) => session.addReply(commentsOn, thread, id, body)}
             onResolve={(thread, resolved) => session.setResolved(thread, resolved)}
             onDelete={(id) => session.deleteComment(id)}
+            onCopyLink={(id) => copyLink(commentPath(boardId, id))}
+            mayHide={can(reader, state.role, "hide", { closed }) === null}
+            onHide={(id, reason) => session.setCommentHidden(id, reason)}
+            arrive={onLinkedThread ? linkedThread.id : null}
             announce={(text) => session.announce(text)}
             onClose={closeComments}
           />
@@ -935,8 +973,13 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
 interface Arrival {
   side: string | null;
   row: string | null;
+  /** The version opened. */
   version: string | null;
+  /** A card ringed without being opened: the wording a linked comment is on (M3b-13). */
+  ring: string | null;
   note: string;
+  /** The panel a comment's link opens (M3b-13): its thread's subject, and the comment. */
+  comments: { target: CommentTarget; comment: string } | null;
 }
 
 /**
@@ -945,14 +988,35 @@ interface Arrival {
  * (deleted, or never there) gets a note instead.
  */
 function arrivalFor(view: ReaderView, versionId: string | null): Arrival {
-  const none: Arrival = { side: null, row: null, version: null, note: "" };
+  const none: Arrival = { side: null, row: null, version: null, ring: null, note: "", comments: null };
   if (!versionId) return none;
   const version = view.rows.versions[versionId];
   const argument = version ? view.rows.arguments[version.argumentId] : undefined;
   const at = argument ? (view.shown.versions[argument.id] ?? []).indexOf(versionId) : -1;
   // A hidden wording keeps its place, saying "Removed by a moderator" (M2-4): the link lands there.
   if (!argument || !isLive(argument) || !version || version.deleted || at < 0) return { ...none, note: "That version was deleted." };
-  return { side: argument.optionId, row: at > 0 ? argument.id : null, version: versionId, note: "" };
+  return { ...none, side: argument.optionId, row: at > 0 ? argument.id : null, version: versionId };
+}
+
+/**
+ * Where a link to a comment lands (M3b-13), as the prototype's openLink does it: Comments open on its thread's
+ * subject, and a wording the thread is on is shown, its column chosen and its row unfolded unless it leads it, and
+ * ringed, but not opened, so closing the panel leaves the board's address. An option's column is chosen. A comment
+ * that can't be opened gets a note instead (comment-link.ts).
+ */
+function commentArrivalFor(view: ReaderView, commentId: string, said: CommentLinkState | null): Arrival {
+  const none: Arrival = { side: null, row: null, version: null, ring: null, note: "", comments: null };
+  const landing = commentLanding(view.rows, commentId, said);
+  if (landing.kind === "note") return { ...none, note: landing.note };
+  const comments = { target: landing.target, comment: commentId };
+  if (landing.target === "question") return { ...none, comments };
+  if ("optionId" in landing.target) return { ...none, side: landing.target.optionId, comments };
+  const versionId = landing.target.versionId;
+  const argument = view.rows.arguments[view.rows.versions[versionId]!.argumentId];
+  const at = argument ? (view.shown.versions[argument.id] ?? []).indexOf(versionId) : -1;
+  // A wording the board doesn't show where it is now (moved, and not yet updated) isn't revealed; its panel still opens.
+  if (!argument || at < 0) return { ...none, comments };
+  return { ...none, side: argument.optionId, row: at > 0 ? argument.id : null, ring: versionId, comments };
 }
 
 /** Whether a version can be seen: it leads its row, or its row is unfolded. */

@@ -47,8 +47,8 @@ import { listBoards } from "./list.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
-import { addComment, deleteComment, reopenThread, resolveThread } from "./comments.ts";
-import { hideWording, restoreWording } from "./moderation.ts";
+import { addComment, commentLink, deleteComment, reopenThread, resolveThread } from "./comments.ts";
+import { hideComment, hideWording, restoreComment, restoreWording } from "./moderation.ts";
 import { addOption, deleteOption, renameOption, restoreOption } from "./options.ts";
 import { renameQuestion } from "./settings.ts";
 import { closeBoard, closingFor, reopenBoard, setClosingTime } from "./closing.ts";
@@ -165,6 +165,8 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   not_same_thread: 409,
   thread_resolved: 409,
   thread_deleted: 409,
+  own_comment: 403,
+  comment_deleted: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -614,6 +616,14 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return answer(reply, await addComment(services, request.params.board, request.person, body.data));
   });
 
+  // Where a comment's link leads (M3b-13, D-01, M-06): its state only, for anyone who can read the board. It answers 200
+  // for an unknown comment too, so following a link to one logs no failed request in the browser.
+  app.get<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) => {
+    const role = await letIn(request.params.board, request.person, reply);
+    if (!role) return reply;
+    return { comment: await commentLink(db, request.params.board, request.params.id) };
+  });
+
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id", async (request, reply) =>
     answer(reply, await deleteComment(services, request.params.board, request.person, request.params.id)),
   );
@@ -624,6 +634,17 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   );
   app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id/resolved", async (request, reply) =>
     answer(reply, await reopenThread(services, request.params.board, request.person, request.params.id)),
+  );
+
+  // Hiding and restoring a comment (M3b-14, D-01, J-02): an Editor or the Owner, on someone else's comment, as for a
+  // wording. Neither is counted.
+  app.put<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id/hidden", async (request, reply) => {
+    const body = hideInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await hideComment(services, request.params.board, request.person, request.params.id, body.data.reason));
+  });
+  app.delete<{ Params: { board: string; id: string } }>("/api/boards/:board/comments/:id/hidden", async (request, reply) =>
+    answer(reply, await restoreComment(services, request.params.board, request.person, request.params.id)),
   );
 
   // Sources (C-01): add a new one to a wording, cite one already on the board, take one off, or edit one.

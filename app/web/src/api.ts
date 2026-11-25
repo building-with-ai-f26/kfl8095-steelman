@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 
@@ -181,6 +181,20 @@ export async function readHistory(board: string): Promise<HistoryEntry[] | null>
   }
 }
 
+/**
+ * Where a comment's link leads (M3b-13, D-01, M-06), asked only when the board didn't send the comment: its state, or
+ * null when it can't be read now.
+ */
+export async function readCommentLink(board: string, comment: string): Promise<CommentLinkState | null> {
+  try {
+    const response = await call("GET", `boards/${board}/comments/${encodeURIComponent(comment)}`);
+    return response.ok ? ((await response.json()) as { comment: CommentLinkState }).comment : null;
+  } catch (error) {
+    if (error instanceof Unreachable) return null;
+    throw error;
+  }
+}
+
 /** Restores a deleted option from History (M3a-4). Not queued. */
 export async function restoreOption(board: string, option: string): Promise<Answer> {
   return answerOf(await call("PUT", `boards/${board}/options/${encodeURIComponent(option)}/restore`));
@@ -238,6 +252,12 @@ export async function setResolved(board: string, comment: string, resolved: bool
 /** Deletes the reader's own comment (M3b-12, D-01): its text is erased and its place kept. Not queued. */
 export async function deleteComment(board: string, comment: string): Promise<Answer> {
   return answerOf(await call("DELETE", `boards/${board}/comments/${encodeURIComponent(comment)}`));
+}
+
+/** An Editor or the Owner hides someone else's comment with a reason (M3b-14, D-01, J-02), or with `null` restores it. Not queued. */
+export async function setCommentHidden(board: string, comment: string, reason: ReportReason | null): Promise<Answer> {
+  const path = `boards/${board}/comments/${encodeURIComponent(comment)}/hidden`;
+  return answerOf(reason ? await call("PUT", path, { reason }) : await call("DELETE", path));
 }
 
 /** Removes a member from the board (M3b-7, H-01): the Owner's. */
