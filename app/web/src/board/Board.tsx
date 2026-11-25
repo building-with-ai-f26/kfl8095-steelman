@@ -30,6 +30,7 @@ import { flushSync } from "react-dom";
 import { OPTIONS_PER_BOARD, can, cleanText, leaveOut, openCount } from "@steelman/shared";
 import type { ArgumentRow, CaseItem, CommentLinkState, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
+import type { IconName } from "../icons.tsx";
 import { NoAccess } from "../NoAccess.tsx";
 import { NotFound } from "../NotFound.tsx";
 import { useReader } from "../reader.ts";
@@ -57,7 +58,7 @@ import { Settings } from "./Settings.tsx";
 import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx";
 import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
-import { useDrawerTop } from "./drawer.ts";
+import { useDrawerTop, useLinger } from "./drawer.ts";
 import { captureRects, drawnRect, duration, flip, stopMoves } from "./motion.ts";
 import { cardsFor, ring, stopRings } from "./vote-motion.ts";
 import type { Rects } from "./motion.ts";
@@ -73,6 +74,7 @@ import type { ColumnViewItems } from "./OptionMenu.tsx";
 import type { RowToggle } from "./unfold.ts";
 import { beforeSettle, playSettle, readySettle, stopSettling } from "./settle.ts";
 import { growFrom, zoomInto } from "./zoom.ts";
+import { BoardSkeleton } from "./Skeleton.tsx";
 import { noteAddress, showBoard, takeOpening } from "../opening.ts";
 import type { Settling } from "./settle.ts";
 
@@ -110,7 +112,8 @@ export function Board({ boardId, version = null, comment = null, zoom = "read", 
   if (state.phase === "missing") return <NotFound />;
   if (state.phase === "no_access") return <NoAccess />;
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
-  if (!view) return null;
+  // Until the first read arrives, skeleton cards stand where the board will be (M3d-10).
+  if (!view) return <BoardSkeleton />;
   return <BoardView boardId={boardId} linked={version} linkedComment={comment} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
 }
 
@@ -1274,7 +1277,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
             </div>
           )}
           {/* Inside the main region, so a screen reader finds it with the board it's about; it's drawn at the window's foot. */}
-          {state.problem !== null ? <Problem text={state.problem} onDismiss={() => session.dismissProblem()} /> : null}
+          <Problem text={state.problem} onDismiss={() => session.dismissProblem()} />
         </main>
         <LeavingCopies leaving={leaving} onLeft={left} />
         {/* A folding row's versions, copied where they were, slide back into its lead card here (M3d-5, unfold.ts). */}
@@ -1407,12 +1410,18 @@ function readingAnchor(open: string | null): { id: string; top: number } | null 
 /**
  * Why the last thing the reader did wasn't done (M-14), at the foot of the window, above the Update pill: one sentence
  * and a way to close it, with no icon, as Material's snackbar has it. It isn't a live region: the status line has
- * already said it to a screen reader.
+ * already said it to a screen reader. It rises in and, once dismissed or replaced by nothing, fades out with what it
+ * said, as every panel does (M3d-10).
  */
-function Problem({ text, onDismiss }: { text: string; onDismiss(): void }) {
+function Problem({ text, onDismiss }: { text: string | null; onDismiss(): void }) {
+  const { shown, leaving, left } = useLinger(text);
+  if (shown === null) return null;
+  const ended = (event: React.AnimationEvent) => {
+    if (leaving && event.target === event.currentTarget) left();
+  };
   return (
-    <div className="sm-problem">
-      <span>{text}</span>
+    <div className={`sm-problem${leaving ? " sm-exit" : ""}`} aria-hidden={leaving || undefined} inert={leaving} onAnimationEnd={ended}>
+      <span>{shown}</span>
       <button type="button" className="cursor-interaction" aria-label="Dismiss" data-tooltip="Dismiss" onClick={onDismiss}>
         <Icon name="x" size={15} />
       </button>
@@ -1420,48 +1429,50 @@ function Problem({ text, onDismiss }: { text: string; onDismiss(): void }) {
   );
 }
 
+/** What the pill says, with its icon, and whether it offers Update. */
+interface PillSays {
+  icon: IconName;
+  text: string;
+  quiet: boolean;
+  update: boolean;
+}
+
 /** "Too many in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
+function pillSays(state: SessionState, count: number): PillSays | null {
+  // Over a rate limit: what's waiting is sent once the wait has passed (architecture §7).
+  if (state.tooMany !== null) return { icon: "clock", text: `${state.tooMany}${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`, quiet: state.offline || state.backOnline !== null, update: false };
+  if (state.offline) return { icon: "wifi-off", text: `Offline${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`, quiet: true, update: false };
+  if (state.backOnline !== null) return { icon: "wifi", text: `Back online${state.backOnline > 0 ? ` · ${state.backOnline} sent` : ""}`, quiet: true, update: false };
+  if (count > 0) return { icon: "refresh-cw", text: `${count} ${count === 1 ? "change" : "changes"}`, quiet: false, update: true };
+  return null;
+}
+
+const samePill = (a: PillSays, b: PillSays) => a.icon === b.icon && a.text === b.text && a.quiet === b.quiet && a.update === b.update;
+
+/**
+ * The pill at the foot of the window. It rises in, and once Update is pressed or there's nothing left to say, it fades
+ * out with what it last said, as every panel does (M3d-10); it stays one element, the status region it always was.
+ */
 function Pill({ state, count, onUpdate }: { state: SessionState; count: number; onUpdate(): void }) {
-  let content: React.ReactNode = null;
-  if (state.tooMany !== null) {
-    // Over a rate limit: what's waiting is sent once the wait has passed (architecture §7).
-    content = (
-      <span>
-        <Icon name="clock" size={15} />
-        {`${state.tooMany}${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`}
-      </span>
-    );
-  } else if (state.offline) {
-    content = (
-      <span>
-        <Icon name="wifi-off" size={15} />
-        {`Offline${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`}
-      </span>
-    );
-  } else if (state.backOnline !== null) {
-    content = (
-      <span>
-        <Icon name="wifi" size={15} />
-        {`Back online${state.backOnline > 0 ? ` · ${state.backOnline} sent` : ""}`}
-      </span>
-    );
-  } else if (count > 0) {
-    content = (
-      <>
-        <span>
-          <Icon name="refresh-cw" size={15} />
-          {`${count} ${count === 1 ? "change" : "changes"}`}
-        </span>
-        <button type="button" className="cursor-interaction" onClick={onUpdate}>
-          Update
-        </button>
-      </>
-    );
-  }
-  const quiet = state.offline || state.backOnline !== null;
+  const { shown, leaving, left } = useLinger(pillSays(state, count), samePill);
+  const ended = (event: React.AnimationEvent) => {
+    if (leaving && event.target === event.currentTarget) left();
+  };
   return (
-    <div className={`sm-fresh${quiet ? " sm-quiet" : ""}`} role="status" hidden={content === null}>
-      {content}
+    <div className={`sm-fresh${shown?.quiet ? " sm-quiet" : ""}${leaving ? " sm-exit" : ""}`} role="status" hidden={shown === null} aria-hidden={leaving || undefined} inert={leaving} onAnimationEnd={ended}>
+      {shown ? (
+        <>
+          <span>
+            <Icon name={shown.icon} size={15} />
+            {shown.text}
+          </span>
+          {shown.update ? (
+            <button type="button" className="cursor-interaction" onClick={onUpdate}>
+              Update
+            </button>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }

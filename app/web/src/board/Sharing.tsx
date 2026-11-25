@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
+import { useExit } from "./drawer.ts";
 import { MEMBER_ROLES, can } from "@steelman/shared";
 import type { Access, Closing, Person, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
@@ -60,6 +61,8 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
   const [copied, setCopied] = useState(false);
   const pill = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
+  // It fades out as it closes, as every panel and menu does (M3d-10).
+  useExit(panel, open);
   const owner = role === "owner";
   // The shared rule decides (M3b-5): someone who isn't the Owner sees the settings off; on a closed board the Owner
   // sees them faded, saying why, as the service would refuse them.

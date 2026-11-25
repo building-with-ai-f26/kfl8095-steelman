@@ -168,7 +168,7 @@ body { margin:0; }
 #steelman-study .sm-post h2 a:focus-visible { outline:none; }
 /* The date and the counts stay above the link, so their tooltips (the full date; "3 arguments") still show. */
 #steelman-study .sm-post-meta time, #steelman-study .sm-post-options b { position:relative; z-index:1; }
-#steelman-study .sm-post:has(h2 a:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:2px; }
+#steelman-study .sm-post:has(h2 a:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:3px; }
 #steelman-study .sm-feed-empty { display:grid; justify-items:center; gap:14px; }
 #steelman-study .sm-feed-empty p { margin:0; }
 @media(max-width:640px) {
@@ -181,7 +181,9 @@ body { margin:0; }
 /* Report (M2-3): Something else asks what's wrong, in the menu's place. */
 #steelman-study .sm-report-note { display:grid; gap:6px; }
 #steelman-study .sm-report-note textarea { margin:0 4px; padding:6px 8px; border:1px solid #c8c8c8; border-radius:6px; font:400 13px/1.4 var(--sm-sans); resize:vertical; }
-#steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); outline:0; }
+#steelman-study .sm-report-note textarea:focus { border-color:var(--sm-ink); }
+/* Its focus ring is every field's (M3d-10): 1 px out from its edge. */
+#steelman-study .sm-report-note textarea:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
 #steelman-study .sm-report-actions { display:flex; justify-content:flex-end; align-items:center; gap:8px; padding:2px 4px 2px; }
 
 /* The reporter's own report (M2-3), where an Editor sees the red flag: quiet, since it asks nothing of them. */
@@ -232,8 +234,8 @@ body { margin:0; }
 #steelman-study .sm-drawer { position:fixed; top:var(--sm-drawer-top, 69px); z-index:50; max-height:calc(100vh - var(--sm-drawer-top, 69px) - 12px); overflow:auto; }
 /* While the Update pill shows, the drawer stops above it, so the pill never covers Comment. */
 #steelman-study .sm-surface:has(> .sm-fresh:not([hidden])) .sm-drawer { max-height:calc(100vh - var(--sm-drawer-top, 69px) - 68px); }
-/* A closing drawer fades out as it faded in (drawer.ts keeps a copy for the fade); with reduced motion it just goes. */
-#steelman-study .sm-drawer.sm-leaving:not([hidden]) { animation:sm-leave var(--sm-leave) var(--sm-ease) forwards; pointer-events:none; }
+/* A closing drawer fades out as it faded in (drawer.ts keeps a copy for the fade); with reduced motion it just goes.
+   Every other panel, menu, and bar now leaves the same way (M3d-10, below). */
 @keyframes sm-leave { from { opacity:1; translate:0 0; } to { opacity:0; translate:0 4px; } }
 /* Comments keeps its head and its box in place and scrolls the threads between them. */
 #steelman-study .sm-comments-drawer { overflow:hidden; }
@@ -272,7 +274,7 @@ body { margin:0; }
    ring lasts; with reduced motion it stays still for that time instead. It takes the cursor without the focus outline,
    as the no-access card's title does (M3a-9), since a page that opens on it hasn't been used by keyboard yet. */
 #steelman-study .sm-comments-body .sm-comment[tabindex="-1"]:focus:not(.sm-arrived) { outline:none; }
-#steelman-study .sm-comments-body .sm-comment.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; border-radius:4px; animation:sm-comment-ring 1400ms var(--sm-ease) both; }
+#steelman-study .sm-comments-body .sm-comment.sm-arrived { outline:2px solid var(--sm-ink); outline-offset:4px; border-radius:4px; animation:sm-comment-ring var(--sm-ring) var(--sm-ease) both; }
 @keyframes sm-comment-ring { 0% { outline-color:transparent; } 20% { outline-color:var(--sm-ink); } 100% { outline-color:transparent; } }
 /* A thread resolved or deleted, or a reply deleted, folds away (Comments.tsx keeps a copy for it); with reduced motion
    there is no copy. The copy's height closes to nothing, and the gap after it with it. */
@@ -340,7 +342,9 @@ body { margin:0; }
    the scene's edges, so a copy never makes the page scroll sideways. Its motion is Web Animations, so reduced motion
    draws no copy at all. */
 #steelman-study .sm-leaving-layer { position:absolute; inset:0; z-index:0; overflow:clip; pointer-events:none; }
-#steelman-study .sm-leaving { position:absolute; box-sizing:border-box; border:1px dashed var(--sm-line); border-radius:10px; }
+/* Only the copies in this layer: a closing drawer's copy is marked sm-leaving too (drawer.ts), and this rule made it
+   jump from its fixed place, with a dashed edge, as it faded (M3d-10). */
+#steelman-study .sm-leaving-layer > .sm-leaving { position:absolute; box-sizing:border-box; border:1px dashed var(--sm-line); border-radius:10px; }
 #steelman-study .sm-leaving-face { position:absolute; left:-1px; top:-1px; }
 #steelman-study .sm-leaving-face > .sm-card { box-sizing:border-box; width:100%; height:100%; margin:0; }
 #steelman-study .sm-leaving-note { display:flex; align-items:center; gap:6px; margin:0; padding:14px 40px 14px 16px; font-size:12px; color:var(--sm-quiet); }
@@ -363,3 +367,87 @@ body { margin:0; }
 #steelman-study .sm-vote-roll { position:absolute; display:grid; place-items:center; box-sizing:border-box; margin:0; opacity:0; pointer-events:none; font-variant-numeric:tabular-nums; }
 /* A board's copy shrinking into its post on the list (M3d-9, zoom.ts): over the window, never in the reader's way. */
 #steelman-study .sm-closing-layer { position:fixed; inset:0; z-index:60; overflow:clip; pointer-events:none; }
+
+/* M3d-10, A-01: skeleton cards while the board's first read is on its way (Skeleton.tsx). Blocks in the board's own
+   layout, with the scene's padding, the question's width, the columns' grid, and their rows' spacing, so the board
+   replaces them where they stand, as GitHub's Primer draws a skeleton for a large area and YouTube draws grey blocks
+   where its videos will be. The surface is the board's own. The blocks wait twice --sm-slow (Primer shows nothing for
+   a load under about a second) and then fade in on --sm-medium, and then pulse gently; the prototype's reduced-motion rule stops both, so they are
+   drawn at once and stay still. */
+#steelman-study .sm-skeleton { display:flex; flex-direction:column; min-height:calc(var(--sm-window-h,100vh) - 57px); background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+#steelman-study .sm-skeleton-scene { position:relative; padding:30px 28px 24px; isolation:isolate; animation:sm-skeleton-in var(--sm-medium) var(--sm-ease) calc(var(--sm-slow) * 2) both; }
+@keyframes sm-skeleton-in { from { opacity:0; } }
+#steelman-study .sm-skeleton-head { display:grid; gap:18px; width:86%; margin:0 auto; padding:24px 25px 26px; border:1px solid var(--sm-ink); border-top-width:3px; border-radius:6px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+#steelman-study .sm-skeleton-bar { display:block; height:12px; border-radius:3px; background:color-mix(in srgb, var(--sm-line) 70%, var(--sm-card)); animation:sm-skeleton-pulse calc(var(--sm-slow) * 4) var(--sm-ease) infinite alternate; }
+@keyframes sm-skeleton-pulse { to { opacity:.45; } }
+#steelman-study .sm-skeleton-head .sm-skeleton-bar, #steelman-study .sm-skeleton-column-head .sm-skeleton-bar { background:#ffffff2e; }
+#steelman-study .sm-skeleton-question { width:min(560px, 70%); height:30px; border-radius:4px; }
+#steelman-study .sm-skeleton-pill { width:150px; height:22px; border-radius:999px; }
+#steelman-study .sm-skeleton-board { display:grid; grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr); padding-top:56px; }
+#steelman-study .sm-skeleton-sides { display:none; }
+#steelman-study .sm-skeleton-column { position:relative; z-index:0; min-width:0; padding:0 12px 16px; }
+#steelman-study .sm-skeleton-column + .sm-skeleton-column { grid-column:3; }
+/* The first column leaves room for the importance axis, as the board's does. */
+#steelman-study .sm-skeleton-sides + .sm-skeleton-column { padding-left:40px; }
+#steelman-study .sm-skeleton-column::before { content:""; position:absolute; inset:17px 0 0; border:1px solid var(--sm-line); border-radius:10px; background:var(--sm-panel); box-shadow:var(--sm-shadow-panel); z-index:-1; }
+#steelman-study .sm-skeleton-column-head { display:flex; align-items:center; min-height:58px; margin-bottom:28px; padding:15px 18px; border:1px solid var(--sm-ink); border-top-width:2px; border-radius:6px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+#steelman-study .sm-skeleton-column-head .sm-skeleton-bar { width:30%; height:18px; }
+#steelman-study .sm-skeleton-row { display:grid; grid-template-columns:32px minmax(0,1fr); gap:8px; margin-bottom:24px; }
+#steelman-study .sm-skeleton-vote { height:76px; margin-top:12px; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-card); box-shadow:var(--sm-shadow-sm); }
+#steelman-study .sm-skeleton-card { display:grid; gap:10px; margin-right:24px; padding:20px 18px 0; border:1px solid var(--sm-line); border-radius:10px; background:var(--sm-card); box-shadow:var(--sm-shadow); }
+#steelman-study .sm-skeleton-card .sm-skeleton-bar:nth-child(2) { width:72%; }
+#steelman-study .sm-skeleton-card .sm-skeleton-author { width:22%; height:9px; margin-top:4px; }
+/* The card's footer, under its rule, where the meter will be. */
+#steelman-study .sm-skeleton-foot { display:block; margin:6px -18px 0; padding:13px 18px; border-top:1px solid var(--sm-line); }
+#steelman-study .sm-skeleton-foot .sm-skeleton-bar { width:28%; height:10px; }
+/* On a phone the board shows one column under the dark strip of sides, and so does its skeleton. */
+@media(max-width:640px) {
+  #steelman-study .sm-skeleton-scene { padding:20px 10px; }
+  #steelman-study .sm-skeleton-head { width:100%; padding:20px 18px; }
+  #steelman-study .sm-skeleton-question { width:80%; height:26px; }
+  #steelman-study .sm-skeleton-board { grid-template-columns:minmax(0,1fr); row-gap:30px; padding-top:38px; padding-left:12px; }
+  #steelman-study .sm-skeleton-sides { display:flex; gap:4px; height:50px; margin:-14px 0 -10px -12px; padding:4px; border-radius:8px; background:var(--sm-ink); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-skeleton-sides span { flex:1 1 0; border-radius:5px; }
+  #steelman-study .sm-skeleton-sides span:first-child { background:var(--sm-card); }
+  #steelman-study .sm-skeleton-column, #steelman-study .sm-skeleton-sides + .sm-skeleton-column { padding:0 8px 15px; }
+  #steelman-study .sm-skeleton-column-head { padding:13px; }
+  #steelman-study .sm-skeleton-column + .sm-skeleton-column { display:none; }
+}
+
+/* M3d-10, A-02: a card lifts a pixel under the pointer, in its hover shadow, and settles back to its resting shadow as
+   it's pressed on its wording, so it answers the pointer as the list's posts do. The lift is the `translate` property,
+   which adds to the board's moves on `transform` rather than replacing them, and neither it nor the shadow moves
+   anything else, so nothing reflows. An open card, or one in an unfolded row, holds still to be read. Only where a
+   pointer hovers, so a tap on a phone doesn't leave a card raised. A card whose comments are open keeps its ink ring
+   while it's pressed. */
+#steelman-study .sm-card { transition:box-shadow var(--sm-fast) var(--sm-ease), border-color var(--sm-fast) var(--sm-ease), translate var(--sm-fast) var(--sm-ease); }
+@media(hover:hover) {
+  #steelman-study .sm-idea:not(.sm-open) .sm-card:not(.sm-expanded):hover { translate:0 -1px; }
+}
+#steelman-study .sm-idea:not(.sm-open) .sm-card:not(.sm-expanded):has(.sm-claim-button:active) { translate:0 0; }
+#steelman-study .sm-idea:not(.sm-open) .sm-card:not(.sm-expanded, .sm-commenting):has(.sm-claim-button:active) { box-shadow:var(--sm-shadow),inset 0 1px 0 #fff; }
+
+/* M3d-10, M-15: one exit for every panel, menu, and bar, the prototype's entrance (a fade and a 4 px rise on
+   --sm-medium) played back on --sm-leave. Share, the drawers, and the menus leave through an inert copy (drawer.ts,
+   useExit); the problem bar and the Update pill stay one element and leave themselves (useLinger). The bars keep their
+   -50% centring as they fall, as sm-fresh-enter keeps it as they rise. */
+#steelman-study :is(.sm-drawer.sm-leaving, .sm-exit):not([hidden]) { animation:sm-leave var(--sm-leave) var(--sm-ease) forwards; pointer-events:none; }
+#steelman-study :is(.sm-fresh, .sm-problem).sm-exit:not([hidden]) { animation-name:sm-fresh-leave; }
+@keyframes sm-fresh-leave { from { opacity:1; translate:-50% 0; } to { opacity:0; translate:-50% 4px; } }
+
+/* M3d-10, M-15: one focus ring on every control. It is the prototype's: 2 px solid, in ink on a light ground and in
+   white on a dark one, 3 px out from a button, a link, or a choice, and 1 px out from a field, which has its own edge to
+   hug. The controls the prototype left to the browser's ring (links, selects, and the date and time fields) draw it
+   too, at the lowest weight, so a field the prototype rings in its own way keeps its way. The controls on a dark ground
+   it missed (an option's header, the phone's sides, the Update pill, the problem bar, and the analytics notice) draw it
+   in white, while Share, a white panel hanging from the dark question, draws it in ink rather than the question's white.
+   An option's name field and a choice now sit at the field's and the button's distances, not 2 px. */
+#steelman-study :where(a[href]):focus-visible { outline:2px solid var(--sm-ink); outline-offset:3px; }
+#steelman-study :where(select, input:not([type="checkbox"], [type="radio"])):focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+#steelman-study :is(.sm-column-head, .sm-sides, .sm-fresh, .sm-problem, .sm-analytics-notice) :focus-visible { outline-color:#fff; }
+#steelman-study .sm-head .sm-share :focus-visible { outline-color:var(--sm-ink); }
+#steelman-study .sm-option-input:focus-visible { outline-offset:1px; }
+#steelman-study .sm-choice:has(input:focus-visible) { outline-offset:3px; }
+/* Share's invite field holds its input and its role together in one edge, so the ring goes around that edge while
+   the input has the cursor, as the field's own darker edge already says; the role, a select, rings itself. */
+#steelman-study .sm-share-field:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:1px; }
