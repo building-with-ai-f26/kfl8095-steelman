@@ -42,7 +42,12 @@ test("M3a-2, A-07: the Owner renames an option in its header; another reader see
 
   await menuButton(page, "Yes").click();
   // With two options, the prototype gives that reason first; with three, the arguments are the reason.
-  expect(await menu(page).getByRole("menuitem").allTextContents()).toEqual(["Rename", "DeleteA question needs at least two options."]);
+  expect(await menu(page).getByRole("menuitem").allTextContents()).toEqual([
+    "Rename",
+    "DeleteA question needs at least two options.",
+    "Hide this columnIt folds to a strip. Click the strip to bring it back.",
+    "Show only this columnThis hides the other columns.",
+  ]);
   await menu(page).getByRole("menuitem", { name: "Rename" }).click();
   await expect(nameField(page)).toHaveValue("Yes");
   await expect(nameField(page)).toBeFocused();
