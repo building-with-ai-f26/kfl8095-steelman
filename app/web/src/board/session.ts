@@ -6,7 +6,7 @@
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
 import type { Access, BoardOrder, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
-import { Unreachable, addComment, addOption, deleteComment, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
+import { Unreachable, addComment, addOption, deleteComment, setCommentHidden, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
 
@@ -787,6 +787,31 @@ export class BoardSession {
     void this.refresh();
     if (answer.status === "not_found") return "This comment is no longer on the board.";
     if (answer.status === "refused" && answer.reason === "not_author") return "Only the person who wrote a comment can delete it.";
+    return refusalNote(answer);
+  }
+
+  /**
+   * An Editor or the Owner hides someone else's comment with one of the report reasons (M3b-14, D-01, J-02), or with
+   * `null` restores it. Not queued, like hiding a wording. The board is read again before it answers, so the panel has
+   * drawn Restore, or Hide, by the time it puts the focus there. Answers null once it's done, or why it wasn't.
+   */
+  async setCommentHidden(id: string, reason: ReportReason | null): Promise<string | null> {
+    let answer: Answer;
+    try {
+      answer = await setCommentHidden(this.board, id, reason);
+    } catch (error) {
+      if (!(error instanceof Unreachable)) throw error;
+      return reason ? "You’re offline, so the comment wasn’t hidden." : "You’re offline, so the comment wasn’t restored.";
+    }
+    if (answer.status === "done" || answer.status === "already_done") {
+      this.announce(reason ? "The comment is hidden." : "The comment is restored.");
+      await this.refresh();
+      return null;
+    }
+    void this.refresh();
+    if (answer.status === "not_found") return "This comment is no longer on the board.";
+    if (answer.status === "refused" && answer.reason === "comment_deleted") return reason ? "This comment was deleted, so it wasn’t hidden." : "This comment was deleted, so it wasn’t restored.";
+    if (answer.status === "refused" && answer.reason === "own_comment") return reason ? "You can’t hide your own comment." : "You can’t restore your own comment.";
     return refusalNote(answer);
   }
 

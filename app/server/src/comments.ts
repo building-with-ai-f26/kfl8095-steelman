@@ -3,7 +3,9 @@
 // resolves or reopens one, on a closed board too; and deletes their own. All
 // go through the write path. None adds a row to the change log, as the
 // prototype logs none: the comment table is the only place that holds one
-// (invariant 7 keeps what people write out of the log anyway).
+// (invariant 7 keeps what people write out of the log anyway). Hiding and
+// restoring a comment (M3b-14) are a moderator's, in moderation.ts, and each
+// does add a change row, which holds no text.
 //
 // A thread is a first comment and the replies under it, one level deep: a
 // reply names its thread's first comment as its parent and the same target.

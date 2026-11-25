@@ -258,6 +258,16 @@ body { margin:0; }
 #steelman-study .sm-comments-body .sm-comment-confirm { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:8px 0 0 29px; font-size:12px; font-weight:600; }
 #steelman-study .sm-comments-body .sm-comment-confirm .sm-button { min-height:28px; padding:0 10px; font-size:12px; font-weight:600; }
 #steelman-study .sm-comments-body .sm-comment .sm-comment-problem { margin:6px 0 0 29px; font-size:12px; }
+/* Hiding a comment (M3b-14): Hide's reasons sit where its buttons were, under "Hide it as", and rise in as Delete's
+   question does. A hidden comment's struck text, which only an Editor or the Owner reads, lines up with the sentence
+   above it; the prototype's rule for it drops the comment's indent. A comment hidden or restored while the panel is
+   open fades its new text in once. */
+#steelman-study .sm-comments-body .sm-comment-reasons { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:6px 0 0 29px; font-size:12px; animation:sm-enter var(--sm-medium) var(--sm-ease); }
+#steelman-study .sm-comments-body .sm-comment-reasons > span { font-weight:600; }
+#steelman-study .sm-comments-body .sm-comment-reasons .sm-link-button { min-height:24px; }
+#steelman-study .sm-comments-body .sm-comment .sm-removed-claim { margin:2px 0 0 29px; }
+#steelman-study .sm-comments-body .sm-comment .sm-comment-swapped { animation:sm-comment-swap var(--sm-medium) var(--sm-ease); }
+@keyframes sm-comment-swap { from { opacity:0; } }
 /* The comment a link points to (M3b-13) is ringed as a linked card is, then the ring fades once, over the 1.4 s the
    ring lasts; with reduced motion it stays still for that time instead. It takes the cursor without the focus outline,
    as the no-access card's title does (M3a-9), since a page that opens on it hasn't been used by keyboard yet. */
