@@ -44,6 +44,7 @@ import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx
 import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop } from "./drawer.ts";
+import { duration } from "./motion.ts";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
@@ -51,9 +52,6 @@ import { Wires } from "./Wires.tsx";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
 const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
-
-/** How long a version a link points to stays ringed. */
-const RING_MS = 1_400;
 
 /** The board's view (E-01): "read" is the whole board, "case" each option's strongest case. */
 export type Zoom = "read" | "case";
@@ -474,7 +472,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   useEffect(() => {
     if (!arrived) return;
     document.querySelector(`[data-card="${CSS.escape(arrived)}"]`)?.scrollIntoView({ block: "center", inline: "nearest" });
-    const timer = window.setTimeout(() => setArrived(null), RING_MS);
+    // It stays ringed for --sm-ring.
+    const timer = window.setTimeout(() => setArrived(null), duration("ring"));
     return () => window.clearTimeout(timer);
   }, [arrived]);
   useEffect(() => {

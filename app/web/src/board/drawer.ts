@@ -5,9 +5,7 @@
 
 import { useEffect, useLayoutEffect } from "react";
 import type { RefObject } from "react";
-
-/** How long a closing drawer takes to fade out (--sm-medium less a little, so a new one isn't kept waiting). */
-const LEAVE_MS = 160;
+import { duration, reducedMotion } from "./motion.ts";
 
 /**
  * Lets a drawer fade out as it closes, rather than vanish, as it fades in when it opens. React takes the drawer away
@@ -19,7 +17,7 @@ export function useDrawerExit(drawer: RefObject<HTMLElement | null>): void {
     const node = drawer.current;
     const parent = node?.parentElement;
     return () => {
-      if (!node || !parent || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (!node || !parent || reducedMotion()) return;
       const scroll = [...node.querySelectorAll<HTMLElement>("*")].map((element) => element.scrollTop);
       const ghost = node.cloneNode(true) as HTMLElement;
       for (const element of [ghost, ...ghost.querySelectorAll("[id]")]) element.removeAttribute("id");
@@ -39,7 +37,9 @@ export function useDrawerExit(drawer: RefObject<HTMLElement | null>): void {
         });
         const remove = () => ghost.remove();
         ghost.addEventListener("animationend", remove, { once: true });
-        window.setTimeout(remove, LEAVE_MS + 40);
+        // How long a closing drawer takes to fade out: --sm-leave, a little less than --sm-medium, so a new one isn't kept
+        // waiting.
+        window.setTimeout(remove, duration("leave", parent) + 40);
       });
     };
   }, [drawer]);

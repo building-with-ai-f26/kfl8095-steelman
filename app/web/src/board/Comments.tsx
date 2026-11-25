@@ -45,6 +45,7 @@ import { fullDate } from "../when.ts";
 import { REASONS } from "./Card.tsx";
 import { initials } from "./Sharing.tsx";
 import { useDrawerExit } from "./drawer.ts";
+import { duration, reducedMotion } from "./motion.ts";
 
 /** What the bubbles need from the board: each subject's count, which subject is open, and a way to open one. */
 export interface CommentBubbles {
@@ -143,9 +144,6 @@ const REMOVED: Record<ReportReason, string> = {
   other: "A moderator removed this comment.",
 };
 
-/** How long a thread or a reply takes to fold away (M3b-12), as the drawer's own motion. */
-const FOLD_MS = 220;
-
 /** A thread or a reply that just left the open list, drawn for a moment as it folds away. */
 interface Folding {
   key: string;
@@ -229,9 +227,9 @@ export function Comments({ target, view, question, reader, draft, onDraft, onSen
     }
     for (const thread of threads) if (seen.has(thread.comment.id) && !was.some((w) => w.comment.id === thread.comment.id)) returned.push(thread.comment.id);
     if (returned.length) setBack((ids) => new Set([...ids, ...returned]));
-    if (!went.length || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!went.length || reducedMotion()) return;
     setFolding((all) => [...all.filter((f) => !went.some((w) => w.key === f.key)), ...went]);
-    timers.current.push(window.setTimeout(() => setFolding((all) => all.filter((f) => !went.includes(f))), FOLD_MS + 40));
+    timers.current.push(window.setTimeout(() => setFolding((all) => all.filter((f) => !went.includes(f))), duration("fold") + 40));
   });
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
   const folded = (key: string) => setFolding((all) => all.filter((f) => f.key !== key));
