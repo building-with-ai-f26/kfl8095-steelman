@@ -2,7 +2,8 @@
 // reader holds (session.ts). Rows sit where `view.shown` puts them; counts
 // change in place; the pill counts what Update would change. Update shuffles
 // the rows from where they were into the new order (M3d-3, motion.ts flip()),
-// and nothing else moves them.
+// and nothing else moves them. What the reader adds rises in, and what they
+// delete leaves through a copy of its card (M3d-4, Leaving.tsx).
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -48,6 +49,8 @@ import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop } from "./drawer.ts";
 import { captureRects, drawnRect, duration, flip, stopMoves } from "./motion.ts";
 import type { Rects } from "./motion.ts";
+import { LeavingCopies, arrive, comeBack, copyOf, measure } from "./Leaving.tsx";
+import type { Arriving, Leaving } from "./Leaving.tsx";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
@@ -382,6 +385,9 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
       const rowsHere = view.shown.arguments[optionId] ?? [];
       // The Undo bar sits under the row, or where the row was: under the one above it.
       const after = last ? (rowsHere[rowsHere.indexOf(version.argumentId) - 1] ?? null) : version.argumentId;
+      // Its card leaves through a copy, over where it was (M3d-4); the board takes its layout without it at once.
+      const copy = scene.current ? copyOf(version.id, version.authorName, scene.current) : null;
+      if (copy) setLeaving((all) => [...all, copy]);
       if (openVersion === version.id) setExpanded(null);
       if (last && open === version.argumentId) setOpen(null);
       session.hold({ action: { kind: "delete", versionId: version.id }, label: last ? "Argument deleted." : "Version deleted.", optionId, after });
@@ -404,7 +410,13 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const undo = () => {
     const held = state.undo;
     session.undo();
-    if (held?.action.kind === "delete") setFocusTo(cardControl(held.action.versionId, "claim"));
+    if (held?.action.kind === "delete") {
+      // A copy still leaving goes at once, and the card comes back from where it left (M3d-4).
+      const { versionId } = held.action;
+      setLeaving((all) => all.filter((copy) => copy.versionId !== versionId));
+      returning.current = versionId;
+      setFocusTo(cardControl(versionId, "claim"));
+    }
     if (held?.action.kind === "uncite") setFocusTo(`[data-card="${CSS.escape(held.action.versionId)}"] [data-key="src-${CSS.escape(held.action.sourceId)}"]`);
   };
 
@@ -552,12 +564,16 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
       setWriting(null);
     },
     addWording(argumentId, draft) {
-      session.act({ kind: "addWording", argumentId, id: browserIds.itemId(), ...draft });
+      const id = browserIds.itemId();
+      arriving.current.set(id, { versionId: id, scope: `[data-node="${CSS.escape(argumentId)}"] .sm-track`, movers: ".sm-add-card", queued: false, before: null });
+      session.act({ kind: "addWording", argumentId, id, ...draft });
       keep(`w:${argumentId}`, EMPTY_DRAFT);
       setWriting(null);
     },
     addArgument(optionId, draft) {
-      session.act({ kind: "addArgument", id: browserIds.itemId(), optionId, versionId: browserIds.itemId(), ...draft });
+      const versionId = browserIds.itemId();
+      arriving.current.set(versionId, { versionId, scope: `#sm-col-${CSS.escape(optionId)}`, movers: ".sm-new-idea", queued: false, before: null });
+      session.act({ kind: "addArgument", id: browserIds.itemId(), optionId, versionId, ...draft });
       keep(`a:${optionId}`, EMPTY_DRAFT);
       setWriting(null);
     },
@@ -566,6 +582,13 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   // Where every row and card was drawn when Update was pressed, so that they move from there into the new order.
   const shuffle = useRef<Rects | null>(null);
   const scene = useRef<HTMLDivElement>(null);
+  /** The reader's own additions on their way (M3d-4), by the new card's version ID: only these rise in when they arrive. */
+  const arriving = useRef(new Map<string, Arriving>());
+  /** Copies of the reader's deleted cards, leaving (M3d-4). */
+  const [leaving, setLeaving] = useState<Leaving[]>([]);
+  const left = useCallback((key: number) => setLeaving((all) => all.filter((copy) => copy.key !== key)), []);
+  /** The version Undo just brought back, whose card plays the exit backwards once it's drawn (M3d-4). */
+  const returning = useRef<string | null>(null);
 
   // Update holds the row you're reading still on screen while the others move around it (M3d-3). The view's order
   // changes on polls too, but only Update leaves rects behind, so other people's votes never move anything.
@@ -584,6 +607,32 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     // Measured after the scroll, as the rects before it were, so the row being read has no offset and stays still.
     if (before && root) redrawWhile(flip(before, root, { lift: true, travel: true }).animations);
   }, [view.shown]);
+
+  // The reader's own addition rises in once its card is drawn, and the slot after it makes room; other people's
+  // additions take the same path into the view and join at once. Until it arrives, where the slot is is noted after
+  // every render, so that it moves from where it was. One the queue no longer holds and that never arrived (refused)
+  // is forgotten. A card Undo brought back plays the exit backwards (M3d-4).
+  useLayoutEffect(() => {
+    const back = returning.current;
+    returning.current = null;
+    const card = back ? document.querySelector(`.sm-card[data-card="${CSS.escape(back)}"]`) : null;
+    if (card) redrawWhile([comeBack(card)]);
+    for (const [id, arrival] of arriving.current) {
+      const arrived = document.querySelector(`.sm-card[data-card="${CSS.escape(id)}"]`);
+      if (arrived) {
+        arriving.current.delete(id);
+        redrawWhile(arrive(arrived, arrival));
+        continue;
+      }
+      const queued = state.mine.some((action) => (action.kind === "addArgument" && action.versionId === id) || (action.kind === "addWording" && action.id === id));
+      if (!queued && arrival.queued) {
+        arriving.current.delete(id);
+        continue;
+      }
+      arrival.queued ||= queued;
+      measure(arrival);
+    }
+  });
 
   useEffect(() => {
     onShown(true);
@@ -957,6 +1006,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
           {/* Inside the main region, so a screen reader finds it with the board it's about; it's drawn at the window's foot. */}
           {state.problem !== null ? <Problem text={state.problem} onDismiss={() => session.dismissProblem()} /> : null}
         </main>
+        <LeavingCopies leaving={leaving} onLeft={left} />
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
       {/* The pill sits above everything, so it waits for the tour: Update would move the cards the tour points at. */}
