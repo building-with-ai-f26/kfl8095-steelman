@@ -211,7 +211,8 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
                     </select>
                   ) : null}
                 </div>
-                <p className="sm-access-hint">{hint}</p>
+                {/* A second sentence, so the first stays as it was (M3b-11): commenting needs only a way in. */}
+                <p className="sm-access-hint">{`${hint} Anyone who can open it can comment.`}</p>
                 {owner ? null : <p className="sm-access-hint">Only the owner can change who can get in.</p>}
               </section>
             </div>

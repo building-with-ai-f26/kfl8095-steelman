@@ -21,6 +21,8 @@ const PATHS = {
     "M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0",
   ],
   "user-plus": ["M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", "M5 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0", "M19 8v6", "M22 11h-6"],
+  // The speech bubble on cards, option headers, and the question (M3b-11, D-01), from Lucide 1.17.0's message-square.
+  "message-square": ["M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"],
   history: ["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", "M3 3v5h5", "M12 7v5l4 2"],
   clock: ["M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0", "M12 6v6l4 2"],
   plus: ["M5 12h14", "M12 5v14"],

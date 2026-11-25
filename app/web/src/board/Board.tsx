@@ -11,8 +11,8 @@
 // does, so Back leaves the board instead of closing cards one by one.
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { OPTIONS_PER_BOARD, can, cleanText, leaveOut } from "@steelman/shared";
-import type { ArgumentRow, CaseItem, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
+import { OPTIONS_PER_BOARD, can, cleanText, leaveOut, openCount } from "@steelman/shared";
+import type { ArgumentRow, CaseItem, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
 import { Axis, Icon } from "../icons.tsx";
 import { NoAccess } from "../NoAccess.tsx";
 import { NotFound } from "../NotFound.tsx";
@@ -38,6 +38,9 @@ import { rememberPlace } from "../places.ts";
 import { OptionMenu } from "./OptionMenu.tsx";
 import { History } from "./History.tsx";
 import { Settings } from "./Settings.tsx";
+import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx";
+import type { CommentBubbles } from "./Comments.tsx";
+import { useDrawerTop } from "./drawer.ts";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
@@ -159,12 +162,12 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     if (state.optionGone) return void document.querySelector<HTMLElement>(".sm-option-undo button")?.focus();
     if (!was || (document.activeElement && document.activeElement !== document.body)) return;
     if (zoom === "case") return void document.querySelector<HTMLElement>(".sm-zoom [aria-pressed='true']")?.focus();
-    (addButton.current ?? document.querySelector<HTMLElement>(".sm-column-tools button"))?.focus();
+    (addButton.current ?? document.querySelector<HTMLElement>(".sm-column-tools [aria-haspopup='menu']"))?.focus();
   }, [state.optionGone]);
   const undoOptionDelete = () => {
     const gone = state.optionGone;
     session.undoOptionDelete();
-    if (gone && zoom !== "case") setFocusTo(`#sm-col-${CSS.escape(gone.id)} .sm-column-tools button`);
+    if (gone && zoom !== "case") setFocusTo(`#sm-col-${CSS.escape(gone.id)} .sm-column-tools [aria-haspopup='menu']`);
   };
   /** Brings an argument into view, with the cursor on its leading wording: from a row combined into it. */
   const goTo = (argumentId: string) => {
@@ -397,6 +400,15 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     if (held?.action.kind === "uncite") setFocusTo(`[data-card="${CSS.escape(held.action.versionId)}"] [data-key="src-${CSS.escape(held.action.sourceId)}"]`);
   };
 
+  // Comments (M3b-11, D-01), in the same drawer: on the question, an option, or a wording.
+  const [commentsOn, setCommentsOn] = useState<CommentTarget | null>(null);
+  const commentKey = commentsOn ? targetKey(commentsOn) : null;
+  /** What the reader has typed for each subject, kept while the board is open (Google Docs keeps a draft too). */
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  /** The ID each draft was last sent with, so sending the same text again is safe (the service answers it's done). */
+  const commentIds = useRef<Record<string, { id: string; body: string }>>({});
+  // The speech bubbles: each subject's open count, from the comments the reader holds (M3b-10).
+  const bubbles: CommentBubbles = { count: (target) => openCount(view.rows, target), on: commentKey, open: (target) => openComments(target) };
   const opening: Opening = {
     open: openVersion,
     arrived,
@@ -429,6 +441,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
       );
     },
     menu,
+    comments: bubbles,
   };
 
   // The address follows what's open.
@@ -594,7 +607,10 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   /** Counts the times Settings asked for Share, which opens it. */
   const [shareAsked, setShareAsked] = useState(0);
   const setHistoryOpen = (open: boolean) => {
-    if (open) setSettingsOpen(false);
+    if (open) {
+      setSettingsOpen(false);
+      setCommentsOn(null);
+    }
     setHistoryOpenNow(open);
   };
   const closeHistory = useCallback(() => {
@@ -616,6 +632,7 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
   }, []);
   const openSettings = () => {
     setHistoryOpenNow(false);
+    setCommentsOn(null);
     setSettingsOpen(true);
     session.announce("The settings panel is open.");
   };
@@ -624,6 +641,49 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
     session.announce("The settings panel is closed.");
     settingsButton.current?.focus();
   }, [session]);
+  const closeComments = useCallback(() => {
+    if (!commentKey) return;
+    setCommentsOn(null);
+    session.announce("The comments panel is closed.");
+    document.querySelector<HTMLElement>(`[data-comments="${CSS.escape(commentKey)}"]`)?.focus();
+  }, [session, commentKey]);
+  const openComments = (target: CommentTarget) => {
+    if (commentKey === targetKey(target)) return closeComments();
+    setHistoryOpenNow(false);
+    setSettingsOpen(false);
+    setCommentsOn(target);
+    session.announce("The comments panel is open.");
+  };
+  const sendComment = async (): Promise<string | null> => {
+    if (!commentsOn || !commentKey) return null;
+    const key = commentKey;
+    const body = (commentDrafts[key] ?? "").trim();
+    const last = commentIds.current[key];
+    const id = last && last.body === body ? last.id : browserIds.itemId();
+    commentIds.current[key] = { id, body };
+    const why = await session.addComment(commentsOn, id, body);
+    if (why === null) {
+      delete commentIds.current[key];
+      // Unless the reader has started another one meanwhile.
+      setCommentDrafts((all) => ((all[key] ?? "").trim() === body ? { ...all, [key]: "" } : all));
+    }
+    return why;
+  };
+  // When someone else deletes or hides the subject, its comments close on the poll that says so. When the reader
+  // deletes it, they close at once, and the delete's own sentence, its Undo, and the focus it set are left alone.
+  useEffect(() => {
+    if (!commentsOn) return;
+    const mine = commentsOn !== "question" && ("optionId" in commentsOn ? state.optionsLeftOut.includes(commentsOn.optionId) : state.leftOut.includes(commentsOn.versionId));
+    if (mine) return setCommentsOn(null);
+    if (targetStands(view, commentsOn)) return;
+    const inside = document.getElementById("sm-comments")?.contains(document.activeElement) ?? false;
+    setCommentsOn(null);
+    session.announce("This wording was removed, so its comments are closed.");
+    if (inside) question.current?.focus();
+  }, [view.rows, commentsOn, state.leftOut, state.optionsLeftOut]);
+  const scene = useRef<HTMLDivElement>(null);
+  const drawerOpen = historyOpen || settingsOpen || commentsOn !== null;
+  useDrawerTop(scene, drawerOpen);
   const openFromHistory = (versionId: string) => {
     if (!view.rows.versions[versionId]) return;
     const shown = showVersion(versionId);
@@ -656,10 +716,11 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
           {why}
         </span>
       ))}
-      <div className={`sm-scene${historyOpen || settingsOpen ? " sm-with-drawer" : ""}`}>
+      <div ref={scene} className={`sm-scene${drawerOpen ? " sm-with-drawer" : ""}`}>
         <Wires view={view} mine={state.mine} />
-        <section className="sm-head" aria-label="The question">
+        <section className={`sm-head${commentKey === "question" ? " sm-commenting" : ""}`} aria-label="The question">
           <div className="sm-head-tools">
+            <CommentBubble target="question" noun="question" className="sm-head-button" bubbles={bubbles} />
             <button
               ref={historyButton}
               type="button"
@@ -726,6 +787,20 @@ function BoardView({ boardId, linked, view, state, session, zoom, onZoom, onShow
             logSeq={state.logSeq}
             onOpen={openFromHistory}
             onClose={closeHistory}
+          />
+        ) : null}
+        {commentsOn && commentKey ? (
+          <Comments
+            key={commentKey}
+            target={commentsOn}
+            view={view}
+            question={state.question}
+            reader={reader}
+            draft={commentDrafts[commentKey] ?? ""}
+            onDraft={(text) => setCommentDrafts((all) => ({ ...all, [commentKey]: text }))}
+            onSend={sendComment}
+            announce={(text) => session.announce(text)}
+            onClose={closeComments}
           />
         ) : null}
         {settingsOpen && state.role === "owner" ? (
@@ -1068,7 +1143,7 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
             <Axis kind="v" start="more important" end="less important" />
           </div>
         )}
-        <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} />
+        <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} session={session} bubbles={opening.comments} />
         {structure.picking?.optionId === option.id ? (
           // Not a live region: the cursor is already on the first Combine here, and the status line has said this.
           <div className="sm-move-banner">
@@ -1220,18 +1295,19 @@ function MergedRow({ argument, label, view, opening }: { argument: ArgumentRow; 
 
 
 /**
- * An option's header (M3a-2, A-07): its name, and for an Editor or the Owner
- * the prototype's ⋯, "Options for …", with Rename option and Delete option.
- * Renaming happens in the header itself.
+ * An option's header (M3a-2, A-07): its name, its speech bubble for everyone
+ * (M3b-11, D-01), and for an Editor or the Owner the prototype's ⋯, "Options
+ * for …", with Rename option and Delete option. Renaming happens in the
+ * header itself.
  */
-function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: OptionRow; mayStructure: boolean; deleteBlocked: string | null; session: BoardSession }) {
+function OptionHead({ option, mayStructure, deleteBlocked, session, bubbles }: { option: OptionRow; mayStructure: boolean; deleteBlocked: string | null; session: BoardSession; bubbles: CommentBubbles }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const back = () => window.setTimeout(() => trigger.current?.focus());
   const close = useCallback(() => setMenuOpen(false), []);
   return (
-    <div className="sm-column-head">
+    <div className={`sm-column-head${bubbles.on === `o:${option.id}` ? " sm-commenting" : ""}`}>
       {renaming ? (
         <OptionName
           initial={option.name}
@@ -1250,8 +1326,10 @@ function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: 
       ) : (
         <h2>{option.name}</h2>
       )}
-      {mayStructure && !renaming && (
+      {!renaming && (
         <div className="sm-column-tools">
+          <CommentBubble target={{ optionId: option.id }} noun="option" className="sm-head-button" bubbles={bubbles} />
+          {mayStructure && (
           <button
             ref={trigger}
             type="button"
@@ -1264,7 +1342,8 @@ function OptionHead({ option, mayStructure, deleteBlocked, session }: { option: 
           >
             <Icon name="ellipsis" />
           </button>
-          {menuOpen && (
+          )}
+          {mayStructure && menuOpen && (
             <OptionMenu
               trigger={trigger}
               deleteBlocked={deleteBlocked}

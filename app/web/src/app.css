@@ -219,7 +219,47 @@ body { margin:0; }
 #steelman-study .sm-head > .sm-question-meta { grid-column:1; grid-row:2; }
 #steelman-study .sm-head .sm-head-tools { position:static; grid-column:2; grid-row:2; align-self:end; margin:0 -8px -6px 0; }
 #steelman-study .sm-head > .sm-link-note { grid-column:1 / -1; }
-#steelman-study :is(.sm-history-drawer, .sm-settings-drawer) { top:0; z-index:50; max-height:calc(100vh - 24px); overflow:auto; }
+/* At 640 px and narrower the tools (now with the question's speech bubble, M3b-11) sit on the sharing pill's line,
+   the first, and a closing pill below it may run on under them, so "Closes Nov 16 at 8 AM EST" stays on one line. */
+@media(max-width:640px) {
+  #steelman-study .sm-head .sm-head-tools { align-self:start; margin:8px -8px -6px 0; }
+  #steelman-study .sm-head .sm-question-meta > li + li { flex:none; width:max-content; max-width:calc(100vw - 56px); }
+}
+/* The drawer History, Settings, and Comments share (M3b-11) is fixed to the window at every width, as Figma's and
+   Notion's comment sidebars are, so a panel opened far down the board opens in view. The prototype anchors its panel
+   beside what it's about only because its frame grows with the page and can't pin one. Its top sits under the site's
+   header while that is on screen (--sm-drawer-top, set in drawer.ts). */
+#steelman-study .sm-drawer { position:fixed; top:var(--sm-drawer-top, 69px); z-index:50; max-height:calc(100vh - var(--sm-drawer-top, 69px) - 12px); overflow:auto; }
+/* While the Update pill shows, the drawer stops above it, so the pill never covers Comment. */
+#steelman-study .sm-surface:has(> .sm-fresh:not([hidden])) .sm-drawer { max-height:calc(100vh - var(--sm-drawer-top, 69px) - 68px); }
+/* A closing drawer fades out as it faded in (drawer.ts keeps a copy for the fade); with reduced motion it just goes. */
+#steelman-study .sm-drawer.sm-leaving:not([hidden]) { animation:sm-leave 160ms var(--sm-ease) forwards; pointer-events:none; }
+@keyframes sm-leave { from { opacity:1; translate:0 0; } to { opacity:0; translate:0 4px; } }
+/* Comments keeps its head and its box in place and scrolls the threads between them. */
+#steelman-study .sm-comments-drawer { overflow:hidden; }
+#steelman-study .sm-comments-drawer .sm-drawer-head, #steelman-study .sm-comment-compose { flex:none; }
+#steelman-study .sm-comments-body { min-height:0; overflow:auto; }
+#steelman-study .sm-comment-compose .sm-field-error { margin:0; }
+/* A comment keeps the line breaks it was written with, as the service keeps them (M3b-8). */
+#steelman-study .sm-comment p { white-space:pre-line; }
+/* A comment that arrives while the panel is open rises in, lit for a moment, as a new panel does. */
+#steelman-study .sm-comment-new { animation:sm-enter var(--sm-medium) var(--sm-ease), sm-comment-lit var(--sm-slow) var(--sm-ease); }
+@keyframes sm-comment-lit { from { background-color:var(--sm-soft); } }
+/* A bubble's number rises in when it changes. */
+#steelman-study .sm-comment-count { animation:sm-enter var(--sm-medium) var(--sm-ease); }
+/* The card's bubble is drawn as the prototype's sources button, under a class of its own; an empty one keeps full
+   strength, not the prototype's 40%, so its icon keeps 3:1 contrast. */
+#steelman-study .sm-card-comment { display:flex; align-items:center; justify-content:center; gap:4px; border:0; background:transparent; padding:5px; min-height:28px; border-radius:6px; font-size:11px; color:var(--sm-muted); }
+#steelman-study .sm-card-comment svg { width:13px; height:13px; }
+#steelman-study .sm-card-comment .sm-comment-count { font-size:11px; }
+#steelman-study button.sm-card-comment:hover, #steelman-study .sm-card-comment[aria-expanded="true"] { background:var(--sm-soft); color:var(--sm-ink); }
+@media(pointer:coarse) { #steelman-study .sm-card-comment { min-height:44px; } }
+/* At 640 px and narrower Comments covers the board under the header, as Google Docs' phone comment view does, with
+   its box at the foot of the screen; History and Settings keep their own height. */
+@media(max-width:640px) {
+  #steelman-study .sm-comments-drawer { bottom:8px; }
+  #steelman-study .sm-surface:has(> .sm-fresh:not([hidden])) .sm-comments-drawer { bottom:64px; }
+}
 /* As the prototype makes room for its drawer (data-drawer on .sm-surface): on a wide screen the board moves left. */
 @media(min-width:1200px) { #steelman-study .sm-scene.sm-with-drawer { padding-right:380px; } }
 #steelman-study .sm-history-day { display:grid; gap:10px; }

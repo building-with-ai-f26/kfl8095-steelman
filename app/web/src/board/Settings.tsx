@@ -17,6 +17,7 @@ import { closedDay, momentWithZone, zoneName } from "../when.ts";
 import { Icon } from "../icons.tsx";
 import { WHY } from "./display.ts";
 import type { BoardSession } from "./session.ts";
+import { useDrawerExit } from "./drawer.ts";
 
 interface SettingsProps {
   question: string;
@@ -34,6 +35,8 @@ export function Settings({ question, closed, closing, session, onClose, onShare 
   const [text, setText] = useState(question);
   const [empty, setEmpty] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
+  // It fades out as it closes, as it fades in when it opens (M3b-11).
+  useDrawerExit(drawer);
   const field = useRef<HTMLTextAreaElement>(null);
   /** The question a save is on its way to becoming, so leaving the field after Enter doesn't send it twice. */
   const saving = useRef<string | null>(null);

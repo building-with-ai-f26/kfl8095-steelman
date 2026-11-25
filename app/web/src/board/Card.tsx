@@ -20,6 +20,8 @@ import type { MenuItem } from "./display.ts";
 import { DraftCard, cleanDraft } from "./Forms.tsx";
 import type { DraftText } from "./Forms.tsx";
 import { Evidence, SourceCount } from "./Evidence.tsx";
+import { CommentBubble } from "./Comments.tsx";
+import type { CommentBubbles } from "./Comments.tsx";
 import type { EvidenceBoard } from "./Evidence.tsx";
 
 /** Which version is open, which one a link just brought into view, what its evidence needs, and what a card can ask of the board. */
@@ -30,6 +32,8 @@ export interface Opening {
   toggle(versionId: string): void;
   copyLink(versionId: string): void;
   menu: CardMenu;
+  /** The speech bubble on each card (M3b-11, D-01). */
+  comments: CommentBubbles;
 }
 
 /** What a card's ⋯ menu does (A-12), and which wording its author is editing. */
@@ -166,7 +170,7 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
   };
 
   return (
-    <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}`} data-card={version.id}>
+    <article className={`sm-card${face}${open ? " sm-expanded" : ""}${opening.arrived === version.id ? " sm-arrived" : ""}${opening.comments.on === `v:${version.id}` ? " sm-commenting" : ""}`} data-card={version.id}>
       {shown.reports ? (
         <ReportFlag
           reports={shown.reports}
@@ -244,6 +248,8 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
               <Icon name="merge" />
             </button>
           ) : null}
+          {/* Its own class, not the sources' (sm-source-button), so a card with no sources still shows no source count. */}
+          <CommentBubble target={{ versionId: version.id }} noun="version" className="sm-card-comment" bubbles={opening.comments} />
           {shown.sourceIds.length > 0 ? <SourceCount count={shown.sourceIds.length} /> : null}
           {/* The prototype's expand chevron, last at the footer's right: the same as pressing the wording (the builder, Nov 22). */}
           <button

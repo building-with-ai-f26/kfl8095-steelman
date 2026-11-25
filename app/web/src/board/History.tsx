@@ -28,6 +28,7 @@ import { versionPath } from "../links.ts";
 import { momentWithZone, shortDate } from "../when.ts";
 import { endQuote, endsSentence, isLiveVersion, leadWording, short } from "./display.ts";
 import type { BoardSession } from "./session.ts";
+import { useDrawerExit } from "./drawer.ts";
 
 interface HistoryProps {
   boardId: string;
@@ -53,6 +54,8 @@ export function History({ boardId, view, reader, role, closed, session, logSeq, 
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null);
   const [failed, setFailed] = useState(false);
   const drawer = useRef<HTMLDivElement>(null);
+  // It fades out as it closes, as it fades in when it opens (M3b-11).
+  useDrawerExit(drawer);
   const title = useRef<HTMLHeadingElement>(null);
 
   // Read when it opens, and again when a poll brings a new change-log row or a new wording, which has no row in the
