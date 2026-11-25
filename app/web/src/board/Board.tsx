@@ -3,7 +3,9 @@
 // change in place; the pill counts what Update would change. Update shuffles
 // the rows from where they were into the new order (M3d-3, motion.ts flip()),
 // and nothing else moves them. What the reader adds rises in, and what they
-// delete leaves through a copy of its card (M3d-4, Leaving.tsx).
+// delete leaves through a copy of its card (M3d-4, Leaving.tsx). Compare and
+// Fold unfold and fold a row, and a card's details ease open and shut
+// (M3d-5, unfold.ts).
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -55,6 +57,8 @@ import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
 import { Texture } from "./Texture.tsx";
 import { Wires, redrawWhile } from "./Wires.tsx";
+import { beforeToggle, holdReveal, playReveal, playToggle, stopRowMotion } from "./unfold.ts";
+import type { RowToggle } from "./unfold.ts";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
 const NOT_SHOWN_YET = "Press Update to see that wording where it is now.";
@@ -470,7 +474,12 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
       act: (action) => session.act(action),
       announce: (text) => session.announce(text),
     },
-    toggle: (id) => setExpanded(openVersion === id ? null : id),
+    toggle(id) {
+      const next = openVersion === id ? null : id;
+      // The details closing are copied as they're drawn now, so that the copy eases shut once they're hidden (M3d-5).
+      detail.current = scene.current ? { opened: next, closing: openVersion ? holdReveal(scene.current, openVersion) : null } : null;
+      setExpanded(next);
+    },
     copyLink: (id) => copyLink(versionPath(boardId, id)),
     menu,
     comments: bubbles,
@@ -589,6 +598,24 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   const left = useCallback((key: number) => setLeaving((all) => all.filter((copy) => copy.key !== key)), []);
   /** The version Undo just brought back, whose card plays the exit backwards once it's drawn (M3d-4). */
   const returning = useRef<string | null>(null);
+  /** The screen as it was drawn when the reader pressed Compare or Fold, so that the row unfolds or folds from there (M3d-5). */
+  const rowToggle = useRef<RowToggle | null>(null);
+  /** The card details the reader just opened, and a copy of the ones that just closed (M3d-5). */
+  const detail = useRef<{ opened: string | null; closing: ReturnType<typeof holdReveal> } | null>(null);
+
+  // Compare and Fold unfold and fold the row from where it was drawn, and a card's wording or chevron eases its
+  // details open or shut (M3d-5). Only the reader's own toggles leave anything behind for this, so the tour, a link,
+  // History, and Strongest case still open rows and cards at once.
+  useLayoutEffect(() => {
+    const toggled = rowToggle.current;
+    const shown = detail.current;
+    rowToggle.current = null;
+    detail.current = null;
+    const root = scene.current;
+    if (!root) return;
+    if (toggled) redrawWhile(playToggle(root, toggled));
+    if (shown) redrawWhile(playReveal(root, shown.opened, shown.closing));
+  });
 
   // Update holds the row you're reading still on screen while the others move around it (M3d-3). The view's order
   // changes on polls too, but only Update leaves rects behind, so other people's votes never move anything.
@@ -789,6 +816,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   };
 
   const update = () => {
+    // A row still unfolding or folding stops first, so that the shuffle measures it where it lies (M3d-5).
+    stopRowMotion(scene.current);
     anchor.current = readingAnchor(open);
     if (scene.current) shuffle.current = captureRects(scene.current);
     const gone = writing?.kind === "wording" ? view.rows.arguments[writing.argumentId] : undefined;
@@ -965,6 +994,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
                   gap={index > 0}
                   open={open}
                   onToggle={(id) => {
+                    // The screen as it's drawn now, which the unfold or fold starts from (M3d-5).
+                    rowToggle.current = scene.current ? beforeToggle(scene.current, open, id) : null;
                     // Folding a row closes the version open in it, unless it's the one still showing.
                     if (open === id && openVersion !== null && (view.shown.versions[id] ?? []).indexOf(openVersion) > 0) setExpanded(null);
                     if (writing?.kind === "wording") setWriting(null);
@@ -1007,6 +1038,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
           {state.problem !== null ? <Problem text={state.problem} onDismiss={() => session.dismissProblem()} /> : null}
         </main>
         <LeavingCopies leaving={leaving} onLeft={left} />
+        {/* A folding row's versions, copied where they were, slide back into its lead card here (M3d-5, unfold.ts). */}
+        <div className="sm-folding-layer ph-no-capture" aria-hidden="true" inert />
       </div>
       {/* Strongest case already follows the newest order, so the pill offers no Update there. */}
       {/* The pill sits above everything, so it waits for the tour: Update would move the cards the tour points at. */}

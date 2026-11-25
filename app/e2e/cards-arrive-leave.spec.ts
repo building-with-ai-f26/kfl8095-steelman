@@ -269,6 +269,7 @@ for (const width of WIDTHS) {
     const after = await places(page);
     await reload(page, width, "No");
     await row(page, NO[0]!).getByRole("button", { name: "Compare 3 wordings of this argument" }).click();
+    await settled(page);
     await trackToStart(page, argument);
     expect(near(await places(page), after, 1)).toEqual([]);
   });
