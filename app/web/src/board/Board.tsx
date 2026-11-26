@@ -1117,7 +1117,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
           <h1 ref={question} tabIndex={-1}>
             {state.question}
           </h1>
-          {state.access && state.role ? <Sharing access={state.access} role={state.role} me={reader} session={session} asked={shareAsked} closing={state.closing} onSettings={openSettings} settingsOpen={settingsOpen} /> : null}
+          {state.access && state.role ? <Sharing access={state.access} role={state.role} space={state.space} me={reader} session={session} asked={shareAsked} closing={state.closing} onSettings={openSettings} settingsOpen={settingsOpen} /> : null}
           {note ? (
             <p className="sm-link-note" role="status">
               <Icon name="info" />
@@ -1305,7 +1305,8 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
           onCancel={cancelAsking}
         />
       ) : null}
-      <div id="sm-status" className="sm-live" role="status" aria-live="polite">
+      {/* What's read out names people and a space, so screen replays don't record it (M-08, M3d-18). */}
+      <div id="sm-status" className="sm-live ph-no-capture" role="status" aria-live="polite">
         {state.status}
       </div>
     </div>

@@ -6,6 +6,14 @@
 // sees the panel; only the owner can change it, and in the people list the
 // owner sets each member's role, from Viewer to Editor
 // (M2-2b, Q27), with a menu by each name, as Google Drive and Figma do.
+//
+// A board in a space (G-05, M3d-18) may be shared with everyone in it, the
+// prototype's "Everyone in POD 6" between Invited only and Anyone with the
+// link, as Google Drive lists "Anyone in <organisation>" between Restricted
+// and Anyone with the link (from memory). It gives the link's role, so the
+// role menu shows beside it too. On a board in no space it can't be chosen,
+// as the prototype greys it. The space's name is sent only to its members;
+// anyone else reads "the space" (spaceAccess.ts).
 
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
@@ -18,11 +26,11 @@ import { WHY, blockedProps } from "./display.ts";
 import type { Blocked } from "./display.ts";
 import type { BoardSession } from "./session.ts";
 import { UserLink } from "../UserLink.tsx";
+import { NO_SPACE_LABEL, accessHint, generalLabel } from "./spaceAccess.ts";
 
-const GENERAL = { invited: "Invited only", link: "Anyone with the link" } as const;
 const LINK_ROLE = { viewer: "can view", voter: "can vote", contributor: "can contribute" } as const;
 const MEMBER_ROLE = { ...LINK_ROLE, editor: "can edit" } as const;
-const MAY = { viewer: "read", voter: "read and vote", contributor: "read, vote, and write" } as const;
+const GENERAL_ICON = { invited: "lock", link: "globe", space: "users" } as const;
 
 /** Initials from a username's words, ignoring numbers, as the prototype makes them: maya.chen → MC, samr_92 → SA. */
 export function initials(name: string): string {
@@ -33,6 +41,8 @@ export function initials(name: string): string {
 interface SharingProps {
   access: Access;
   role: Role;
+  /** The board's space, when the reader is in it (M3d-18); null otherwise. */
+  space?: { id: string; name: string } | null;
   me: string | null;
   session: BoardSession;
   /** Counts the times Settings' "Sharing and access" asked for the panel (M3b-2): each new count opens it. */
@@ -45,7 +55,7 @@ interface SharingProps {
   settingsOpen?: boolean;
 }
 
-export function Sharing({ access, role, me, session, asked = 0, closing = null, onSettings, settingsOpen = false }: SharingProps) {
+export function Sharing({ access, role, space = null, me, session, asked = 0, closing = null, onSettings, settingsOpen = false }: SharingProps) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (asked > 0) setOpen(true);
@@ -147,7 +157,20 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
   const change = (next: Partial<Access>) => {
     if (!lockedBy) void session.share({ ...access, ...next });
   };
-  const hint = access.general === "link" ? `Anyone with the link can ${MAY[access.linkRole]}.` : "Only invited people can open it.";
+  const spaceName = space?.name ?? null;
+  const hint = accessHint(access, spaceName);
+  // Everyone in a space can be chosen once the board is in one: the reader is in it, or it's shared with it already.
+  const inSpace = space !== null || access.general === "space";
+  // The space's name stays out of analytics and screen replays, as usernames do (M-08).
+  const named = spaceName !== null && access.general === "space";
+  const label = (general: Access["general"]) =>
+    general === "space" && spaceName !== null ? (
+      <>
+        Everyone in <span className="ph-no-capture">{spaceName}</span>
+      </>
+    ) : (
+      generalLabel(general, spaceName)
+    );
 
   return (
     <ul className="sm-question-meta" aria-label="About this question">
@@ -161,8 +184,8 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
           aria-controls="sm-share"
           onClick={() => (open ? close() : setOpen(true))}
         >
-          <Icon name={access.general === "link" ? "globe" : "lock"} size={13} />
-          {GENERAL[access.general]}
+          <Icon name={GENERAL_ICON[access.general]} size={13} />
+          {label(access.general)}
         </button>
         {open ? (
           <section ref={panel} id="sm-share" className="sm-share" role="dialog" aria-modal="false" aria-labelledby="sm-share-title" tabIndex={-1}>
@@ -199,16 +222,32 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
                 <h3 id="sm-general-title">General access</h3>
                 <div className="sm-person">
                   <span className="sm-avatar sm-access" aria-hidden="true">
-                    <Icon name={access.general === "link" ? "globe" : "lock"} />
+                    <Icon name={GENERAL_ICON[access.general]} />
                   </span>
                   <span>
-                    <select aria-label="General access" value={access.general} disabled={refusal === "not_allowed"} {...locked} onChange={(event) => change({ general: event.target.value as Access["general"] })}>
-                      <option value="invited">{GENERAL.invited}</option>
-                      <option value="link">{GENERAL.link}</option>
+                    <select
+                      aria-label="General access"
+                      className={spaceName !== null ? "ph-no-capture" : undefined}
+                      value={access.general}
+                      disabled={refusal === "not_allowed"}
+                      {...locked}
+                      onChange={(event) => change({ general: event.target.value as Access["general"] })}
+                    >
+                      <option value="invited">{generalLabel("invited", spaceName)}</option>
+                      <option value="space" disabled={!inSpace}>
+                        {inSpace ? generalLabel("space", spaceName) : NO_SPACE_LABEL}
+                      </option>
+                      <option value="link">{generalLabel("link", spaceName)}</option>
                     </select>
                   </span>
-                  {access.general === "link" ? (
-                    <select aria-label="Link role" value={access.linkRole} disabled={refusal === "not_allowed"} {...locked} onChange={(event) => change({ linkRole: event.target.value as Access["linkRole"] })}>
+                  {access.general !== "invited" ? (
+                    <select
+                      aria-label={access.general === "space" ? "Space role" : "Link role"}
+                      value={access.linkRole}
+                      disabled={refusal === "not_allowed"}
+                      {...locked}
+                      onChange={(event) => change({ linkRole: event.target.value as Access["linkRole"] })}
+                    >
                       <option value="viewer">{LINK_ROLE.viewer}</option>
                       <option value="voter">{LINK_ROLE.voter}</option>
                       <option value="contributor">{LINK_ROLE.contributor}</option>
@@ -216,7 +255,7 @@ export function Sharing({ access, role, me, session, asked = 0, closing = null, 
                   ) : null}
                 </div>
                 {/* A second sentence, so the first stays as it was (M3b-11): commenting needs only a way in. */}
-                <p className="sm-access-hint">{`${hint} Anyone who can open it can comment.`}</p>
+                <p className={`sm-access-hint${named ? " ph-no-capture" : ""}`}>{`${hint} Anyone who can open it can comment.`}</p>
                 {owner ? null : <p className="sm-access-hint">Only the owner can change who can get in.</p>}
               </section>
             </div>

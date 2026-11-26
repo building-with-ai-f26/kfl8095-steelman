@@ -7,7 +7,8 @@
 // Only boards where the person still has a role count. Today that is a
 // board_member row on a board that isn't deleted, as the list reads it
 // (list.ts), so a board they were removed from, or whose link was turned off,
-// drops out with their membership. Spaces (M3d-17) will add a second way in.
+// drops out with their membership. A board shared with everyone in a space
+// they're in counts too (M3d-18), until they leave it, as the list reads it.
 // Deleted, hidden, and merged items are left out, and so are comments whose
 // wording or option has gone, as read.ts's commentRows leaves them out, and
 // sources that no shown wording cites now.
@@ -27,6 +28,7 @@ import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { CASE_SIZE, ROLES, rankLive } from "@steelman/shared";
 import type { AccountStatistics, BoardOrder } from "@steelman/shared";
+import { spaceBoards } from "./access.ts";
 import type { Database, Db } from "./db/database.ts";
 
 type Reader = Kysely<Database>;
@@ -44,11 +46,12 @@ export async function accountStatistics(db: Db, person: string): Promise<Account
 }
 
 async function countFor(trx: Reader, person: string): Promise<AccountStatistics> {
-  // The boards where the person has a role. M3d-17: union the boards shared with a space they're a member of.
+  // The boards where the person has a role: their own, and those shared with everyone in a space they're in (M3d-18).
   const myBoards = sql`
     select m.board_id from board_member m
     join board b on b.id = m.board_id
-    where m.account_id = ${person} and b.deleted_at is null and m.role = any(${[...ROLES]})`;
+    where m.account_id = ${person} and b.deleted_at is null and m.role = any(${[...ROLES]})
+    union select board_id from (${spaceBoards(person)}) by_space`;
 
   // The arguments that stand: not deleted, not merged, on an option that stands, with a wording still shown.
   const mine = await sql<{ id: string; board_id: string; option_id: string; kind: "argument" | "wording" }>`

@@ -2,6 +2,7 @@ import Fastify, { LogController } from "fastify";
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   accessInput,
+  boardSpaceInput,
   reportInput,
   hideInput,
   memberRoleInput,
@@ -39,7 +40,7 @@ import {
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { createEvents } from "./events.ts";
 import type { ServerEvent } from "./events.ts";
-import { accessOf, entryTo, joinByLink } from "./access.ts";
+import { accessOf, entryTo, joinByLink, spaceShownTo } from "./access.ts";
 import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
 import { changeUsername } from "./username.ts";
 import { serveWebApp } from "./web.ts";
@@ -54,7 +55,7 @@ import { listBoards } from "./list.ts";
 import { accountStatistics } from "./statistics.ts";
 import { PROFILE_NAME, readProfile } from "./profiles.ts";
 import { readChanges, readSnapshot } from "./read.ts";
-import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
+import { inviteByUsername, listPeople, removeMember, setAccess, setBoardSpace, setRole } from "./sharing.ts";
 import { createSpace, inviteToSpace, listSpacePeople, listSpaces, readSpace, removeFromSpace, setSpaceRole, setSpaceVisibility, updateSpaceSettings } from "./spaces.ts";
 import type { SpaceWriteResult } from "./spaces.ts";
 import { setReport, withdrawReport } from "./reports.ts";
@@ -179,6 +180,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   own_comment: 403,
   comment_deleted: 409,
   owner_keeps_role: 409,
+  no_space: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -508,7 +510,9 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const snapshot = await readSnapshot(db, request.params.board, request.person, moderates(role), now);
     const access = await accessOf(db, request.params.board);
     const closing = await closingFor(db, now, request.params.board);
-    return snapshot && access ? { ...snapshot, access, role, ...(closing ? { closing } : {}) } : reply.code(404).send({ reason: "not_found" });
+    // The board's space, named only to its members (M3d-18).
+    const space = await spaceShownTo(db, request.params.board, request.person);
+    return snapshot && access ? { ...snapshot, access, role, ...(closing ? { closing } : {}), ...(space ? { space } : {}) } : reply.code(404).send({ reason: "not_found" });
   });
 
   app.get<{ Params: { board: string } }>("/api/boards/:board/changes", async (request, reply) => {
@@ -522,13 +526,21 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     // On every answer while the board is closed or has a closing time, so a reader learns the time has passed
     // although nothing was written when it did (M3b-3).
     const closing = await closingFor(db, clock.now(), request.params.board);
-    return changes && access ? { ...changes, access, role, ...(closing ? { closing } : {}) } : reply.code(404).send({ reason: "not_found" });
+    const space = await spaceShownTo(db, request.params.board, request.person);
+    return changes && access ? { ...changes, access, role, ...(closing ? { closing } : {}), ...(space ? { space } : {}) } : reply.code(404).send({ reason: "not_found" });
   });
 
   app.put<{ Params: { board: string } }>("/api/boards/:board/access", async (request, reply) => {
     const body = accessInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await setAccess(services, request.params.board, request.person, body.data));
+  });
+
+  // The Owner puts their board in a space they're in, or takes it out (G-05, M3d-18). Not counted, as Share isn't.
+  app.put<{ Params: { board: string } }>("/api/boards/:board/space", async (request, reply) => {
+    const body = boardSpaceInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setBoardSpace(services, request.params.board, request.person, body.data.space));
   });
 
   // Board settings (M3b-2, I-01): the Owner renames the question.
@@ -576,7 +588,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.get<{ Params: { board: string } }>("/api/boards/:board/people", async (request, reply) => {
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
-    return { people: await listPeople(db, request.params.board) };
+    return { people: await listPeople(db, request.params.board, request.person ? { id: request.person, role } : null) };
   });
 
   app.put<{ Params: { board: string; account: string } }>("/api/boards/:board/people/:account", async (request, reply) => {
@@ -687,7 +699,7 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.get<{ Params: { board: string } }>("/api/boards/:board/history", async (request, reply) => {
     const role = await letIn(request.params.board, request.person, reply);
     if (!role) return reply;
-    return { entries: await readHistory(db, request.params.board) };
+    return { entries: await readHistory(db, request.params.board, request.person) };
   });
 
   app.post<{ Params: { board: string } }>("/api/boards/:board/arguments", { config: { limit: "writing" } }, async (request, reply) => {

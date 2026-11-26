@@ -53,6 +53,11 @@ interface HistoryProps {
   onClose(): void;
 }
 
+/** A space's name, kept out of analytics and screen replays, or `otherwise` for a reader who isn't in it. */
+function spaceCalled(name: string | undefined, otherwise: string): ReactNode {
+  return name ? <span className="ph-no-capture">{name}</span> : otherwise;
+}
+
 /** A moderator's reason, as the end of the sentence that says they hid something. */
 const AS_REASON: Record<string, string> = { spam: "as spam", abuse: "as abusive", offtopic: "as off-topic", other: "for another reason" };
 const A_ROLE: Record<Role, string> = { viewer: "a viewer", voter: "a voter", contributor: "a contributor", editor: "an editor", owner: "the owner" };
@@ -244,8 +249,8 @@ function undoable(entry: HistoryEntry, view: ReaderView): boolean {
   return !(from?.deleted && !entry.detail.merged);
 }
 
-/** What the entry says after its actor's name: a sentence, naming things from the rows the reader holds. */
-function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (versionId: string) => void, onOpenComment: (commentId: string) => void): ReactNode {
+/** What the entry says after its actor's name: a sentence, naming things from the rows the reader holds. Exported for its tests. */
+export function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (versionId: string) => void, onOpenComment: (commentId: string) => void): ReactNode {
   const optionName = view.rows.options[entry.subjectId]?.name;
   const option = optionName === undefined ? "an option" : `the option “${optionName}”`;
   const sourceId = entry.detail.source ?? entry.subjectId;
@@ -303,8 +308,19 @@ function said(entry: HistoryEntry, view: ReaderView, boardId: string, onOpen: (v
   switch (entry.kind) {
     case "board_created":
       return "created this board.";
-    case "access_changed":
-      return entry.detail.general === "invited" ? "made the board open only to invited people." : `let anyone with the link ${LINK_CAN[entry.detail.linkRole ?? "viewer"] ?? "view"}.`;
+    case "access_changed": {
+      const can = LINK_CAN[entry.detail.linkRole ?? "viewer"] ?? "view";
+      if (entry.detail.general === "invited") return "made the board open only to invited people.";
+      // A space is named only to its members (M3d-18), and kept out of analytics and screen replays.
+      if (entry.detail.general === "space") return <>let everyone in {spaceCalled(entry.detail.spaceName, "the space")} {can}.</>;
+      return `let anyone with the link ${can}.`;
+    }
+    // Putting the board in a space, or taking it out (M3d-18). A board shared with its space is then invited only.
+    case "space_changed": {
+      const unshared = entry.detail.general === "invited" ? ", so only invited people can open it" : "";
+      if (entry.detail.outOfSpace) return `took the board out of its space${unshared}.`;
+      return <>put the board in {spaceCalled(entry.detail.spaceName, "a space")}{unshared}.</>;
+    }
     // Inviting by username, and Remove (M3b-7, H-01).
     case "member_added":
       return `added ${entry.detail.accountName ?? "someone"} as ${A_ROLE[entry.detail.role ?? "viewer"]}.`;
