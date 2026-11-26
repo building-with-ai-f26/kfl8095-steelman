@@ -16,7 +16,7 @@ test("D-01, M-07: the privacy page names comments among what is kept and what de
   const page = await board.open("omar_h");
   await page.goto("/privacy");
 
-  await expect(page.getByText("Updated November 24, 2026")).toBeVisible();
+  await expect(page.getByText("Updated November 25, 2026")).toBeVisible();
   await expect(page.locator("main")).toContainText("We keep the comments you write on boards, until you delete them.");
   await expect(page.locator("main")).toContainText("Deleting your account removes your email, your ways of signing in, your votes, your assessments, and the text of your comments.");
   await expect(page.locator("main")).toContainText("We date each change at the top of this page, so the date shows when what we keep about you last changed.");
