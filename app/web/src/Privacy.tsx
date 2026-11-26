@@ -40,7 +40,9 @@ export function Privacy() {
 
       <h2>Who sees what</h2>
       <ul>
-        <li>Everyone who can open a board sees what you write there, with your username beside it.</li>
+        <li>
+          Everyone who can open a board sees what you write there, with your username beside it. Your username links to your profile, which shows each signed-in person the arguments, wordings, and sources you added on the boards where they have a role.
+        </li>
         <li>Your votes and assessments count toward the totals everyone sees, but no one is shown which ones are yours.</li>
         <li>Everyone who can open a board sees its history. The history shows who did what there and when, including when you added each argument and wording. It never shows your votes.</li>
         <li>When you report that a source can’t be opened, everyone who can open that board sees that you reported it. The board’s history keeps a record of your report even after the report is cleared.</li>

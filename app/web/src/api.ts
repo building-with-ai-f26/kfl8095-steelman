@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
+import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 import { noteWrite } from "./opening.ts";
@@ -356,6 +356,22 @@ export async function readMyStatistics(): Promise<AccountStatistics | "signed_ou
     if (response.status === 401) return "signed_out";
     if (!response.ok) return "failed";
     return (await response.json()) as AccountStatistics;
+  } catch {
+    return "failed";
+  }
+}
+
+/**
+ * A person's profile (L-03, M3d-16), from the boards where you have a role. "missing" when no one has the name or
+ * holds it after a change; the answer carries the current name, so a held old name gives the new one.
+ */
+export async function readProfile(username: string): Promise<Profile | "missing" | "signed_out" | "failed"> {
+  try {
+    const response = await call("GET", `people/${encodeURIComponent(username)}`);
+    if (response.status === 401) return "signed_out";
+    if (response.status === 404) return "missing";
+    if (!response.ok) return "failed";
+    return (await response.json()) as Profile;
   } catch {
     return "failed";
   }

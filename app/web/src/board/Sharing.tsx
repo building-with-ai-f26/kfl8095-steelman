@@ -17,6 +17,7 @@ import { closedDay, momentWithZone } from "../when.ts";
 import { WHY, blockedProps } from "./display.ts";
 import type { Blocked } from "./display.ts";
 import type { BoardSession } from "./session.ts";
+import { UserLink } from "../UserLink.tsx";
 
 const GENERAL = { invited: "Invited only", link: "Anyone with the link" } as const;
 const LINK_ROLE = { viewer: "can view", voter: "can vote", contributor: "can contribute" } as const;
@@ -296,7 +297,8 @@ function PersonRow({ person, you, owner, locked, lockedBy, onRole, onRemove }: P
         {person.name ? initials(person.name) : "?"}
       </span>
       <span>
-        {name}
+        {/* A link to their profile (L-03), inside the span the prototype styles, so the row looks as it did. */}
+        <UserLink name={person.name}>{name}</UserLink>
         {you ? <small> (you)</small> : null}
       </span>
       {person.role === "owner" ? (

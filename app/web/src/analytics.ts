@@ -10,6 +10,10 @@
 //   kept in this browser; once it is off, PostHog's script is never loaded.
 // - Typed text is masked in replays, and no one is identified: PostHog sees
 //   an anonymous visitor, never an email or username.
+// - A profile's address holds a username (/u/<name>, M3d-16), and PostHog
+//   sends the page's address with every event, the page before it, and a
+//   clicked link's address. Each is rewritten to /u/:username before it's
+//   sent (withoutProfileNames), and names on the page sit in ph-no-capture.
 
 import type { PublicConfig } from "@steelman/shared";
 import { posthogAssetsHost } from "@steelman/shared";
@@ -32,6 +36,21 @@ export function decide({ analytics, signal, stored }: { analytics: Analytics; si
 /** Global Privacy Control, or Do Not Track (on the navigator, or on the window in older browsers). */
 export function privacySignal(navigator: { globalPrivacyControl?: boolean; doNotTrack?: string | null }, windowDoNotTrack?: string | null): boolean {
   return navigator.globalPrivacyControl === true || navigator.doNotTrack === "1" || windowDoNotTrack === "1";
+}
+
+const PROFILE_ADDRESS = /\/u\/[^/?#"'\s\\]+/g;
+
+/**
+ * The event with every profile address in it, wherever it sits, made /u/:username, so no name reaches PostHog
+ * (L-03, M-08). PostHog hands each event to before_send just before sending it.
+ */
+export function withoutProfileNames<T>(value: T): T {
+  if (typeof value === "string") return value.replace(PROFILE_ADDRESS, "/u/:username") as T;
+  if (Array.isArray(value)) return value.map(withoutProfileNames) as T;
+  // Only plain objects: anything else, such as the event's timestamp, a Date, goes as it is.
+  if (value !== null && typeof value === "object" && [Object.prototype, null].includes(Object.getPrototypeOf(value)))
+    return Object.fromEntries(Object.entries(value).map(([key, each]) => [key, withoutProfileNames(each)])) as T;
+  return value;
 }
 
 /** Where the app is running, sent with every event so a laptop's and staging's can be filtered out. */
@@ -82,6 +101,7 @@ function load(analytics: NonNullable<Analytics>): void {
     capture_pageview: "history_change", // also counts a link followed inside the app, once there are some (M1-7)
     autocapture: true,
     session_recording: { maskAllInputs: true }, // typed text never leaves the browser
+    before_send: (event: unknown) => withoutProfileNames(event), // no username from a profile's address (M3d-16)
   });
   posthog("register", { environment: environmentOf(location.hostname), page: "app" });
 }

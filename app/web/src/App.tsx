@@ -11,6 +11,7 @@ import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
 import { Privacy } from "./Privacy.tsx";
+import { Profile } from "./Profile.tsx";
 import { whoIsSignedIn } from "./signIn/account.ts";
 import type { Me } from "./signIn/account.ts";
 import { AuthCard } from "./signIn/AuthCard.tsx";
@@ -26,7 +27,7 @@ import { watchPageChanges } from "./paging.ts";
 /**
  * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
  * Anything outside /b/ is the home page, the list of your steelmen (E-03),
- * except New steelman's sheet (F-01), at /new.
+ * except New steelman's sheet (F-01), at /new, and a person's profile (L-03), at /u/<username>.
  *
  * A board opened from the list by a plain click, and the way back to the list
  * from it, change the page inside this one, with the browser's history
@@ -147,6 +148,9 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
             <Board key={link.board} boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={zoomTo} onShown={setBoardShown} />
           ) : link.kind === "account" ? (
             <Account />
+          ) : link.kind === "profile" ? (
+            // Signed out, SignedIn asks for sign-in and shows nothing of the profile (L-03).
+            <Profile key={link.username ?? ""} username={link.username} />
           ) : link.kind === "unknown" ? (
             <NotFound />
           ) : link.kind === "new" ? (

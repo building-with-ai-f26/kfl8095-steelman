@@ -185,7 +185,8 @@ export function serveWebApp(app: ReturnType<typeof buildApp>): void {
   const types: Record<string, string> = { ".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".svg": "image/svg+xml", ".png": "image/png" };
   app.get("/*", async (request, reply) => {
     const path = normalize(decodeURIComponent(request.url.split("?")[0]!)).replace(/^(\.\.[/\\])+/, "");
-    const file = extname(path) ? join(directory, path) : join(directory, "index.html");
+    // A profile's address can end in what looks like a file's extension (/u/lin.zhao), but it's a page (M3d-16).
+    const file = extname(path) && !path.startsWith("/u/") ? join(directory, path) : join(directory, "index.html");
     try {
       const body = await readFile(file);
       return reply.type(types[extname(file)] ?? "application/octet-stream").send(body);
