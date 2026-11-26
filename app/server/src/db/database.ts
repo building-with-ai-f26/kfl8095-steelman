@@ -28,6 +28,31 @@ export interface Database {
   };
   /** A changed username's old name, kept from others until ends_at (L-04; migration 0015). */
   username_hold: { old_name: string; account_id: string; ends_at: Date };
+  /** A group of people, such as a class pod (G-03; migration 0016). Set deleted_at when it was deleted with its Owner's account; its text is erased. */
+  space: {
+    id: string;
+    name: string;
+    about: string;
+    /** One of the prototype's six canvases (SPACE_CANVASES). */
+    canvas: string;
+    /** "private" until M3d-20 adds "public". */
+    visibility: string;
+    created_by: string;
+    created_at: Date;
+    deleted_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+  };
+  /** A person's role in a space: "owner", "admin", or "member" (G-04; migration 0016). */
+  space_member: { space_id: string; account_id: string; role: string; joined_at: Date };
+  /** One row per change to a space or its members, holding IDs and keywords only (migration 0016). */
+  space_change: {
+    id: ColumnType<string, never, never>;
+    space_id: string;
+    at: Date;
+    actor_id: string;
+    kind: string;
+    before: ColumnType<unknown, string | undefined, never>;
+    after: ColumnType<unknown, string | undefined, never>;
+  };
   // Sign-in's own tables (migration 0007). Better Auth reads and writes
   // these; the service's own code uses only sent_email.
   "sign_in.session": { id: string; account_id: string; token: string; expires_at: Date; created_at: Date; updated_at: Date };

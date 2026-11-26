@@ -16,6 +16,7 @@ export {
   LIMITS,
   OPTIONS_PER_BOARD,
   RESERVED_USERNAMES,
+  SPACE_LIMITS,
   USERNAME,
   boardIdInput,
   cleanText,
@@ -26,12 +27,18 @@ export {
   optionNameInput,
   questionInput,
   sourceInput,
+  spaceAboutInput,
+  spaceNameInput,
   webLink,
   wordingInput,
 } from "./inputs.ts";
 export type { SourceInput } from "./inputs.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
+export { SPACE_POLICY, SPACE_ROLES, canInSpace } from "./policy.ts";
+export type { SpaceAction, SpaceRole } from "./policy.ts";
+export { SPACE_CANVASES, SPACE_MEMBER_ROLES, SPACE_VISIBILITIES, newSpaceInput, spaceInviteInput, spaceRoleInput, spaceSettingsInput, spaceVisibilityInput } from "./api.ts";
+export type { SpaceCanvas, SpaceList, SpaceMember, SpaceSummary, SpaceWriteAnswer } from "./api.ts";
 export { posthogAssetsHost, tooManyMessage } from "./api.ts";
 export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuery, deleteAccountInput, usernameChangeInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newCommentInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, renameQuestionInput, closingInput, inviteInput, reportInput, voteInput, combineInput, separateInput } from "./api.ts";
 export type {

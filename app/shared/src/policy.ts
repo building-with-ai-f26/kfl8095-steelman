@@ -105,3 +105,50 @@ export function can(person: string | null, role: Role | null, action: Action, bo
   if (rule.authorOnly && !isAuthor && !forAnyone) return "not_author";
   return null;
 }
+
+// Spaces (G-03, G-04, M3d-17; plans/architecture.md §7, point 4). A space has
+// its own three roles, apart from a board's: Member (reads the space and its
+// members, and may leave), Admin (also renames it, edits its about text and
+// canvas, invites by username, removes a member, and switches a role between
+// Admin and Member), and Owner (also changes its visibility, as only a
+// board's Owner changes General access). The Owner is the one who made the
+// space; no one demotes or removes the Owner, and the Owner can't leave,
+// which the service refuses as "owner_keeps_role". There is no Moderator.
+// A board role gives nothing in a space.
+
+export type SpaceRole = "member" | "admin" | "owner";
+
+/** Each space role, least to most. A role may do everything the ones before it may. */
+export const SPACE_ROLES: readonly SpaceRole[] = ["member", "admin", "owner"];
+
+export type SpaceAction = "space_read" | "space_leave" | "space_edit" | "space_invite" | "space_remove" | "space_role" | "space_visibility";
+
+export const SPACE_POLICY: Record<SpaceAction, { least: SpaceRole }> = {
+  /** Reading the space, how many members it has, and its member list: its members only. */
+  space_read: { least: "member" },
+  /** Leaving: any member but the Owner, whom the service refuses. */
+  space_leave: { least: "member" },
+  /** Renaming the space, and changing its about text and canvas. */
+  space_edit: { least: "admin" },
+  /** Adding a classmate by username, as Admin or Member. */
+  space_invite: { least: "admin" },
+  /** Removing a member, never the Owner. */
+  space_remove: { least: "admin" },
+  /** Switching a member's role between Admin and Member, never the Owner's. */
+  space_role: { least: "admin" },
+  /** Changing who can find the space: only "private" until M3d-20. */
+  space_visibility: { least: "owner" },
+};
+
+/**
+ * @param person The account acting, or null when signed out.
+ * @param role Their role in the space, or null when they aren't in it. The service answers that case as "not found",
+ *   so a non-member can't learn that a space exists.
+ * @returns null when allowed, or why not.
+ */
+export function canInSpace(person: string | null, role: SpaceRole | null, action: SpaceAction): Refusal | null {
+  if (person === null) return "signed_out";
+  if (role === null) return "no_access";
+  if (SPACE_ROLES.indexOf(role) < SPACE_ROLES.indexOf(SPACE_POLICY[action].least)) return "not_allowed";
+  return null;
+}

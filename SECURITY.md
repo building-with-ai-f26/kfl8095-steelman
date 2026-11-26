@@ -34,6 +34,8 @@ The service decides who is asking from the session cookie, then checks every req
 
 A new board lets in anyone who has its link, as a Contributor. That is the intended default, and the owner changes it to "Invited only" in Share.
 
+**Spaces (M3d-17, not yet on staging).** The service gains spaces, with routes under `/api/spaces` to make one, read it and its members, change its settings and visibility, invite by username, change a role, and remove a member or leave. Space roles come from a second table in `policy.ts` (`SPACE_POLICY` and `canInSpace()`), apart from the board roles. Only a space's members learn that it exists. Every read and write by anyone else answers `404 not_found`, which is also the answer for an unknown, deleted, or malformed space. Signed out answers `401 signed_out`. A Member's invite is refused before any username is looked up, so it can't be used to try usernames. Visibility accepts only `private`, so nothing yet lets a non-member find or join a space. Public spaces wait for the security re-review (M3d-20). The browser makes a new space's ID, so a request sent twice makes one space. One gap remains: someone who already knows a space's 20-character ID, such as a former member, learns that it still exists when making a space with that ID answers `409 id_taken`. `space-roles.test.ts` runs every space action as each of the seven board personas and as a space Owner, Admin, and Member, and `spaces-service-login.test.ts` runs the routes and account deletion with only the service's database rights.
+
 ### 2. Secret keys
 
 The search covered `sb_secret_`, `service_role`, `sk-or-`, `sk-ant-`, `sk-proj-`, `sk_live_`, `GOCSPX-`, Resend keys, and private keys.
@@ -60,6 +62,7 @@ The app stores no user files. Google Cloud holds two buckets, one for Terraform 
 
 - The app calls no paid AI API yet, so there is no AI spending cap to set. The cap is part of the milestone that adds AI.
 - Every route that writes has a limit per account: 20 boards an hour, 60 writes an hour, 300 votes a minute, and 20 reports an hour.
+- New spaces (M3d-17) count toward the same 20 an hour as new boards, and space invitations count toward the same 20 an hour as board invitations, whatever the answer. Renaming a space counts as a write. No new limit was added, so the limits table is unchanged.
 - Sign-in emails are limited to 5 an hour per address and 30 an hour per network.
 - On staging, 32 requests for a sign-in code returned five `400` answers and then `429` with a `retry-after` header. The address was invalid, so no email was sent.
 - Each environment runs at most three servers on a fixed-size database. Budget alerts are set at $25 a month for production and $10 for staging. Google's budgets alert and do not stop spending.
