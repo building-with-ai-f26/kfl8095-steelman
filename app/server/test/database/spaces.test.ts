@@ -142,7 +142,8 @@ describe("the space tables", () => {
       const board = await seedBoard(upgrade.client, ids);
       const boardBefore = (await upgrade.client.query("select * from board where id = $1", [board.board])).rows;
 
-      const { applied } = await migrate(upgrade.url);
+      // Up to 0016 only: 0017 (M3d-18) adds board.space_id, which this check of 0016 doesn't expect (the builder approved, Nov 26).
+      const { applied } = await migrate(upgrade.url, { to: "0016_spaces" });
 
       expect(applied[0]).toMatch(/^0016_spaces$/);
       expect((await upgrade.client.query("select username from account where id = 'kept'")).rows).toEqual([{ username: "kept_name" }]);
