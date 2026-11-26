@@ -139,7 +139,7 @@ for (const width of [1280, 375]) {
     await page.goto("/account");
     await expect(title(page)).toHaveText("Your account");
     await expectCleanScan(page);
-    await page.getByRole("button", { name: "Change" }).click();
+    await page.getByRole("button", { name: "Change", exact: true }).click();
     await expectCleanScan(page);
   });
 }
