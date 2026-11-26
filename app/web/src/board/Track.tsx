@@ -12,7 +12,7 @@ import { WordingSlot } from "./Forms.tsx";
 import { articulationShown, isLiveVersion, short, whyNot } from "./display.ts";
 import { useReader } from "../reader.ts";
 import type { BoardSession, SessionState } from "./session.ts";
-import { VoteControl } from "./Vote.tsx";
+import { VoteControl, pollRecount } from "./Vote.tsx";
 
 export function TrackAxis({ count, at, onFold }: { count: number; at: number; onFold(): void }) {
   const fold = (
@@ -90,6 +90,7 @@ export function Track({ versions, argumentId, writer, state, session, opening, o
                   back="Less well articulated"
                   onVote={(value) => session.act({ kind: "articulation", versionId: version.id, value })}
                   blocked={whyNot(reader, state.role, "vote", state.closing?.closed)}
+                  polled={pollRecount(state, version.id)}
                 />
               )}
             </div>
