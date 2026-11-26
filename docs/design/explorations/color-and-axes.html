@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Color and axes</title>
+<!--
+  A mock-up for review only (Nov 26, 2026): color in a person's first visit, and options for the
+  importance and articulation axes. Ideas 1, 4, 5, and 8 from style-ideas.html are the base.
+  It reads the real tokens from ../tokens.css; the screens are simplified copies, not the app.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #f4f4f3; color: var(--sm-ink); font: 400 14px/1.45 var(--sm-sans); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  /* Idea 9 wasn't chosen, so the serif stays on the text cut, as in the app today. */
+  .serif { font-family: var(--sm-serif); font-variation-settings: "opsz" 20; }
+
+  /* Top bar and controls (as on style-ideas.html) */
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 20px; background: var(--sm-card); border-bottom: 1px solid var(--sm-line); }
+  .brand { display: flex; align-items: center; gap: 8px; font: 600 23px/1 var(--sm-serif); }
+  .brand img { width: 26px; height: 26px; }
+  .crumb { font: 500 11px/1 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--sm-muted); padding: 5px 8px; border: 1px solid var(--sm-line); border-radius: 6px; }
+  .grow { flex: 1; }
+  .seg { display: inline-flex; padding: 2px; border: 1px solid var(--sm-line); border-radius: 8px; background: var(--sm-card); }
+  .seg button { border: 0; background: transparent; padding: 0 12px; height: 28px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease), color var(--sm-fast) var(--sm-ease); }
+  .seg button:hover { background: var(--sm-soft); }
+  .seg button[aria-pressed="true"] { background: var(--sm-selected); color: var(--sm-on-selected); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--sm-line); background: var(--sm-card); font-size: 13px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease); user-select: none; -webkit-user-select: none; }
+  .btn:hover { background: var(--sm-soft); }
+  .btn.small { height: 28px; font-size: 12px; padding: 0 10px; }
+  #compare[aria-pressed="true"] { background: var(--sm-ink); color: #fff; border-color: var(--sm-ink); }
+
+  .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); }
+  .controls { position: sticky; top: 56px; align-self: start; height: calc(100vh - 56px); overflow: auto; padding: 20px 18px 32px; background: var(--sm-card); border-right: 1px solid var(--sm-line); }
+  .controls h1 { font: 600 20px/1.25 var(--sm-serif); margin: 0 0 6px; }
+  .lede { margin: 0 0 6px; color: var(--sm-muted); font-size: 13px; }
+  .gl { font: 500 11px/1 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--sm-muted); margin: 20px 0 8px; }
+  .idea { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; padding: 10px; margin: 0 -10px; border-radius: 10px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease); }
+  .idea:hover { background: #f4f3f1; }
+  .idea input { margin: 2px 0 0; width: 16px; height: 16px; accent-color: var(--sm-ink); cursor: pointer; }
+  .idea .t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-weight: 600; font-size: 13px; }
+  .idea .n { color: var(--sm-muted); font-weight: 500; }
+  .idea .d { grid-column: 2; font-size: 12px; line-height: 1.5; color: var(--sm-muted); }
+  .idea .act { grid-column: 2; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .flag { font: 500 11px/1 var(--sm-sans); color: #6b5a3a; background: #f3ede1; border-radius: 999px; padding: 3px 7px; white-space: nowrap; }
+  .chipset button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--sm-line); border-radius: 999px; background: var(--sm-card); font-size: 12px; cursor: pointer; }
+  .chipset button[aria-pressed="true"] { border-color: var(--sm-ink); box-shadow: inset 0 0 0 1px var(--sm-ink); }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #0000001f; flex: none; }
+  .note { margin: 14px 0 0; font: 300 12px/1.5 var(--sm-sans); color: var(--sm-quiet); }
+
+  /* Shared surfaces */
+  .canvas { position: relative; overflow: hidden; }
+  canvas.cl { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .light { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(ellipse 55% 40% at 50% 4%, #ffffff70, #fff0 70%), radial-gradient(ellipse 110% 85% at 50% 35%, #0000 55%, #2a1c0c17 100%); }
+  .dark { position: relative; z-index: 2; background: var(--sm-ink); color: #fff; border: 1px solid var(--sm-ink); border-top: 3px solid var(--sm-ink); border-radius: 6px; box-shadow: var(--sm-shadow-sm); }
+  .ohead { padding: 12px 16px; }
+  .ohead h3 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2; }
+  .panelcol { display: grid; gap: 16px; margin: 0 6px; padding: 18px 14px 20px 32px; background-color: var(--sm-panel); background-image: var(--hex); background-size: var(--hex-size); border-radius: 0 0 10px 10px; box-shadow: var(--sm-shadow-panel); }
+  .card { position: relative; z-index: 2; padding: 14px 16px 0; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 10px; box-shadow: var(--sm-shadow); }
+  .claim { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+  .by { margin-bottom: 10px; font: 300 12px var(--sm-sans); color: var(--sm-quiet); }
+  .cfoot { display: flex; align-items: center; gap: 8px; margin: 0 -16px; padding: 8px 12px 8px 16px; border-top: 1px solid #ececec; font-size: 12px; color: var(--sm-muted); font-variant-numeric: tabular-nums; }
+  .meter { display: inline-flex; gap: 2px; }
+  .meter i { width: 4px; height: 10px; border-radius: 1px; background: #dadada; }
+  .vote { position: absolute; left: -25px; top: 12px; display: grid; justify-items: center; width: 30px; padding: 2px 0; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 6px; box-shadow: var(--sm-shadow-sm); font: 600 11px/1.4 var(--sm-sans); font-variant-numeric: tabular-nums; }
+  .vote span.b, .hvote span.b { display: grid; place-items: center; width: 26px; height: 22px; color: var(--sm-muted); }
+  .vote svg, .hvote svg { width: 12px; height: 12px; }
+  .vote svg path, .hvote svg path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+
+  /* ---------- Sign-in ---------- */
+  .signin { position: relative; isolation: isolate; overflow: hidden; min-height: calc(100vh - 56px); display: grid; justify-items: center; align-content: start; padding: 56px 32px 64px; }
+  .si-cur { position: absolute; inset: 0; z-index: -2; background-color: var(--sm-canvas-cool); background-image: var(--sm-grain), var(--sm-tex-dots); background-size: 180px 180px, 18px 18px; }
+  .si-map { position: absolute; inset: -40px; z-index: -2; background-color: var(--sm-canvas-stone); transition: background-color 2600ms var(--sm-ease); }
+  .si-map.pan { animation: pan 50s ease-in-out infinite alternate; }
+  @keyframes pan { from { transform: translate3d(-16px, -10px, 0); } to { transform: translate3d(16px, 10px, 0); } }
+  @media (prefers-reduced-motion: reduce) { .si-map.pan { animation: none; } .si-map { transition: none; } }
+  .si-grid { display: grid; gap: 40px; width: 100%; max-width: 380px; }
+  .si-grid.two { max-width: 1060px; grid-template-columns: minmax(0, 1fr) 350px; align-items: center; }
+  .auth { display: grid; gap: 14px; padding: 20px; background: var(--sm-card); border-radius: 10px; box-shadow: var(--sm-shadow-hover); }
+  .auth h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2; }
+  .gbtn { height: 38px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sm-line); border-radius: 6px; background: #fff; font-size: 13px; font-weight: 500; }
+  .or { display: flex; align-items: center; gap: 10px; color: var(--sm-muted); font-size: 12px; }
+  .or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--sm-line); }
+  .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .field input { width: 100%; height: 38px; border: 1px solid var(--sm-line); border-radius: 6px; padding: 0 10px; font: inherit; background: #fff; }
+  .solid { height: 40px; border: 0; border-radius: 6px; background: var(--sm-ink); color: #fff; font-weight: 600; font-size: 14px; }
+  .terms { margin: 0; font-size: 11px; color: var(--sm-muted); }
+
+  .window { position: relative; isolation: isolate; overflow: hidden; border-radius: 12px; border: 1px solid #00000014; box-shadow: var(--sm-shadow-lg); }
+  .wbg { position: absolute; inset: 0; z-index: -1; }
+  .wwires { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
+  .wwires path, .wires path { fill: none; stroke: var(--sm-wire); stroke-width: 1; stroke-dasharray: 1; }
+  .wboard { padding: 24px 22px 28px 30px; }
+  .wq { width: 84%; margin: 0 auto 34px; padding: 14px 18px; }
+  .wq h2 { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.2; }
+  .wcols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  .wcols .ohead { padding: 9px 12px; }
+  .wcols .ohead h3 { font-size: 15px; }
+  .wcols .panelcol { gap: 10px; padding: 12px 10px 14px 26px; margin: 0 4px; }
+  .wcols .card { padding: 10px 12px 0; }
+  .wcols .claim { font-size: 13px; margin-bottom: 8px; }
+  .wcols .cfoot { margin: 0 -12px; padding: 6px 10px 6px 12px; }
+  .wcols .vote { left: -21px; top: 8px; width: 26px; }
+  .wcols .vote span.b { width: 22px; height: 18px; }
+
+  /* ---------- Home ---------- */
+  .home { position: relative; isolation: isolate; display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: calc(100vh - 56px); background: var(--sm-list-bg); }
+  .homebg { position: absolute; inset: 0; z-index: -2; }
+  .side { padding: 14px 10px; background: #242424; color: #fff; }
+  .side .gl { color: #ffffff99; margin: 18px 8px 8px; }
+  .grp { padding: 4px; background: #ffffff0a; border: 1px solid #ffffff14; border-radius: 10px; }
+  .srow { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; border: 0; border-radius: 6px; background: transparent; color: inherit; text-align: left; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease); }
+  .srow:hover { background: #ffffff14; }
+  .srow[aria-current="true"] { background: #fff; color: var(--sm-ink); }
+  .srow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; stroke-linecap: round; }
+  .srow .tag { padding: 2px 6px; border: 1px solid currentColor; border-radius: 6px; font: 500 11px/1.3 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; }
+  .srow .ct { margin-left: auto; font-size: 12px; opacity: .55; }
+  .newsp { margin-top: 10px; border: 1px dashed #ffffff40; color: #ffffffb3; font-size: 13px; }
+  /* Option: a light, see-through sidebar with canvas tiles */
+  .side.lite { background: color-mix(in srgb, var(--sm-card) 62%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--sm-ink); border-right: 1px solid #00000012; }
+  .side.lite .gl { color: var(--sm-muted); }
+  .side.lite .grp { padding: 0; background: transparent; border: 0; }
+  .side.lite .srow:hover { background: #00000009; }
+  .side.lite .srow[aria-current="true"] { background: var(--sm-card); box-shadow: var(--sm-shadow-sm); }
+  .side.lite .newsp { border-color: #00000026; color: var(--sm-muted); }
+  .stile { position: relative; width: 26px; height: 26px; border-radius: 6px; border: 1px solid #0000001a; overflow: hidden; flex: none; }
+  .srow .name { font-size: 13px; font-weight: 500; }
+
+  .feed { padding: 20px 28px 72px; min-width: 0; }
+  .sort { display: inline-flex; gap: 2px; margin-bottom: 14px; padding: 3px; background: var(--sm-card); border-radius: 8px; box-shadow: var(--sm-shadow-sm); }
+  .sort span { padding: 4px 9px; border-radius: 6px; font-size: 12px; }
+  .sort span.on { background: var(--sm-ink); color: #fff; }
+  .items { display: grid; gap: 12px; max-width: 780px; }
+  .item { position: relative; overflow: hidden; display: grid; grid-template-columns: 40px minmax(0, 1fr) 156px; gap: 12px; padding: 16px 16px 16px 10px; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 10px; box-shadow: var(--sm-shadow-sm); cursor: pointer; transition: translate var(--sm-medium) var(--sm-ease), box-shadow var(--sm-medium) var(--sm-ease); }
+  .item:hover { translate: 0 -3px; box-shadow: var(--sm-lift); }
+  .score-col { display: grid; justify-items: center; align-content: start; gap: 4px; padding-top: 2px; font: 600 13px var(--sm-sans); }
+  .score-col svg { width: 15px; height: 15px; fill: none; stroke: var(--sm-muted); stroke-width: 1.75; stroke-linejoin: round; stroke-linecap: round; }
+  .line1 { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sm-muted); }
+  .stag { padding: 2px 6px; border: 1.5px solid var(--sm-ink); border-radius: 6px; color: var(--sm-ink); font: 500 11px/1.2 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; }
+  .ititle { margin: 6px 0 10px; font-size: 20px; font-weight: 600; line-height: 1.25; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; height: 24px; padding: 0 4px 0 9px; border-radius: 6px; background: var(--sm-ink); color: #fff; font-size: 12px; font-weight: 600; }
+  .chip b { padding: 1px 6px; border-radius: 4px; background: #ffffff26; font: 600 11px var(--sm-sans); }
+  .line3 { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--sm-muted); }
+  .line3 svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; }
+  .mini { position: relative; align-self: center; height: 100px; overflow: hidden; border-radius: 6px; border: 1px solid #0000000f; transition: translate var(--sm-medium) var(--sm-ease), scale var(--sm-medium) var(--sm-ease), box-shadow var(--sm-medium) var(--sm-ease); }
+  .item:hover .mini { translate: 0 -2px; scale: 1.035; box-shadow: var(--sm-shadow); }
+  .mshape { position: absolute; left: 10px; right: 10px; top: 10px; }
+  .mq { height: 9px; margin: 0 12% 8px; border-radius: 2px; background: var(--sm-ink); }
+  .mcols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mcol { display: grid; gap: 3px; padding: 0 3px 4px; border-radius: 2px; background: #f7f7f7d9; }
+  .mcol b { height: 6px; margin: 0 -3px 1px; border-radius: 2px 2px 0 0; background: var(--sm-ink); }
+  .mcol i { height: 9px; border: 1px solid #dcdcdc; border-radius: 2px; background: #fff; }
+  .strip { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 2px; height: 4px; }
+  .strip i { flex: 1; }
+  .items.banner { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; }
+  .items.banner .item { grid-template-columns: 34px minmax(0, 1fr); align-content: start; padding-top: 0; }
+  .items.banner .mini { grid-column: 1 / -1; grid-row: 1; height: 124px; margin: 0 -16px 4px -10px; border: 0; border-radius: 0; }
+  .items.banner .item:hover .mini { translate: none; scale: 1.02; box-shadow: none; }
+  .items.banner .mshape { left: 24%; right: 24%; top: 18px; }
+  .explore { margin-top: 32px; max-width: 880px; }
+  .explore .gl { margin-top: 0; }
+  .excards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .excard { overflow: hidden; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 10px; box-shadow: var(--sm-shadow-sm); transition: translate var(--sm-medium) var(--sm-ease), box-shadow var(--sm-medium) var(--sm-ease); }
+  .excard:hover { translate: 0 -3px; box-shadow: var(--sm-lift); }
+  .exban { height: 78px; border-bottom: 1px solid #0000000f; }
+  .exbody { display: grid; gap: 6px; padding: 12px 14px 14px; }
+  .exbody h3 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .exbody p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--sm-muted); }
+  .exfoot { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; font-size: 12px; color: var(--sm-muted); }
+
+  /* ---------- Axes ---------- */
+  .axes { position: relative; isolation: isolate; overflow: hidden; min-height: calc(100vh - 56px); }
+  .axbg { position: absolute; inset: 0; z-index: -2; }
+  .ax-inner { max-width: 1060px; margin: 0 auto; padding: 30px 48px 80px; }
+  .ax-label { margin: 0 0 12px 64px; font: 500 11px/1 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--sm-muted); }
+  .ax-block { position: relative; padding-left: 64px; margin-bottom: 44px; }
+  .ax-col { max-width: 500px; }
+  .vaxis { position: absolute; left: 0; top: 0; bottom: 0; width: 64px; }
+  .haxis { position: relative; height: 34px; margin-bottom: 8px; }
+  .versions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .vcard { padding-bottom: 0; }
+  .hvote { display: inline-flex; align-items: center; padding: 0 2px; border: 1px solid #e3e3e3; border-radius: 6px; background: var(--sm-card); font: 600 11px var(--sm-sans); }
+  .hvote span.b { width: 22px; height: 22px; }
+  .ah { fill: #5c5c5c; stroke: #5c5c5c; stroke-width: 1; stroke-linejoin: round; }
+  .at { font: 500 11px var(--sm-sans); letter-spacing: .07em; fill: var(--sm-axis); }
+  .num { font-family: var(--sm-serif); font-weight: 300; fill: #242424; }
+  /* The current axes, simplified from the prototype */
+  .cur-v { position: absolute; left: 30px; width: 20px; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 9px 0; border: 1px solid var(--sm-line); border-radius: 999px; background: var(--sm-card); box-shadow: var(--sm-shadow-sm); font: 500 10px/1 var(--sm-sans); letter-spacing: .07em; text-transform: uppercase; color: var(--sm-axis); white-space: nowrap; }
+  .cur-v .lab { writing-mode: vertical-rl; transform: rotate(180deg); }
+  .cur-v .ln, .cur-h .ln { position: relative; flex: 1; background: var(--sm-axis-line); }
+  .cur-v .ln { width: 1px; }
+  .cur-h .ln { height: 1px; }
+  .hd { position: absolute; width: 12px; height: 8px; overflow: visible; }
+  .hd path { fill: #5c5c5c; stroke: #5c5c5c; stroke-width: 1; stroke-linejoin: round; }
+  .cur-v .hd { top: 1px; left: -5.5px; transform: rotate(90deg); }
+  .cur-h { position: absolute; top: 5px; display: flex; align-items: center; gap: 8px; height: 24px; padding: 0 6px 0 11px; border: 1px solid var(--sm-line); border-radius: 999px; background: var(--sm-card); font: 500 10px/1 var(--sm-sans); letter-spacing: .07em; text-transform: uppercase; color: var(--sm-axis); white-space: nowrap; }
+  .cur-h .hd { top: -3.5px; left: -1px; }
+  .cur-h .hd + .hd { left: auto; right: -1px; transform: scaleX(-1); }
+  .cur-h .pager { font: 400 12px var(--sm-sans); letter-spacing: 0; text-transform: none; color: var(--sm-muted); }
+  .cur-h svg.fold { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+  @media (max-width: 1000px) {
+    .si-grid.two { grid-template-columns: 1fr; max-width: 560px; }
+    .si-grid.two .auth { order: -1; }
+    .excards { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--sm-line); }
+  }
+  @media (max-width: 720px) {
+    .topbar { padding: 0 16px; gap: 10px; }
+    .crumb { display: none; }
+    .home { grid-template-columns: 1fr; }
+    .side { display: none; }
+    .feed { padding: 16px; }
+    .item, .items.banner { grid-template-columns: 34px minmax(0, 1fr); }
+    .items.banner { grid-template-columns: 1fr; }
+    .mini { display: none; }
+    .items.banner .mini { display: block; }
+    .ax-inner { padding: 24px 16px 60px; }
+    .versions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="../logo.svg" alt="">steelman.</div>
+  <span class="crumb">Color and axes</span>
+  <span class="grow"></span>
+  <div class="seg" role="group" aria-label="Screen">
+    <button type="button" data-tab="signin" aria-pressed="true">Sign-in</button>
+    <button type="button" data-tab="home" aria-pressed="false">New person’s Home</button>
+    <button type="button" data-tab="axes" aria-pressed="false">Axes</button>
+  </div>
+  <button type="button" class="btn" id="compare" aria-pressed="false">Hold to compare</button>
+</header>
+<div class="layout">
+  <aside class="controls" id="controls" aria-label="Options"></aside>
+  <main id="stage"></main>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  const SEED = 11; // idea 2 wasn't chosen, so every contour canvas shares one landform
+  const stage = $('#stage'), controls = $('#controls');
+
+  const CANVASES = {
+    stone: { name: 'Stone', tint: '#dcd8cf', tex: 'contours' },
+    cool:  { name: 'Cool gray', tint: '#d3d9df', tex: 'dots' },
+    sand:  { name: 'Sand', tint: '#e6dbc2', tex: 'grain' },
+    slate: { name: 'Slate', tint: '#ccd5e4', tex: 'contours' },
+    sage:  { name: 'Sage', tint: '#d0dbc8', tex: 'linen' },
+    lilac: { name: 'Lilac', tint: '#d9d0e3', tex: 'dots' },
+    neutral: { name: 'Neutral', tint: '#e2e1de', tex: 'contours' },
+  };
+  const TEXCSS = { dots: ['var(--sm-tex-dots)', '18px 18px'], linen: ['var(--sm-tex-linen)', '6px 6px'], grain: [null, null] };
+
+  const S = {
+    tab: 'signin', comparing: false,
+    signin: { map: true, example: true },
+    home: { canvas: true, pick: 'slate', tiles: true, strip: true, explore: true, banner: false },
+    axis: 'scale',
+  };
+
+  const ICON = {
+    up: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.5 10 8.5H2z"/></svg>',
+    down: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 9.5 2 3.5h8z"/></svg>',
+    left: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6 8.5 2v8z"/></svg>',
+    right: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M9.5 6 3.5 2v8z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    pulse: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    fold: '<svg class="fold" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h6M22 12h-6M5 9l3 3-3 3M19 9l-3 3 3 3"/></svg>',
+  };
+  const HEAD = 'M11.5 .6C7 2.7 3.4 3.7 .5 4c2.9.3 6.5 1.3 11 3.4';
+  const headSvg = '<svg class="hd" viewBox="0 0 12 8" aria-hidden="true"><path d="' + HEAD + '"/></svg>';
+  const evColor = p => p >= 62.5 ? 'var(--sm-cred-strong)' : p >= 37.5 ? 'var(--sm-cred-mid)' : 'var(--sm-cred-weak)';
+  const meter = (pct, fill = true) => '<span class="meter" aria-hidden="true">' + [0, 1, 2, 3].map(i => i < Math.round(pct / 25) ? `<i data-c="${evColor(pct)}" style="${fill ? 'background:' + evColor(pct) : ''}"></i>` : '<i></i>').join('') + '</span>';
+
+  // Hex texture for the column panels
+  (() => {
+    const r = 11, w = Math.sqrt(3) * r, h = 3 * r, s = r * .9;
+    const hex = (cx, cy) => { let d = ''; for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 90); d += (k ? 'L' : 'M') + (cx + s * Math.cos(a)).toFixed(2) + ' ' + (cy + s * Math.sin(a)).toFixed(2); } return d + 'Z'; };
+    const d = [[0, 0], [w, 0], [w / 2, h / 2], [0, h], [w, h]].map(p => hex(...p)).join('');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w.toFixed(3)}" height="${h}"><path d="${d}" fill="none" stroke="#242424" stroke-opacity=".07" stroke-width=".8"/></svg>`;
+    document.body.style.setProperty('--hex', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    document.body.style.setProperty('--hex-size', `${w.toFixed(3)}px ${h}px`);
+  })();
+
+  // ---------- Contours (idea 1: index lines every fifth level and a fine set between) ----------
+  function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function makeNoise(seed) {
+    const rand = mulberry32(seed), perm = [...Array(256).keys()];
+    for (let i = 255; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]]; }
+    const p = new Uint8Array(512); for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+    const G = [[1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+    const fade = t => t * t * t * (t * (t * 6 - 15) + 10), lerp = (a, b, t) => a + (b - a) * t;
+    return (x, y) => {
+      const X = Math.floor(x), Y = Math.floor(y), xf = x - X, yf = y - Y, xi = X & 255, yi = Y & 255;
+      const g = (i, j, dx, dy) => { const v = G[p[p[i] + j] & 7]; return v[0] * dx + v[1] * dy; };
+      const u = fade(xf), v = fade(yf);
+      return lerp(lerp(g(xi, yi, xf, yf), g(xi + 1, yi, xf - 1, yf), u), lerp(g(xi, yi + 1, xf, yf - 1), g(xi + 1, yi + 1, xf - 1, yf - 1), u), v);
+    };
+  }
+  const noise = makeNoise(SEED), fieldCache = new Map();
+  function field(cols, rows, step, k, offX, offY) {
+    const key = [cols, rows, step, k, offX, offY].join();
+    if (fieldCache.has(key)) return fieldCache.get(key);
+    const W1 = cols + 1, f = new Float32Array(W1 * (rows + 1)), fr = 1 / 340;
+    for (let j = 0; j <= rows; j++) {
+      const wy = (j * step * k + offY) * fr;
+      for (let i = 0; i <= cols; i++) {
+        const wx = (i * step * k + offX) * fr;
+        f[j * W1 + i] = noise(wx, wy) + .5 * noise(wx * 2 + 5.2, wy * 2 + 1.3) + .22 * noise(wx * 4 + 9.7, wy * 4 + 3.1);
+      }
+    }
+    fieldCache.set(key, f);
+    if (fieldCache.size > 60) fieldCache.delete(fieldCache.keys().next().value);
+    return f;
+  }
+  const SPACING = .052;
+  function paintContours(cv, w, h, o = {}) {
+    if (!w || !h) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2), step = o.step || 4, k = o.k || 1;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const cols = Math.ceil(w / step), rows = Math.ceil(h / step), W1 = cols + 1;
+    const f = field(cols, rows, step, k, o.offX || 0, o.offY || 0);
+    const fine = o.fine !== false, sub = fine ? SPACING / 2 : SPACING;
+    const reg = new Path2D(), idx = new Path2D(), fin = new Path2D();
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      const a = f[j * W1 + i], b = f[j * W1 + i + 1], c = f[(j + 1) * W1 + i + 1], d = f[(j + 1) * W1 + i];
+      const k0 = Math.ceil(Math.min(a, b, c, d) / sub), k1 = Math.floor(Math.max(a, b, c, d) / sub);
+      for (let lv = k0; lv <= k1; lv++) {
+        let path;
+        if (fine && lv % 2 !== 0) path = fin;
+        else { const m = fine ? lv / 2 : lv; path = ((m % 5) + 5) % 5 === 0 ? idx : reg; }
+        seg(path, a, b, c, d, lv * sub + 1e-7, i * step, j * step, step);
+      }
+    }
+    const al = o.alpha ?? .21, lw = o.lw ?? 1;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#fff';
+    if (fine) { ctx.globalAlpha = al * .5; ctx.lineWidth = lw * .7; ctx.stroke(fin); }
+    ctx.globalAlpha = al; ctx.lineWidth = lw; ctx.stroke(reg);
+    ctx.globalAlpha = Math.min(1, al * 2.2); ctx.lineWidth = lw * 1.5; ctx.stroke(idx);
+    ctx.globalAlpha = 1;
+  }
+  function seg(path, a, b, c, d, l, x, y, s) {
+    const P = [];
+    if ((a > l) !== (b > l)) P.push(x + s * (l - a) / (b - a), y);
+    if ((b > l) !== (c > l)) P.push(x + s, y + s * (l - b) / (c - b));
+    if ((d > l) !== (c > l)) P.push(x + s * (l - d) / (c - d), y + s);
+    if ((a > l) !== (d > l)) P.push(x, y + s * (l - a) / (d - a));
+    if (P.length === 4) { path.moveTo(P[0], P[1]); path.lineTo(P[2], P[3]); }
+    else if (P.length === 8) {
+      if (((a + b + c + d) / 4 > l) === (a > l)) { path.moveTo(P[0], P[1]); path.lineTo(P[2], P[3]); path.moveTo(P[4], P[5]); path.lineTo(P[6], P[7]); }
+      else { path.moveTo(P[0], P[1]); path.lineTo(P[6], P[7]); path.moveTo(P[2], P[3]); path.lineTo(P[4], P[5]); }
+    }
+  }
+  // Fills an element with a canvas: its tint, plus contours drawn here or the token texture.
+  function canvasLayer(el, key, o = {}) {
+    const c = CANVASES[key]; let cv = el.querySelector(':scope > canvas.cl');
+    el.style.backgroundColor = c.tint;
+    if (c.tex === 'contours') {
+      el.style.backgroundImage = 'var(--sm-grain)'; el.style.backgroundSize = '180px 180px';
+      if (!cv) { cv = document.createElement('canvas'); cv.className = 'cl'; el.prepend(cv); }
+      cv.hidden = false;
+      paintContours(cv, el.clientWidth, el.clientHeight, { step: el.clientWidth < 220 ? 2 : 4, ...o });
+    } else {
+      if (cv) cv.hidden = true;
+      const [img, size] = TEXCSS[c.tex];
+      el.style.backgroundImage = img ? `var(--sm-grain), ${img}` : 'var(--sm-grain)';
+      el.style.backgroundSize = img ? `180px 180px, ${size}` : '180px 180px';
+    }
+  }
+
+  // ---------- Controls ----------
+  const toggle = (g, k, t, d, extra = '', flag = false) => `<label class="idea"><input type="checkbox" data-g="${g}" data-k="${k}" ${S[g][k] ? 'checked' : ''}>
+    <span class="t">${t}${flag ? '<span class="flag">Reopens the brief</span>' : ''}</span><span class="d">${d}</span>${extra ? `<span class="act">${extra}</span>` : ''}</label>`;
+  const AXES = [
+    ['current', 'Current', 'A pill in the margin holds rotated labels, a hairline, and a swept arrowhead. The row key is a pill with labels at both ends.'],
+    ['scale', 'Map scale bar', 'A ruler like a map’s scale bar has one segment for each row and a tick at each vote. Its labels run along the bar instead of sitting in a box.'],
+    ['wedge', 'Wedge', 'A wedge is widest at the more important end, so its shape shows the direction and it needs only one label.'],
+    ['rank', 'Rank numbers', 'Large light numerals sit beside each row and above each version, like a ranked list in a newspaper. They replace the labels.'],
+    ['hex', 'Hex key', 'Hexagons use the texture’s own code: size shows importance and darkness shows articulation. The axis becomes the texture’s legend.'],
+    ['wire', 'The wire is the axis', 'The connector from the option header runs down the margin, branches to each argument, and ends in the arrowhead. The board has one line system instead of two.'],
+  ];
+  function renderControls() {
+    if (S.tab === 'signin') {
+      controls.innerHTML = `<h1>First visit</h1>
+        <p class="lede">Today a new person first sees a gray dotted page with a white form. These options bring color in before they sign in.</p>
+        <div class="gl">Options</div>
+        ${toggle('signin', 'map', 'A map that tours the spaces', 'The page sits on the contour map from idea 1, and its tint moves slowly through each space’s color, so the first screen shows what spaces look like.', '', true)}
+        ${toggle('signin', 'example', 'An example board beside the form', 'A small board draws itself next to the form, and its evidence meters fill in green, gray, and red. The first color a person sees carries meaning.', '<button type="button" class="btn small" data-act="replay">Replay the example</button>')}
+        <p class="note">Hold “Hold to compare” to see today’s sign-in page.</p>`;
+    } else if (S.tab === 'home') {
+      const chips = Object.entries(CANVASES).filter(([k]) => k !== 'neutral').map(([k, c]) => `<button type="button" data-pick="${k}" aria-pressed="${S.home.pick === k}"><span class="sw" style="background:${c.tint}"></span>${c.name}</button>`).join('');
+      controls.innerHTML = `<h1>A new person’s Home</h1>
+        <p class="lede">This person is only in Personal, so today their Home is gray with two sand miniatures. Ideas 1, 4, 5, and 8 are the base here.</p>
+        <div class="gl">Options</div>
+        ${toggle('home', 'canvas', 'Choose your canvas', 'The person picks a canvas for Personal when they choose a username. Their Home and their miniatures take it.', `<span class="chipset" style="display:flex;flex-wrap:wrap;gap:6px">${chips}</span>`)}
+        ${toggle('home', 'tiles', 'Canvas tiles in a light sidebar', 'The dark sidebar turns light and see-through, and each space shows a small tile of its canvas.')}
+        ${toggle('home', 'strip', 'Evidence strip', 'Each steelman shows a thin strip along its bottom edge, with one segment per argument colored by its evidence.')}
+        ${toggle('home', 'explore', 'Communities to explore', 'When a person is in few spaces, Home suggests three communities, each with its canvas as a banner.')}
+        ${toggle('home', 'banner', 'Banner miniatures', 'Each steelman becomes a card with its canvas across the top, in a two-column grid.')}
+        <p class="note">Hold “Hold to compare” to see today’s Home for this person.</p>`;
+    } else {
+      controls.innerHTML = `<h1>Axes</h1>
+        <p class="lede">Each option draws both axes: importance down a column, and articulation across an unfolded row.</p>
+        <div class="gl">Options</div>
+        ${AXES.map(([k, t, d]) => `<label class="idea"><input type="radio" name="axis" value="${k}" ${S.axis === k ? 'checked' : ''}><span class="t">${t}</span><span class="d">${d}</span></label>`).join('')}
+        <p class="note">Hold “Hold to compare” to see the current axes.</p>`;
+    }
+  }
+  controls.addEventListener('change', e => {
+    const t = e.target;
+    if (t.name === 'axis') { S.axis = t.value; renderStage(); return; }
+    if (t.dataset.g) { S[t.dataset.g][t.dataset.k] = t.checked; renderStage(); }
+  });
+  controls.addEventListener('click', e => {
+    const pick = e.target.closest('[data-pick]');
+    if (pick) { e.preventDefault(); S.home.pick = pick.dataset.pick; S.home.canvas = true; $$('[data-pick]').forEach(b => b.setAttribute('aria-pressed', String(b === pick))); $('input[data-k="canvas"]').checked = true; renderStage(); return; }
+    const act = e.target.closest('[data-act]');
+    if (act && act.dataset.act === 'replay') { e.preventDefault(); if (!S.signin.example) { S.signin.example = true; $('input[data-k="example"]').checked = true; } renderStage(); }
+  });
+
+  // ---------- Sign-in ----------
+  const EX = {
+    q: 'Should 7th Avenue get a protected bike lane?',
+    opts: [
+      { name: 'Build the protected lane', cards: [
+        { t: 'Protected lanes cut injuries on busy avenues, because a row of parked cars shields riders from traffic.', pct: 88, n: 24, s: 61 },
+        { t: 'Most people on 7th Avenue arrive on foot or by bus, so curb parking serves only a few of them.', pct: 55, n: 12, s: 40 } ] },
+      { name: 'Keep parking, paint a lane', cards: [
+        { t: 'Shops on 7th Avenue depend on delivery vans, which need the curb to load.', pct: 72, n: 18, s: 52 },
+        { t: 'A painted lane costs far less and can be finished this year.', pct: 30, n: 10, s: 33 } ] },
+    ],
+  };
+  let tourTimer = 0;
+  function renderSignin() {
+    const map = !S.comparing && S.signin.map, ex = !S.comparing && S.signin.example;
+    stage.innerHTML = `<section class="signin">
+      ${map ? '<div class="si-map pan" id="simap"></div><div class="light"></div>' : '<div class="si-cur"></div>'}
+      <div class="si-grid ${ex ? 'two' : ''}">
+        ${ex ? `<div class="window" id="win" aria-label="Example board">
+          <div class="wbg" id="wbg"></div><div class="light"></div><svg class="wwires" id="wwires" aria-hidden="true"></svg>
+          <div class="wboard">
+            <header class="wq dark"><h2 class="serif">${EX.q}</h2></header>
+            <div class="wcols">${EX.opts.map(o => `<div><div class="ohead dark"><h3 class="serif">${o.name}</h3></div><div class="panelcol">${o.cards.map(c => `
+              <article class="card"><div class="vote"><span class="b">${ICON.up}</span><span>${c.s}</span><span class="b">${ICON.down}</span></div>
+                <p class="claim">${c.t}</p><footer class="cfoot">${meter(c.pct)}<span>${c.pct}% · ${c.n}</span></footer></article>`).join('')}</div></div>`).join('')}</div>
+          </div></div>` : ''}
+        <section class="auth" aria-label="Sign in">
+          <h1 class="serif">Sign in</h1>
+          <div class="gbtn">Continue with Google</div>
+          <div class="or">or</div>
+          <div class="field"><label for="em">Email</label><input id="em" type="email" autocomplete="off"></div>
+          <button type="button" class="solid">Email me a code</button>
+          <p class="terms">By continuing, you agree to Steelman’s Terms and Privacy Policy.</p>
+        </section>
+      </div></section>`;
+    paintSignin();
+    if (map && !reduce) {
+      const order = ['stone', 'slate', 'sage', 'lilac', 'sand', 'cool']; let at = 0;
+      tourTimer = setInterval(() => { at = (at + 1) % order.length; const m = $('#simap'); if (m) m.style.backgroundColor = CANVASES[order[at]].tint; }, 4200);
+    }
+    if (ex) playExample();
+  }
+  function paintSignin() {
+    const m = $('#simap');
+    if (m) {
+      let cv = $('canvas', m); if (!cv) { cv = document.createElement('canvas'); cv.className = 'cl'; m.append(cv); }
+      m.style.backgroundImage = 'var(--sm-grain)'; m.style.backgroundSize = '180px 180px';
+      paintContours(cv, m.clientWidth, m.clientHeight, { offX: 120, offY: 60 });
+    }
+    const w = $('#wbg'); if (w) { canvasLayer(w, 'slate', { offX: 900, offY: 300 }); drawWindowWires(); }
+  }
+  function drawWindowWires() {
+    const win = $('#win'), svg = $('#wwires'); if (!win) return;
+    const b = win.getBoundingClientRect(), q = $('.wq', win).getBoundingClientRect(), hs = $$('.wcols .ohead', win).map(h => h.getBoundingClientRect());
+    svg.setAttribute('width', b.width); svg.setAttribute('height', b.height);
+    const x0 = q.left - b.left + q.width / 2, y0 = q.bottom - b.top, ym = y0 + (hs[0].top - q.bottom) / 2;
+    svg.innerHTML = hs.map(h => `<path pathLength="1" d="M${x0} ${y0}V${ym}H${h.left - b.left + h.width / 2}V${h.top - b.top}"/>`).join('');
+  }
+  function playExample() {
+    const win = $('#win'); if (!win || reduce) return;
+    drawWindowWires();
+    const rise = [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }];
+    const o = (d, extra = 420) => ({ duration: extra, delay: d, easing: EASE, fill: 'backwards' });
+    $('.wq', win).animate(rise, o(200));
+    $$('path', $('#wwires')).forEach(p => p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], o(460, 480)));
+    $$('.wcols .ohead', win).forEach((h, i) => h.animate(rise, o(760 + i * 70)));
+    $$('.wcols .panelcol', win).forEach((p, i) => p.animate([{ opacity: 0 }, { opacity: 1 }], o(800 + i * 70)));
+    const cards = $$('.wcols .card', win);
+    cards.forEach((c, i) => {
+      const row = i % 2, col = Math.floor(i / 2), d = 920 + (row * 2 + col) * 60;
+      c.animate(rise, o(d));
+      $$('.meter i[data-c]', c).forEach((seg, s) => seg.animate([{ backgroundColor: '#dadada' }, { backgroundColor: seg.dataset.c }], o(d + 700 + s * 110, 260)));
+    });
+  }
+
+  // ---------- Home ----------
+  const HOME = [
+    { score: 3, when: '6h ago', title: 'Should I take the job offer in Denver?', opts: [['Take the offer', 2], ['Stay put', 2]], com: 0, ev: [88, 45, 70, 25] },
+    { score: 1, when: '2d ago', title: 'Should I learn Spanish or Portuguese first?', opts: [['Spanish first', 1], ['Portuguese first', 1]], com: 0, ev: [66, 52] },
+  ];
+  const COMMUNITIES = [
+    { name: 'Brooklyn Streets', canvas: 'slate', about: 'Neighbors argue about streets, parks, and transit in Brooklyn.', members: '214', off: 1400 },
+    { name: 'Campus Life', canvas: 'sage', about: 'Students weigh questions about classes, housing, and campus rules.', members: '1,240', off: 2200 },
+    { name: 'Future of Work', canvas: 'lilac', about: 'People compare ideas about how teams will work in the next decade.', members: '486', off: 3000 },
+  ];
+  function renderHome() {
+    const c = S.comparing, H = S.home;
+    const tiles = !c && H.tiles, strip = !c && H.strip, explore = !c && H.explore, banner = !c && H.banner;
+    const personal = !c && H.canvas ? H.pick : 'sand';
+    const swatch = tiles ? `<span class="stile" data-canvas="${personal}"></span><span class="name">Personal</span>` : `<span class="sw" style="background:${CANVASES[personal].tint}"></span><span class="tag">Personal</span>`;
+    stage.innerHTML = `<section class="home">
+      <div class="homebg canvas" id="homebg"></div>${!c ? '<div class="light"></div>' : ''}
+      <nav class="side ${tiles ? 'lite' : ''}">
+        <button type="button" class="srow" aria-current="true">${ICON.home}Home</button>
+        <div class="gl">Your spaces</div>
+        <div class="grp"><button type="button" class="srow">${swatch}<span class="ct">2</span></button></div>
+        <button type="button" class="srow newsp">${ICON.plus}New space</button>
+      </nav>
+      <div class="feed">
+        <div class="sort"><span class="on">Hot</span><span>New</span><span>Top</span><span>Needs help</span></div>
+        <div class="items ${banner ? 'banner' : ''}">${HOME.map(b => `
+          <article class="item">
+            <div class="score-col">${ICON.pulse}${b.score}</div>
+            <div>
+              <div class="line1"><span class="stag">Personal</span>you · ${b.when}</div>
+              <h3 class="ititle serif">${b.title}</h3>
+              <div class="chips">${b.opts.map(([o, n]) => `<span class="chip serif">${o}<b>${n}</b></span>`).join('')}</div>
+              <div class="line3">${ICON.comment}${b.com}</div>
+            </div>
+            <div class="mini canvas" data-canvas="${personal}" aria-hidden="true"><div class="mshape"><div class="mq"></div><div class="mcols"><div class="mcol"><b></b><i></i><i></i></div><div class="mcol"><b></b><i></i><i></i></div></div></div></div>
+            ${strip ? `<div class="strip" aria-hidden="true">${b.ev.map(p => `<i style="background:${evColor(p)}"></i>`).join('')}</div>` : ''}
+          </article>`).join('')}
+        </div>
+        ${explore ? `<section class="explore"><div class="gl">Communities to explore</div><div class="excards">${COMMUNITIES.map(x => `
+          <article class="excard"><div class="exban canvas" data-canvas="${x.canvas}" data-off="${x.off}"></div>
+            <div class="exbody"><h3 class="serif">${x.name}</h3><p>${x.about}</p><div class="exfoot"><span>${x.members} members</span><button type="button" class="btn small">Join</button></div></div></article>`).join('')}</div></section>` : ''}
+      </div></section>`;
+    paintHome();
+  }
+  function paintHome() {
+    const c = S.comparing, bg = $('#homebg'); if (!bg) return;
+    if (c) { bg.style.background = 'var(--sm-list-bg)'; const cv = $('canvas', bg); if (cv) cv.hidden = true; }
+    else canvasLayer(bg, S.home.canvas ? S.home.pick : 'neutral', { offX: 300 });
+    $$('.home .mini').forEach((m, i) => canvasLayer(m, m.dataset.canvas, { k: 3, fine: false, alpha: .45, lw: .7, offX: 700 + i * 500 }));
+    $$('.home .stile').forEach(t => canvasLayer(t, t.dataset.canvas, { k: 5, fine: false, alpha: .55, lw: .6, offX: 200 }));
+    $$('.home .exban').forEach(b => canvasLayer(b, b.dataset.canvas, { k: 1.4, alpha: .3, offX: +b.dataset.off }));
+  }
+
+  // ---------- Axes ----------
+  const COL = [
+    { score: 44, t: 'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', by: 'maya.chen', pct: 70, n: 20 },
+    { score: 39, t: 'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', by: 'jordan_w', pct: 80, n: 20 },
+    { score: 30, t: 'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', by: 'you', pct: 88, n: 17 },
+  ];
+  const VERSIONS = [
+    { score: 18, t: 'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', by: 'maya.chen', pct: 70 },
+    { score: 11, t: 'China releases open models so its developers don’t have to build on American ones.', by: 'priya_s', pct: 62 },
+    { score: 4, t: 'Open weights help China avoid relying on the US.', by: 'samr_92', pct: 45 },
+  ];
+  function renderAxes() {
+    stage.innerHTML = `<section class="axes">
+      <div class="axbg canvas" id="axbg"></div><div class="light"></div>
+      <div class="ax-inner">
+        <div class="ax-label">Importance, down a column</div>
+        <div class="ax-block" id="vblock"><div class="vaxis" id="vaxis"></div>
+          <div class="ax-col"><div class="ohead dark"><h3 class="serif">Why it makes sense</h3></div>
+            <div class="panelcol">${COL.map(c => `<article class="card"><div class="vote"><span class="b">${ICON.up}</span><span>${c.score}</span><span class="b">${ICON.down}</span></div>
+              <p class="claim">${c.t}</p><div class="by">${c.by}</div><footer class="cfoot">${meter(c.pct)}<span>${c.pct}% · ${c.n}</span></footer></article>`).join('')}</div></div>
+        </div>
+        <div class="ax-label">Articulation, across an unfolded row</div>
+        <div class="ax-block" id="hblock"><div class="haxis" id="haxis"></div>
+          <div class="versions">${VERSIONS.map(v => `<article class="card vcard"><p class="claim">${v.t}</p><div class="by">${v.by}</div>
+            <footer class="cfoot"><span class="hvote"><span class="b">${ICON.left}</span>${v.score}<span class="b">${ICON.right}</span></span><span class="grow"></span>${meter(v.pct)}<span>${v.pct}%</span></footer></article>`).join('')}</div>
+        </div>
+      </div></section>`;
+    paintAxes();
+  }
+  const svgOpen = (w, h) => `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" overflow="visible" aria-hidden="true" style="position:absolute;left:0;top:0">`;
+  const arrow = (x, y, deg) => `<path class="ah" d="${HEAD}" transform="translate(${x} ${y}) rotate(${deg}) translate(-.5 -4)"/>`;
+  // A label set along a vertical axis, reading upward. With "end" it hangs below (x, y); with "start" it rises above it.
+  const vlab = (x, y, t, anchor = 'end') => `<text class="at" transform="translate(${x} ${y}) rotate(-90)" text-anchor="${anchor}">${t}</text>`;
+  const hexPath = (cx, cy, r, attrs) => { let d = ''; for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 90); d += (k ? 'L' : 'M') + (cx + r * Math.cos(a)).toFixed(2) + ' ' + (cy + r * Math.sin(a)).toFixed(2); } return `<path d="${d}Z" ${attrs}/>`; };
+  const INK = '#242424', AXL = '#5c5c5c', WIRE = '#767676';
+
+  const V = {
+    current: g => `<div class="cur-v" style="top:${g.top + 12}px;height:${g.bottom - g.top - 24}px"><span class="lab">More important</span><span class="ln">${headSvg}</span><span class="lab">Less important</span></div>`,
+    scale: g => {
+      const x0 = 34, w = 6, b = [g.top + 14, ...g.ys.slice(1).map((y, i) => (g.ys[i] + y) / 2), g.bottom - 14];
+      let s = svgOpen(g.W, g.H);
+      for (let i = 0; i < b.length - 1; i++) s += `<rect x="${x0}" y="${b[i]}" width="${w}" height="${b[i + 1] - b[i]}" fill="${i % 2 ? '#fff' : INK}"/>`;
+      s += `<rect x="${x0 + .5}" y="${b[0] + .5}" width="${w - 1}" height="${b.at(-1) - b[0] - 1}" fill="none" stroke="${INK}"/>`;
+      g.ys.forEach(y => { s += `<line x1="${x0 + w}" x2="${x0 + w + 8}" y1="${y}" y2="${y}" stroke="${INK}"/>`; });
+      return s + vlab(x0 - 6, b[0], 'MORE IMPORTANT') + vlab(x0 - 6, b.at(-1), 'LESS', 'start') + '</svg>';
+    },
+    wedge: g => {
+      const t = g.top + 14, b = g.bottom - 14, cx = 40;
+      return svgOpen(g.W, g.H) + `<defs><linearGradient id="wgv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${INK}" stop-opacity=".85"/><stop offset="1" stop-color="${INK}" stop-opacity=".08"/></linearGradient></defs>
+        <path d="M${cx - 6} ${t}H${cx + 6}L${cx} ${b}Z" fill="url(#wgv)"/>` + vlab(cx - 12, t, 'MORE IMPORTANT') + '</svg>';
+    },
+    rank: g => svgOpen(g.W, g.H) + g.ys.map((y, i) => `<text class="num" x="52" y="${y}" text-anchor="end" dominant-baseline="central" font-size="32" fill-opacity=".5">${i + 1}</text>`).join('') + '</svg>',
+    hex: g => {
+      const cx = 42, mn = Math.min(...g.scores), mx = Math.max(...g.scores);
+      let s = svgOpen(g.W, g.H) + `<line x1="${cx}" x2="${cx}" y1="${g.ys[0]}" y2="${g.ys.at(-1)}" stroke="${AXL}"/>`;
+      g.ys.forEach((y, i) => { s += hexPath(cx, y, 4 + 8 * (g.scores[i] - mn) / Math.max(1, mx - mn), `fill="#fff" stroke="${INK}" stroke-width="1.2"`); });
+      return s + vlab(22, g.top + 14, 'MORE IMPORTANT') + '</svg>';
+    },
+    wire: g => {
+      const x = 42, end = g.bottom - 4;
+      let s = svgOpen(g.W, g.H) + `<path d="M64 ${g.headY}H${x}V${end - 2}" fill="none" stroke="${WIRE}"/>`;
+      g.ys.forEach(y => { s += `<path d="M${x} ${y}H${g.voteX}" fill="none" stroke="${WIRE}"/><circle cx="${x}" cy="${y}" r="2.5" fill="${WIRE}"/>`; });
+      return s + arrow(x, end, -90) + vlab(x - 12, g.headBottom + 14, 'MORE IMPORTANT') + '</svg>';
+    },
+  };
+  const Hz = {
+    current: h => `<div class="cur-h" style="left:${h.L}px;width:${h.R - h.L}px"><span>Best articulation</span><span class="ln">${headSvg}${headSvg}</span><span>Weaker</span><span class="pager">1 of 3 · best articulated</span>${ICON.fold}</div>`,
+    scale: h => {
+      const y0 = 17, hh = 6, b = [h.L, ...h.lefts.slice(1).map((l, i) => (h.rights[i] + l) / 2), h.R];
+      let s = svgOpen(h.W, h.H);
+      for (let i = 0; i < b.length - 1; i++) s += `<rect x="${b[i]}" y="${y0}" width="${b[i + 1] - b[i]}" height="${hh}" fill="${i % 2 ? '#fff' : INK}"/>`;
+      s += `<rect x="${h.L + .5}" y="${y0 + .5}" width="${h.R - h.L - 1}" height="${hh - 1}" fill="none" stroke="${INK}"/>`;
+      h.xs.forEach(x => { s += `<line x1="${x}" x2="${x}" y1="${y0 + hh}" y2="${y0 + hh + 8}" stroke="${INK}"/>`; });
+      return s + `<text class="at" x="${h.L}" y="11">BEST ARTICULATION</text><text class="at" x="${h.R}" y="11" text-anchor="end">WEAKER</text></svg>`;
+    },
+    wedge: h => svgOpen(h.W, h.H) + `<defs><linearGradient id="wgh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${INK}" stop-opacity=".85"/><stop offset="1" stop-color="${INK}" stop-opacity=".08"/></linearGradient></defs>
+      <path d="M${h.L} 18V30L${h.R} 24Z" fill="url(#wgh)"/><text class="at" x="${h.L}" y="11">BEST ARTICULATION</text></svg>`,
+    rank: h => svgOpen(h.W, h.H) + h.lefts.map((l, i) => `<text class="num" x="${l + 2}" y="${h.H - 4}" font-size="26" fill-opacity=".55">${i + 1}</text>`).join('') + `<text class="at" x="${h.lefts[0] + 22}" y="${h.H - 8}">BEST</text></svg>`,
+    hex: h => {
+      const y = 22, tones = [1, .5, .18];
+      return svgOpen(h.W, h.H) + `<line x1="${h.xs[0]}" x2="${h.xs.at(-1)}" y1="${y}" y2="${y}" stroke="${AXL}"/>` +
+        h.xs.map((x, i) => hexPath(x, y, 8, `fill="${INK}" fill-opacity="${tones[i]}" stroke="${INK}" stroke-width="1.2"`)).join('') +
+        `<text class="at" x="${h.L}" y="11">BEST ARTICULATION</text></svg>`;
+    },
+    wire: h => {
+      const y = 20, drop = h.H + 8;
+      let s = svgOpen(h.W, h.H) + `<path d="M${h.L - 30} ${y}H${h.R - 2}" fill="none" stroke="${WIRE}"/>`;
+      h.xs.forEach(x => { s += `<path d="M${x} ${y}V${drop}" fill="none" stroke="${WIRE}"/><circle cx="${x}" cy="${y}" r="2.5" fill="${WIRE}"/>`; });
+      return s + arrow(h.R, y, 180) + `<text class="at" x="${h.L}" y="9">BEST ARTICULATION</text></svg>`;
+    },
+  };
+  function paintAxes() {
+    const bg = $('#axbg'); if (!bg) return;
+    canvasLayer(bg, 'stone', { offX: 500 });
+    const which = S.comparing ? 'current' : S.axis;
+    const blk = $('#vblock'), br = blk.getBoundingClientRect();
+    const panel = $('.panelcol', blk).getBoundingClientRect(), head = $('.ohead', blk).getBoundingClientRect();
+    const cards = $$('.card', blk).map(c => c.getBoundingClientRect());
+    $('#vaxis').innerHTML = V[which]({
+      W: 64, H: br.height, ys: cards.map(r => r.top - br.top + 31), top: panel.top - br.top, bottom: panel.bottom - br.top,
+      headY: head.top - br.top + head.height / 2, headBottom: head.bottom - br.top, voteX: cards[0].left - br.left - 25, scores: COL.map(c => c.score),
+    });
+    const ha = $('#haxis'), hr = ha.getBoundingClientRect(), vs = $$('#hblock .vcard').map(r => r.getBoundingClientRect());
+    const lefts = vs.map(r => r.left - hr.left), rights = vs.map(r => r.right - hr.left);
+    $('#haxis').innerHTML = Hz[which]({ W: hr.width, H: hr.height, lefts, rights, xs: vs.map((r, i) => (lefts[i] + rights[i]) / 2), L: lefts[0], R: rights.at(-1) });
+  }
+
+  // ---------- Wiring ----------
+  function renderStage() {
+    clearInterval(tourTimer);
+    ({ signin: renderSignin, home: renderHome, axes: renderAxes })[S.tab]();
+  }
+  function paint() { ({ signin: paintSignin, home: paintHome, axes: paintAxes })[S.tab](); }
+  $$('.seg button').forEach(b => b.addEventListener('click', () => {
+    S.tab = b.dataset.tab;
+    $$('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    scrollTo({ top: 0 }); renderControls(); renderStage();
+  }));
+  const cmp = $('#compare');
+  const down = () => { if (S.comparing) return; S.comparing = true; cmp.setAttribute('aria-pressed', 'true'); renderStage(); };
+  const up = () => { if (!S.comparing) return; S.comparing = false; cmp.setAttribute('aria-pressed', 'false'); renderStage(); };
+  cmp.addEventListener('pointerdown', e => { e.preventDefault(); down(); });
+  ['pointerup', 'pointerleave', 'pointercancel', 'blur'].forEach(t => cmp.addEventListener(t, up));
+  cmp.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); down(); } });
+  cmp.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') up(); });
+  let timer = 0, lastW = 0;
+  new ResizeObserver(() => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(timer); timer = setTimeout(paint, 140); }).observe(document.body);
+
+  renderControls(); renderStage();
+  document.fonts.ready.then(() => { paint(); });
+})();
+</script>
+</body>
+</html>
