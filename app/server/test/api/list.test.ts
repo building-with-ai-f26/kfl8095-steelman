@@ -37,6 +37,8 @@ test("E-03: each board you're on shows its question, its options with how many a
       role: "contributor",
       owner: expect.stringMatching(/^ana_/),
       changedAt: expect.any(String),
+      createdAt: expect.any(String),
+      comments: 0,
     },
   ]);
 });
