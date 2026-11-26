@@ -28,8 +28,8 @@ test.describe("one vote a minute", () => {
 
     await more(page, SECOND).click();
 
-    await expect(pill(page)).toHaveText("Too many in a row. Try again in a minute. · 1 waiting to send");
-    await expect(page.locator("#sm-status")).toHaveText("Too many in a row. Try again in a minute.");
+    await expect(pill(page)).toHaveText("You’ve done that too many times in a row. Try again in a minute. · 1 waiting to send");
+    await expect(page.locator("#sm-status")).toHaveText("You’ve done that too many times in a row. Try again in a minute.");
     await expect(more(page, SECOND)).toHaveAttribute("aria-pressed", "true");
     // The refusal is the service's answer, and the browser logs it; nothing else may be.
     expect(board.errors.splice(0)).toEqual(["jordan_w: Failed to load resource: the server responded with a status of 429 (Too Many Requests)"]);
@@ -54,7 +54,7 @@ test.describe("two votes a minute", () => {
 
     await page.context().setOffline(false);
 
-    await expect(pill(page)).toHaveText("Too many in a row. Try again in a minute. · 1 waiting to send");
+    await expect(pill(page)).toHaveText("You’ve done that too many times in a row. Try again in a minute. · 1 waiting to send");
     expect(board.errors.splice(0)).toEqual(["jordan_w: Failed to load resource: the server responded with a status of 429 (Too Many Requests)"]);
     board.clock.advance(MINUTE);
     await page.clock.runFor(MINUTE);
@@ -76,7 +76,7 @@ test.describe("no new boards", () => {
 
     await page.getByRole("button", { name: "Create steelman" }).click();
 
-    await expect(page.getByText("Too many in a row. Try again in 60 minutes.")).toBeVisible();
+    await expect(page.getByText("You’ve done that too many times in a row. Try again in 60 minutes.")).toBeVisible();
     await expect(page).toHaveURL(/\/new$/);
     expect(board.errors.splice(0)).toEqual(["lin.zhao: Failed to load resource: the server responded with a status of 429 (Too Many Requests)"]);
   });
@@ -92,7 +92,7 @@ siteTest.describe("no sign-in codes from this network", () => {
 
     await page.getByRole("button", { name: "Email me a code" }).click();
 
-    await expectSite(page.locator(".sm-landing-auth .sm-field-error")).toHaveText("Too many in a row. Try again in 60 minutes.");
+    await expectSite(page.locator(".sm-landing-auth .sm-field-error")).toHaveText("You’ve done that too many times in a row. Try again in 60 minutes.");
     expectSite(() => site.codeFor("sam.reyes@school.example.edu")).toThrow();
   });
 });

@@ -431,5 +431,5 @@ export type WriteAnswer =
 /** What a person over a rate limit is told: "a minute" for a wait of a minute or less, else the minutes, rounded up. */
 export function tooManyMessage(seconds: number): string {
   const minutes = Math.ceil(seconds / 60);
-  return `Too many in a row. Try again in ${minutes <= 1 ? "a minute" : `${minutes} minutes`}.`;
+  return `You’ve done that too many times in a row. Try again in ${minutes <= 1 ? "a minute" : `${minutes} minutes`}.`;
 }

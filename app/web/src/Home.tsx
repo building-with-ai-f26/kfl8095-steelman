@@ -76,14 +76,14 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
         </h1>
         {list === "failed" ? (
           <div className="sm-feed-empty" role="alert">
-            <p>Couldn’t load your steelmen.</p>
+            <p>Steelman couldn’t load your steelmen.</p>
             <button type="button" className="sm-button cursor-interaction" onClick={() => (setList(null), load())}>
               Try again
             </button>
           </div>
         ) : list.boards.length === 0 ? (
           <div className="sm-feed-empty">
-            <p>No steelmen yet.</p>
+            <p>You have no steelmen yet.</p>
             <a className="sm-button sm-solid cursor-interaction" href={NEW_PATH}>
               <Icon name="plus" size={14} />
               New steelman

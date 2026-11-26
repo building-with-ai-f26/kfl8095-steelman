@@ -260,7 +260,7 @@ test.describe("one comment an hour", () => {
 
     await box(page).fill("The second one.");
     await send(page).click();
-    await expect(panel(page).getByText("Too many in a row. Try again in 60 minutes.")).toBeVisible();
+    await expect(panel(page).getByText("You’ve done that too many times in a row. Try again in 60 minutes.")).toBeVisible();
     await expect(box(page)).toHaveValue("The second one.");
     board.errors.splice(0);
   });
