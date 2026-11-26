@@ -28,8 +28,14 @@
 // draws without motion. Only the reader's own Compare, Fold, and a card's
 // wording or chevron animate: the tour, a link, History, and Strongest case
 // open rows and cards at once, as today.
+//
+// Hiding a column (M3d-6, A-08, M-15) reuses the board's column animation:
+// the reader's own Hide this column, Show only this column, and a strip's
+// click ease the columns from where they were to where boardColumns() puts
+// them, on --sm-slow and --sm-settle, and each new strip fades in. No card
+// crosses a column, so nothing else moves. The same stop cancels it.
 
-import { drawnRect, duration, play, reducedMotion } from "./motion.ts";
+import { curve, drawnRect, duration, play, reducedMotion } from "./motion.ts";
 import type { Rect } from "./motion.ts";
 
 /** How long each version waits after the one before it, as the prototype's unfold does. */
@@ -172,6 +178,37 @@ export function playToggle(scene: HTMLElement, toggle: RowToggle): Animation[] {
   // The folding row's copy slides each version back to the lead card's x and fades, and then leaves the page.
   if (toggle.copy && layer) started.push(...foldCopy(layer, toggle.copy, medium));
 
+  running = started.filter((animation): animation is Animation => animation !== null);
+  return running;
+}
+
+/**
+ * Records the board's columns as they're drawn now, mid-motion included, before the reader hides or shows a column
+ * (M3d-6). Answers null under reduced motion, when nothing moves.
+ */
+export function beforeColumns(scene: HTMLElement): string | null {
+  if (reducedMotion()) return null;
+  const board = scene.querySelector<HTMLElement>(".sm-board");
+  return board ? window.getComputedStyle(board).gridTemplateColumns : null;
+}
+
+/**
+ * Plays a column hiding or showing once React has drawn it: the board's columns ease from the template drawn before
+ * to the one drawn now, on --sm-slow and --sm-settle, and each strip just drawn fades in. A column comes back as its
+ * width eases. Answers the animations, for Wires' redrawWhile().
+ */
+export function playColumns(scene: HTMLElement, template: string, strips: readonly string[]): Animation[] {
+  stopRowMotion(null);
+  const board = scene.querySelector<HTMLElement>(".sm-board");
+  if (!board) return [];
+  const now = window.getComputedStyle(board).gridTemplateColumns;
+  const slow = duration("slow", board);
+  const started: (Animation | null)[] = [];
+  if (now !== template) started.push(play(board, [{ gridTemplateColumns: template }, { gridTemplateColumns: now }], { duration: slow, easing: curve("settle", board) }));
+  for (const option of strips) {
+    const hidden = board.querySelector<HTMLElement>(`:scope > .sm-col-hidden[data-option="${CSS.escape(option)}"]`);
+    if (hidden) started.push(play(hidden, [{ opacity: 0 }, { opacity: 1 }], { duration: duration("medium", board) }));
+  }
   running = started.filter((animation): animation is Animation => animation !== null);
   return running;
 }

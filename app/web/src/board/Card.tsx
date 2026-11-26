@@ -41,6 +41,9 @@ export interface CardMenu {
   items(version: VersionRow): MenuItem[];
   editing: string | null;
   edit(versionId: string): void;
+  /** The text of the edit open on this wording, as last typed, kept while its column is hidden (M3d-6); none for a fresh edit. */
+  editDraft(versionId: string): DraftText | undefined;
+  editChange(versionId: string, draft: DraftText): void;
   save(version: VersionRow, draft: DraftText): void;
   cancel(versionId: string): void;
   suggest(version: VersionRow): void;
@@ -286,7 +289,7 @@ export function Card({ version, opening, inTrack = false, row }: { version: Vers
  * text changes the form says so.
  */
 function EditCard({ version, className, menu }: { version: VersionRow; className: string; menu: CardMenu }) {
-  const [draft, setDraft] = useState<DraftText>({ wording: version.wording ?? "", context: version.context ?? "" });
+  const [draft, setDraft] = useState<DraftText>(() => menu.editDraft(version.id) ?? { wording: version.wording ?? "", context: version.context ?? "" });
   const clean = cleanDraft(draft);
   const changes = clean !== null && (clean.wording !== version.wording || clean.context !== (version.context ?? ""));
   const note: ReactNode =
@@ -309,7 +312,10 @@ function EditCard({ version, className, menu }: { version: VersionRow; className
       addTooltip="Save"
       note={note}
       draft={draft}
-      onChange={setDraft}
+      onChange={(next) => {
+        setDraft(next);
+        menu.editChange(version.id, next);
+      }}
       onClose={() => menu.cancel(version.id)}
       onAdd={(ready) => menu.save(version, ready)}
     />

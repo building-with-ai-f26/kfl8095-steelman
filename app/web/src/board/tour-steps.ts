@@ -2,7 +2,9 @@
 // tourSteps picks them (docs/prototype/source/steelman-refined.html): the
 // top argument for importance, the argument with the most wordings for
 // articulation, and the leading wording with the most evidence assessments.
-// A hidden or deleted wording is never an example.
+// A hidden or deleted wording is never an example, and neither is anything in
+// a column the reader has hidden (M3d-6, A-08), as the prototype's tourSteps
+// skips it.
 
 import { credibility } from "@steelman/shared";
 import type { ReaderView } from "@steelman/shared";
@@ -20,8 +22,8 @@ interface Example {
   versionIds: string[];
 }
 
-export function tourSteps(view: ReaderView): TourStep[] {
-  const options = columns(view);
+export function tourSteps(view: ReaderView, hidden: ReadonlySet<string> = new Set()): TourStep[] {
+  const options = columns(view).filter((option) => !hidden.has(option.id));
   const live = (id: string | undefined) => id !== undefined && isLiveVersion(view.rows.versions[id]);
   // Each option's arguments that lead with a wording someone can read, in the order drawn.
   const rowsOf = (optionId: string): Example[] =>
