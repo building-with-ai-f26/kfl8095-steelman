@@ -77,6 +77,8 @@ function boardMoves(page: Page): Promise<string[]> {
     document
       .getAnimations()
       .filter((animation) => !(animation instanceof CSSAnimation) && !(animation instanceof CSSTransition))
+      // A count rolling inside its own vote box (M3d-8) moves no row, as the builder approved on Nov 26.
+      .filter((animation) => !((animation.effect as KeyframeEffect | null)?.target as Element | null)?.closest(".sm-vote"))
       .flatMap((animation) => {
         const row = ((animation.effect as KeyframeEffect | null)?.target as Element | null)?.closest<HTMLElement>("[data-node]");
         return row ? [row.dataset.node!] : [];

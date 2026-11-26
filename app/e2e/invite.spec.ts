@@ -10,7 +10,7 @@ import type { TestBoard } from "./support/board.ts";
 import { status } from "./support/screen.ts";
 
 /** The app's sentence at a limit (tooManyMessage), for half an hour's wait. */
-const TOO_MANY = "Too many in a row. Try again in 30 minutes.";
+const TOO_MANY = "You’ve done that too many times in a row. Try again in 30 minutes.";
 
 const share = (page: Page) => page.getByRole("dialog", { name: "Share" });
 const field = (page: Page) => share(page).getByRole("textbox", { name: "Add people" });
