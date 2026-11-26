@@ -1437,7 +1437,7 @@ interface PillSays {
   update: boolean;
 }
 
-/** "Too many in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
+/** "You’ve done that too many times in a row. Try again in a minute. · 1 waiting to send", "Offline · 1 waiting to send", "Back online · 1 sent", or "3 changes · Update". */
 function pillSays(state: SessionState, count: number): PillSays | null {
   // Over a rate limit: what's waiting is sent once the wait has passed (architecture §7).
   if (state.tooMany !== null) return { icon: "clock", text: `${state.tooMany}${state.waiting > 0 ? ` · ${state.waiting} waiting to send` : ""}`, quiet: state.offline || state.backOnline !== null, update: false };

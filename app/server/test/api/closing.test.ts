@@ -243,7 +243,7 @@ describe("what the board says about closing", () => {
     const changes = (await api.get(`/api/boards/${b.board}/changes?after=${snapshot.board.seq}`, { as: b.ben })).body;
     expect(changes).toEqual({ seq: snapshot.board.seq, options: [], arguments: [], versions: [], sources: [], order: null, log: [], access: snapshot.access, role: "contributor" });
     const listed = (await api.get("/api/boards", { as: b.ben })).body.boards.find((board: { id: string }) => board.id === b.board);
-    expect(Object.keys(listed).sort()).toEqual(["changedAt", "id", "options", "owner", "question", "role"]);
+    expect(Object.keys(listed).sort()).toEqual(["changedAt", "comments", "createdAt", "id", "options", "owner", "question", "role"]);
   });
 
   test("I-05: each of the three writes sent twice changes nothing the second time", async () => {

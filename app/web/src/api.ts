@@ -87,7 +87,7 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
     response = await call("POST", "boards", board);
   } catch (error) {
     if (!(error instanceof Unreachable)) throw error;
-    return { problem: "Couldn’t reach Steelman. Try again." };
+    return { problem: "Your browser couldn’t reach Steelman. Try again." };
   }
   if (response.status === 401) return { problem: "You’ve been signed out. Reload the page to sign in." };
   if (response.status === 429) return { problem: tooManyMessage(((await response.json()) as { retryAfter: number }).retryAfter) };
