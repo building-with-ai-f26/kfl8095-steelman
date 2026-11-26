@@ -75,7 +75,7 @@ export function Account() {
     setDownloading(true);
     const saved = await downloadMyData();
     setDownloading(false);
-    setStatus(saved ? "Downloaded steelman-data.json." : "Steelman couldn’t download your data. Try again.");
+    setStatus(saved ? "Your browser saved steelman-data.json." : "Steelman couldn’t download your data. Try again.");
   };
   const leave = async () => {
     setSigningOut(true);

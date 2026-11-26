@@ -83,9 +83,9 @@ test("L-01 A wrong code says so, the fifth wrong try cancels it, and a new code 
     await expect(error(page)).toHaveText("That code isn’t right.");
   }
   await typeCode(page, wrong(first));
-  await expect(error(page)).toHaveText("Too many wrong tries. Send a new code.");
+  await expect(error(page)).toHaveText("You entered a wrong code too many times. Send a new code.");
   await typeCode(page, first);
-  await expect(error(page)).toHaveText("Too many wrong tries. Send a new code.");
+  await expect(error(page)).toHaveText("You entered a wrong code too many times. Send a new code.");
 
   await page.getByRole("button", { name: "Send a new code" }).click();
   await expect(page.getByText("We sent a new code to lee@school.example.edu.")).toBeVisible();

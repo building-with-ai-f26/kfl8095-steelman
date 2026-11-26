@@ -138,7 +138,7 @@ siteTest("E-03: with no boards yet, the list says so and offers New steelman", a
   await page.getByLabel("Username").fill("new_person");
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await expect(page.locator(".sm-feed-empty")).toContainText("No steelmen yet.");
+  await expect(page.locator(".sm-feed-empty")).toContainText("You have no steelmen yet.");
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
   await page.locator(".sm-feed-empty").getByRole("link", { name: "New steelman" }).click();
@@ -162,7 +162,7 @@ test("E-03: when the list can't be loaded, it says so, and Try again loads it", 
   board.errors.length = 0;
   await page.goto("/");
 
-  await expect(page.getByRole("alert")).toContainText("Couldn’t load your steelmen.");
+  await expect(page.getByRole("alert")).toContainText("Steelman couldn’t load your steelmen.");
   board.errors.length = 0;
   fail = false;
   await page.getByRole("button", { name: "Try again" }).click();

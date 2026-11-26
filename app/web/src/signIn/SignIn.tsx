@@ -17,11 +17,11 @@ const MESSAGES = {
   tooManyEmails: "Too many codes sent to this address. Try again in an hour.",
   noCode: "Enter the 6-digit code.",
   wrongCode: "That code isn’t right.",
-  tooManyTries: "Too many wrong tries. Send a new code.",
+  tooManyTries: "You entered a wrong code too many times. Send a new code.",
   expired: "That code has expired. Send a new code.",
   google: "Google couldn’t confirm your email. Use a code instead.",
   googleOff: "Google sign-in isn’t available. Use a code instead.",
-  unreachable: "Couldn’t reach Steelman. Try again.",
+  unreachable: "Your browser couldn’t reach Steelman. Try again.",
 } as const;
 
 /** Five wrong tries cancel a code (plans/architecture.md §7). */

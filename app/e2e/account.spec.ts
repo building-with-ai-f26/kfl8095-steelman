@@ -47,7 +47,7 @@ test("M-07 Download your data saves steelman-data.json with what they wrote and 
   expect(data.account.username).toBe("omar_h");
   expect(data.boards[0].wrote.map((w: { wording: string }) => w.wording)).toContain(OMARS);
   expect(data.votes.importance.length).toBeGreaterThan(0);
-  await expect(page.locator("#sm-status")).toHaveText("Downloaded steelman-data.json.");
+  await expect(page.locator("#sm-status")).toHaveText("Your browser saved steelman-data.json.");
 });
 
 test("M-07 Delete account asks them to type their username; Cancel closes it, and a wrong name says so", async ({ board }) => {
