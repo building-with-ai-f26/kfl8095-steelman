@@ -10,15 +10,42 @@
 // It isn't safe to send twice the way other writes are (invariant 10): a
 // second request makes a second, empty board. The sheet sends it once and
 // waits for the answer.
+//
+// New steelman's Space menu (G-05, M3d-19) starts a board in a space its
+// maker is in, in the same transaction, so it is never left outside its
+// space, or open more widely than its maker chose, by a second write that
+// failed. A space they aren't in, or one that was deleted, is refused as no
+// space, as putting a board in a space is (sharing.ts's setBoardSpace), and
+// nothing is made. The change row names the space by its ID (invariant 7).
 
 import { sql } from "kysely";
+import { canInSpace } from "@steelman/shared";
 import type { Clock, IdSource, NewBoard } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
+import { asSpaceRole } from "./spaces.ts";
+
+/** Thrown when the space a new board names isn't one its maker is in; the transaction rolls back and nothing is made. */
+export class NoSpace extends Error {
+  constructor() {
+    super("no_space");
+  }
+}
 
 /** Makes the board in one transaction and returns its ID. Only the local seed passes `id`, for its example boards' fixed links. */
 export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: string, board: NewBoard, id = ids.boardId()): Promise<string> {
   const now = clock.now();
   await db.transaction().execute(async (trx) => {
+    if (board.space !== undefined) {
+      const mine = await trx
+        .selectFrom("space_member as sm")
+        .innerJoin("space as s", "s.id", "sm.space_id")
+        .select("sm.role")
+        .where("sm.space_id", "=", board.space)
+        .where("sm.account_id", "=", person)
+        .where("s.deleted_at", "is", null)
+        .executeTakeFirst();
+      if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) throw new NoSpace();
+    }
     await trx
       .insertInto("board")
       .values({
@@ -28,6 +55,7 @@ export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: s
         created_at: now,
         general_access: board.access?.general ?? "link",
         link_role: board.access?.linkRole ?? "contributor",
+        ...(board.space !== undefined ? { space_id: board.space } : {}),
       })
       .execute();
     await trx.insertInto("board_member").values({ board_id: id, account_id: person, role: "owner", joined_via: "invite", joined_at: now }).execute();
@@ -39,7 +67,7 @@ export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: s
       .execute();
     await trx
       .insertInto("change")
-      .values({ board_id: id, seq, at: now, actor_id: person, kind: "board_created", subject_kind: "board", subject_id: id })
+      .values({ board_id: id, seq, at: now, actor_id: person, kind: "board_created", subject_kind: "board", subject_id: id, ...(board.space !== undefined ? { after: JSON.stringify({ space: board.space }) } : {}) })
       .execute();
   });
   return id;

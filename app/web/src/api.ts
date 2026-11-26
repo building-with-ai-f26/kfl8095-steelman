@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
+import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, SpaceCanvas, SpaceMember, SpaceSummary, SpaceWriteAnswer, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 import { noteWrite } from "./opening.ts";
@@ -91,6 +91,8 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
   }
   if (response.status === 401) return { problem: "You’ve been signed out. Reload the page to sign in." };
   if (response.status === 429) return { problem: tooManyMessage(((await response.json()) as { retryAfter: number }).retryAfter) };
+  // The space was deleted, or they were taken out of it, since the sheet opened (M3d-19).
+  if (response.status === 409) return { problem: "You aren’t in that space any more. Choose another space, or none." };
   if (!response.ok) return { problem: "Steelman couldn’t make that board. Try again." };
   return ((await response.json()) as { board: string }).board;
 }
@@ -420,4 +422,66 @@ export async function deleteMyAccount(username: string): Promise<"done" | "wrong
   } catch {
     return "failed";
   }
+}
+
+// Spaces (M3d-19; G-01, G-02, G-05): the screens' way to M3d-17's routes. A space's writes aren't queued, as a board
+// Owner's settings aren't (architecture §3): each needs the service there to answer, and a form keeps what was typed
+// when it can't be sent.
+
+/** What a space's write answers: the service's answer, not found, invalid, or unreachable. */
+export type SpaceAnswer = SpaceWriteAnswer | { status: "not_found" } | { status: "invalid" } | { status: "unreachable" };
+
+async function spaceAnswerOf(send: () => Promise<Response>): Promise<SpaceAnswer> {
+  try {
+    const response = await send();
+    if (response.status === 404) return { status: "not_found" };
+    if (response.status === 400) return { status: "invalid" };
+    if (response.status >= 500) return { status: "unreachable" };
+    return (await response.json()) as SpaceAnswer;
+  } catch {
+    return { status: "unreachable" };
+  }
+}
+
+/** Your spaces, by name, or null when they can't be read now. Only members learn that a space exists. */
+export async function listSpaces(): Promise<SpaceSummary[] | null> {
+  try {
+    const response = await call("GET", "spaces");
+    return response.ok ? ((await response.json()) as { spaces: SpaceSummary[] }).spaces : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Makes a space with the ID the browser made, so sending it twice makes one space. */
+export function createSpace(space: { id: string; name: string; about: string; canvas: SpaceCanvas }): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("POST", "spaces", space));
+}
+
+/** A space's name, about text, and canvas, always sent together: an Admin's or the Owner's. */
+export function updateSpace(space: string, settings: { name: string; about: string; canvas: SpaceCanvas }): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("PUT", `spaces/${encodeURIComponent(space)}`, settings));
+}
+
+/** A space's members, Owner first, or null when they can't be read now. */
+export async function readSpacePeople(space: string): Promise<SpaceMember[] | null> {
+  try {
+    const response = await call("GET", `spaces/${encodeURIComponent(space)}/people`);
+    return response.ok ? ((await response.json()) as { people: SpaceMember[] }).people : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Adds someone to a space by their username, as an Admin or a Member. Someone already in it gets the new role. */
+export function inviteToSpace(space: string, username: string, role: "admin" | "member"): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("POST", `spaces/${encodeURIComponent(space)}/invites`, { username, role }));
+}
+
+export function setSpaceRole(space: string, account: string, role: "admin" | "member"): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("PUT", `spaces/${encodeURIComponent(space)}/people/${encodeURIComponent(account)}`, { role }));
+}
+
+export function removeFromSpace(space: string, account: string): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("DELETE", `spaces/${encodeURIComponent(space)}/people/${encodeURIComponent(account)}`));
 }

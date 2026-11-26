@@ -28,6 +28,9 @@ const PATHS = {
   history: ["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", "M3 3v5h5", "M12 7v5l4 2"],
   clock: ["M2 12a10 10 0 1 0 20 0a10 10 0 1 0-20 0", "M12 6v6l4 2"],
   plus: ["M5 12h14", "M12 5v14"],
+  // The sidebar's Home and its button on a narrow screen (M3d-19), from Lucide's house and menu.
+  house: ["M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", "M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"],
+  menu: ["M4 12h16", "M4 18h16", "M4 6h16"],
   check: ["M20 6 9 17l-5-5"],
   x: ["M18 6 6 18", "m6 6 12 12"],
   "trash-2": ["M3 6h18", "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", "M10 11v6", "M14 11v6"],

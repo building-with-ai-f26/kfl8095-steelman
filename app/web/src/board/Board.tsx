@@ -24,6 +24,10 @@
 // does, so Back leaves the board instead of closing cards one by one. Opened
 // by a comment's link (M3b-13), it is the comment's while that comment's
 // panel is open, as the prototype keeps c= in its address.
+//
+// A board in a space (M3d-19, G-05) tells the page its space, for the top
+// bar's breadcrumb, and takes the space's canvas, read from the reader's own
+// spaces, since only a member is told the board's space.
 
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
@@ -75,6 +79,8 @@ import type { RowToggle } from "./unfold.ts";
 import { beforeSettle, playSettle, readySettle, stopSettling } from "./settle.ts";
 import { growFrom, zoomInto } from "./zoom.ts";
 import { BoardSkeleton } from "./Skeleton.tsx";
+import { listSpaces } from "../api.ts";
+import type { SpaceCanvas } from "@steelman/shared";
 import { noteAddress, showBoard, takeOpening } from "../opening.ts";
 import type { Settling } from "./settle.ts";
 
@@ -94,9 +100,11 @@ interface BoardProps {
   onZoom?(zoom: Zoom, card?: string | null): void;
   /** Told when the board itself is on screen, and when it's gone: the switch shows only then. */
   onShown?(shown: boolean): void;
+  /** Told the board's space, for a reader who is in it (M3d-19), and null when it has none or it's gone. */
+  onSpace?(space: { id: string; name: string } | null): void;
 }
 
-export function Board({ boardId, version = null, comment = null, zoom = "read", onZoom = () => {}, onShown = () => {} }: BoardProps) {
+export function Board({ boardId, version = null, comment = null, zoom = "read", onZoom = () => {}, onShown = () => {}, onSpace = () => {} }: BoardProps) {
   const [session] = useState(() => new BoardSession(boardId, comment));
   useEffect(() => {
     void session.start();
@@ -114,7 +122,7 @@ export function Board({ boardId, version = null, comment = null, zoom = "read", 
   if (state.phase === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   // Until the first read arrives, skeleton cards stand where the board will be (M3d-10).
   if (!view) return <BoardSkeleton />;
-  return <BoardView boardId={boardId} linked={version} linkedComment={comment} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} />;
+  return <BoardView boardId={boardId} linked={version} linkedComment={comment} view={view} state={state} session={session} zoom={zoom} onZoom={onZoom} onShown={onShown} onSpace={onSpace} />;
 }
 
 interface BoardViewProps {
@@ -129,9 +137,10 @@ interface BoardViewProps {
   zoom: Zoom;
   onZoom(zoom: Zoom, card?: string | null): void;
   onShown(shown: boolean): void;
+  onSpace(space: { id: string; name: string } | null): void;
 }
 
-function BoardView({ boardId, linked, linkedComment, view, state, session, zoom, onZoom, onShown }: BoardViewProps) {
+function BoardView({ boardId, linked, linkedComment, view, state, session, zoom, onZoom, onShown, onSpace }: BoardViewProps) {
   const options = columns(view);
   // The importance axis only means something once a column has two arguments to rank.
   const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
@@ -865,6 +874,14 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     onShown(true);
     return () => onShown(false);
   }, [onShown]);
+  // The board's space, for the top bar, and its canvas (M3d-19).
+  const spaceId = state.space?.id ?? null;
+  const spaceName = state.space?.name ?? null;
+  useEffect(() => {
+    onSpace(spaceId && spaceName ? { id: spaceId, name: spaceName } : null);
+  }, [onSpace, spaceId, spaceName]);
+  useEffect(() => () => onSpace(null), [onSpace]);
+  const canvas = useSpaceCanvas(spaceId);
   // Opened from the list, the board grows out of its post's miniature (M3d-9) and says which board it is.
   const surface = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -1069,7 +1086,7 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   };
 
   return (
-    <div ref={surface} className="sm-surface">
+    <div ref={surface} className="sm-surface" data-canvas={canvas ?? undefined}>
       {/* What a faded control says to a screen reader: each names one of these by aria-describedby. */}
       {Object.values(WHY).map(({ why, noteId }) => (
         <span key={noteId} id={noteId} hidden>
@@ -1929,4 +1946,21 @@ function Stack({ count, onUnfold }: { count: number; onUnfold(): void }) {
       </b>
     </button>
   );
+}
+
+/** The canvas of the board's space, from the reader's own spaces; null for a board in no space, or until it's read. */
+function useSpaceCanvas(space: string | null): SpaceCanvas | null {
+  const [canvas, setCanvas] = useState<{ space: string; canvas: SpaceCanvas } | null>(null);
+  useEffect(() => {
+    if (!space) return;
+    let current = true;
+    void listSpaces().then((mine) => {
+      const found = mine?.find((each) => each.id === space);
+      if (current && found) setCanvas({ space, canvas: found.canvas });
+    });
+    return () => {
+      current = false;
+    };
+  }, [space]);
+  return canvas && canvas.space === space ? canvas.canvas : null;
 }

@@ -15,15 +15,29 @@
 // github.com/<username> and Wikipedia's is User:<username>. Its name can have
 // a dot or a hyphen, as the demo's and the tests' people do; anything else
 // under /u/ names no one.
+//
+// A space's page (M3d-19, G-01, G-05) is /s/<space ID>: Home's list,
+// showing only that space's boards under its card, so it reads as home with
+// the space named. Its settings are /s/<space ID>/settings, and New space is
+// /spaces/new, as GitHub's organization page is github.com/<organization>
+// and its settings sit under it, and Slack's channel links carry the
+// channel's ID, not its name (from memory). An address carries a space's ID,
+// never its name, so no name reaches analytics' page views. Anything else
+// under /s/ names no space.
 
 const ID = "[A-Za-z0-9_-]+";
 const BOARD = new RegExp(`^/b/(${ID})(?:/v/(${ID})|/c/(${ID}))?/?$`);
 const PROFILE = /^\/u\/([A-Za-z0-9_.-]{1,40})\/?$/;
+/** A space's ID is an item ID: 20 characters (shared/src/ids.ts). */
+const SPACE = /^\/s\/([A-Za-z0-9_-]{20})(\/settings)?\/?$/;
 /** The name credited with what a deleted account wrote (M-07), which has no profile. */
 const DELETED_ACCOUNT = "deleted_account";
 
 export type Link =
-  | { kind: "home" }
+  /** `space` when the list shows only one space's boards (M3d-19). */
+  | { kind: "home"; space?: string }
+  | { kind: "space-settings"; space: string }
+  | { kind: "new-space" }
   | { kind: "new" }
   | { kind: "account" }
   | { kind: "privacy" }
@@ -37,6 +51,12 @@ export function readLink(path: string): Link {
   if (/^\/new\/?$/.test(path)) return { kind: "new" };
   if (/^\/privacy\/?$/.test(path)) return { kind: "privacy" };
   if (path === "/u" || path.startsWith("/u/")) return { kind: "profile", username: PROFILE.exec(path)?.[1] ?? null };
+  if (/^\/spaces\/new\/?$/.test(path)) return { kind: "new-space" };
+  if (path === "/s" || path.startsWith("/s/")) {
+    const space = SPACE.exec(path);
+    if (!space) return { kind: "unknown" };
+    return space[2] ? { kind: "space-settings", space: space[1]! } : { kind: "home", space: space[1]! };
+  }
   if (!path.startsWith("/b/")) return { kind: "home" };
   const match = BOARD.exec(path);
   if (!match) return { kind: "unknown" };
@@ -67,3 +87,15 @@ export function profilePath(username: string): string {
 export function hasProfile(name: string | null | undefined): name is string {
   return typeof name === "string" && name !== "" && name !== DELETED_ACCOUNT;
 }
+
+/** A space's page: Home's list, showing only its boards (M3d-19, G-01). */
+export function spacePath(space: string): string {
+  return `/s/${space}`;
+}
+
+/** A space's settings, for its Owner and Admins (M3d-19, G-02). */
+export function spaceSettingsPath(space: string): string {
+  return `/s/${space}/settings`;
+}
+
+export const NEW_SPACE_PATH = "/spaces/new";
