@@ -18,6 +18,7 @@ import { sql } from "kysely";
 import type { Clock } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { Trx } from "./write-path.ts";
+import { heldUsername } from "./username.ts";
 
 /** The stand-in that everything a deleted person wrote is credited to (migration 0009). */
 export const DELETED_ACCOUNT = "deleted_account";
@@ -171,9 +172,14 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     : [];
   const options = boardIds.length ? await db.selectFrom("option").select(["board_id", "name"]).where("board_id", "in", boardIds).where("deleted_at", "is", null).orderBy("position").execute() : [];
 
+  // An old username held for them after a change (L-04): which, and until when. Beside the account, not in it, so
+  // the account's own fields stay as they were.
+  const held = await heldUsername(db, person);
+
   return {
     exported: clock.now().toISOString(),
     account: { ...summary, joined: joined.toISOString() },
+    heldUsername: held,
     votes: {
       importance: importance.map((v) => ({ board: v.board_id, argument: v.argument_id, value: v.value, at: v.voted_at.toISOString() })),
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
@@ -274,7 +280,8 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
         .execute();
     }
 
-    // The person: email erased, marked deleted. The username is held (releaseHeldUsernames).
+    // The person: email erased, marked deleted. The username is held (releaseHeldUsernames). An old name held after
+    // a username change (L-04) keeps its hold until it ends: username_hold isn't touched, so no one takes it at once.
     await trx.updateTable("account").set({ email: null, email_verified: false, name: "", image: null, updated_at: now, deleted_at: now }).where("id", "=", person).execute();
     return "done";
   });

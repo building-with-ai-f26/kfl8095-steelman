@@ -29,6 +29,11 @@ export function closedDay(closing: { closedAt: string | null; closesAt: string |
   return new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+/** A day, as "Dec 24", in the reader's own time zone: when a username can change again (L-04). */
+export function monthDay(at: string): string {
+  return new Date(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 /** The short name of the reader's time zone at a moment, as "EST" or "EDT". */
 export function zoneName(at: Date): string {
   return new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(at).find((part) => part.type === "timeZoneName")?.value ?? "";

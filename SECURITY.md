@@ -95,6 +95,7 @@ Each fix has new tests that failed before it. No existing test changed. After th
 - **The low findings in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105) are open.**
 - **Budgets alert and do not cap.** The ceilings are three servers and a fixed database size.
 - **Rate-limit counts are kept per server.** With three servers a limit can be three times too generous. The sign-in email limit is exact, because it is counted in Postgres.
+- **Changing a username isn't rate-limited (M3d-15, L-04).** A username changes only through `PUT /api/account/username`; Better Auth's `/update-user` doesn't change a name once it's picked. A refused change says a name is taken whether an account has it or a hold keeps it, as picking one at first sign-in already does, and refusals use up no change, so a signed-in person can try many names. Invitations are limited to stop the same probing. Adding a limit would add a row to the limits table, which needs the builder.
 - **Three gaps were accepted on November 18** (`plans/reviews/deployment-trust-boundary.md`). The agent acts with the builder's own GitHub and Google logins, the protected-files check can be bypassed from inside a pull request, and repository admins can bypass the release approval. They are sized for a class project and get reviewed again before access widens.
 
 ## Checks on every pull request

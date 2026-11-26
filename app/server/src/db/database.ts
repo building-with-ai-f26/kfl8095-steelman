@@ -26,6 +26,8 @@ export interface Database {
     /** When the account was first shown the tour (L-02; migration 0011). Null until then. */
     tour_seen_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
   };
+  /** A changed username's old name, kept from others until ends_at (L-04; migration 0015). */
+  username_hold: { old_name: string; account_id: string; ends_at: Date };
   // Sign-in's own tables (migration 0007). Better Auth reads and writes
   // these; the service's own code uses only sent_email.
   "sign_in.session": { id: string; account_id: string; token: string; expires_at: Date; created_at: Date; updated_at: Date };

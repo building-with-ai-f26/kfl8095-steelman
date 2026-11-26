@@ -110,6 +110,19 @@ export interface Person {
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
 
+/** Changing your username (L-04): the new name. Its shape and whether it's reserved are judged by isAllowedUsername, as at first sign-in. */
+export const usernameChangeInput = z.strictObject({ username: z.string().max(100) });
+
+/**
+ * What PUT /api/account/username answers (L-04). `again` is when a second change in 30 days is allowed, as an ISO
+ * date and time, for the browser to say in the reader's own time zone.
+ */
+export type UsernameChangeAnswer =
+  | { status: "done"; username: string }
+  | { status: "already_done" }
+  | { status: "refused"; reason: "taken" | "invalid" | "reserved" | "signed_out" | "wrong_origin" | "needs_username" }
+  | { status: "refused"; reason: "too_soon"; again: string };
+
 /**
  * A new board (F-01): its question and two to four options, each named
  * differently, ignoring capitals. The service chooses the board's ID: it is

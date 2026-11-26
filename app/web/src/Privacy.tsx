@@ -97,6 +97,7 @@ export function Privacy() {
           backup was made is applied again.
         </li>
         <li>We hold a deleted account’s username for 30 days so that no one can take it straight away. After that, anyone can choose it.</li>
+        <li>When you change your username, Steelman keeps your old one for 30 days so that no one else takes it and links to it still work.</li>
         <li>PostHog keeps analytics for the period our PostHog plan sets. Analytics aren’t tied to your account, so deleting your account doesn’t delete them.</li>
         <li>Resend keeps records of the emails it sent for a period that Resend sets.</li>
       </ul>
