@@ -154,7 +154,7 @@ test("F-01: offline, the sheet says so and keeps what was typed; once back, Crea
 
   await create(page).click();
 
-  await expect(page.getByRole("alert")).toHaveText("Couldn’t reach Steelman. Try again.");
+  await expect(page.getByRole("alert")).toHaveText("Your browser couldn’t reach Steelman. Try again.");
   await expect(create(page)).toBeEnabled();
   await expect(question(page)).toHaveValue("Should our school start an hour later?");
   await page.unroute("**/api/boards");
