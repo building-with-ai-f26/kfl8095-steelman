@@ -1109,10 +1109,18 @@ export class BoardSession {
    * doesn't ask: it's sent, unless the tab is offline, when sending it would fail.
    */
   private readonly beforeUnload = (event: BeforeUnloadEvent) => {
-    if (this.queue.length === 0 && !((this.state.undo || this.state.optionGone) && this.state.offline)) return;
+    if (this.quiet()) return;
     event.preventDefault();
     event.returnValue = "";
   };
+
+  /**
+   * Whether the board can be left without the leave prompt: nothing waits to send, and no held delete would fail to
+   * send. A board opened from the list is left inside the page only then (M3d-9), else by loading the page, which asks.
+   */
+  quiet(): boolean {
+    return this.queue.length === 0 && !((this.state.undo || this.state.optionGone) && this.state.offline);
+  }
 }
 
 /** What's on screen without the options the reader deleted (M3a-2). They're empty, so nothing else moves. */

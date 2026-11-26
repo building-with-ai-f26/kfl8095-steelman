@@ -6,6 +6,7 @@ import { tooManyMessage } from "@steelman/shared";
 import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
+import { noteWrite } from "./opening.ts";
 
 /** The request never reached the service: the browser is offline, or the service is down. */
 export class Unreachable extends Error {}
@@ -19,11 +20,16 @@ async function call(method: string, path: string, body?: unknown, keepalive = fa
   // A write says when this browser's analytics are on, so the service may send its event (M2-12). Never on a read.
   if (method !== "GET" && analyticsOn()) headers["x-steelman-analytics"] = "on";
   if (body !== undefined) headers["content-type"] = "application/json";
+  let response: Response;
   try {
-    return await fetch(`/api/${path}`, { method, headers, keepalive, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    response = await fetch(`/api/${path}`, { method, headers, keepalive, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   } catch (error) {
     throw new Unreachable(String(error));
   }
+  // A write the service took changes when its board last changed, which orders the list (M3d-9, opening.ts).
+  const board = /^boards\/([^/?]+)/.exec(path)?.[1];
+  if (method !== "GET" && response.ok && board) noteWrite(board);
+  return response;
 }
 
 /** What the service says the web app should know when it starts. When it can't be asked, analytics stay off. */

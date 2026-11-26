@@ -5,21 +5,42 @@
 // with how many arguments each has, and a miniature of the board's shape.
 // Spaces, sorting, the activity score, comments, and who's here come with
 // spaces and comments (T3, T4), so they don't appear.
+//
+// A plain click on a question opens its board inside the page, from the rect
+// of the post's miniature, or of the post on a phone, where no miniature is
+// drawn (M3d-9, E-07). Coming back by Back or the wordmark, Home draws the
+// list it already holds at once, with any board the reader wrote to at the
+// top, scrolled as it was left, and the board's copy shrinks into its post.
+// The cursor goes back to that post's question. The list is then read again.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import type { BoardList, BoardListing } from "@steelman/shared";
 import { listBoards } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import { NEW_PATH, boardPath } from "./links.ts";
 import { ago, fullDate } from "./when.ts";
 import { HOME_PLACE, rememberPlace } from "./places.ts";
+import { heldList, listScroll, noteOpening, plainClick, rememberList, takeReturn } from "./opening.ts";
+import { shrinkInto } from "./board/zoom.ts";
 
-export function Home() {
-  const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(null);
+export function Home({ onOpen }: { onOpen?(path: string): void }) {
+  const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(() => heldList());
   const load = useCallback(() => {
-    void listBoards().then(setList);
+    void listBoards().then((answer) => {
+      if (typeof answer === "object") rememberList(answer);
+      setList(answer);
+    });
   }, []);
   useEffect(load, [load]);
+  // Back from a board opened here: the list as it was scrolled, the board shrinking into its post, and the cursor on it.
+  useLayoutEffect(() => {
+    const back = takeReturn();
+    if (!back) return;
+    const question = document.querySelector<HTMLElement>(`.sm-post h2 a[href="${boardPath(back.board)}"]`);
+    if (question) window.scrollTo(0, listScroll());
+    if (back.closing) shrinkInto(back.closing, question ? miniatureOf(question) : null);
+    question?.focus({ preventScroll: true });
+  }, []);
   // Back from a board can bring this page back as it was left (the browser's back/forward cache), so ask again.
   useEffect(() => {
     const restored = (event: PageTransitionEvent) => {
@@ -57,7 +78,7 @@ export function Home() {
         ) : (
           <ol className="sm-feed-list" aria-labelledby="sm-feed-title">
             {list.boards.map((board) => (
-              <Post key={board.id} board={board} now={list.now} />
+              <Post key={board.id} board={board} now={list.now} onOpen={onOpen} />
             ))}
           </ol>
         )}
@@ -66,7 +87,7 @@ export function Home() {
   );
 }
 
-function Post({ board, now }: { board: BoardListing; now: string }) {
+function Post({ board, now, onOpen }: { board: BoardListing; now: string; onOpen: ((path: string) => void) | undefined }) {
   return (
     <li className="sm-post">
       <div className="sm-post-body">
@@ -86,7 +107,16 @@ function Post({ board, now }: { board: BoardListing; now: string }) {
           ) : null}
         </div>
         <h2>
-          <a className="cursor-interaction" href={boardPath(board.id)}>
+          <a
+            className="cursor-interaction"
+            href={boardPath(board.id)}
+            onClick={(event) => {
+              if (!onOpen || !plainClick(event)) return;
+              event.preventDefault();
+              noteOpening(board.id, miniatureOf(event.currentTarget));
+              onOpen(boardPath(board.id));
+            }}
+          >
             {board.question}
           </a>
         </h2>
@@ -102,6 +132,14 @@ function Post({ board, now }: { board: BoardListing; now: string }) {
       <Thumb options={board.options} />
     </li>
   );
+}
+
+/** Where a post's miniature is drawn in the window, or the post itself where the miniature isn't drawn (on a phone). */
+function miniatureOf(question: Element): { left: number; top: number; width: number; height: number } {
+  const post = question.closest(".sm-post") ?? question;
+  const thumb = post.querySelector(".sm-thumb")?.getBoundingClientRect();
+  const { left, top, width, height } = thumb?.width ? thumb : post.getBoundingClientRect();
+  return { left, top, width, height };
 }
 
 /** A miniature of the board: the question, then a column per option with a card for each argument, up to three. */
