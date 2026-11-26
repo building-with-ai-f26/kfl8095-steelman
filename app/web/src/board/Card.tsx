@@ -10,6 +10,7 @@
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
+import { useExit } from "./drawer.ts";
 import { createPortal } from "react-dom";
 import { credibility, credibilityLabel } from "@steelman/shared";
 import type { ReportReason, VersionRow } from "@steelman/shared";
@@ -400,6 +401,8 @@ interface VersionMenuProps {
 
 function VersionMenu({ trigger, items, onClose, onChoose, onReport, onHide, startAt = "items" }: VersionMenuProps) {
   const menu = useRef<HTMLDivElement>(null);
+  // It fades out as it closes, as every panel and menu does (M3d-10).
+  useExit(menu);
   const root = document.getElementById("sm-content");
   /** Report switches the menu to its reasons, as the prototype's does; Something else then asks what's wrong. */
   const [view, setView] = useState<"items" | "reasons" | "hideReasons" | "note">(startAt);

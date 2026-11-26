@@ -12,7 +12,7 @@
 #steelman-study .sm-titlebar h1 { min-width:0; margin:0; overflow-wrap:anywhere; }
 #steelman-study .sm-back-button { display:grid; place-items:center; width:40px; height:40px; border-radius:50%; color:var(--sm-ink); text-decoration:none; transition:background-color var(--sm-fast) var(--sm-ease); }
 #steelman-study .sm-back-button:hover { background:var(--sm-soft); }
-#steelman-study .sm-back-button:focus-visible { outline:2px solid var(--sm-ink); outline-offset:1px; }
+#steelman-study .sm-back-button:focus-visible { outline:2px solid var(--sm-ink); outline-offset:3px; }
 #steelman-study .sm-back-button svg { width:20px; height:20px; }
 /* A page with the back arrow alone, above its title (the privacy page): the arrow still lines up with the text. */
 #steelman-study .sm-back:has(> .sm-back-button) { margin-left:-10px; }

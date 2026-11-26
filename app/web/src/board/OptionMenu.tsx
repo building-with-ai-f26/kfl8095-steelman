@@ -15,6 +15,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { RefObject } from "react";
+import { useExit } from "./drawer.ts";
 import { createPortal } from "react-dom";
 import { Icon } from "../icons.tsx";
 
@@ -44,6 +45,8 @@ interface OptionMenuProps {
 
 export function OptionMenu({ trigger, structure, columnView, onClose }: OptionMenuProps) {
   const menu = useRef<HTMLDivElement>(null);
+  // It fades out as it closes, as every panel and menu does (M3d-10).
+  useExit(menu);
   const root = document.getElementById("sm-content");
 
   useLayoutEffect(() => {
