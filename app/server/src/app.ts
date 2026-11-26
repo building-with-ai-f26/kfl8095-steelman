@@ -44,6 +44,7 @@ import { SIGN_IN_ROUTES, createSignIn } from "./sign-in.ts";
 import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { listBoards } from "./list.ts";
+import { accountStatistics } from "./statistics.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
@@ -332,6 +333,12 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const data = request.person === null ? null : await exportData(db, clock, request.person);
     if (!data) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     return reply.header("content-disposition", 'attachment; filename="steelman-data.json"').send(data);
+  });
+
+  // Your statistics (L-09, M3d-14): counts of what you wrote, for you alone. Reading isn't counted (architecture §7).
+  app.get("/api/account/statistics", async (request, reply) => {
+    const statistics = request.person === null ? null : await accountStatistics(db, request.person);
+    return statistics ?? reply.code(401).send({ status: "refused", reason: "signed_out" });
   });
 
   // The tour (L-02): whether this account has been shown it, and, when the board shows it, saying so.

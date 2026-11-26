@@ -6,6 +6,9 @@
 //
 // What the shared order hasn't ranked yet (added since it was published)
 // comes after what it has, in the order added, as on the board.
+//
+// Your statistics (L-09, M3d-14) ranks with rankLive too, so "in its option's
+// top three" and "leads its row" there mean what they mean here.
 
 import type { ReaderView } from "./sync.ts";
 
@@ -34,14 +37,14 @@ export function strongestCase(view: ReaderView, optionId: string, leftOut: reado
   const { rows, published } = view;
   const gone = new Set(leftOut);
   const wordingsOf = (argumentId: string) =>
-    ranked(
+    rankLive(
       published.versions[argumentId] ?? [],
       Object.values(rows.versions).filter((version) => version.argumentId === argumentId && !version.deleted && !version.hidden && !gone.has(version.id)),
     );
   const live = Object.values(rows.arguments).filter((argument) => argument.optionId === optionId && !argument.deleted && argument.mergedInto === null);
 
   const all: CaseItem[] = [];
-  for (const argumentId of ranked(published.arguments[optionId] ?? [], live)) {
+  for (const argumentId of rankLive(published.arguments[optionId] ?? [], live)) {
     const wordings = wordingsOf(argumentId);
     if (wordings.length > 0) all.push({ argumentId, versionId: wordings[0]!, wordings: wordings.length });
   }
@@ -49,7 +52,7 @@ export function strongestCase(view: ReaderView, optionId: string, leftOut: reado
 }
 
 /** The live items' IDs: those the order ranks, in its order, then the rest in the order added. */
-function ranked(order: readonly string[], live: readonly { id: string; createdSeq: number }[]): string[] {
+export function rankLive(order: readonly string[], live: readonly { id: string; createdSeq: number }[]): string[] {
   const here = new Set(live.map((item) => item.id));
   const inOrder = order.filter((id) => here.has(id));
   const placed = new Set(inOrder);

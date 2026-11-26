@@ -36,6 +36,18 @@
 /* Changing your email opens under the Email row, inside its card. */
 #steelman-study .sm-account .sm-rgroup > .sm-pw-form { padding:4px 0 16px; }
 
+/* Your statistics (L-09): the note under the heading, then one sentence a line, each with the icon the prototype's
+   profile Points give the same count, ruled only between lines. A zero line is quieter, as the prototype's zero
+   points are. The lines wrap, so a phone needs no sideways scroll. */
+#steelman-study .sm-account .sm-stats > .sm-stats-note, #steelman-study .sm-account .sm-stats > .sm-stats-failed { margin:0 0 2px; font-size:12px; line-height:1.45; color:var(--sm-muted); }
+#steelman-study .sm-account .sm-stats > .sm-stats-failed { margin:8px 0 14px; font-size:14px; color:var(--sm-ink); }
+#steelman-study .sm-account .sm-stats-list { margin:0; padding:0; list-style:none; }
+#steelman-study .sm-account .sm-stat { display:flex; align-items:flex-start; gap:12px; min-width:0; padding:14px 0; border-top:1px solid var(--sm-soft); font-size:14px; line-height:1.45; color:var(--sm-ink); }
+#steelman-study .sm-account .sm-stat:first-child { border-top:0; }
+#steelman-study .sm-account .sm-stat > svg { flex:none; margin-top:2px; color:var(--sm-muted); }
+#steelman-study .sm-account .sm-stat > span { min-width:0; overflow-wrap:break-word; }
+#steelman-study .sm-account .sm-stat[data-zero] { color:var(--sm-quiet); }
+
 /* Sign out and Delete account stand under the cards, on the page. Opened, Delete account's question is a card of
    its own, edged in red. */
 #steelman-study .sm-account-end { display:grid; justify-items:center; gap:14px; margin-top:8px; }

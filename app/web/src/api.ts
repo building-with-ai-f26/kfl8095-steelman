@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 import { noteWrite } from "./opening.ts";
@@ -347,6 +347,18 @@ export async function readMyAccount(): Promise<MyAccount | "signed_out"> {
   if (response.status === 401) return "signed_out";
   if (!response.ok) throw new Error(`Reading your account failed: ${response.status}`);
   return (await response.json()) as MyAccount;
+}
+
+/** Your statistics (L-09): counts of what you wrote, worked out by the service for you alone. "failed" when they can't be read. */
+export async function readMyStatistics(): Promise<AccountStatistics | "signed_out" | "failed"> {
+  try {
+    const response = await call("GET", "account/statistics");
+    if (response.status === 401) return "signed_out";
+    if (!response.ok) return "failed";
+    return (await response.json()) as AccountStatistics;
+  } catch {
+    return "failed";
+  }
 }
 
 /** Download your data: saves steelman-data.json. Through fetch, so a tab acting as a test account downloads that account's. */

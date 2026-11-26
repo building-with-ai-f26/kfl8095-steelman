@@ -347,6 +347,28 @@ export interface BoardListing {
   closing?: Closing;
 }
 
+/**
+ * Your statistics (L-09, M3d-14): counts of what you wrote, worked out on each request from the boards where you still
+ * have a role, leaving out deleted, hidden, and merged items. Only you are sent them. Nothing counts a vote or an
+ * assessment, so nothing here says how anyone voted.
+ */
+export interface AccountStatistics {
+  /** Arguments you wrote that stand: not deleted, not combined into another, with a wording still shown. */
+  arguments: number;
+  /** How many of those are in their option's top three, by the board's Strongest case rule (CASE_SIZE). */
+  argumentsInTopThree: number;
+  /** Wordings you wrote that are neither deleted nor hidden, on arguments that stand. */
+  wordings: number;
+  /** How many of those lead their argument's row, by the same rule. */
+  wordingsLeading: number;
+  /** Sources you added. */
+  sources: number;
+  /** Comments and replies you wrote that are neither deleted nor hidden, on a subject that's still there. */
+  comments: number;
+  /** The boards where you wrote at least one of the above. */
+  boards: number;
+}
+
 /** The list, most recently changed first, with the service's time now, so "3h ago" doesn't depend on the reader's clock. */
 export interface BoardList {
   now: string;

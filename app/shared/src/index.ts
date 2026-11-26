@@ -42,6 +42,7 @@ export type {
   CommentRow,
   BoardChanges,
   BoardList,
+  AccountStatistics,
   BoardListing,
   BoardSnapshot,
   HistoryEntry, LogRow,
@@ -60,7 +61,7 @@ export { leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved
 export type { BoardRows, ReaderView } from "./sync.ts";
 export { openCount, subjectStands, threadsOn } from "./comments.ts";
 export type { CommentTarget, Thread } from "./comments.ts";
-export { CASE_SIZE, strongestCase } from "./strongest.ts";
+export { CASE_SIZE, rankLive, strongestCase } from "./strongest.ts";
 export { closedSince, closingOf } from "./closing.ts";
 export type { Closing } from "./closing.ts";
 export type { CaseItem, OptionCase } from "./strongest.ts";

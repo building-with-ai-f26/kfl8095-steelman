@@ -15,15 +15,37 @@ import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
 import { MOST_TURNS, STAGGER_MS, play } from "./board/motion.ts";
 
-/** The rows drawn in this render that haven't entered yet. */
-let arriving: Element[] = [];
+interface Arrivals {
+  /** The rows drawn in this render that haven't entered yet. */
+  rows: Element[];
+  /** The turn the first of them takes. */
+  first: number;
+}
+
+/** Your account's rows. */
+const accountRows: Arrivals = { rows: [], first: 0 };
+/**
+ * Your statistics' lines (L-09, M3d-14), staggered among themselves from one turn in, so they follow Username, which
+ * enters at once. They keep a turn of their own so the rows above and below keep theirs.
+ */
+const statisticLines: Arrivals = { rows: [], first: 1 };
 /** Every row that has entered, so a row drawn twice (development's StrictMode) enters once. */
 const entered = new WeakSet<Element>();
 
-function enterTogether(): void {
-  const rows = arriving.filter((row) => row.isConnected).sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
-  arriving = [];
-  rows.forEach((row, turn) => play(row, [{ translate: "0 4px" }, { translate: "0 0" }], { delay: Math.min(turn, MOST_TURNS) * STAGGER_MS, fill: "backwards" }));
+function enterTogether(arrivals: Arrivals): void {
+  const rows = arrivals.rows.filter((row) => row.isConnected).sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+  arrivals.rows = [];
+  rows.forEach((row, turn) =>
+    play(row, [{ translate: "0 4px" }, { translate: "0 0" }], { delay: Math.min(arrivals.first + turn, MOST_TURNS) * STAGGER_MS, fill: "backwards" }),
+  );
+}
+
+function arrive(arrivals: Arrivals, element: HTMLElement | null): void {
+  if (!element || entered.has(element)) return;
+  entered.add(element);
+  // Every row React draws in one go notes itself before this runs, so they enter together.
+  if (!arrivals.rows.length) queueMicrotask(() => enterTogether(arrivals));
+  arrivals.rows.push(element);
 }
 
 /**
@@ -31,12 +53,10 @@ function enterTogether(): void {
  * after every render, since a component may draw its row only once its data has arrived.
  */
 export function useRowEntrance(row: RefObject<HTMLElement | null>): void {
-  useLayoutEffect(() => {
-    const element = row.current;
-    if (!element || entered.has(element)) return;
-    entered.add(element);
-    // Every row React draws in one go notes itself before this runs, so they enter together.
-    if (!arriving.length) queueMicrotask(enterTogether);
-    arriving.push(element);
-  });
+  useLayoutEffect(() => arrive(accountRows, row.current));
+}
+
+/** A line of Your statistics rises into place the same way, after the lines above it. */
+export function useStatisticEntrance(line: RefObject<HTMLElement | null>): void {
+  useLayoutEffect(() => arrive(statisticLines, line.current));
 }
