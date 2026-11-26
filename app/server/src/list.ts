@@ -10,6 +10,14 @@
 // the change log. A vote that was withdrawn leaves no time behind, so it
 // doesn't count, and nor does reopening a thread, which clears its resolved
 // time. A comment counts even when its wording or option has gone since.
+//
+// Each board also lists its open comment count and when it was made (M3d-13,
+// E-03 to E-05). The count is the board's speech-bubble rule (openCount in
+// shared/src/comments.ts) over the comments read.ts sends a reader: replies
+// count, and deleted comments, resolved threads, and comments whose wording
+// is deleted or hidden or whose option is deleted don't. A comment a
+// moderator hid still counts, as it does on the board, so the count is the
+// same for every reader. Nothing is stored for it: it's read each time.
 
 import { sql } from "kysely";
 import { ROLES, closingOf } from "@steelman/shared";
@@ -17,8 +25,19 @@ import type { BoardListing, Clock, Role } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 
 export async function listBoards(db: Db, clock: Clock, person: string): Promise<{ now: string; boards: BoardListing[] }> {
-  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date; closed_at: Date | null; closes_at: Date | null }>`
-    select b.id, b.question, m.role, owner.username as owner, b.closed_at, b.closes_at,
+  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date; created_at: Date; comments: string; closed_at: Date | null; closes_at: Date | null }>`
+    select b.id, b.question, m.role, owner.username as owner, b.closed_at, b.closes_at, b.created_at,
+      -- A comment counts while it isn't deleted, its thread isn't resolved (a reply goes by its first comment), and
+      -- its subject stands, as read.ts's commentRows decides.
+      (select count(*) from comment c
+         left join comment thread on thread.board_id = c.board_id and thread.id = c.parent_id
+         left join version v on v.board_id = c.board_id and v.id = c.version_id
+         left join option o on o.board_id = c.board_id and o.id = c.option_id
+       where c.board_id = b.id
+         and c.deleted_at is null
+         and (case when c.parent_id is null then c.resolved_at is null else thread.resolved_at is null end)
+         and (c.version_id is null or (v.deleted_at is null and v.hidden_at is null))
+         and (c.option_id is null or o.deleted_at is null)) as comments,
       greatest(
         b.created_at,
         (select max(at) from change where board_id = b.id),
@@ -61,6 +80,8 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
       role: board.role as Role,
       owner: board.owner,
       changedAt: new Date(board.changed_at).toISOString(),
+      createdAt: new Date(board.created_at).toISOString(),
+      comments: Number(board.comments),
       // Only for a board that's closed or has a closing time (M3b-3), so other listings keep their shape.
       ...closingKey(board, clock),
     })),

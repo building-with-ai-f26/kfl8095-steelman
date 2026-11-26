@@ -323,7 +323,10 @@ export interface BoardChanges {
   comments?: CommentRow[];
 }
 
-/** One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its owner, and when it last changed. */
+/**
+ * One board in the list (E-03): its question, its options with how many arguments each has, the reader's role, its
+ * owner, when it last changed, when it was made, and its open comment count.
+ */
 export interface BoardListing {
   id: string;
   question: string;
@@ -333,6 +336,13 @@ export interface BoardListing {
   owner: string;
   /** The last write of any kind: a new argument or wording, an edit, a vote, an assessment, a change of sources or access. */
   changedAt: string;
+  /** When the board was made, which Newest sorts by (M3d-13). No later write changes it. */
+  createdAt: string;
+  /**
+   * How many open comments the board has, by its speech bubbles' rule (openCount, M3d-13): replies count, and deleted
+   * comments, resolved threads, and comments on a deleted or hidden wording or a deleted option don't.
+   */
+  comments: number;
   /** Only when the board is closed or has a closing time (M3b-3). */
   closing?: Closing;
 }
