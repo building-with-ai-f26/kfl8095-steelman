@@ -33,6 +33,13 @@
     .overrides { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
     .overrides pre { margin:0; padding:12px 14px; background:var(--sm-card); border:1px solid var(--sm-line); border-radius:8px; font-size:12px; white-space:pre-wrap; min-height:44px; }
     .overrides .actions { display:flex; gap:8px; }
+    /* Canvas: the contour tile's three sets of lines, the light, and the six space canvases. */
+    .canvas-tiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
+    .canvas-tile { height:220px; border:1px solid var(--sm-line); border-radius:10px; background-color:var(--sm-paper); }
+    .canvas-tile[data-show="light"] { background-image:var(--sm-canvas-light); background-size:100% 100%; }
+    .canvas-tile[data-show="all"] { background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
+    .canvas-spaces { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; margin-top:22px; }
+    .canvas-spaces .canvas-tile { height:110px; background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
     .demo-card { width:min(420px,100%); }
     .v-axis-demo { height:320px; display:flex; }
     .h-axis-demo { width:min(560px,100%); }
@@ -100,6 +107,26 @@
         <div class="type-sample"><span class="label">Claim · sans 400</span><span class="sm-claim">If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.</span></div>
         <div class="type-sample"><span class="label">Axis · serif 300 italic</span><span class="sm-axis" style="justify-content:flex-start"><span class="sm-axis-label">best articulation</span></span></div>
         <div class="type-sample"><span class="label">Meta · sans 11</span><span style="font-size:11px; color:var(--sm-muted)">75% · 32 assessments</span></div>
+      </section>
+
+      <section class="spec" aria-labelledby="canvas-title">
+        <div class="spec-head"><h2 id="canvas-title">Canvas</h2><span>Map contours, lit from above</span></div>
+        <p class="note">The contour tile is 480 px square and repeats with no seam. As on a topographic map, every fifth level is an index contour, drawn heavier. Fine lines halfway between levels are drawn at half the opacity. The light, <code>--sm-canvas-light</code>, sits on top of every canvas: it is lighter at the top centre, under the question, and a little darker toward the edges. Each tile in the first row shows one part of the canvas at full size. The second row shows the canvas of each of the six spaces.</p>
+        <div class="canvas-tiles">
+          <div class="item"><span class="label">Index · 1.5 px, 40% white</span><div class="canvas-tile" data-tier="0"></div></div>
+          <div class="item"><span class="label">Regular · 1 px, 20% white</span><div class="canvas-tile" data-tier="1"></div></div>
+          <div class="item"><span class="label">Fine · 1 px, 10% white</span><div class="canvas-tile" data-tier="2"></div></div>
+          <div class="item"><span class="label">Light · 30% white at the top, 4% black at the edge</span><div class="canvas-tile" data-show="light"></div></div>
+          <div class="item"><span class="label">Together · with the grain</span><div class="canvas-tile" data-show="all"></div></div>
+        </div>
+        <div class="canvas-spaces">
+          <div class="item"><span class="label">Warm stone · contours</span><div class="canvas-tile" data-canvas="stone"></div></div>
+          <div class="item"><span class="label">Cool gray · dots</span><div class="canvas-tile" data-canvas="cool"></div></div>
+          <div class="item"><span class="label">Sand · grain</span><div class="canvas-tile" data-canvas="sand"></div></div>
+          <div class="item"><span class="label">Slate · contours</span><div class="canvas-tile" data-canvas="slate"></div></div>
+          <div class="item"><span class="label">Sage · linen</span><div class="canvas-tile" data-canvas="sage"></div></div>
+          <div class="item"><span class="label">Lilac · dots</span><div class="canvas-tile" data-canvas="lilac"></div></div>
+        </div>
       </section>
 
       <section class="spec" aria-labelledby="axes-title">
@@ -343,6 +370,22 @@
     floorInput.addEventListener('input', () => tune('--sm-hex-art-floor', floorInput.value));
     curveInput.addEventListener('input', () => tune('--sm-hex-curve', curveInput.value));
     new ResizeObserver(() => drawHex()).observe(study);
+
+    // Canvas: split the contour tile in --sm-contours into its three sets of lines (fine, regular, index, in the
+    // order the script writes them), and show each on its own.
+    {
+      const uri = getComputedStyle(document.documentElement).getPropertyValue('--sm-contours').match(/data:image\/svg\+xml,([^"]*)/);
+      const svg = uri ? decodeURIComponent(uri[1]) : '';
+      const [open] = svg.match(/<svg\b[^>]*>/) || [''];
+      const paths = svg.match(/<path\b[^>]*>/g) || [];
+      const order = [2, 1, 0]; // the index set is written last, so it draws over the others
+      document.querySelectorAll('.canvas-tile[data-tier]').forEach(tile => {
+        const path = paths[order[Number(tile.dataset.tier)]];
+        if (!path) return;
+        const one = encodeURIComponent(open + path + '</svg>');
+        tile.style.backgroundImage = `url("data:image/svg+xml,${one}")`;
+      });
+    }
 
     // Live color tokens: read the current values from tokens.css, edit them in place.
     const root = document.documentElement;

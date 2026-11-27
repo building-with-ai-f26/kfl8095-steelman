@@ -878,14 +878,15 @@
   #steelman-study .sm-create-error { margin-right:auto; font-size:12px; color:#b4323f; }
   @media(max-width:640px) { #steelman-study .sm-create { top:68px; } #steelman-study .sm-create-q textarea { font-size:20px; } }
 
-  /* ── Space canvases: a tint and a texture per space, on its boards, miniatures, swatches, and the create sheet. ── */
-  #steelman-study [data-canvas] { --sm-thumb-size:90px 90px,240px 240px; }
+  /* ── Space canvases: a tint and a texture per space, on its boards, miniatures, swatches, and the create sheet.
+     Each list of layers starts with the light (--sm-canvas-light), sized to the whole element, and each list of sizes keeps one size per layer. ── */
+  #steelman-study [data-canvas] { --sm-thumb-size:100% 100%,90px 90px,240px 240px; }
   #steelman-study [data-canvas="stone"] { --sm-paper:var(--sm-canvas-stone); }
-  #steelman-study [data-canvas="cool"] { --sm-paper:var(--sm-canvas-cool); --sm-canvas-image:var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:180px 180px,18px 18px; --sm-thumb-size:90px 90px,9px 9px; }
-  #steelman-study [data-canvas="sand"] { --sm-paper:var(--sm-canvas-sand); --sm-canvas-image:var(--sm-grain); --sm-canvas-size:180px 180px; --sm-thumb-size:90px 90px; }
+  #steelman-study [data-canvas="cool"] { --sm-paper:var(--sm-canvas-cool); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:100% 100%,180px 180px,18px 18px; --sm-thumb-size:100% 100%,90px 90px,9px 9px; }
+  #steelman-study [data-canvas="sand"] { --sm-paper:var(--sm-canvas-sand); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain); --sm-canvas-size:100% 100%,180px 180px; --sm-thumb-size:100% 100%,90px 90px; }
   #steelman-study [data-canvas="slate"] { --sm-paper:var(--sm-canvas-slate); }
-  #steelman-study [data-canvas="sage"] { --sm-paper:var(--sm-canvas-sage); --sm-canvas-image:var(--sm-grain),var(--sm-tex-linen); --sm-canvas-size:180px 180px,6px 6px; --sm-thumb-size:90px 90px,4px 4px; }
-  #steelman-study [data-canvas="lilac"] { --sm-paper:var(--sm-canvas-lilac); --sm-canvas-image:var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:180px 180px,18px 18px; --sm-thumb-size:90px 90px,9px 9px; }
+  #steelman-study [data-canvas="sage"] { --sm-paper:var(--sm-canvas-sage); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-tex-linen); --sm-canvas-size:100% 100%,180px 180px,6px 6px; --sm-thumb-size:100% 100%,90px 90px,4px 4px; }
+  #steelman-study [data-canvas="lilac"] { --sm-paper:var(--sm-canvas-lilac); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:100% 100%,180px 180px,18px 18px; --sm-thumb-size:100% 100%,90px 90px,9px 9px; }
   #steelman-study .sm-swatch { display:block; width:14px; height:14px; flex:none; border-radius:3px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-thumb-size); box-shadow:inset 0 0 0 1px #00000014; }
   #steelman-study .sm-side .sm-swatch { box-shadow:none; }
 

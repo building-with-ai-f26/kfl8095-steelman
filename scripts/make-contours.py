@@ -4,6 +4,11 @@ The height field is a sum of sine waves whose periods divide the tile size, so
 the tile repeats with no seam. Contours are traced with marching squares,
 joined into polylines, and written to docs/design/contours.svg.
 
+As on a topographic map, the lines come in three sets, each one <path>:
+every fifth level is an index contour, drawn heavier (1.5 px at about twice
+the opacity); the other levels are drawn as before; and a fine set halfway
+between neighbouring levels is drawn at half the opacity.
+
 Run from the repository root:  python3 scripts/make-contours.py
 Then run:                       python3 scripts/sync-prototype.py
 """
@@ -16,6 +21,10 @@ TILE = 480      # tile size in px
 STEP = 6        # sampling grid in px
 LEVELS = 22     # contour levels across the field's range
 OPACITY = .2    # white lines a little above the canvas color: quiet but legible
+INDEX = 5       # every fifth level (k = 0, 5, 10, ...) is an index contour
+INDEX_OPACITY, INDEX_WIDTH = .4, 1.5
+FINE_OPACITY = OPACITY / 2
+SIMPLIFY = .15  # px: points closer than this to a straight run are dropped, keeping the tile small
 SEED = 5280
 
 root = Path(__file__).resolve().parents[1]
@@ -45,8 +54,28 @@ def key(p):
     return (round(p[0], 2), round(p[1], 2))
 
 
-paths = []
-for t in levels:
+def simplify(line, tolerance=SIMPLIFY):
+    """Drops points that lie within the tolerance of the line through their neighbours
+    (Ramer-Douglas-Peucker). The ends stay where they are, so edges still meet."""
+    if len(line) < 3:
+        return line
+    (x0, y0), (x1, y1) = line[0], line[-1]
+    dx, dy = x1 - x0, y1 - y0
+    length = math.hypot(dx, dy)
+    far, at = 0, 0
+    for i in range(1, len(line) - 1):
+        px, py = line[i]
+        gap = abs(dy * (px - x0) - dx * (py - y0)) / length if length else math.hypot(px - x0, py - y0)
+        if gap > far:
+            far, at = gap, i
+    if far <= tolerance:
+        return [line[0], line[-1]]
+    return simplify(line[:at + 1], tolerance)[:-1] + simplify(line[at:], tolerance)
+
+
+def trace(t):
+    """The contour at height t, as SVG path data: one polyline per M."""
+    paths = []
     segments = []
     for j in range(cells):
         for i in range(cells):
@@ -90,13 +119,26 @@ for t in levels:
                     line.append(point)
                 else:
                     line.insert(0, point)
-        paths.append('M' + 'L'.join(f'{x:.1f} {y:.1f}'.replace('.0 ', ' ') for x, y in line))
+        paths.append('M' + 'L'.join(f'{x:.1f} {y:.1f}'.replace('.0 ', ' ') for x, y in simplify(line)))
+    return "".join(paths)
 
+
+index = "".join(trace(t) for k, t in enumerate(levels) if k % INDEX == 0)
+regular = "".join(trace(t) for k, t in enumerate(levels) if k % INDEX != 0)
+fine = "".join(trace((a + b) / 2) for a, b in zip(levels, levels[1:]))
+
+
+def path(d, opacity, width):
+    return (f'<path fill="none" stroke="#fff" stroke-opacity="{opacity}" stroke-width="{width}" '
+            f'stroke-linejoin="round" stroke-linecap="round" d="{d}"/>')
+
+
+# Faintest first, so the heavier lines are drawn over the finer ones where they meet.
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{TILE}" height="{TILE}" viewBox="0 0 {TILE} {TILE}">'
-       f'<path fill="none" stroke="#fff" stroke-opacity="{OPACITY}" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" d="{"".join(paths)}"/></svg>\n')
+       + path(fine, FINE_OPACITY, 1) + path(regular, OPACITY, 1) + path(index, INDEX_OPACITY, INDEX_WIDTH) + '</svg>\n')
 out = root / "docs/design/contours.svg"
 out.write_text(svg)
-print(f"Wrote {out.relative_to(root)} ({len(svg) // 1024} KB, {len(paths)} polylines)")
+print(f"Wrote {out.relative_to(root)} ({len(svg) // 1024} KB; polylines: {index.count('M')} index, {regular.count('M')} regular, {fine.count('M')} fine)")
 
 # The sandboxed prototype cannot load files, so the tile is also embedded in tokens.css as a data URI.
 tokens = root / "docs/design/tokens.css"
