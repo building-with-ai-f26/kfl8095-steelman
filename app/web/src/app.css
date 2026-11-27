@@ -366,6 +366,12 @@ body { margin:0; }
    Animations, so reduced motion draws no copy at all. */
 #steelman-study .sm-folding-layer { position:absolute; inset:0; z-index:0; overflow:clip; pointer-events:none; }
 #steelman-study .sm-folding-track { position:absolute; overflow:hidden; }
+/* A card's details grow open from no height and are clipped while they grow (M3d-5, unfold.ts). They clip without
+   being a scroller, so nothing can scroll them. With the prototype's overflow:hidden they were a scroller: anything
+   that brought a half-clipped control into view (a focus() call, or a click) scrolled them, the growing height then
+   pulled the scroll back, and a control slid out from under the pointer between the press and the release, so the
+   click did nothing. A focused field could also leave the details' top scrolled out of sight. */
+#steelman-study .sm-card-reveal { overflow:clip; }
 /* The wording a combine or a separation took from a row (M3d-7, settle.ts): a copy of its card, where it was, fades out
    over the card or row that took its place, so the two cross-fade, and then it leaves the page. The layer is drawn
    over the rows (z-index 2, above their 1), since the board takes its new layout at once and a copy under it would be
