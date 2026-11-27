@@ -97,6 +97,14 @@ async function open(board: TestBoard, person: "jordan_w" | "tess.b", width: numb
   return page;
 }
 
+/**
+ * The board draws itself in as it opens (M3d-23), for up to a second, unless something is pressed first. This waits
+ * until the drawing has ended, so the votes that follow arrive on a board at rest.
+ */
+async function drawnIn(page: Page): Promise<void> {
+  await expect.poll(() => page.evaluate(() => document.getAnimations().filter((animation) => animation.id === "sm-draw-in").length)).toBe(0);
+}
+
 /** On a phone only one side shows: the No side here, where the votes are. */
 async function showNo(page: Page, width: number): Promise<void> {
   if (width < 640) await page.getByRole("tab", { name: /^No/ }).click();
@@ -275,6 +283,7 @@ for (const width of WIDTHS) {
     const other = await open(board, "tess.b", width);
     await showNo(reader, width);
     const ids = { staff: (await find(board, NO[0]!)).argument, opening: (await find(board, NO[1]!)).argument, few: (await find(board, NO[2]!)).argument };
+    await drawnIn(reader);
     const still = await places(reader);
 
     // The other person votes "Opening…" above "Staff…": counts change in place, and nothing moves on its own.
