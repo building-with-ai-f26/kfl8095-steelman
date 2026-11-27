@@ -23,7 +23,7 @@ import { startFakeGoogle } from "../../server/test/support/fake-google.ts";
 import type { FakeGoogle } from "../../server/test/support/fake-google.ts";
 import { outboxEmail } from "../../server/test/support/outbox.ts";
 import type { Sent } from "../../server/test/support/outbox.ts";
-import { copyTemplate, dropDatabase, serveWebApp } from "./board.ts";
+import { TEST_POSTHOG, copyTemplate, dropDatabase, serveWebApp } from "./board.ts";
 
 const NOON = new Date("2026-11-16T12:00:00Z");
 /** The demo board's question (server/src/demo-board.ts). */
@@ -61,14 +61,17 @@ export interface SignInSite {
   errors: string[];
 }
 
-export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; tour: boolean }>({
+export const test = base.extend<{ site: SignInSite; analytics: boolean; limits: Limits | undefined; tour: boolean }>({
+  // `test.use({ analytics: true })` gives the service a PostHog key, so the first-visit notice opens (M-08), as the board
+  // fixture's option does. Without it, as when deployed without one, analytics are off.
+  analytics: [false, { option: true }],
   // `test.use({ limits })` gives the service its own rate limits, small enough to reach (M-12). Without it, the class trial's.
   limits: [undefined, { option: true }],
   // `test.use({ tour: true })` leaves accounts never shown the tour (L-02), as on the real site. Without it, every
   // account here, the ones signing in for the first time included, has been shown it, so it doesn't cover the board
   // a test is about. Only in this test's own copy of the database.
   tour: [false, { option: true }],
-  site: async ({ browser, limits, tour }, use) => {
+  site: async ({ browser, analytics, limits, tour }, use) => {
     const databaseUrl = await copyTemplate();
     const clock = createFakeClock(NOON);
     const ids = createSeededIds(11);
@@ -94,6 +97,7 @@ export const test = base.extend<{ site: SignInSite; limits: Limits | undefined; 
       ids,
       database: createDatabase(databaseUrl.href),
       mode: "test",
+      ...(analytics ? { analytics: TEST_POSTHOG } : {}),
       ...(limits ? { limits } : {}),
       signIn: {
         origin,
