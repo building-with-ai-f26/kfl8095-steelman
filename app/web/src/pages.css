@@ -58,3 +58,20 @@
 /* New steelman (F-01): the sheet's title with its back arrow at its left. The arrow's button is taller than the
    title, so the row keeps its height by tucking into the sheet's padding. */
 #steelman-study .sm-create-page .sm-titlebar { margin:-8px 0 -8px; }
+
+/* A profile (L-03, M3d-16): the prototype's dark header and Contributions card (profileMarkup), on the cool canvas of
+   Your account. Its .sm-profile wrapper is for the prototype's sidebar, so this page has its own. */
+#steelman-study .sm-profile-page { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; min-width:0; }
+#steelman-study .sm-profile-page > .sm-back { justify-self:start; margin:0 0 -6px -10px; }
+#steelman-study .sm-profile-head a { color:#fff; font:500 13px/1.4 var(--sm-sans); text-decoration:underline; text-underline-offset:3px; justify-self:start; }
+#steelman-study .sm-contrib { grid-template-columns:minmax(0,1fr); gap:12px; padding:18px 20px; }
+#steelman-study .sm-contrib-tabs [aria-selected="true"] { background:var(--sm-selected); color:var(--sm-on-selected); }
+#steelman-study .sm-contrib-list a { display:grid; gap:6px; padding:12px 8px; border-radius:6px; color:inherit; text-decoration:none; }
+#steelman-study .sm-contrib-list a:hover { background:var(--sm-soft); }
+#steelman-study .sm-contrib-list a:focus-visible { outline-offset:0; }
+@media(max-width:560px) {
+  #steelman-study .sm-profile-head { grid-template-columns:auto minmax(0,1fr); }
+  /* The prototype lets the name join the header's grid on a phone; here it keeps Your statistics beneath it. */
+  #steelman-study .sm-profile-page .sm-profile-who { display:grid; gap:6px; }
+  #steelman-study .sm-contrib { padding:16px; }
+}

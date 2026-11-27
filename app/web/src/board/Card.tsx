@@ -24,6 +24,7 @@ import { Evidence, SourceCount } from "./Evidence.tsx";
 import { CommentBubble } from "./Comments.tsx";
 import type { CommentBubbles } from "./Comments.tsx";
 import type { EvidenceBoard } from "./Evidence.tsx";
+import { UserLink } from "../UserLink.tsx";
 
 /** Which version is open, which one a link just brought into view, what its evidence needs, and what a card can ask of the board. */
 export interface Opening {
@@ -570,7 +571,8 @@ function Byline({ version }: { version: VersionRow }) {
     // The pointer can move from "edited" onto what it shows without it going (WCAG 1.4.13).
     <div className="sm-byline-wrap" onPointerLeave={(event) => event.pointerType === "mouse" && setHovered(false)}>
       <p className="sm-byline">
-        {version.authorName}
+        {/* A link to the author's profile (L-03), which looks as the name did. */}
+        <UserLink name={version.authorName} />
         {version.previousWording !== null && (
           <>
             {" · "}

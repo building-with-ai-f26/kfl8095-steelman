@@ -35,7 +35,12 @@ test("H-01 H-02 H-03 M-04: from the keyboard, Tab then reaches Close, the invite
   await expect(owner.getByRole("combobox", { name: "Access level for new people" })).toBeFocused();
   await owner.keyboard.press("Tab");
   await expect(owner.getByRole("button", { name: "Invite" })).toBeFocused();
+  // Each person's name links to their profile (M3d-16; the builder approved this change, Nov 26), the owner's first.
+  await owner.keyboard.press("Tab");
+  await expect(panel(owner).getByRole("link", { name: "maya.chen" })).toBeFocused();
   for (const person of ["jordan_w", "lin.zhao", "omar_h", "tess.b"]) {
+    await owner.keyboard.press("Tab");
+    await expect(panel(owner).getByRole("link", { name: person })).toBeFocused();
     await owner.keyboard.press("Tab");
     await expect(owner.getByRole("combobox", { name: `Access level for ${person}` })).toBeFocused();
     await owner.keyboard.press("Tab");

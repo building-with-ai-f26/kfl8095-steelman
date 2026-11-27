@@ -84,7 +84,8 @@ test("J-03, J-02: a hidden wording's addition names it for the Owner, and not fo
   await expect(saying(owner, `omar_h added the argument “${STAFF}”`)).toHaveCount(1);
   await expect(saying(owner, `jordan_w added the wording “${short(SATURDAYS)}”`)).toHaveCount(1);
   // A hidden wording isn't on the board to open, so its words aren't a link.
-  await expect(entry(owner, `omar_h added the argument “${STAFF}”`).getByRole("link")).toHaveCount(0);
+  // Its author's name links to their profile (M3d-16; the builder approved this change, Nov 26), so only the wording is checked.
+  await expect(entry(owner, `omar_h added the argument “${STAFF}”`).getByRole("link", { name: `“${STAFF}”` })).toHaveCount(0);
 });
 
 test("J-03, A-06: a deleted wording's addition says only that a wording was added", async ({ board }) => {

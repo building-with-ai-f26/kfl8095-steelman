@@ -382,6 +382,42 @@ export interface AccountStatistics {
   boards: number;
 }
 
+/**
+ * One thing a person wrote, on a profile (L-03, M3d-16): an argument, a wording, or a source, on a board where the
+ * viewer has a role.
+ */
+export interface ProfileItem {
+  /** The argument's, the wording's, or the source's ID. */
+  id: string;
+  board: string;
+  /** The board's question, sent only for a board where the viewer has a role. */
+  question: string;
+  /** The wording whose card the item opens: an argument's earliest wording shown, or the earliest shown one citing a source. */
+  version: string;
+  /** The wording as it reads now, or the source's name. */
+  text: string;
+  /** When it was added. */
+  at: string;
+}
+
+/**
+ * A person's profile (L-03, M3d-16): their username, and what they wrote on the boards where the viewer has a role,
+ * newest first, with the service's time now for each item's age. The username is the account's current one, so a
+ * name held after a change answers with the new name. Nothing here counts a vote, an assessment, or points.
+ */
+export interface Profile {
+  username: string;
+  /** Whether this is the viewer's own profile. */
+  you: boolean;
+  now: string;
+  /** Arguments the person started that stand. */
+  arguments: ProfileItem[];
+  /** The person's other wordings that are shown, on arguments that stand. */
+  wordings: ProfileItem[];
+  /** Sources the person added that a shown wording cites. */
+  sources: ProfileItem[];
+}
+
 /** The list, most recently changed first, with the service's time now, so "3h ago" doesn't depend on the reader's clock. */
 export interface BoardList {
   now: string;

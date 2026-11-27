@@ -43,6 +43,8 @@ export type {
   BoardChanges,
   BoardList,
   AccountStatistics,
+  Profile,
+  ProfileItem,
   BoardListing,
   BoardSnapshot,
   HistoryEntry, LogRow,

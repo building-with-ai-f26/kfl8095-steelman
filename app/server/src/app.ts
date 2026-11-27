@@ -47,6 +47,7 @@ import type { SignInDependencies } from "./sign-in.ts";
 import { publishOrderIfDue } from "./order.ts";
 import { listBoards } from "./list.ts";
 import { accountStatistics } from "./statistics.ts";
+import { PROFILE_NAME, readProfile } from "./profiles.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
 import { setReport, withdrawReport } from "./reports.ts";
@@ -341,6 +342,16 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.get("/api/account/statistics", async (request, reply) => {
     const statistics = request.person === null ? null : await accountStatistics(db, request.person);
     return statistics ?? reply.code(401).send({ status: "refused", reason: "signed_out" });
+  });
+
+  // Profiles (L-03, M3d-16): what someone wrote, from the boards where you have a role (profiles.ts). Any signed-in
+  // account may open anyone's. Reading isn't counted (architecture §7), and the request log names only the route.
+  app.get<{ Params: { username: string } }>("/api/people/:username", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    if (!PROFILE_NAME.test(request.params.username)) return reply.code(404).send({ reason: "not_found" });
+    const profile = await readProfile(db, clock, request.person, request.params.username);
+    if (profile === "signed_out") return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return profile ?? reply.code(404).send({ reason: "not_found" });
   });
 
   // The tour (L-02): whether this account has been shown it, and, when the board shows it, saying so.

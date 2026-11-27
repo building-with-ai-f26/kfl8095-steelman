@@ -177,6 +177,10 @@ body { margin:0; }
 /* New steelman's Cancel is a link home, drawn as the prototype's link button. */
 #steelman-study a.sm-link-button { text-decoration:none; }
 #steelman-study a.sm-link-button:hover { text-decoration:underline; }
+/* A name that links to a profile (L-03, M3d-16) keeps the look of the text around it, as the prototype's
+   .sm-user-link button does, with an underline only on hover. */
+#steelman-study a.sm-user-link { color:inherit; text-decoration:none; }
+#steelman-study a.sm-user-link:hover { text-decoration:underline; text-underline-offset:3px; }
 
 /* Report (M2-3): Something else asks what's wrong, in the menu's place. */
 #steelman-study .sm-report-note { display:grid; gap:6px; }
@@ -309,6 +313,9 @@ body { margin:0; }
 /* A wording's link reads as the entry's own text, underlined, not in the browser's blue. */
 #steelman-study .sm-history a { color:inherit; text-decoration:underline; text-decoration-color:var(--sm-quiet); text-underline-offset:2px; }
 #steelman-study .sm-history a:hover { text-decoration-color:currentColor; }
+/* A History name is a profile link that looks as the name did, not the entry's underlined wording link. */
+#steelman-study .sm-history a.sm-user-link { text-decoration:none; }
+#steelman-study .sm-history a.sm-user-link:hover { text-decoration:underline; text-decoration-color:currentColor; text-underline-offset:3px; }
 
 /* Combine and separate (M3a-7): the prototype's dialog sits over the board, in the middle of the window, rather than
    placed beside the argument by script, so on a phone its buttons are never below the fold. */

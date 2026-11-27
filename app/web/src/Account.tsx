@@ -66,6 +66,11 @@ export function Account() {
       setTourBoard(list.boards.find((board) => board.options.some((option) => option.arguments > 0))?.id ?? null);
     });
   }, []);
+  // Your own profile links to Your statistics (L-03, M3d-16). The page draws only once it has read the account, so the
+  // browser can't scroll to it by itself.
+  useEffect(() => {
+    if (account !== null && window.location.hash === "#statistics") document.getElementById("statistics")?.scrollIntoView();
+  }, [account]);
   // Read before this screen notes itself below (M3a-1).
   const cameFrom = usePlaceBefore("/account");
   // Privacy, opened from here, leads back here (M3a-1).
@@ -120,7 +125,7 @@ export function Account() {
             {account.email && <ChangeEmail email={account.email} onChanged={(email) => setAccount({ ...account, email })} onStatus={setStatus} />}
           </div>
           {/* ph-no-capture: what you wrote is counted for you alone, so analytics and screen replays don't see it (L-09). */}
-          <div className="sm-rgroup sm-stats ph-no-capture">
+          <div id="statistics" className="sm-rgroup sm-stats ph-no-capture">
             <h2>Your statistics</h2>
             <p className="sm-stats-note">Only you can see these numbers.</p>
             {statistics === "failed" ? (

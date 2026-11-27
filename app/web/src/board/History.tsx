@@ -34,6 +34,7 @@ import { endQuote, endsSentence, isLiveVersion, leadWording, short } from "./dis
 import type { BoardSession } from "./session.ts";
 import { useDrawerExit } from "./drawer.ts";
 import { commentLanding } from "./comment-link.ts";
+import { UserLink } from "../UserLink.tsx";
 
 interface HistoryProps {
   boardId: string;
@@ -122,7 +123,9 @@ export function History({ boardId, view, reader, role, closed, session, logSeq, 
                     </span>
                     <div className="sm-history-entry">
                       <p>
-                        <strong>{entry.actorName}</strong> {said(entry, view, boardId, onOpen, onOpenComment)}
+                        <strong>
+                          <UserLink name={entry.actorName} />
+                        </strong> {said(entry, view, boardId, onOpen, onOpenComment)}
                       </p>
                       {/* Its time, and beside it what can still be done about it, as GitHub puts Revert on a merge's own line. */}
                       <div className="sm-history-meta">

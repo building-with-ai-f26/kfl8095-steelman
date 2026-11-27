@@ -24,9 +24,11 @@ export function BackLink({ here, place: given }: { here: string; place?: Place }
   const read = usePlaceBefore(here);
   const place = given ?? read;
   const name = `Back to ${place.name}`;
+  // A way back to a profile has a person's username in its address, so screen replays don't record it (M-08).
+  const named = place.path.startsWith("/u/");
   // The name is the link's own text, kept for screen readers; what's drawn is the arrow.
   return (
-    <nav className="sm-back" aria-label="Back">
+    <nav className={named ? "sm-back ph-no-capture" : "sm-back"} aria-label="Back">
       <a className="sm-back-button cursor-interaction" href={place.path} data-tooltip={name}>
         <Icon name="arrow-left" size={20} />
         <span className="sm-sr">{name}</span>
