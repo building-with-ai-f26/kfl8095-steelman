@@ -9,6 +9,7 @@ import type { Access, BoardChanges, BoardOrder, CommentLinkState, CommentTarget,
 import { Unreachable, addComment, addOption, deleteComment, setCommentHidden, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
+import { accessAnnouncement } from "./spaceAccess.ts";
 
 /** Ask for changes this often while the board is in view (§3: "every ~3 s"). */
 export const POLL_MS = 3_000;
@@ -66,6 +67,8 @@ export interface SessionState {
   /** Who can get in, and the reader's own role, as the service last said. */
   access: Access | null;
   role: Role | null;
+  /** The board's space (G-05, M3d-18), which the service names only to a reader in it; null otherwise. */
+  space: { id: string; name: string } | null;
   /** Whether the board is closed and when, as the service last said (M3b-5); null when it's open with no closing time. */
   closing: Closing | null;
   /**
@@ -113,6 +116,7 @@ export class BoardSession {
     status: "",
     access: null,
     role: null,
+    space: null,
     closing: null,
     commentLink: null,
     stale: [],
@@ -240,7 +244,7 @@ export class BoardSession {
       this.set({ phase: snapshot, view: null });
       return false;
     }
-    this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question, access: snapshot.access, role: snapshot.role, closing: snapshot.closing ?? null });
+    this.set({ phase: "ready", view: openView(snapshot), question: snapshot.board.question, access: snapshot.access, role: snapshot.role, space: snapshot.space ?? null, closing: snapshot.closing ?? null });
     return true;
   }
 
@@ -387,7 +391,7 @@ export class BoardSession {
     }
     const now = this.accepted!;
     this.worked();
-    this.announce(now.general === "link" ? `Anyone with the link can ${{ viewer: "view", voter: "vote", contributor: "contribute" }[now.linkRole]}.` : "Only invited people can open it.");
+    this.announce(accessAnnouncement(now, this.state.space?.name ?? null));
     await this.poll();
   }
 
@@ -866,8 +870,11 @@ export class BoardSession {
     const answer = await this.ask(() => removeMember(this.board, person.id));
     if (!answer) return false;
     const name = person.name ?? "That person";
-    const byLink = this.state.access?.general === "link" ? ` ${name} can still open this steelman with the link.` : "";
-    this.announce(`${name} no longer has access.${byLink}`);
+    const general = this.state.access?.general;
+    // On a board shared with its space, they may still be in it (M3d-18), which the board doesn't know.
+    const still =
+      general === "link" ? ` ${name} can still open this steelman with the link.` : general === "space" ? ` ${name} can still open this steelman if they’re in ${this.state.space?.name ?? "its space"}.` : "";
+    this.announce(`${name} no longer has access.${still}`);
     await this.refresh();
     return true;
   }
@@ -1016,7 +1023,7 @@ export class BoardSession {
         }
         const wasClosed = this.state.closing?.closed ?? false;
         const closing = changes.closing ?? null;
-        this.set({ view, recounted: { view, ids: recountedIds }, role: changes.role, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
+        this.set({ view, recounted: { view, ids: recountedIds }, role: changes.role, space: changes.space ?? null, logSeq, closing, ...(accessSettled ? { access: changes.access } : {}), ...(changes.question === undefined ? {} : { question: changes.question }) });
         // Said once, when it changes: the board closed, by hand or by its time, or opened again (M3b-5).
         if ((closing?.closed ?? false) !== wasClosed && !this.closingOwn) this.announce(closing?.closed ? "This board is closed." : "This board is open again.");
         // Reports are sent only to an Editor or the owner (M2-3): becoming one, or no longer being one, needs every wording again.
@@ -1162,6 +1169,9 @@ function refusalNote(answer: Answer): string {
         return "Your role on this board doesn’t allow that.";
       case "no_access":
         return "You no longer have access to this board.";
+      case "no_space":
+        // Also a space the reader has left or isn't in, which answers as no space does (sharing.ts).
+        return "This steelman isn’t in a space you’re in, so it can’t be shared with everyone in one.";
       case "option_deleted":
         return "1 action couldn't be sent: that option was deleted.";
       case "option_not_empty":

@@ -9,10 +9,17 @@
 // changing the link role changes theirs, and turning the link off removes
 // them. People added by name (the owner, and invited people later) keep
 // their role whatever the link does.
+//
+// A board in a space may be shared with everyone in it (G-05, M3d-18;
+// architecture §7, point 4). Then, failing a board_member row, a member of
+// that space gets the link's role, read from space_member each time and never
+// recorded as a board membership, so leaving the space or being removed from
+// it ends their access at once. Someone with a board role of their own keeps
+// it, whatever the space does. A deleted space lets no one in.
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { LINK_ROLES, ROLES } from "@steelman/shared";
+import { LINK_ROLES, ROLES, SPACE_ROLES } from "@steelman/shared";
 import type { Access, Clock, Role } from "@steelman/shared";
 import type { Database } from "./db/database.ts";
 
@@ -40,6 +47,17 @@ export async function entryTo(db: Reader, boardId: string, person: string | null
   if (person === null) return NO_ROLE;
   const member = await db.selectFrom("board_member").select("role").where("board_id", "=", boardId).where("account_id", "=", person).executeTakeFirst();
   if (member) return { role: asRole(member.role), joiningByLink: false };
+
+  // Everyone in the board's space, at the link's role, while they're in it. Never recorded, so it ends when they leave.
+  const bySpace = await sql<{ link_role: string }>`
+    select b.link_role from board b
+    join space s on s.id = b.space_id and s.deleted_at is null
+    join space_member sm on sm.space_id = s.id and sm.account_id = ${person}
+    where b.id = ${boardId} and b.general_access = 'space' and sm.role = any(${[...SPACE_ROLES]})`.execute(db);
+  if (bySpace.rows[0]) {
+    const role = asLinkRole(bySpace.rows[0].link_role);
+    return role === null ? NO_ROLE : { role, joiningByLink: false };
+  }
 
   const byLink = await db
     .selectFrom("board")
@@ -85,13 +103,53 @@ export async function joinByLink(db: Reader, clock: Clock, boardId: string, pers
 
 /** The board's general access and link role, as the API sends them. */
 export async function accessOf(db: Reader, boardId: string): Promise<Access | null> {
-  const board = await db.selectFrom("board").select(["general_access", "link_role"]).where("id", "=", boardId).executeTakeFirst();
+  const board = await db
+    .selectFrom("board as b")
+    .leftJoin("space as s", (join) => join.onRef("s.id", "=", "b.space_id").on("s.deleted_at", "is", null))
+    .select(["b.general_access", "b.link_role", "s.id as space"])
+    .where("b.id", "=", boardId)
+    .executeTakeFirst();
   return board ? asAccess(board) : null;
 }
 
-export function asAccess(board: { general_access: string; link_role: string }): Access {
+/**
+ * `space` is the board's space if it isn't deleted, else null. A board shared with a space that was deleted (its last
+ * member deleted their account) lets no one in through it (entryTo), so it reads as open only to invited people, and
+ * Share never tells its Owner that everyone in the space can open it (M3d-18).
+ */
+export function asAccess(board: { general_access: string; link_role: string; space: string | null }): Access {
+  const general = board.general_access === "link" || (board.general_access === "space" && board.space !== null) ? board.general_access : "invited";
   return {
-    general: board.general_access === "link" ? "link" : "invited",
+    general,
     linkRole: asLinkRole(board.link_role) ?? "contributor",
   };
+}
+
+/**
+ * The boards `person` reaches through a space they're in and no board role of their own (M3d-18), with the role the
+ * space gives them: those shared with everyone in a space that isn't deleted, at a role a link may give, and not
+ * deleted. The list, profiles, and statistics each add these to the person's board_member rows, so all three agree
+ * with entryTo, which lets them in.
+ */
+export function spaceBoards(person: string) {
+  return sql`
+    select b.id as board_id, b.link_role as role from board b
+    join space s on s.id = b.space_id and s.deleted_at is null
+    where b.general_access = 'space' and b.deleted_at is null and b.link_role = any(${[...LINK_ROLES]})
+      and exists (select 1 from space_member sm where sm.space_id = b.space_id and sm.account_id = ${person} and sm.role = any(${[...SPACE_ROLES]}))
+      and not exists (select 1 from board_member own where own.board_id = b.id and own.account_id = ${person})`;
+}
+
+/** The board's space, for a reader who is in it (M3d-18); null for anyone else, and for a board in no space or a deleted one. */
+export async function spaceShownTo(db: Reader, boardId: string, person: string | null): Promise<{ id: string; name: string } | null> {
+  if (person === null) return null;
+  const space = await db
+    .selectFrom("board as b")
+    .innerJoin("space as s", "s.id", "b.space_id")
+    .innerJoin("space_member as sm", (join) => join.onRef("sm.space_id", "=", "s.id").on("sm.account_id", "=", person))
+    .select(["s.id", "s.name"])
+    .where("b.id", "=", boardId)
+    .where("s.deleted_at", "is", null)
+    .executeTakeFirst();
+  return space ?? null;
 }

@@ -6,7 +6,8 @@
 //
 // The viewer's boards are their own board_member rows, the one recorded the
 // first time they opened a board by its link included, on boards that aren't
-// deleted. Spaces (M3d-18) will add a second way in. Being able to open a
+// deleted, and the boards shared with everyone in a space the viewer is in
+// (M3d-18), as the list finds them (access.ts's spaceBoards). Being able to open a
 // board isn't enough: a board shared with anyone who has the link lets in
 // every signed-in account with a confirmed email (access.ts's entryTo), so
 // counting it would show a person's link-only boards to everyone, and the
@@ -32,6 +33,7 @@ import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { ROLES } from "@steelman/shared";
 import type { Clock, Profile, ProfileItem } from "@steelman/shared";
+import { spaceBoards } from "./access.ts";
 import type { Database, Db } from "./db/database.ts";
 
 type Reader = Kysely<Database>;
@@ -86,11 +88,12 @@ interface Row {
 }
 
 async function writingOf(trx: Reader, person: string, viewer: string): Promise<Pick<Profile, "arguments" | "wordings" | "sources">> {
-  // The boards where the viewer has a role. M3d-18: union the boards shared with a space they're a member of.
+  // The boards where the viewer has a role: their own, and those shared with everyone in a space they're in (M3d-18).
   const viewerBoards = sql`
     select m.board_id from board_member m
     join board b on b.id = m.board_id
-    where m.account_id = ${viewer} and b.deleted_at is null and m.role = any(${[...ROLES]})`;
+    where m.account_id = ${viewer} and b.deleted_at is null and m.role = any(${[...ROLES]})
+    union select board_id from (${spaceBoards(viewer)}) by_space`;
   // An argument is the person's own words: its card is the earliest wording still shown that the argument's creator
   // wrote. The earliest shown wording by anyone could be another person's, when the creator's first wording is hidden
   // or deleted, or when an older wording by someone else is combined in, and then a profile would credit one person's

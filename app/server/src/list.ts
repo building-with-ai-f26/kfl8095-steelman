@@ -3,6 +3,12 @@
 // time they open the board). Someone the link let in is removed when the
 // owner turns the link off, so the board leaves their list with them.
 //
+// It also holds the boards shared with everyone in a space the person is in
+// (G-05, M3d-18), at the role the space gives them, without an invitation,
+// as access.ts's spaceBoards finds them. A board they also have a role on is
+// listed once, at their own role. Leaving the space, or being removed from
+// it, takes those boards out of the list at once.
+//
 // "When it last changed" is the latest of every write's own time: the board's
 // creation, the change log (edits, deletions, sources, access), new arguments
 // and wordings, the votes and assessments as they stand, and each comment's
@@ -22,6 +28,7 @@
 import { sql } from "kysely";
 import { ROLES, closingOf } from "@steelman/shared";
 import type { BoardListing, Clock, Role } from "@steelman/shared";
+import { spaceBoards } from "./access.ts";
 import type { Db } from "./db/database.ts";
 
 export async function listBoards(db: Db, clock: Clock, person: string): Promise<{ now: string; boards: BoardListing[] }> {
@@ -48,13 +55,14 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
         (select max(assessed_at) from assessment where board_id = b.id),
         (select max(greatest(created_at, resolved_at, deleted_at)) from comment where board_id = b.id)
       ) as changed_at
-    from board_member m
+    from (
+      select board_id, role from board_member where account_id = ${person} and role = any(${[...ROLES]})
+      union all ${spaceBoards(person)}
+    ) m
     join board b on b.id = m.board_id
     -- Its owner: the maker, or whoever it was handed to when they deleted their account (M-07).
     join account owner on owner.id = b.created_by
-    where m.account_id = ${person}
-      and b.deleted_at is null
-      and m.role = any(${[...ROLES]})
+    where b.deleted_at is null
     order by changed_at desc, b.created_at desc, b.id`.execute(db);
 
   const ids = boards.rows.map((board) => board.id);

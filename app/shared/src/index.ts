@@ -40,7 +40,7 @@ export type { SpaceAction, SpaceRole } from "./policy.ts";
 export { SPACE_CANVASES, SPACE_MEMBER_ROLES, SPACE_VISIBILITIES, newSpaceInput, spaceInviteInput, spaceRoleInput, spaceSettingsInput, spaceVisibilityInput } from "./api.ts";
 export type { SpaceCanvas, SpaceList, SpaceMember, SpaceSummary, SpaceWriteAnswer } from "./api.ts";
 export { posthogAssetsHost, tooManyMessage } from "./api.ts";
-export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, changesQuery, deleteAccountInput, usernameChangeInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newCommentInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, renameQuestionInput, closingInput, inviteInput, reportInput, voteInput, combineInput, separateInput } from "./api.ts";
+export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, boardSpaceInput, changesQuery, deleteAccountInput, usernameChangeInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newCommentInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, renameQuestionInput, closingInput, inviteInput, reportInput, voteInput, combineInput, separateInput } from "./api.ts";
 export type {
   Access,
   ArgumentRow,

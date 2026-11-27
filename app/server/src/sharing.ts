@@ -5,11 +5,20 @@
 // (server/src/access.ts). Once the owner sets someone's role by name, they
 // count as added by name ('invite'), so the role stays theirs whatever the
 // link does afterwards.
+//
+// A board in a space (G-05, M3d-18) may be shared with everyone in the space,
+// at the link's role. Its members aren't recorded on the board (access.ts),
+// so switching to the space removes the people who came by the link, as
+// turning the link off does. The Owner puts their board in a space they are
+// in, or takes it out; moving a board shared with its space stops sharing it,
+// so it never opens to a group the Owner didn't choose.
 
 import { sql } from "kysely";
+import { canInSpace } from "@steelman/shared";
 import type { Access, Person, Role } from "@steelman/shared";
 import { asAccess, asRole } from "./access.ts";
 import type { Db } from "./db/database.ts";
+import { asSpaceRole } from "./spaces.ts";
 import { writeToBoard } from "./write-path.ts";
 import type { Services, WriteResult } from "./write-path.ts";
 
@@ -18,13 +27,23 @@ export async function setAccess({ db, clock }: Services, boardId: string, person
   return writeToBoard(db, clock, boardId, person, {
     action: "share",
     load: async (trx) => {
-      const board = await trx.selectFrom("board").select(["general_access", "link_role"]).where("id", "=", boardId).executeTakeFirst();
-      return board ? asAccess(board) : null;
+      const board = await trx
+        .selectFrom("board as b")
+        .leftJoin("space as s", (join) => join.onRef("s.id", "=", "b.space_id").on("s.deleted_at", "is", null))
+        // The Owner's own place in that space: sharing with it is theirs to choose only while they're in it.
+        .leftJoin("space_member as sm", (join) => join.onRef("sm.space_id", "=", "s.id").on("sm.account_id", "=", person ?? ""))
+        .select(["b.general_access", "b.link_role", "s.id as space", "sm.role as spaceRole"])
+        .where("b.id", "=", boardId)
+        .executeTakeFirst();
+      return board ? { now: asAccess(board), space: board.space, inSpace: board.space !== null && board.spaceRole !== null && canInSpace(person, asSpaceRole(board.spaceRole), "space_read") === null } : null;
     },
-    async change(trx, now, seq) {
+    async change(trx, { now, space, inSpace }, seq) {
       if (now.general === next.general && now.linkRole === next.linkRole) return "already_done";
+      // Only a board in a space that stands, and that the Owner is in, can be shared with everyone in it. A space they
+      // have left answers as no space does, as putting the board in a space does (setBoardSpace).
+      if (next.general === "space" && !inSpace) return { refused: "no_space" };
       await trx.updateTable("board").set({ general_access: next.general, link_role: next.linkRole }).where("id", "=", boardId).execute();
-      if (next.general === "invited") {
+      if (next.general !== "link") {
         await trx.deleteFrom("board_member").where("board_id", "=", boardId).where("joined_via", "=", "link").execute();
       } else if (next.linkRole !== now.linkRole) {
         await trx.updateTable("board_member").set({ role: next.linkRole }).where("board_id", "=", boardId).where("joined_via", "=", "link").execute();
@@ -40,7 +59,8 @@ export async function setAccess({ db, clock }: Services, boardId: string, person
           subject_kind: "board",
           subject_id: boardId,
           before: JSON.stringify(now),
-          after: JSON.stringify(next),
+          // Which space, by ID, so History can name it to its members (invariant 7: no name is kept).
+          after: JSON.stringify(next.general === "space" ? { ...next, space } : next),
         })
         .execute();
       return "done";
@@ -48,8 +68,70 @@ export async function setAccess({ db, clock }: Services, boardId: string, person
   });
 }
 
-/** Everyone on the board: the owner first, then the others by username. */
-export async function listPeople(db: Db, boardId: string): Promise<Person[]> {
+/**
+ * The Owner puts their board in a space they're in, or takes it out with null (G-05, M3d-18). A space they aren't
+ * in answers as one that doesn't exist does, so they can't learn that it exists. A board shared with everyone in its
+ * space stops being shared when it leaves that space, and is then open only to invited people. Putting it where it is
+ * already is "already done".
+ */
+export async function setBoardSpace({ db, clock }: Services, boardId: string, person: string | null, space: string | null): Promise<WriteResult> {
+  return writeToBoard(db, clock, boardId, person, {
+    action: "share",
+    load: async (trx) => (await trx.selectFrom("board").select(["space_id", "general_access"]).where("id", "=", boardId).executeTakeFirst()) ?? null,
+    async change(trx, board, seq) {
+      if (board.space_id === space) return "already_done";
+      if (space !== null) {
+        const mine = await trx
+          .selectFrom("space_member as sm")
+          .innerJoin("space as s", "s.id", "sm.space_id")
+          .select("sm.role")
+          .where("sm.space_id", "=", space)
+          .where("sm.account_id", "=", person!)
+          .where("s.deleted_at", "is", null)
+          .executeTakeFirst();
+        if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) return { refused: "no_space" };
+      }
+      const unshared = board.general_access === "space";
+      await trx
+        .updateTable("board")
+        .set({ space_id: space, ...(unshared ? { general_access: "invited" } : {}) })
+        .where("id", "=", boardId)
+        .execute();
+      await trx
+        .insertInto("change")
+        .values({
+          board_id: boardId,
+          seq,
+          at: clock.now(),
+          actor_id: person!,
+          kind: "space_changed",
+          subject_kind: "board",
+          subject_id: boardId,
+          // IDs and a keyword only (invariant 7): History reads the space's name for its members.
+          ...(board.space_id ? { before: JSON.stringify({ space: board.space_id }) } : {}),
+          after: JSON.stringify({ ...(space ? { space } : {}), ...(unshared ? { general: "invited" } : {}) }),
+        })
+        .execute();
+      return "done";
+    },
+  });
+}
+
+/**
+ * Everyone on the board: the owner first, then the others by username. A reader let in through the board's space
+ * (M3d-18) isn't recorded on the board, so they're added, after the owner, with the role the space gives them, as the
+ * prototype's Share always lists you. No one else in the space is listed.
+ */
+export async function listPeople(db: Db, boardId: string, reader: { id: string; role: Role } | null = null): Promise<Person[]> {
+  const people = await recordedPeople(db, boardId);
+  if (reader === null || people.some((person) => person.id === reader.id)) return people;
+  const you = await db.selectFrom("account").select(["id", "username"]).where("id", "=", reader.id).where("deleted_at", "is", null).executeTakeFirst();
+  if (!you) return people;
+  const owners = people.filter((person) => person.role === "owner").length;
+  return [...people.slice(0, owners), { id: you.id, name: you.username, role: reader.role }, ...people.slice(owners)];
+}
+
+async function recordedPeople(db: Db, boardId: string): Promise<Person[]> {
   const rows = await db
     .selectFrom("board_member as m")
     .innerJoin("account as a", "a.id", "m.account_id")

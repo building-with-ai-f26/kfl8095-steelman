@@ -65,10 +65,15 @@ export const newSourceInput = z.strictObject({ id: itemIdInput, ...sourceInput.s
 /**
  * Who can get in (H-02): only the people named on the board, or also anyone
  * with the link, as the link's role. Both are always sent, so the link role
- * is kept while the link is off.
+ * is kept while the link is off. A board in a space (G-05, M3d-18) may
+ * instead be shared with everyone in its space, at the same role, as Google
+ * Drive offers "Anyone in <organisation>".
  */
-export const accessInput = z.strictObject({ general: z.enum(["invited", "link"]), linkRole: z.enum(LINK_ROLES) });
+export const accessInput = z.strictObject({ general: z.enum(["invited", "link", "space"]), linkRole: z.enum(LINK_ROLES) });
 export type Access = z.infer<typeof accessInput>;
+
+/** The space the Owner puts their board in (G-05, M3d-18), one they belong to, or null to take it out of its space. */
+export const boardSpaceInput = z.strictObject({ space: itemIdInput.nullable() });
 
 /** Why someone reports a wording (J-01), as the prototype's REASONS. */
 export const REPORT_REASONS = ["spam", "abuse", "offtopic", "other"] as const;
@@ -202,6 +207,11 @@ export const newBoardInput = z
   .refine(({ options }) => new Set(options.map((name) => name.toLowerCase())).size === options.length, {
     message: "Each option needs a different name.",
     path: ["options"],
+  })
+  // A new board is in no space until its Owner puts it in one (M3d-18), so it can't start shared with a space's members.
+  .refine(({ access }) => access?.general !== "space", {
+    message: "A new steelman isn’t in a space yet, so it can’t be shared with everyone in one.",
+    path: ["access", "general"],
   });
 export type NewBoard = z.infer<typeof newBoardInput>;
 
@@ -343,8 +353,15 @@ export interface HistoryEntry {
     argumentDeleted?: true;
     accountName?: string;
     role?: Role;
-    general?: "link" | "invited";
+    general?: Access["general"];
     linkRole?: Role;
+    /**
+     * A board shared with everyone in a space, or put in one (G-05, M3d-18): the space's name, sent only to a reader who
+     * is in that space, so no one else learns it.
+     */
+    spaceName?: string;
+    /** A board taken out of its space (M3d-18). */
+    outOfSpace?: true;
     /** A combine or separation (M3a-8): the argument the wording left, the one it joined or became, and whether two arguments became one. */
     from?: string;
     into?: string;
@@ -496,6 +513,11 @@ export interface BoardList {
 export interface Standing {
   access: Access;
   role: Role;
+  /**
+   * The board's space (G-05, M3d-18), only for a reader who is in it, so an ordinary answer keeps its shape and no one
+   * outside a space learns its name.
+   */
+  space?: { id: string; name: string };
   /** Only when the board is closed or has a closing time (M3b-3), so an open board's answers keep their shape. */
   closing?: Closing;
 }
@@ -568,7 +590,12 @@ export type RefusalReason =
   /** A comment its author deleted can't be hidden or restored: its text is erased already (M3b-14). */
   | "comment_deleted"
   /** No one demotes or removes a space's Owner, and the Owner can't leave (M3d-17). The screen says "The owner of a space keeps that role." */
-  | "owner_keeps_role";
+  | "owner_keeps_role"
+  /**
+   * The board isn't in a space, or the space named isn't one the Owner is in (G-05, M3d-18). A space the Owner isn't in
+   * answers as one that doesn't exist does, so no one learns that it exists.
+   */
+  | "no_space";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

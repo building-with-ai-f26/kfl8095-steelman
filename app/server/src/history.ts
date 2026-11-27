@@ -14,6 +14,10 @@
 // History: an entry carries IDs, and the board names each thing from the rows
 // the reader already has, so a hidden wording's text stays with the
 // moderators who can see it.
+//
+// A board put in a space, or shared with everyone in one (G-05, M3d-18), logs
+// the space's ID. History names the space only to a reader who is in it, so
+// no one else learns its name, as the board's answers name it (access.ts).
 
 import type { HistoryEntry, Role } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
@@ -24,7 +28,10 @@ const PERSON_KINDS = new Set(["role_changed", "member_added", "member_removed"])
 /** Enough for any board in the class trial; older entries wait for paging, if a board ever needs it. */
 const MOST = 500;
 
-export async function readHistory(db: Db, boardId: string): Promise<HistoryEntry[]> {
+/** Change rows that name a space by its ID (M3d-18). */
+const SPACE_KINDS = new Set(["access_changed", "space_changed"]);
+
+export async function readHistory(db: Db, boardId: string, reader: string | null = null): Promise<HistoryEntry[]> {
   // The newest of each kind, so the newest of both together are among them.
   const [rows, added] = await Promise.all([
     db
@@ -42,6 +49,21 @@ export async function readHistory(db: Db, boardId: string): Promise<HistoryEntry
   const names = new Map(
     accounts.length === 0 ? [] : (await db.selectFrom("account").select(["id", "username"]).where("id", "in", accounts).execute()).map((account) => [account.id, account.username ?? ""]),
   );
+  // A space is named by the spaces the reader is in, and only those that aren't deleted.
+  const spaceIds = [...new Set(rows.flatMap((row) => (SPACE_KINDS.has(row.kind) && typeof field(row.after, "space") === "string" ? [String(field(row.after, "space"))] : [])))];
+  const spaces = new Map(
+    spaceIds.length === 0 || reader === null
+      ? []
+      : (
+          await db
+            .selectFrom("space as s")
+            .innerJoin("space_member as sm", (join) => join.onRef("sm.space_id", "=", "s.id").on("sm.account_id", "=", reader))
+            .select(["s.id", "s.name"])
+            .where("s.id", "in", spaceIds)
+            .where("s.deleted_at", "is", null)
+            .execute()
+        ).map((space) => [space.id, space.name]),
+  );
   const changes: HistoryEntry[] = rows.map((row) => ({
     seq: Number(row.seq),
     at: row.at.toISOString(),
@@ -51,7 +73,7 @@ export async function readHistory(db: Db, boardId: string): Promise<HistoryEntry
     subjectKind: row.subject_kind,
     subjectId: row.subject_id,
     reason: row.reason,
-    detail: detailOf(row.kind, row.subject_id, row.after, names),
+    detail: detailOf(row.kind, row.subject_id, row.after, names, spaces),
   }));
   return [...changes, ...added].sort(newestFirst).slice(0, MOST);
 }
@@ -103,7 +125,9 @@ function isAddition(entry: HistoryEntry): boolean {
 }
 
 /** What an entry needs beyond its subject, from the row's `after`: IDs, a role, an access setting, or a yes, never text. */
-function detailOf(kind: string, subject: string, after: unknown, names: Map<string, string>): HistoryEntry["detail"] {
+function detailOf(kind: string, subject: string, after: unknown, names: Map<string, string>, spaces: Map<string, string>): HistoryEntry["detail"] {
+  const space = spaces.get(String(field(after, "space")));
+  const spaceName = space ? { spaceName: space } : {};
   switch (kind) {
     case "source_added":
       return { version: String(field(after, "version")), source: subject };
@@ -137,7 +161,10 @@ function detailOf(kind: string, subject: string, after: unknown, names: Map<stri
       // A row without a usable moment says only that a date was set, rather than breaking all of History.
       return Number.isFinite(Number(field(after, "at"))) ? { closesAt: new Date(Number(field(after, "at"))).toISOString() } : {};
     case "access_changed":
-      return { general: field(after, "general") as "link" | "invited", linkRole: field(after, "linkRole") as Role };
+      return { general: field(after, "general") as "link" | "invited" | "space", linkRole: field(after, "linkRole") as Role, ...spaceName };
+    case "space_changed":
+      // Put in a space, or taken out of one; either way, a board that was shared with its space is now invited only.
+      return { ...spaceName, ...(field(after, "space") === undefined ? { outOfSpace: true as const } : {}), ...(field(after, "general") === "invited" ? { general: "invited" as const } : {}) };
     default:
       return {};
   }

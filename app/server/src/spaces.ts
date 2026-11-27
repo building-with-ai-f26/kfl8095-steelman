@@ -44,7 +44,7 @@ class RollBack extends Error {
 }
 
 const SPACE_ROLE_WORDS: readonly string[] = ["owner", "admin", "member"];
-const asSpaceRole = (role: string): SpaceRole | null => (SPACE_ROLE_WORDS.includes(role) ? (role as SpaceRole) : null);
+export const asSpaceRole = (role: string): SpaceRole | null => (SPACE_ROLE_WORDS.includes(role) ? (role as SpaceRole) : null);
 
 async function writeToSpace<Loaded>(db: Db, spaceId: string, person: string | null, steps: SpaceWriteSteps<Loaded>): Promise<SpaceWriteResult> {
   if (person === null) return { status: "refused", reason: "signed_out" };
