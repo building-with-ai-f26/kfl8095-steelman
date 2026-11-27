@@ -24,6 +24,8 @@ import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
 import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 import { forgetPlaces, rememberPlace } from "./places.ts";
+import { busyButton } from "./busy.ts";
+import { useRowEntrance } from "./rows.ts";
 
 const DELETED = "deleted_account";
 
@@ -33,11 +35,16 @@ export function Account() {
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   /** Where Start opens the tour (L-02): the most recently changed board with arguments to point at, as the prototype's opens the last board. */
   const [tourBoard, setTourBoard] = useState<string | null>(null);
   const deleteLink = useRef<HTMLButtonElement>(null);
   const signOutButton = useRef<HTMLButtonElement>(null);
   const wasDeleting = useRef(false);
+  /** Set when signing out failed, so the cursor goes back to Sign out once it can be pressed again. */
+  const backToSignOut = useRef(false);
+  const end = useRef<HTMLDivElement>(null);
+  useRowEntrance(end);
   useEffect(() => {
     void readMyAccount().then(setAccount);
     void listBoards().then((list) => {
@@ -49,6 +56,11 @@ export function Account() {
   const cameFrom = usePlaceBefore("/account");
   // Privacy, opened from here, leads back here (M3a-1).
   useEffect(() => rememberPlace(() => ({ path: "/account", name: "Your account" })), []);
+  useEffect(() => {
+    if (signingOut || !backToSignOut.current) return;
+    backToSignOut.current = false;
+    signOutButton.current?.focus();
+  }, [signingOut]);
   // Cancel puts the cursor back on Delete account.
   useEffect(() => {
     if (wasDeleting.current && !deleting) deleteLink.current?.focus();
@@ -59,17 +71,24 @@ export function Account() {
   if (account === null) return null;
   if (account === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
 
-  const download = async () => setStatus((await downloadMyData()) ? "Downloaded steelman-data.json." : "Couldn’t download your data. Try again.");
+  const download = async () => {
+    setDownloading(true);
+    const saved = await downloadMyData();
+    setDownloading(false);
+    setStatus(saved ? "Your browser saved steelman-data.json." : "Steelman couldn’t download your data. Try again.");
+  };
   const leave = async () => {
     setSigningOut(true);
     const ended = await signOut();
-    setSigningOut(false);
     if (!ended) {
-      setStatus("Couldn’t sign you out. Try again.");
-      // Re-enabled by now, so the keyboard's place is back on it.
-      window.setTimeout(() => signOutButton.current?.focus());
+      setStatus("Steelman couldn’t sign you out. Try again.");
+      // Once it's drawn pressable again, the keyboard's place is back on it (the effect above). A timer here could run
+      // before that, while the button was still disabled.
+      backToSignOut.current = true;
+      setSigningOut(false);
       return;
     }
+    setSigningOut(false);
     forgetTestUser();
     forgetPlaces();
     // A fresh page, so nothing of the account stays in memory; signed out, it shows Sign in.
@@ -115,7 +134,7 @@ export function Account() {
             <AnalyticsRow onChange={setStatus} />
             <Row label="Your data" hint="Download a copy of everything you wrote, voted on, and assessed.">
               <span className="sm-rrow-control">
-                <button type="button" className="sm-button cursor-interaction" onClick={() => void download()}>
+                <button type="button" className="sm-button cursor-interaction" {...busyButton(downloading)} onClick={() => void download()}>
                   Download
                 </button>
               </span>
@@ -128,8 +147,8 @@ export function Account() {
               </span>
             </Row>
           </div>
-          <div className="sm-account-end">
-            <button ref={signOutButton} type="button" className="sm-button sm-signout cursor-interaction" disabled={signingOut} onClick={() => void leave()}>
+          <div ref={end} className="sm-account-end">
+            <button ref={signOutButton} type="button" className="sm-button sm-signout cursor-interaction" {...busyButton(signingOut)} onClick={() => void leave()}>
               <Icon name="log-out" size={16} />
               Sign out
             </button>
@@ -197,8 +216,10 @@ function AnalyticsRow({ onChange }: { onChange(status: string): void }) {
 }
 
 function Row({ label, hint, children }: { label: string; hint?: string; children?: React.ReactNode }) {
+  const row = useRef<HTMLDivElement>(null);
+  useRowEntrance(row);
   return (
-    <div className="sm-rrow">
+    <div ref={row} className="sm-rrow">
       <span className="sm-rrow-label">
         {label}
         {hint && <small>{hint}</small>}
@@ -227,7 +248,7 @@ function DeleteForm({ username, onCancel, onDeleted }: { username: string; onCan
     const outcome = await deleteMyAccount(typed.trim());
     setSending(false);
     if (outcome === "done") return onDeleted();
-    setError(outcome === "failed" ? "Couldn’t delete your account. Nothing was deleted; try again." : `Type ${username} exactly.`);
+    setError(outcome === "failed" ? "Steelman couldn’t delete your account, so nothing was deleted. Try again." : `Type ${username} exactly.`);
     field.current?.focus();
   };
   return (
@@ -264,7 +285,7 @@ function DeleteForm({ username, onCancel, onDeleted }: { username: string; onCan
         <button type="button" className="sm-button cursor-interaction" onClick={onCancel}>
           Cancel
         </button>
-        <button type="button" className="sm-button sm-danger cursor-interaction" disabled={sending} onClick={() => void confirm()}>
+        <button type="button" className="sm-button sm-danger cursor-interaction" {...busyButton(sending)} onClick={() => void confirm()}>
           Delete account
         </button>
       </div>

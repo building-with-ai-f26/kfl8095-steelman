@@ -9,6 +9,7 @@ import { tooManyMessage } from "@steelman/shared";
 import { emailCode, googleAddress, signInWithCode } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
 import { CodeBoxes } from "./CodeBoxes.tsx";
+import { busyButton } from "../busy.ts";
 
 const MESSAGES = {
   noEmail: "Enter your email.",
@@ -16,11 +17,11 @@ const MESSAGES = {
   tooManyEmails: "Too many codes sent to this address. Try again in an hour.",
   noCode: "Enter the 6-digit code.",
   wrongCode: "That code isn’t right.",
-  tooManyTries: "Too many wrong tries. Send a new code.",
+  tooManyTries: "You entered a wrong code too many times. Send a new code.",
   expired: "That code has expired. Send a new code.",
   google: "Google couldn’t confirm your email. Use a code instead.",
   googleOff: "Google sign-in isn’t available. Use a code instead.",
-  unreachable: "Couldn’t reach Steelman. Try again.",
+  unreachable: "Your browser couldn’t reach Steelman. Try again.",
 } as const;
 
 /** Five wrong tries cancel a code (plans/architecture.md §7). */
@@ -44,6 +45,8 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   // The screen keeps saying why until a new code is sent.
   const [codeGone, setCodeGone] = useState<"" | "expired" | "tooManyTries">("");
   const [busy, setBusy] = useState(false);
+  /** Whether the wait is for a new code, so the busy state is on Send a new code rather than on Sign in (M3d-11). */
+  const [resending, setResending] = useState(false);
   // Moves the cursor back to the field after something that changes neither the step nor the error (a new code).
   const [refocus, setRefocus] = useState(0);
   const field = useRef<HTMLInputElement>(null);
@@ -69,6 +72,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
 
   async function sendCode(again: boolean) {
     setBusy(true);
+    setResending(again);
     const answer = await emailCode(email);
     if (answer === "too_many") return fail(MESSAGES.tooManyEmails);
     if (typeof answer === "object") return fail(tooManyMessage(answer.waitSeconds));
@@ -97,6 +101,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     event.preventDefault();
     if (!/^\d{6}$/.test(code)) return fail(MESSAGES.noCode);
     setBusy(true);
+    setResending(false);
     const answer = await signInWithCode(email, code);
     if (answer === "signed_in") return onSignedIn();
     if (answer === "failed") return fail(MESSAGES.unreachable);
@@ -148,11 +153,11 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
             />
           </label>
           {errorLine}
-          <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
+          <button type="submit" className="sm-button sm-solid cursor-interaction" {...busyButton(busy && !resending)} disabled={busy}>
             Sign in
           </button>
           <div className="sm-auth-links">
-            <button type="button" className="sm-link-button cursor-interaction" disabled={busy} onClick={() => void sendCode(true)}>
+            <button type="button" className="sm-link-button cursor-interaction" {...busyButton(busy && resending)} disabled={busy} onClick={() => void sendCode(true)}>
               Send a new code
             </button>
             <button
@@ -203,7 +208,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
           />
         </label>
         {errorLine}
-        <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
+        <button type="submit" className="sm-button sm-solid cursor-interaction" {...busyButton(busy)}>
           Email me a code
         </button>
         <p className="sm-field-hint sm-auth-hint sm-auth-terms">

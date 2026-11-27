@@ -20,9 +20,9 @@
 export const BOARD_MOVERS = "[data-node], .sm-card[data-card]";
 
 /** How long each element in reading order waits after the one before it. */
-const STAGGER_MS = 20;
+export const STAGGER_MS = 20;
 /** The most turns a stagger takes, so that the last row on a long board starts within a quarter second. */
-const MOST_TURNS = 12;
+export const MOST_TURNS = 12;
 /** A move smaller than this is no move at all. */
 const STILL_PX = 0.5;
 /** How far a traveling element grows halfway through its move, as a sheet of paper lifted off the desk (M3d-3). */

@@ -12,8 +12,18 @@
 // list it already holds at once, with any board the reader wrote to at the
 // top, scrolled as it was left, and the board's copy shrinks into its post.
 // The cursor goes back to that post's question. The list is then read again.
+// When the post is off screen or isn't drawn, nothing shrinks: the board's
+// copy fades and the list rises, the ordinary page transition (M3d-11).
+//
+// While the list's first read is on its way, skeleton posts stand in the
+// list's own layout (M3d-11, E-03), as the board's skeleton does (M3d-10,
+// board/Skeleton.tsx). GitHub's repository list, read live on Nov 25, draws
+// five skeleton rows in a row's own shape (a name, a description, and a
+// metadata line) while a filter reads; Google Docs' home draws grey rows too
+// (from memory, since it needs a sign-in). A list post lifts a pixel under the
+// pointer, as a card on the board does (app.css); GitHub only tints the row.
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { BoardList, BoardListing } from "@steelman/shared";
 import { listBoards } from "./api.ts";
 import { Icon } from "./icons.tsx";
@@ -22,6 +32,7 @@ import { ago, fullDate } from "./when.ts";
 import { HOME_PLACE, rememberPlace } from "./places.ts";
 import { heldList, listScroll, noteOpening, plainClick, rememberList, takeReturn } from "./opening.ts";
 import { shrinkInto } from "./board/zoom.ts";
+import { play } from "./board/motion.ts";
 
 export function Home({ onOpen }: { onOpen?(path: string): void }) {
   const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(() => heldList());
@@ -32,13 +43,16 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
     });
   }, []);
   useEffect(load, [load]);
+  const page = useRef<HTMLDivElement>(null);
   // Back from a board opened here: the list as it was scrolled, the board shrinking into its post, and the cursor on it.
+  // When there's no post on screen to shrink into, the list rises into place instead, as the other pages arrive.
   useLayoutEffect(() => {
     const back = takeReturn();
     if (!back) return;
     const question = document.querySelector<HTMLElement>(`.sm-post h2 a[href="${boardPath(back.board)}"]`);
     if (question) window.scrollTo(0, listScroll());
-    if (back.closing) shrinkInto(back.closing, question ? miniatureOf(question) : null);
+    const shrink = back.closing ? shrinkInto(back.closing, question ? miniatureOf(question) : null) : null;
+    if (!shrink && page.current) play(page.current, [{ translate: "0 4px" }, { translate: "0 0" }]);
     question?.focus({ preventScroll: true });
   }, []);
   // Back from a board can bring this page back as it was left (the browser's back/forward cache), so ask again.
@@ -52,24 +66,24 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
 
   // The list is where detours lead back to when there's nowhere else (M3a-1).
   useEffect(() => rememberPlace(() => HOME_PLACE), []);
-  if (list === null) return null;
+  if (list === null) return <HomeSkeleton />;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   return (
-    <div className="sm-home sm-home-alone">
+    <div ref={page} className="sm-home sm-home-alone">
       <main className="sm-feed">
         <h1 id="sm-feed-title" className="sm-sr">
           Your steelmen
         </h1>
         {list === "failed" ? (
           <div className="sm-feed-empty" role="alert">
-            <p>Couldn’t load your steelmen.</p>
+            <p>Steelman couldn’t load your steelmen.</p>
             <button type="button" className="sm-button cursor-interaction" onClick={() => (setList(null), load())}>
               Try again
             </button>
           </div>
         ) : list.boards.length === 0 ? (
           <div className="sm-feed-empty">
-            <p>No steelmen yet.</p>
+            <p>You have no steelmen yet.</p>
             <a className="sm-button sm-solid cursor-interaction" href={NEW_PATH}>
               <Icon name="plus" size={14} />
               New steelman
@@ -156,5 +170,47 @@ function Thumb({ options }: { options: BoardListing["options"] }) {
         ))}
       </span>
     </span>
+  );
+}
+
+/** How many placeholder posts the skeleton shows, and how many options each has. */
+const PLACEHOLDERS = [3, 2, 2] as const;
+
+/**
+ * Skeleton posts while the list's first read is on its way, in the list's own layout: the owner and age, the question,
+ * the options, and the miniature, as grey blocks. One status sentence says it to a screen reader, and the blocks are
+ * hidden from it and marked busy, as the board's skeleton does (M3d-10). They fade in after twice --sm-slow, so a
+ * quick read shows nothing, and then pulse gently; under reduced motion they are drawn at once and stay still. The page
+ * and its column are the list's own, so the posts stand where their placeholders stood, but nothing here is the list,
+ * a post, or a question, so nothing that finds those finds these.
+ */
+function HomeSkeleton() {
+  const [said, setSaid] = useState(false);
+  useEffect(() => setSaid(true), []);
+  return (
+    <div className="sm-home sm-home-alone">
+      <main className="sm-feed sm-feed-skeleton">
+        <h1 className="sm-sr">Your steelmen</h1>
+        <div className="sm-feed-skeleton-posts" aria-hidden="true" aria-busy="true">
+          {PLACEHOLDERS.map((options, at) => (
+            <div key={at} className="sm-feed-skeleton-post">
+              <div className="sm-feed-skeleton-body">
+                <span className="sm-feed-skeleton-bar sm-feed-skeleton-meta" />
+                <span className="sm-feed-skeleton-bar sm-feed-skeleton-question" />
+                <span className="sm-feed-skeleton-options">
+                  {Array.from({ length: options }, (_, n) => (
+                    <span key={n} className="sm-feed-skeleton-bar sm-feed-skeleton-option" />
+                  ))}
+                </span>
+              </div>
+              <span className="sm-feed-skeleton-thumb" />
+            </div>
+          ))}
+        </div>
+        <p className="sm-live" role="status">
+          {said ? "Your steelmen are loading." : ""}
+        </p>
+      </main>
+    </div>
   );
 }

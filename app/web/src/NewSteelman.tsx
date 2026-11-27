@@ -17,6 +17,8 @@ import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
 import { boardPath } from "./links.ts";
 import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
+import { busyButton } from "./busy.ts";
+import { arrivingWithTransition } from "./paging.ts";
 
 const PLACEHOLDERS = ["First option", "Second option", "Third option", "Fourth option"];
 
@@ -45,6 +47,8 @@ export function NewSteelman() {
   /** Where the cursor goes next: "question" or "option-<n>". */
   const [focus, setFocus] = useState<string | null>("question");
   const sheet = useRef<HTMLFormElement>(null);
+  /** Arriving through the page transition, the sheet rises with the page, not again on its own (M3d-11). */
+  const [arrived] = useState(arrivingWithTransition);
 
   useEffect(() => {
     if (!focus) return;
@@ -91,7 +95,7 @@ export function NewSteelman() {
   const marks = (field: string) => (badField === field ? { "aria-invalid": true, "aria-describedby": "sm-create-error" } : {});
   return (
     <main className="sm-landing sm-create-landing" data-canvas="cool">
-      <form ref={sheet} className="sm-create sm-create-page" aria-labelledby="sm-create-title" onSubmit={(event) => void submit(event)} noValidate>
+      <form ref={sheet} className={arrived ? "sm-create sm-create-page sm-arrived" : "sm-create sm-create-page"} aria-labelledby="sm-create-title" onSubmit={(event) => void submit(event)} noValidate>
         <div className="sm-create-canvas">
           {/* The way back, at the left of the title as on Your account (the builder, Nov 22: "That back option
               should also exist from the 'New steelman' screen"). */}
@@ -210,7 +214,7 @@ export function NewSteelman() {
             <a className="sm-link-button cursor-interaction" href={cameFrom.path}>
               Cancel
             </a>
-            <button type="submit" className="sm-button sm-solid cursor-interaction" disabled={busy}>
+            <button type="submit" className="sm-button sm-solid cursor-interaction" {...busyButton(busy)}>
               <Icon name="plus" size={14} />
               Create steelman
             </button>
