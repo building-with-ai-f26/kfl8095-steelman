@@ -10,7 +10,10 @@ import { beforeAll, describe, expect, test } from "vitest";
 // opacity. The tile is still a seamless 480 px square, embedded in tokens.css
 // as --sm-contours. A light falloff, --sm-canvas-light, comes first in every
 // canvas's list of layers, so it reaches each place the canvas shows, and
-// every list of layer sizes keeps one size per layer.
+// every list of layer sizes keeps one size per layer. It is lit at the top
+// centre and shades to a little black at its edge, so the edges read darker
+// than the plain tint (the builder chose darker edges on Nov 27), and muted and
+// quiet text keep 4.6:1 there.
 
 const docs = join(import.meta.dirname, "../../../docs/design");
 const prototype = join(import.meta.dirname, "../../../docs/prototype/source/steelman-refined.html");
@@ -148,7 +151,7 @@ describe("the light falloff", () => {
     }
   });
 
-  test("M-05, G-02: the light is drawn in white and black alone, so it works on every tint, and its darkest edge keeps muted and quiet text at 4.5:1 on the plain tint", () => {
+  test("M-05, G-02: the light is drawn in white and black alone, so it works on every tint, its edge shades to 3-5% black, and muted and quiet text keep 4.6:1 there on every tint", () => {
     const light = property(tokens, "--sm-canvas-light")!;
     expect(light).not.toContain("var(");
     // Its stops are written as eight-digit hex colours: white or black, with an alpha.
@@ -156,6 +159,11 @@ describe("the light falloff", () => {
     for (const hex of stops) expect(hex).toMatch(/^(ffffff|000000)[0-9a-f]{2}$/);
     const darkest = Math.max(0, ...stops.filter((hex) => hex.startsWith("000000")).map((hex) => parseInt(hex.slice(6), 16) / 255));
     expect(stops.some((hex) => hex.startsWith("ffffff") && hex.slice(6) !== "00"), "the light at the top centre").toBe(true);
+    // The first stop is the lit top centre and the last is the shaded edge, a little black.
+    expect(stops[0], "the first stop is white").toMatch(/^ffffff/);
+    expect(stops.at(-1), "the last stop is black").toMatch(/^000000/);
+    expect(darkest, "the edge's black").toBeGreaterThanOrEqual(0.03);
+    expect(darkest, "the edge's black stays subtle").toBeLessThanOrEqual(0.05);
     const luminance = (rgb: number[]) => {
       const [r, g, b] = rgb.map((c) => {
         const s = c / 255;
@@ -169,7 +177,7 @@ describe("the light falloff", () => {
       const edge = luminance(rgb(hexOf(`--sm-canvas-${canvas}`)).map((c) => c * (1 - darkest)));
       for (const text of ["--sm-muted", "--sm-quiet"]) {
         const ratio = (edge + 0.05) / (luminance(rgb(hexOf(text))) + 0.05);
-        expect(ratio, `${text} on ${canvas}'s darkest edge`).toBeGreaterThanOrEqual(4.5);
+        expect(ratio, `${text} on ${canvas}'s darkest edge`).toBeGreaterThanOrEqual(4.6);
       }
     }
   });

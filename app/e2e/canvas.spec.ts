@@ -1,14 +1,15 @@
 // Map contours on the canvas (M3d-21, M-05, G-02, A-01, M-04). The canvas gains
 // a light, --sm-canvas-light: up to 30% white at the top centre, under the
-// question, fading out well before the edges, so the edges keep the plain tint
-// and texture. It comes first in every canvas's layers, so the board carries
-// it on each of the six space canvases, with one size per layer. A bottom
-// corner is where the light has faded to the plain tint and texture, so muted
-// and quiet text placed there must pass the accessibility scan at 4.5:1 or
-// more; any darkening added to the edges later must keep it so. axe-core can't
-// judge contrast over a background image (it reports it as needing review), so
-// the test also reads the canvas's own pixels at that corner, reads the placed
-// text's computed colours, and works out the contrast itself.
+// question, fading out halfway to the light's edge, and then darkening to 4%
+// black at its edge and beyond, so the edges and bottom corners read a little
+// darker than the plain tint (the builder chose darker edges on Nov 27). It
+// comes first in every canvas's layers, so the board carries it on each of the
+// six space canvases, with one size per layer. A bottom corner is where the
+// canvas is darkest, so muted and quiet text placed there must pass the
+// accessibility scan at 4.6:1 or more. axe-core can't judge contrast over a
+// background image (it reports it as needing review), so the test also reads
+// the canvas's own pixels at that corner, with and without the light, reads the
+// placed text's computed colours, and works out the contrast itself.
 
 import AxeBuilder from "@axe-core/playwright";
 import type { Locator, Page } from "@playwright/test";
@@ -70,14 +71,8 @@ const contrast = (a: number[], b: number[]) => {
   return (hi! + 0.05) / (lo! + 0.05);
 };
 
-/** The canvas's average colour in a 32 px square at the board's bottom-left corner, with the board's contents hidden. */
-async function cornerColour(page: Page): Promise<number[]> {
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const hide = await page.addStyleTag({ content: "#steelman-study .sm-surface > * { visibility:hidden !important; }" });
-  await settled(page);
-  const box = (await surface(page).boundingBox())!;
-  const png = await page.screenshot({ clip: { x: box.x, y: box.y + box.height - 32, width: 32, height: 32 }, animations: "disabled" });
-  await hide.evaluate((style) => (style as Element).remove());
+/** The average colour of a PNG's pixels. */
+async function averageColour(page: Page, png: Buffer): Promise<number[]> {
   return page.evaluate(async (base64) => {
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     const bitmap = await createImageBitmap(new Blob([bytes], { type: "image/png" }));
@@ -92,8 +87,53 @@ async function cornerColour(page: Page): Promise<number[]> {
 }
 
 /**
- * Places a line of muted text and a line of quiet text in the board's bottom-left corner, where the light has faded to
- * the plain tint and texture, and returns each line's computed colour as [r, g, b, alpha].
+ * The canvas's average colour in a 32 px square at the board's bottom-left corner, with the board's contents hidden:
+ * as drawn, and again with the light layer taken away, which leaves the plain tint and texture.
+ */
+async function cornerColours(page: Page): Promise<{ lit: number[]; plain: number[] }> {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const hide = await page.addStyleTag({ content: "#steelman-study .sm-surface > * { visibility:hidden !important; }" });
+  await settled(page);
+  const box = (await surface(page).boundingBox())!;
+  const clip = { x: box.x, y: box.y + box.height - 32, width: 32, height: 32 };
+  const lit = await averageColour(page, await page.screenshot({ clip, animations: "disabled" }));
+  // The same layers less the first, the light, with their sizes.
+  await surface(page).evaluate((element) => {
+    // Splits a computed CSS list on its top-level commas, as layers() does.
+    const parts = (value: string) => {
+      const out: string[] = [];
+      let depth = 0;
+      let start = 0;
+      for (let i = 0; i < value.length; i++) {
+        if (value[i] === "(") depth++;
+        else if (value[i] === ")") depth--;
+        else if (value[i] === "," && depth === 0) {
+          out.push(value.slice(start, i).trim());
+          start = i + 1;
+        }
+      }
+      out.push(value.slice(start).trim());
+      return out;
+    };
+    // Both lists are read before either is set, because the computed sizes follow the number of images.
+    const { backgroundImage, backgroundSize } = getComputedStyle(element);
+    const html = element as HTMLElement;
+    html.style.backgroundImage = parts(backgroundImage).slice(1).join(", ");
+    html.style.backgroundSize = parts(backgroundSize).slice(1).join(", ");
+  });
+  await settled(page);
+  const plain = await averageColour(page, await page.screenshot({ clip, animations: "disabled" }));
+  await surface(page).evaluate((element) => {
+    (element as HTMLElement).style.backgroundImage = "";
+    (element as HTMLElement).style.backgroundSize = "";
+  });
+  await hide.evaluate((style) => (style as Element).remove());
+  return { lit, plain };
+}
+
+/**
+ * Places a line of muted text and a line of quiet text in the board's bottom-left corner, where the canvas is darkest,
+ * and returns each line's computed colour as [r, g, b, alpha].
  */
 async function placeTextAtEdge(page: Page): Promise<{ muted: number[]; quiet: number[] }> {
   return page.evaluate(() => {
@@ -138,19 +178,26 @@ test("M-05, G-02, A-01: the board carries the light layer first, with one size p
 });
 
 for (const width of [1280, 375]) {
-  test(`M-05, G-02, A-01, M-04: at ${width} px, muted and quiet text at a bottom corner of each canvas passes the accessibility scan, at 4.5:1 or more`, async ({ board }) => {
+  test(`M-05, G-02, A-01, M-04: at ${width} px, each canvas's bottom corner is darker than its plain tint, and muted and quiet text there passes the accessibility scan, at 4.6:1 or more`, async ({ board }) => {
     const canvasTo = await spaceForBoard(board);
     const maya = await board.open("maya.chen", { width });
     for (const canvas of CANVASES) {
       await canvasTo(canvas);
       await reopen(maya, canvas);
-      const edge = await cornerColour(maya);
+      const { lit: edge, plain } = await cornerColours(maya);
+      // The light darkens the corner by about 4% black, which takes about 8% off its luminance.
+      const darkening = 1 - luminance(edge) / luminance(plain);
+      expect(darkening, `${canvas}'s bottom corner, rgb(${edge.map(Math.round).join(", ")}), against its plain tint, rgb(${plain.map(Math.round).join(", ")})`).toBeGreaterThanOrEqual(0.05);
+      expect(darkening, `${canvas}'s bottom corner stays subtle`).toBeLessThanOrEqual(0.12);
+      test.info().annotations.push({ type: "edge", description: `${width} px, ${canvas}: the corner is ${(darkening * 100).toFixed(1)}% darker in luminance than its plain tint` });
       // The tokens' own colours, as the placed text computes them, so a lighter --sm-muted or --sm-quiet fails here.
       const ink = await placeTextAtEdge(maya);
       for (const name of ["muted", "quiet"] as const) {
         const [r, g, b, alpha] = ink[name];
         expect(alpha, `${name} text is opaque`).toBe(1);
-        expect(contrast([r!, g!, b!], edge), `${name} text, rgb(${r}, ${g}, ${b}), on ${canvas}'s bottom corner, rgb(${edge.map(Math.round).join(", ")})`).toBeGreaterThanOrEqual(4.5);
+        const ratio = contrast([r!, g!, b!], edge);
+        test.info().annotations.push({ type: "contrast", description: `${width} px, ${canvas}, ${name}: ${ratio.toFixed(3)}:1 on rgb(${edge.map((c) => c.toFixed(1)).join(", ")})` });
+        expect(ratio, `${name} text, rgb(${r}, ${g}, ${b}), on ${canvas}'s bottom corner, rgb(${edge.map(Math.round).join(", ")})`).toBeGreaterThanOrEqual(4.6);
       }
       await settled(maya);
       const results = await new AxeBuilder({ page: maya }).analyze();
