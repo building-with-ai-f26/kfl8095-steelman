@@ -399,6 +399,10 @@ body { margin:0; }
 #steelman-study .sm-canvas-frame { position:relative; overflow:clip; pointer-events:none; }
 #steelman-study .sm-canvas-layer { position:absolute; inset:0; background-color:var(--sm-paper); background-image:var(--sm-canvas-texture); background-size:var(--sm-canvas-texture-size); pointer-events:none; }
 #steelman-study .sm-canvas-light { position:absolute; inset:0; background-image:var(--sm-canvas-light); background-size:100% 100%; pointer-events:none; }
+/* M3d-23, M-15, E-07: while a board opened from the list grows out of its miniature, the parts that then draw
+   themselves in are hidden (drawInAfter() in draw-in.ts), so the board doesn't show in full and then blink out as the
+   drawing starts. Only the canvas grows. The drawing's own starting keyframes take over in the same frame. */
+#steelman-study .sm-surface[data-drawing] :is(.sm-head, svg.sm-links, .sm-board > .sm-column, .sm-board > .sm-col-hidden, .sm-board > .sm-add-option-col) { opacity:0; }
 
 /* M3d-10, A-01: skeleton cards while the board's first read is on its way (Skeleton.tsx). Blocks in the board's own
    layout, with the scene's padding, the question's width, the columns' grid, and their rows' spacing, so the board

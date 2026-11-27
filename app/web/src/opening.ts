@@ -9,7 +9,8 @@
 // What it needs is held here, in memory only: the miniature's rect from the
 // click, the list as Home last drew it, how far down the list was scrolled,
 // and which boards the reader wrote to since. A reload or a deep link starts
-// with none of it, so it shows no motion.
+// with none of it, so nothing grows, and the board draws itself instead
+// (M3d-23). Back and Forward are noted, so a board they bring back doesn't.
 //
 // The offline queue lives only in this tab (Q20), so a board with actions
 // waiting is left by loading the page, which brings up the browser's leave
@@ -30,6 +31,8 @@ let held: { list: BoardList; board: string | null; scrollY: number; from: string
 const written = new Set<string>();
 /** The board just left for the list by Back or the wordmark, and its copy to shrink into its post, if it has one. */
 let returning: { board: string; closing: Closing | null } | null = null;
+/** Whether the page was last reached by Back or Forward, so that a board it brings back doesn't draw itself again (M3d-23). */
+let travelled = false;
 /** The board on screen: whether it can be left without the browser's leave prompt. */
 let shown: { board: string; quiet(): boolean } | null = null;
 /** The address the board on screen last gave its history entry: the board, an open version, or a linked comment. */
@@ -63,6 +66,7 @@ export function listScroll(): number {
 /** A post's question was clicked: its board opens from the rect its miniature has now. */
 export function noteOpening(board: string, from: Rect): void {
   opening = { board, from };
+  travelled = false;
   if (held) held = { ...held, board, scrollY: window.scrollY, from: window.location.pathname };
 }
 
@@ -73,10 +77,18 @@ export function takeOpening(board: string): Rect | null {
   return from;
 }
 
-/** Back or Forward opens a page with no click on a miniature, so nothing grows. */
+/** Back or Forward opens a page with no click on a miniature, so nothing grows, and a board it opens doesn't draw itself (M3d-23). */
 export function forgetOpening(): void {
   opening = null;
   returning = null;
+  travelled = true;
+}
+
+/** Whether the board being drawn was brought back by Back or Forward, once. */
+export function takeTravelled(): boolean {
+  const was = travelled;
+  travelled = false;
+  return was;
 }
 
 /** Back, or the wordmark, leaves a board opened from the list for the list again. */

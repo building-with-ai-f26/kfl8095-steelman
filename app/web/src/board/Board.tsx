@@ -13,7 +13,8 @@
 // the columns ease to their new widths. Switching between Board and
 // Strongest case scales the scene from the centred card, and Escape on
 // Strongest case goes back to Board; a board opened from the list grows out
-// of its post's miniature (M3d-9, zoom.ts).
+// of its post's miniature (M3d-9, zoom.ts). A board opened from the list, by
+// its link, or on a reload then draws itself in, once (M3d-23, draw-in.ts).
 //
 // A version's ⋯ menu (A-12) edits in place, suggests a revised version in
 // the row's draft, and deletes with Undo: the deletion leaves the screen at
@@ -64,6 +65,7 @@ import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop, useLinger } from "./drawer.ts";
 import { captureRects, drawnRect, duration, flip, startDrift, stopMoves } from "./motion.ts";
+import { drawInAfter, finishDrawIn } from "./draw-in.ts";
 import { cardsFor, ring, stopRings } from "./vote-motion.ts";
 import type { Rects } from "./motion.ts";
 import { LeavingCopies, arrive, comeBack, copyOf, measure } from "./Leaving.tsx";
@@ -81,7 +83,7 @@ import { growFrom, zoomInto } from "./zoom.ts";
 import { BoardSkeleton } from "./Skeleton.tsx";
 import { listSpaces } from "../api.ts";
 import type { SpaceCanvas } from "@steelman/shared";
-import { noteAddress, showBoard, takeOpening } from "../opening.ts";
+import { noteAddress, showBoard, takeOpening, takeTravelled } from "../opening.ts";
 import type { Settling } from "./settle.ts";
 
 /** What a reader is told when they ask for a wording someone moved, which the board shows in its new place only after Update. */
@@ -608,7 +610,9 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
       const steps = tourSteps(latest.current.view, latest.current.hidden);
       // An empty board has nothing to point at: the tour waits for one that has.
       if (steps.length === 0) return;
-      // A page load opens on the board view; this only makes sure.
+      // A page load opens on the board view; this only makes sure. The board stops drawing itself in, so that the tour
+      // frames each part where it stands (M3d-23).
+      finishDrawIn();
       onZoom("read");
       setTour({ steps, at: 0, was: { open: latest.current.open, expanded: latest.current.expanded } });
       showStep(steps[0]!);
@@ -870,7 +874,9 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     if (root && state.view === move.next) redrawWhile(playSettle(root, move));
   });
 
-  useEffect(() => {
+  // The page marks the board as shown before it's first painted, which on a phone hides the other side's column, so
+  // the board's drawing (M3d-23) measures the columns the reader sees.
+  useLayoutEffect(() => {
     onShown(true);
     return () => onShown(false);
   }, [onShown]);
@@ -882,13 +888,29 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
   }, [onSpace, spaceId, spaceName]);
   useEffect(() => () => onSpace(null), [onSpace]);
   const canvas = useSpaceCanvas(spaceId);
-  // Opened from the list, the board grows out of its post's miniature (M3d-9) and says which board it is.
+  // Opened from the list, the board grows out of its post's miniature (M3d-9) and says which board it is. Opened from
+  // the list, by its link, or on a reload, it then draws itself in (M3d-23), once the growth has ended. A link to a
+  // version or a comment skips the drawing, so its ring and its scroll aren't delayed, and so do Back and Forward.
   const surface = useRef<HTMLDivElement>(null);
+  // What the opening takes once, kept for the whole mount, because React runs this effect twice in development
+  // (StrictMode) and the second run would find nothing left to take.
+  const opened = useRef<{ skip: boolean; grown: Promise<unknown> } | null>(null);
   useLayoutEffect(() => {
-    const from = takeOpening(boardId);
-    if (!from) return;
-    if (surface.current) redrawWhile([growFrom(surface.current, from)]);
-    session.announce(`Opened “${state.question}”.`);
+    if (!opened.current) {
+      const from = takeOpening(boardId);
+      const skip = takeTravelled() || Boolean(linked) || Boolean(linkedComment);
+      const grow = from && surface.current ? growFrom(surface.current, from) : null;
+      redrawWhile([grow]);
+      if (from) session.announce(`Opened “${state.question}”.`);
+      // Without a growth, the drawing waits only until the page has drawn what marking the board as shown changes,
+      // which React does before this task ends.
+      opened.current = { skip, grown: grow ? grow.finished : Promise.resolve() };
+    }
+    const { skip, grown } = opened.current;
+    // Each run waits for the same growth, and the cleanup between StrictMode's two runs cancels the first, so the
+    // board draws itself once. A growth that's cancelled draws nothing.
+    if (!skip && surface.current) drawInAfter(surface.current, grown, redrawWhile);
+    return finishDrawIn;
     // Once, when the board first shows.
   }, []);
   // The canvas drifts as the page scrolls, and holds still under reduced motion (M3d-22).

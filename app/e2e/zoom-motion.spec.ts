@@ -233,7 +233,9 @@ async function countAnimations(page: Page): Promise<void> {
     const counted = window as unknown as { animationsStarted: number };
     counted.animationsStarted = 0;
     Element.prototype.animate = function (this: Element, ...args: Parameters<Element["animate"]>) {
-      counted.animationsStarted++;
+      // A board drawing itself as it opens (M3d-23) isn't a grow or a shrink, so it isn't counted.
+      const options = args[1];
+      if (!(typeof options === "object" && options?.id === "sm-draw-in")) counted.animationsStarted++;
       return animate.apply(this, args);
     };
   });
@@ -246,7 +248,9 @@ const countFromLoad = (context: BrowserContext) =>
     const counted = window as unknown as { animationsStarted: number };
     counted.animationsStarted = 0;
     Element.prototype.animate = function (this: Element, ...args: Parameters<Element["animate"]>) {
-      counted.animationsStarted++;
+      // A board drawing itself as it opens (M3d-23) isn't a grow or a shrink, so it isn't counted.
+      const options = args[1];
+      if (!(typeof options === "object" && options?.id === "sm-draw-in")) counted.animationsStarted++;
       return animate.apply(this, args);
     };
   });
@@ -417,7 +421,7 @@ for (const width of WIDTHS) {
     await expect(page.locator(".sm-closing-layer > *")).toHaveCount(0);
   });
 
-  test(`E-07: at ${width} px, the browser's own Back and Forward still work, and a reload and a deep link play nothing`, async ({ board }) => {
+  test(`E-07: at ${width} px, the browser's own Back and Forward still work, and a reload and a deep link grow and shrink nothing`, async ({ board }) => {
     // A deep link.
     const page = await board.open("jordan_w", { width, prepare: countFromLoad });
     await settled(page);
