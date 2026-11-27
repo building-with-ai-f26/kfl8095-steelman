@@ -10,12 +10,16 @@
 // username to confirm a deletion is GitHub's way too (checked on
 // docs.github.com). Sign out sits at the foot of the card, above Delete
 // account, as in the prototype; GitHub and Google keep it last in the account
-// menu too (from memory).
+// menu too (from memory). Your statistics (L-09, M3d-14) follows Username:
+// counts of what you wrote, each said as a sentence, as Wikipedia's
+// Special:Contributions says "A user with 15,156 edits." (checked Nov 25),
+// with zeros shown quieter, as the prototype's profile Points do.
 
 import { useEffect, useId, useRef, useState } from "react";
 import { CHOSEN, analyticsStatus, chooseAnalytics, turnOnAnalytics } from "./analytics.ts";
 import type { AnalyticsStatus } from "./analytics.ts";
-import { deleteMyAccount, downloadMyData, listBoards, readMyAccount } from "./api.ts";
+import type { AccountStatistics } from "@steelman/shared";
+import { deleteMyAccount, downloadMyData, listBoards, readMyAccount, readMyStatistics } from "./api.ts";
 import { Icon } from "./icons.tsx";
 import { signOut } from "./signIn/account.ts";
 import { ChangeEmail } from "./signIn/ChangeEmail.tsx";
@@ -25,12 +29,17 @@ import { forgetTestUser } from "./testUser.ts";
 import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 import { forgetPlaces, rememberPlace } from "./places.ts";
 import { busyButton } from "./busy.ts";
-import { useRowEntrance } from "./rows.ts";
+import { useRowEntrance, useStatisticEntrance } from "./rows.ts";
+import { statisticLines } from "./statistics.ts";
+import type { StatisticLine } from "./statistics.ts";
+import type { IconName } from "./icons.tsx";
 
 const DELETED = "deleted_account";
 
 export function Account() {
   const [account, setAccount] = useState<MyAccount | "signed_out" | null>(null);
+  /** Read with the account, so the page is drawn once, at its full height. */
+  const [statistics, setStatistics] = useState<AccountStatistics | "failed">("failed");
   const [status, setStatus] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
@@ -46,7 +55,10 @@ export function Account() {
   const end = useRef<HTMLDivElement>(null);
   useRowEntrance(end);
   useEffect(() => {
-    void readMyAccount().then(setAccount);
+    void Promise.all([readMyAccount(), readMyStatistics()]).then(([mine, counts]) => {
+      setStatistics(counts === "signed_out" ? "failed" : counts);
+      setAccount(mine);
+    });
     void listBoards().then((list) => {
       if (typeof list === "string") return;
       setTourBoard(list.boards.find((board) => board.options.some((option) => option.arguments > 0))?.id ?? null);
@@ -107,6 +119,20 @@ export function Account() {
               <span className="sm-rrow-value ph-no-capture">{account.username}</span>
             </Row>
             {account.email && <ChangeEmail email={account.email} onChanged={(email) => setAccount({ ...account, email })} onStatus={setStatus} />}
+          </div>
+          {/* ph-no-capture: what you wrote is counted for you alone, so analytics and screen replays don't see it (L-09). */}
+          <div className="sm-rgroup sm-stats ph-no-capture">
+            <h2>Your statistics</h2>
+            <p className="sm-stats-note">Only you can see these numbers.</p>
+            {statistics === "failed" ? (
+              <p className="sm-stats-failed">Steelman couldn’t count what you wrote. Reload the page to try again.</p>
+            ) : (
+              <ul className="sm-stats-list">
+                {statisticLines(statistics).map((line) => (
+                  <Statistic key={line.name} line={line} />
+                ))}
+              </ul>
+            )}
           </div>
           {/* As Notion: Google signs in to the account with the same email, so there's nothing to connect or
               disconnect (M2-8b). Accounts without an email are the demo's test people, who can't sign in. */}
@@ -212,6 +238,27 @@ function AnalyticsRow({ onChange }: { onChange(status: string): void }) {
         </button>
       </span>
     </Row>
+  );
+}
+
+const STATISTIC_ICONS: Record<StatisticLine["name"], IconName> = {
+  arguments: "arrow-up-down",
+  wordings: "arrow-left-right",
+  sources: "paperclip",
+  comments: "message-square",
+  boards: "layout-grid",
+  nothing: "pencil",
+};
+
+/** One line of Your statistics, with the icon the prototype's profile gives the same kind of count. */
+function Statistic({ line }: { line: StatisticLine }) {
+  const item = useRef<HTMLLIElement>(null);
+  useStatisticEntrance(item);
+  return (
+    <li ref={item} className="sm-stat" data-zero={line.zero ? "" : undefined}>
+      <Icon name={STATISTIC_ICONS[line.name]} size={16} />
+      <span>{line.text}</span>
+    </li>
   );
 }
 

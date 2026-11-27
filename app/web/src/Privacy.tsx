@@ -25,7 +25,7 @@ export function Privacy() {
       <TitleBar here="/privacy">
         <h1>Privacy</h1>
       </TitleBar>
-      <p className="sm-privacy-date">Updated November 24, 2026</p>
+      <p className="sm-privacy-date">Updated November 25, 2026</p>
       <p className="sm-privacy-lede">This page says what Steelman keeps about you, who can see it, how long Steelman keeps it, and what you can do about it.</p>
 
       <h2>What we collect</h2>
@@ -45,6 +45,7 @@ export function Privacy() {
         <li>Everyone who can open a board sees its history. The history shows who did what there and when, including when you added each argument and wording. It never shows your votes.</li>
         <li>When you report that a source can’t be opened, everyone who can open that board sees that you reported it. The board’s history keeps a record of your report even after the report is cleared.</li>
         <li>No one but you sees your email.</li>
+        <li>Steelman shows you counts of what you wrote, worked out from what it already keeps, and no one else sees them.</li>
       </ul>
 
       <h2>Who processes it for us</h2>
