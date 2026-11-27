@@ -9,6 +9,7 @@ import {
   boardIdInput,
   can,
   deleteAccountInput,
+  usernameChangeInput,
   posthogAssetsHost,
   changesQuery,
   editInput,
@@ -35,6 +36,7 @@ import { createEvents } from "./events.ts";
 import type { ServerEvent } from "./events.ts";
 import { accessOf, entryTo, joinByLink } from "./access.ts";
 import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
+import { changeUsername } from "./username.ts";
 import { serveWebApp } from "./web.ts";
 import { createBoard } from "./boards.ts";
 import { LIMITS, createLimiter } from "./limits.ts";
@@ -350,6 +352,18 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   app.put("/api/account/tour", async (request, reply) => {
     if (request.person === null || !(await markTourSeen(db, clock, request.person))) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     return { status: "done" };
+  });
+
+  // Changing your username (L-04, M3d-15): the old one is held for 30 days, and a name changes once in 30 days
+  // (username.ts). A cookie write from another site, or an account with no name yet, is refused before this.
+  app.put("/api/account/username", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = usernameChangeInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    const outcome = await changeUsername(db, clock, request.person, body.data.username);
+    if (outcome.status !== "refused") return outcome;
+    const status = { signed_out: 401, invalid: 400, reserved: 400, taken: 409, too_soon: 409 }[outcome.reason];
+    return reply.code(status).send(outcome);
   });
 
   app.post("/api/account/delete", async (request, reply) => {

@@ -1,7 +1,9 @@
 // Signing in (L-01; plans/architecture.md §7, decision 004), through Better
 // Auth: a 6-digit code emailed to the person and typed into the page that
 // asked for it; Google, through OpenID Connect; a session cookie; and a
-// username picked once, after the first sign-in.
+// username picked after the first sign-in. Changing it later goes through
+// PUT /api/account/username (L-04, username.ts), never through Better Auth,
+// whose username plugin keeps a picked name as it is.
 //
 // Everything Better Auth is told lives here, so what it does is in one file:
 // which of our tables and columns it uses, the code's rules, the cookie, and
@@ -24,6 +26,7 @@ import { isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { EmailSender } from "./email.ts";
+import { claimFirstUsername } from "./username.ts";
 
 export interface SignInDependencies {
   /** Where the site is, such as https://app.steelman-argument.com. Cookies are Secure when it's https, and writes must come from it. */
@@ -47,6 +50,7 @@ export interface GoogleClient {
 export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
   "POST /email-otp/send-verification-otp",
   "POST /sign-in/email-otp",
+  // Picking a username at first sign-in. A picked one changes through PUT /api/account/username (L-04).
   "POST /update-user",
   "GET /get-session",
   "POST /sign-out",
@@ -227,7 +231,10 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
         // These two take only what Steelman's pages send, as text (SECURITY.md). Better Auth would also store a
         // name and a picture of any length, and its "picked once" and shape checks skip a username that isn't
         // text: null cleared a picked username, so it could be picked again.
-        if (ctx.path === "/update-user") onlyText(ctx.body, USERNAME_FIELDS, "Send the username you picked, as text, and nothing else.");
+        if (ctx.path === "/update-user") {
+          onlyText(ctx.body, USERNAME_FIELDS, "Send the username you picked, as text, and nothing else.");
+          return claimAtFirstSignIn(ctx.headers, (ctx.body as { username: string }).username);
+        }
         if (ctx.path === "/sign-in/email-otp") onlyText(ctx.body, CODE_SIGN_IN_FIELDS, "Send the email address and the code, as text, and nothing else.");
         if (ctx.path === "/email-otp/request-email-change") return beforeEmailChangeCode(ctx.headers, (ctx.body as { newEmail?: unknown } | undefined)?.newEmail);
         if (ctx.path === "/email-otp/change-email") {
@@ -279,6 +286,20 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
       ...(google ? [googleSignIn(google)] : []),
     ],
   });
+
+  /**
+   * Picking a username after the first sign-in (L-01) claims it as a username change does (L-04, username.ts): under
+   * the name's lock, checking both account and username_hold, so a name someone changed away from stays theirs for
+   * its 30 days. A held name is refused with the username plugin's own "taken" code, which the sign-in page turns
+   * into "<name> is taken.". Signed out, a name of the wrong shape, or a second pick are left to Better Auth.
+   */
+  async function claimAtFirstSignIn(headers: Headers | undefined, typed: string): Promise<void> {
+    const person = await sessionOf(headers);
+    if (!person) return;
+    if ((await claimFirstUsername(db, clock, person.id, typed)) === "taken") {
+      throw new APIError("BAD_REQUEST", { code: "USERNAME_IS_ALREADY_TAKEN", message: "Username is already taken. Please try another." });
+    }
+  }
 
   /**
    * Before a code for a new email is sent: the new address's limit of five

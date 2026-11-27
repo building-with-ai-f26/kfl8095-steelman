@@ -1,5 +1,6 @@
-// Your account (M-07, M1-12, L-04): who you are, changing your email (M2-8c,
-// in ChangeEmail.tsx), how you sign in, the
+// Your account (M-07, M1-12, L-04): who you are, changing your username
+// (M3d-15, in ChangeUsername.tsx) and your email (M2-8c, in ChangeEmail.tsx),
+// how you sign in, the
 // usage-analytics switch, Download your data, Sign out, and Delete account, in
 // the prototype's Account card (profileMarkup, privacyGroup, deleteForm, and
 // deletedMarkup in docs/prototype/source/steelman-refined.html), laid out as
@@ -23,6 +24,7 @@ import { deleteMyAccount, downloadMyData, listBoards, readMyAccount, readMyStati
 import { Icon } from "./icons.tsx";
 import { signOut } from "./signIn/account.ts";
 import { ChangeEmail } from "./signIn/ChangeEmail.tsx";
+import { ChangeUsername } from "./signIn/ChangeUsername.tsx";
 import type { MyAccount } from "./api.ts";
 import { boardPath } from "./links.ts";
 import { forgetTestUser } from "./testUser.ts";
@@ -114,10 +116,7 @@ export function Account() {
             <h1 id="sm-account-title">Your account</h1>
           </TitleBar>
           <div className="sm-rgroup">
-            {/* ph-no-capture: kept out of analytics and screen replays (M-08). */}
-            <Row label="Username">
-              <span className="sm-rrow-value ph-no-capture">{account.username}</span>
-            </Row>
+            <ChangeUsername username={account.username ?? ""} onChanged={(username) => setAccount({ ...account, username })} onStatus={setStatus} />
             {account.email && <ChangeEmail email={account.email} onChanged={(email) => setAccount({ ...account, email })} onStatus={setStatus} />}
           </div>
           {/* ph-no-capture: what you wrote is counted for you alone, so analytics and screen replays don't see it (L-09). */}

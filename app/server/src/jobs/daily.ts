@@ -5,6 +5,7 @@
 import type { Clock } from "@steelman/shared";
 import { releaseHeldUsernames } from "../account.ts";
 import type { Db } from "../db/database.ts";
+import { releaseEndedHolds } from "../username.ts";
 
 /** The record of sign-in emails sent only counts the last hour (sign-in.ts); a day is plenty. */
 const SENT_EMAILS_KEPT_MS = 24 * 60 * 60 * 1000;
@@ -21,6 +22,7 @@ export async function dailyCleanUp(db: Db, clock: Pick<Clock, "now">): Promise<{
     codes: Number(codes.numDeletedRows),
     sessions: Number(sessions.numDeletedRows),
     sentEmails: Number(sentEmails.numDeletedRows),
-    usernames: await releaseHeldUsernames(db, clock),
+    // A deleted account's username after 30 days, and a changed username's old name once its hold ends (L-04).
+    usernames: (await releaseHeldUsernames(db, clock)) + (await releaseEndedHolds(db, clock)),
   };
 }

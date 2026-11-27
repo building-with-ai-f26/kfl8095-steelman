@@ -4,12 +4,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { RESERVED_USERNAMES, USERNAME, isAllowedUsername } from "@steelman/shared";
+import { USERNAME, isAllowedUsername } from "@steelman/shared";
 import { chooseUsername } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
 import { busyButton } from "../busy.ts";
-
-const SHAPE = `Use ${USERNAME.min} to ${USERNAME.max} letters, numbers, or underscores.`;
+import { USERNAME_SHAPE as SHAPE, usernameProblem as problemWith, usernameTaken } from "./usernameRules.ts";
 
 /** The part of the email before @, made into a username, if that gives one that's allowed. Whether it's free, the service says. */
 export function suggestUsername(email: string): string {
@@ -20,11 +19,6 @@ export function suggestUsername(email: string): string {
     .replace(/^_|_$/g, "")
     .slice(0, USERNAME.max);
   return isAllowedUsername(name) ? name : "";
-}
-
-function problemWith(name: string): string {
-  if (RESERVED_USERNAMES.includes(name)) return `${name} is reserved.`;
-  return isAllowedUsername(name) ? "" : SHAPE;
 }
 
 export function ChooseUsername({ email, onChosen }: { email: string; onChosen: () => void }) {
@@ -46,7 +40,7 @@ export function ChooseUsername({ email, onChosen }: { email: string; onChosen: (
     const answer = await chooseUsername(typed);
     setBusy(false);
     if (answer === "chosen") return onChosen();
-    setError(answer === "taken" ? `${typed} is taken.` : answer === "invalid" ? SHAPE : "Couldn’t reach Steelman. Try again.");
+    setError(answer === "taken" ? usernameTaken(typed) : answer === "invalid" ? SHAPE : "Couldn’t reach Steelman. Try again.");
   }
 
   return (

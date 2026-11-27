@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { tooManyMessage } from "@steelman/shared";
-import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, WriteAnswer } from "@steelman/shared";
+import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, PublicConfig, QueuedAction, ReportReason, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 import { noteWrite } from "./opening.ts";
@@ -376,6 +376,22 @@ export async function downloadMyData(): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Changing your username (L-04): the service's answer, or "failed" when it can't be reached or answers something
+ * else. A refusal names why; one for changing again too soon says when it's allowed.
+ */
+export async function changeMyUsername(username: string): Promise<UsernameChangeAnswer | "failed"> {
+  try {
+    const response = await call("PUT", "account/username", { username });
+    if (response.status !== 200 && response.status !== 400 && response.status !== 409) return "failed";
+    const answer = (await response.json()) as UsernameChangeAnswer | { reason: "invalid" };
+    if (!("status" in answer)) return { status: "refused", reason: "invalid" };
+    return answer;
+  } catch {
+    return "failed";
   }
 }
 
