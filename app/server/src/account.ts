@@ -175,11 +175,28 @@ export async function exportData(db: Db, clock: Clock, person: string) {
   // An old username held for them after a change (L-04): which, and until when. Beside the account, not in it, so
   // the account's own fields stay as they were.
   const held = await heldUsername(db, person);
+  // Their spaces (G-03, G-04, M3d-17): which, their role, and when they joined; a space's name and about text only
+  // for one they made, as a board's question appears only on a board they asked. Never who else is in it.
+  const spaces = await db
+    .selectFrom("space_member as m")
+    .innerJoin("space as s", "s.id", "m.space_id")
+    .select(["m.space_id", "m.role", "m.joined_at", "s.name", "s.about", "s.created_by"])
+    .where("m.account_id", "=", person)
+    .where("s.deleted_at", "is", null)
+    .orderBy("m.joined_at")
+    .orderBy("m.space_id")
+    .execute();
 
   return {
     exported: clock.now().toISOString(),
     account: { ...summary, joined: joined.toISOString() },
     heldUsername: held,
+    spaces: spaces.map((space) => ({
+      space: space.space_id,
+      role: space.role,
+      joined: space.joined_at.toISOString(),
+      ...(space.created_by === person ? { name: space.name, about: space.about } : {}),
+    })),
     votes: {
       importance: importance.map((v) => ({ board: v.board_id, argument: v.argument_id, value: v.value, at: v.voted_at.toISOString() })),
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
@@ -226,6 +243,9 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       .values({ id: DELETED_ACCOUNT, username: DELETED_ACCOUNT, created_at: now, deleted_at: now })
       .onConflict((c) => c.column("id").doNothing())
       .execute();
+
+    // Their spaces first (M3d-17), each handed over or deleted, so a board in a space (M3d-18) finds its space's new Owner.
+    await handOverSpaces(trx, person, now);
 
     // Every board they're on or left a mark on, in one order, so two deletions can't wait on each other.
     const touched = await sql<{ board_id: string }>`
@@ -285,6 +305,51 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
     await trx.updateTable("account").set({ email: null, email_verified: false, name: "", image: null, updated_at: now, deleted_at: now }).where("id", "=", person).execute();
     return "done";
   });
+}
+
+/** Who should take a space its Owner leaves, best first (architecture §2, the deletion table). */
+const SPACE_HEIRS = ["admin", "member"];
+
+/**
+ * Their spaces (G-03, G-04, M3d-17; architecture §2, the deletion table): each membership ends. A space they own
+ * passes to the longest-standing Admin, else the longest-standing Member; with no one else in it, it is deleted, its
+ * name and about text erased and its row kept, as a deleted board's is. A space they made is credited to the stand-in,
+ * and their ID is scrubbed from its change rows. Locked in ID order, so two deletions can't wait on each other.
+ */
+async function handOverSpaces(trx: Trx, person: string, now: Date): Promise<void> {
+  const touched = await sql<{ id: string }>`
+    select space_id as id from space_member where account_id = ${person}
+    union select id from space where created_by = ${person}
+    order by 1`.execute(trx);
+  for (const { id } of touched.rows) {
+    await trx.selectFrom("space").select("id").where("id", "=", id).forUpdate().executeTakeFirst();
+    const mine = await trx.selectFrom("space_member").select("role").where("space_id", "=", id).where("account_id", "=", person).executeTakeFirst();
+    await trx.deleteFrom("space_member").where("space_id", "=", id).where("account_id", "=", person).execute();
+    if (mine?.role === "owner") {
+      const heir = await trx
+        .selectFrom("space_member")
+        .select("account_id")
+        .where("space_id", "=", id)
+        .where("role", "in", SPACE_HEIRS)
+        .orderBy(sql`array_position(${sql.val(SPACE_HEIRS)}::text[], role)`)
+        .orderBy("joined_at")
+        .orderBy("account_id")
+        .executeTakeFirst();
+      if (heir) await trx.updateTable("space_member").set({ role: "owner" }).where("space_id", "=", id).where("account_id", "=", heir.account_id).execute();
+      else await trx.updateTable("space").set({ name: "", about: "", deleted_at: now }).where("id", "=", id).execute();
+    }
+    await trx.updateTable("space").set({ created_by: DELETED_ACCOUNT }).where("id", "=", id).where("created_by", "=", person).execute();
+  }
+  const quoted = JSON.stringify(person);
+  await trx
+    .updateTable("space_change")
+    .set({
+      actor_id: sql`case when actor_id = ${person} then ${DELETED_ACCOUNT} else actor_id end`,
+      before: sql`replace(before::text, ${quoted}, ${JSON.stringify(DELETED_ACCOUNT)})::jsonb`,
+      after: sql`replace(after::text, ${quoted}, ${JSON.stringify(DELETED_ACCOUNT)})::jsonb`,
+    } as never)
+    .where((eb) => eb.or([eb("actor_id", "=", person), eb(sql`before::text`, "like", `%${quoted}%`), eb(sql`after::text`, "like", `%${quoted}%`)]))
+    .execute();
 }
 
 /** Their votes and assessments are deleted, and the counts they were part of recounted. */

@@ -30,6 +30,11 @@ import {
   combineInput,
   itemIdInput,
   separateInput,
+  newSpaceInput,
+  spaceInviteInput,
+  spaceRoleInput,
+  spaceSettingsInput,
+  spaceVisibilityInput,
 } from "@steelman/shared";
 import type { Clock, IdSource, PublicConfig, RefusalReason, Role } from "@steelman/shared";
 import { createEvents } from "./events.ts";
@@ -50,6 +55,8 @@ import { accountStatistics } from "./statistics.ts";
 import { PROFILE_NAME, readProfile } from "./profiles.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setRole } from "./sharing.ts";
+import { createSpace, inviteToSpace, listSpacePeople, listSpaces, readSpace, removeFromSpace, setSpaceRole, setSpaceVisibility, updateSpaceSettings } from "./spaces.ts";
+import type { SpaceWriteResult } from "./spaces.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { addComment, commentLink, deleteComment, reopenThread, resolveThread } from "./comments.ts";
 import { hideComment, hideWording, restoreComment, restoreWording } from "./moderation.ts";
@@ -171,6 +178,7 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   thread_deleted: 409,
   own_comment: 403,
   comment_deleted: 409,
+  owner_keeps_role: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -400,6 +408,71 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return { status: "done", board: await createBoard(db, clock, ids, request.person, body.data) };
   });
+
+  // Spaces (G-03, G-04, M3d-17; spaces.ts). Anyone signed in makes one, limited as making boards is, with the same
+  // count. Only members learn that a space exists: every read and write by anyone else answers 404, as an unknown,
+  // deleted, or malformed space does. Signed out is told to sign in first, as on every route.
+  app.get("/api/spaces", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return { spaces: await listSpaces(db, request.person) };
+  });
+
+  app.post("/api/spaces", { config: { limit: "board" } }, async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = newSpaceInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await createSpace(services, request.person, body.data));
+  });
+
+  app.get<{ Params: { space: string } }>("/api/spaces/:space", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return (await readSpace(db, request.person, request.params.space)) ?? reply.code(404).send({ reason: "not_found" });
+  });
+
+  // Renaming, the about text, and the canvas: an Admin's or the Owner's, counted as renaming a board's question is.
+  app.put<{ Params: { space: string } }>("/api/spaces/:space", { config: { limit: "writing" } }, async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = spaceSettingsInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await updateSpaceSettings(services, request.params.space, request.person, body.data));
+  });
+
+  // Who can find the space: the Owner's, as General access is a board Owner's, and not counted, as Share isn't.
+  app.put<{ Params: { space: string } }>("/api/spaces/:space/visibility", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = spaceVisibilityInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setSpaceVisibility(services, request.params.space, request.person, body.data.visibility));
+  });
+
+  app.get<{ Params: { space: string } }>("/api/spaces/:space/people", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const people = await listSpacePeople(db, request.person, request.params.space);
+    return people ? { people } : reply.code(404).send({ reason: "not_found" });
+  });
+
+  // Inviting by username: counted with board invitations, whatever the answer, and never given back, as the board
+  // route counts them (architecture §7), so a space can't be used to try usernames either.
+  app.post<{ Params: { space: string } }>("/api/spaces/:space/invites", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const wait = limiter.take("invite", request.person);
+    if (wait !== null) return reply.code(429).header("retry-after", String(wait)).send({ status: "refused", reason: "too_many", retryAfter: wait });
+    const body = spaceInviteInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await inviteToSpace(services, request.params.space, request.person, body.data.username, body.data.role));
+  });
+
+  app.put<{ Params: { space: string; account: string } }>("/api/spaces/:space/people/:account", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const body = spaceRoleInput.safeParse(request.body);
+    if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
+    return answer(reply, await setSpaceRole(services, request.params.space, request.person, request.params.account, body.data.role));
+  });
+
+  // Removing a member, or, naming yourself, leaving.
+  app.delete<{ Params: { space: string; account: string } }>("/api/spaces/:space/people/:account", async (request, reply) =>
+    answer(reply, await removeFromSpace(services, request.params.space, request.person, request.params.account)),
+  );
 
   /**
    * Lets a reader in and returns their role, or answers why not and returns
@@ -752,7 +825,7 @@ export function networkOf(address: string): string {
 /** Sends a write's answer with the matching HTTP status. */
 
 /** @param onSaved Told when the write was saved, not when it was already done or refused (server events, M2-12). */
-function answer(reply: FastifyReply, result: WriteResult, onSaved?: () => void): FastifyReply {
+function answer(reply: FastifyReply, result: WriteResult | SpaceWriteResult, onSaved?: () => void): FastifyReply {
   if (result.status === "not_found") return reply.code(404).send({ reason: "not_found" });
   if (result.status === "refused") return reply.code(STATUS_FOR[result.reason]).send(result);
   if (result.status === "done") onSaved?.();

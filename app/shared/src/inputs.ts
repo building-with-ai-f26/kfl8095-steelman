@@ -24,6 +24,12 @@ export const LIMITS = {
 /** Most characters in a comment (M3b-8). Not in the prototype's LIMITS: the prototype's comment box has no maxlength. */
 export const COMMENT_MAX = 1000;
 
+/**
+ * Most characters in a space's name and about text (G-03, M3d-17): the prototype's `maxlength` values. Apart from
+ * LIMITS, which holds a board's, so the service refuses a longer one before any space screen exists (M3d-19).
+ */
+export const SPACE_LIMITS = { name: 40, about: 120 } as const;
+
 /** A board has between two and four options. */
 export const OPTIONS_PER_BOARD = { min: 2, max: 4 } as const;
 
@@ -42,6 +48,9 @@ export const questionInput = required(LIMITS.question);
 export const optionNameInput = required(LIMITS.optionName);
 export const wordingInput = required(LIMITS.wording);
 export const contextInput = optional(LIMITS.context);
+/** A space's name, which it needs, and its about text, which may be left empty (G-03), tidied as a board's text is. */
+export const spaceNameInput = required(SPACE_LIMITS.name);
+export const spaceAboutInput = optional(SPACE_LIMITS.about);
 
 /** A comment's text: its line breaks are kept and only its ends are trimmed, unlike a wording's (M3b-8). */
 export const commentBodyInput = z

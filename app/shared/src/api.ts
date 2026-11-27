@@ -3,11 +3,11 @@
 // can't disagree (plans/architecture.md §8, layer 1).
 
 import { z } from "zod";
-import { OPTIONS_PER_BOARD, commentBodyInput, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, wordingInput, USERNAME } from "./inputs.ts";
+import { OPTIONS_PER_BOARD, commentBodyInput, contextInput, itemIdInput, optionNameInput, questionInput, sourceInput, spaceAboutInput, spaceNameInput, wordingInput, USERNAME } from "./inputs.ts";
 import type { Closing } from "./closing.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
-import type { Role } from "./policy.ts";
+import type { Role, SpaceRole } from "./policy.ts";
 
 /** A vote: +1, -1, or null to withdraw it. */
 export const voteInput = z.strictObject({ value: z.union([z.literal(1), z.literal(-1), z.null()]) });
@@ -106,6 +106,70 @@ export interface Person {
   name: string | null;
   role: Role;
 }
+
+/** A space's canvases (G-03), the prototype's CANVAS_IDS. A new space starts on stone. */
+export const SPACE_CANVASES = ["stone", "cool", "sand", "slate", "sage", "lilac"] as const;
+export type SpaceCanvas = (typeof SPACE_CANVASES)[number];
+
+/** Who can find a space (G-03): only its members, for now. M3d-20 adds "public", after the security re-review. */
+export const SPACE_VISIBILITIES = ["private"] as const;
+
+/** The roles an Admin or the Owner may give someone in a space (G-04): any but Owner. */
+export const SPACE_MEMBER_ROLES = ["admin", "member"] as const satisfies readonly SpaceRole[];
+
+/**
+ * A new space (G-03, M3d-17), with the ID the browser made for it, so sending it twice makes one space. Its about text
+ * and canvas may be left out (empty, and stone), and it can only start private.
+ */
+export const newSpaceInput = z.strictObject({
+  id: itemIdInput,
+  name: spaceNameInput,
+  about: spaceAboutInput.optional(),
+  canvas: z.enum(SPACE_CANVASES).optional(),
+  visibility: z.enum(SPACE_VISIBILITIES).optional(),
+});
+
+/** A space's settings (G-03): all three are always sent, as Share sends both its settings. */
+export const spaceSettingsInput = z.strictObject({ name: spaceNameInput, about: spaceAboutInput, canvas: z.enum(SPACE_CANVASES) });
+
+/** A space's visibility, which only its Owner sets (G-03). */
+export const spaceVisibilityInput = z.strictObject({ visibility: z.enum(SPACE_VISIBILITIES) });
+
+/** Adding someone to a space by their username (G-04), tidied as a board invite's is. */
+export const spaceInviteInput = z.strictObject({ username: inviteInput.shape.username, role: z.enum(SPACE_MEMBER_ROLES) });
+
+/** Switching someone's role in a space between Admin and Member (G-04). */
+export const spaceRoleInput = z.strictObject({ role: z.enum(SPACE_MEMBER_ROLES) });
+
+/** A space as its members see it (G-03): its settings, the reader's role, and how many members it has. */
+export interface SpaceSummary {
+  id: string;
+  name: string;
+  about: string;
+  canvas: SpaceCanvas;
+  visibility: (typeof SPACE_VISIBILITIES)[number];
+  role: SpaceRole;
+  members: number;
+}
+
+/** Your spaces: the ones you belong to, by name. */
+export interface SpaceList {
+  spaces: SpaceSummary[];
+}
+
+/** Someone in a space, as its members see them (G-04): by username, never by email. */
+export interface SpaceMember {
+  id: string;
+  /** Null until they've chosen a username. */
+  name: string | null;
+  role: SpaceRole;
+}
+
+/**
+ * What a write to a space answers. A space has no change number for readers to follow (it isn't synced live, as a
+ * board is), so "done" carries none.
+ */
+export type SpaceWriteAnswer = { status: "done" } | { status: "already_done" } | { status: "refused"; reason: RefusalReason; retryAfter?: number };
 
 /** Delete account (M-07): the username they typed to confirm. */
 export const deleteAccountInput = z.strictObject({ username: z.string().max(100) });
@@ -502,7 +566,9 @@ export type RefusalReason =
   /** An Editor or the Owner doesn't hide, or restore, a comment of their own (M3b-14). */
   | "own_comment"
   /** A comment its author deleted can't be hidden or restored: its text is erased already (M3b-14). */
-  | "comment_deleted";
+  | "comment_deleted"
+  /** No one demotes or removes a space's Owner, and the Owner can't leave (M3d-17). The screen says "The owner of a space keeps that role." */
+  | "owner_keeps_role";
 
 export type WriteAnswer =
   | { status: "done"; seq: number }
