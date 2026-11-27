@@ -111,12 +111,12 @@
 
       <section class="spec" aria-labelledby="canvas-title">
         <div class="spec-head"><h2 id="canvas-title">Canvas</h2><span>Map contours, lit from above</span></div>
-        <p class="note">The contour tile is 480 px square and repeats with no seam. As on a topographic map, every fifth level is an index contour, drawn heavier. Fine lines halfway between levels are drawn at half the opacity. The light, <code>--sm-canvas-light</code>, sits on top of every canvas: it is lighter at the top centre, under the question, and leaves the edges at the plain tint. Each tile in the first row shows one part of the canvas at full size. The second row shows the canvas of each of the six spaces.</p>
+        <p class="note">The contour tile is 480 px square and repeats with no seam. As on a topographic map, every fifth level is an index contour, drawn heavier. Fine lines halfway between levels are drawn at half the opacity. The light, <code>--sm-canvas-light</code>, sits on top of every canvas: it is lighter at the top centre, under the question, and a little darker toward the edges. Each tile in the first row shows one part of the canvas at full size. The second row shows the canvas of each of the six spaces.</p>
         <div class="canvas-tiles">
           <div class="item"><span class="label">Index · 1.5 px, 40% white</span><div class="canvas-tile" data-tier="0"></div></div>
           <div class="item"><span class="label">Regular · 1 px, 20% white</span><div class="canvas-tile" data-tier="1"></div></div>
           <div class="item"><span class="label">Fine · 1 px, 10% white</span><div class="canvas-tile" data-tier="2"></div></div>
-          <div class="item"><span class="label">Light · 30% white at the top</span><div class="canvas-tile" data-show="light"></div></div>
+          <div class="item"><span class="label">Light · 30% white at the top, 4% black at the edge</span><div class="canvas-tile" data-show="light"></div></div>
           <div class="item"><span class="label">Together · with the grain</span><div class="canvas-tile" data-show="all"></div></div>
         </div>
         <div class="canvas-spaces">
