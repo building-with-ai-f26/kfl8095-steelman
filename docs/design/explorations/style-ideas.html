@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Style explorations</title>
+<!--
+  A mock-up of nine style ideas for Steelman, for review only (Nov 26, 2026).
+  It reads the real tokens from ../tokens.css, but the board and the list are simplified copies,
+  not the prototype or the app. Serve docs/ over HTTP and open /design/explorations/style-ideas.html.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Source Serif 4 is loaded with its optical-size axis (opsz) so idea 9 can switch to the display cut. -->
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #f4f4f3; color: var(--sm-ink); font: 400 14px/1.45 var(--sm-sans); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  /* Idea 9: the "before" is the text cut (opsz 20) that the static Google font serves; the "after" lets the size pick the cut. */
+  .serif { font-family: var(--sm-serif); font-variation-settings: "opsz" 20; }
+  body.i9 .serif { font-variation-settings: normal; font-optical-sizing: auto; }
+  body.i9 .display { letter-spacing: -.014em; }
+
+  /* Top bar */
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 20px; background: var(--sm-card); border-bottom: 1px solid var(--sm-line); }
+  .brand { display: flex; align-items: center; gap: 8px; font: 600 23px/1 var(--sm-serif); }
+  .brand img { width: 26px; height: 26px; }
+  .crumb { font: 500 11px/1 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--sm-muted); padding: 5px 8px; border: 1px solid var(--sm-line); border-radius: 6px; }
+  .grow { flex: 1; }
+  .seg { display: inline-flex; padding: 2px; border: 1px solid var(--sm-line); border-radius: 8px; background: var(--sm-card); }
+  .seg button { border: 0; background: transparent; padding: 0 12px; height: 28px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease), color var(--sm-fast) var(--sm-ease); }
+  .seg button:hover { background: var(--sm-soft); }
+  .seg button[aria-pressed="true"] { background: var(--sm-selected); color: var(--sm-on-selected); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--sm-line); background: var(--sm-card); font-size: 13px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease), border-color var(--sm-fast) var(--sm-ease); user-select: none; -webkit-user-select: none; }
+  .btn:hover { background: var(--sm-soft); }
+  .btn.primary { background: var(--sm-ink); border-color: var(--sm-ink); color: #fff; }
+  .btn.primary:hover { background: #3a3a3a; }
+  .btn.small { height: 28px; font-size: 12px; padding: 0 10px; }
+  #compare[aria-pressed="true"] { background: var(--sm-ink); color: #fff; border-color: var(--sm-ink); }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); }
+  .controls { position: sticky; top: 56px; align-self: start; height: calc(100vh - 56px); overflow: auto; padding: 20px 18px 32px; background: var(--sm-card); border-right: 1px solid var(--sm-line); }
+  .controls h1 { font: 600 20px/1.25 var(--sm-serif); margin: 0 0 6px; }
+  .lede { margin: 0 0 14px; color: var(--sm-muted); font-size: 13px; }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gl { font: 500 11px/1 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--sm-muted); margin: 20px 0 8px; }
+  .idea { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; padding: 10px; margin: 0 -10px; border-radius: 10px; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease); }
+  .idea:hover { background: #f4f3f1; }
+  .idea input { margin: 2px 0 0; width: 16px; height: 16px; accent-color: var(--sm-ink); cursor: pointer; }
+  .idea .t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-weight: 600; font-size: 13px; }
+  .idea .n { color: var(--sm-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .idea .d { grid-column: 2; font-size: 12px; line-height: 1.5; color: var(--sm-muted); }
+  .idea .act { grid-column: 2; margin-top: 6px; }
+  .flag { font: 500 11px/1 var(--sm-sans); color: #6b5a3a; background: #f3ede1; border-radius: 999px; padding: 3px 7px; white-space: nowrap; }
+  .spaces { display: flex; flex-wrap: wrap; gap: 6px; }
+  .spaces button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--sm-line); border-radius: 999px; background: var(--sm-card); font-size: 12px; cursor: pointer; transition: border-color var(--sm-fast) var(--sm-ease), box-shadow var(--sm-fast) var(--sm-ease); }
+  .spaces button:hover { border-color: #b5b5b5; }
+  .spaces button[aria-pressed="true"] { border-color: var(--sm-ink); box-shadow: inset 0 0 0 1px var(--sm-ink); }
+  .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #0000001f; flex: none; }
+  .note { margin: 8px 0 0; font: 300 12px/1.5 var(--sm-sans); color: var(--sm-quiet); }
+
+  /* ---------- Board ---------- */
+  .board { position: relative; isolation: isolate; overflow: hidden; min-height: calc(100vh - 56px); background: var(--tint); transition: background-color var(--sm-slow) var(--sm-ease); }
+  body.i2 .board { background: linear-gradient(165deg, var(--tint) 8%, var(--tint2) 92%); }
+  .drift { position: absolute; left: 0; right: 0; top: -200px; bottom: -200px; z-index: -1; pointer-events: none; will-change: transform; }
+  .tile { background-image: var(--tex); background-size: var(--tex-size); }
+  .board.gen .tile { display: none; }
+  .terrain { position: absolute; left: 0; top: -200px; z-index: -1; pointer-events: none; will-change: transform; }
+  .board:not(.gen) .terrain { display: none; }
+  .grainl { background-image: var(--sm-grain); background-size: 180px 180px; }
+  /* Idea 1: light from the question, falling off toward the edges. */
+  .light { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity var(--sm-slow) var(--sm-ease);
+    background: radial-gradient(ellipse 55% 40% at 50% 4%, #ffffff70, #fff0 70%), radial-gradient(ellipse 110% 85% at 50% 35%, #0000 55%, #2a1c0c17 100%); }
+  body.i1 .light { opacity: 1; }
+  .wires { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
+  .wires path { fill: none; stroke: var(--sm-wire); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  .ripples { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
+  .inner { max-width: 1080px; margin: 0 auto; padding: 36px 60px 110px; }
+
+  .dark { position: relative; z-index: 2; background: var(--sm-ink); color: #fff; border: 1px solid var(--sm-ink); border-top: 3px solid var(--sm-ink); border-radius: 6px; box-shadow: var(--sm-shadow-sm); transition: border-color var(--sm-slow) var(--sm-ease); }
+  .dark::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity var(--sm-slow) var(--sm-ease);
+    background: var(--sm-grain) 0 0 / 120px 120px, linear-gradient(180deg, #ffffff17, #fff0 65%); }
+  /* Idea 7: grain, light from above, and the space's tint on the top edge. */
+  body.i7 .dark { border-top-color: var(--tint); box-shadow: var(--sm-shadow-sm), inset 0 1px 0 #ffffff14; }
+  body.i7 .dark::before { opacity: 1; }
+
+  .qhead { width: 86%; margin: 0 auto 56px; padding: 22px 26px 20px; }
+  .qtitle { margin: 0 0 14px; font-size: 32px; font-weight: 600; line-height: 1.15; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: #ffffffbf; }
+  .meta .pill { border: 1px solid #ffffff40; border-radius: 999px; padding: 3px 9px; }
+  .av { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #fff; color: var(--sm-ink); font: 600 10px var(--sm-sans); }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: start; }
+  .ohead { padding: 12px 16px; }
+  .ohead h3 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2; }
+  .panelcol { display: grid; gap: 16px; margin: 0 6px; padding: 18px 14px 20px 32px; background-color: var(--sm-panel); background-image: var(--hex); background-size: var(--hex-size); border-radius: 0 0 10px 10px; box-shadow: var(--sm-shadow-panel); transition: background-color var(--sm-slow) var(--sm-ease); }
+  /* Idea 3: the panels turn slightly see-through so the hills show. */
+  body.i3 .board.gen .panelcol { background-color: color-mix(in srgb, var(--sm-panel) 66%, transparent); }
+
+  .card { position: relative; z-index: 2; padding: 14px 16px 0; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 10px; box-shadow: var(--sm-shadow); transition: box-shadow var(--sm-fast) var(--sm-ease), translate var(--sm-fast) var(--sm-ease); }
+  .card:hover { box-shadow: var(--sm-shadow-hover); translate: 0 -1px; }
+  .claim { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+  .by { margin-bottom: 10px; font: 300 12px var(--sm-sans); color: var(--sm-quiet); }
+  .cfoot { display: flex; align-items: center; gap: 8px; margin: 0 -16px; padding: 8px 12px 8px 16px; border-top: 1px solid #ececec; font-size: 12px; color: var(--sm-muted); font-variant-numeric: tabular-nums; }
+  .meter { display: inline-flex; gap: 2px; }
+  .meter i { width: 4px; height: 10px; border-radius: 1px; background: #dadada; }
+  .ico { display: inline-flex; align-items: center; gap: 3px; }
+  .ico svg, .chev { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .vote { position: absolute; left: -25px; top: 12px; display: grid; justify-items: center; width: 30px; padding: 2px 0; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 6px; box-shadow: var(--sm-shadow-sm); font: 600 11px/1.4 var(--sm-sans); font-variant-numeric: tabular-nums; }
+  .vote button { display: grid; place-items: center; width: 26px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--sm-muted); cursor: pointer; transition: background var(--sm-fast) var(--sm-ease), color var(--sm-fast) var(--sm-ease); }
+  .vote button:hover { background: var(--sm-soft); color: var(--sm-ink); }
+  .vote svg { width: 12px; height: 12px; }
+  .vote svg path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+  .vote button[aria-pressed="true"] { color: var(--sm-ink); }
+  .vote button[aria-pressed="true"] svg path { fill: currentColor; }
+  .vote .score.mine { color: var(--sm-ink); font-weight: 700; }
+
+  /* ---------- List ---------- */
+  .list { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: calc(100vh - 56px); }
+  .side { padding: 14px 10px; background: #242424; color: #fff; }
+  .side .gl { color: #ffffff99; margin: 18px 8px 8px; }
+  .grp { padding: 4px; background: #ffffff0a; border: 1px solid #ffffff14; border-radius: 10px; }
+  .srow { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; border: 0; border-radius: 6px; background: transparent; color: #fff; text-align: left; cursor: pointer; transition: background var(--sm-fast) var(--sm-ease), color var(--sm-fast) var(--sm-ease); }
+  .srow:hover { background: #ffffff14; }
+  .srow[aria-current="true"] { background: #fff; color: var(--sm-ink); }
+  /* Idea 7: the selected space takes its canvas tint. */
+  body.i7 .srow[aria-current="true"][data-tint] { background: var(--row-tint); }
+  .srow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; }
+  .srow .tag { padding: 2px 6px; border: 1px solid currentColor; border-radius: 6px; font: 500 11px/1.3 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; opacity: .9; }
+  .srow .ct { margin-left: auto; font-size: 12px; opacity: .55; }
+
+  .feed { position: relative; isolation: isolate; padding: 20px 28px 72px; background: var(--sm-list-bg); }
+  .feedbg { position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity var(--sm-slow) var(--sm-ease); }
+  body.i8 .feedbg { opacity: 1; }
+  .sort { display: inline-flex; gap: 2px; margin-bottom: 14px; padding: 3px; background: var(--sm-card); border-radius: 8px; box-shadow: var(--sm-shadow-sm); }
+  .sort span { padding: 4px 9px; border-radius: 6px; font-size: 12px; }
+  .sort span.on { background: var(--sm-ink); color: #fff; }
+  .items { display: grid; gap: 12px; max-width: 780px; }
+  .item { display: grid; grid-template-columns: 40px minmax(0, 1fr) 156px; gap: 12px; padding: 16px 16px 16px 10px; background: var(--sm-card); border: 1px solid #e3e3e3; border-radius: 10px; box-shadow: var(--sm-shadow-sm); cursor: pointer; transition: translate var(--sm-medium) var(--sm-ease), box-shadow var(--sm-medium) var(--sm-ease); }
+  .item:hover { translate: 0 -1px; box-shadow: var(--sm-shadow-hover); }
+  body.i8 .item:hover { translate: 0 -3px; box-shadow: var(--sm-lift); }
+  .score-col { display: grid; justify-items: center; align-content: start; gap: 4px; padding-top: 2px; font: 600 13px var(--sm-sans); font-variant-numeric: tabular-nums; }
+  .score-col svg { width: 15px; height: 15px; fill: none; stroke: var(--sm-muted); stroke-width: 1.75; stroke-linejoin: round; stroke-linecap: round; }
+  .line1 { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sm-muted); }
+  .stag { padding: 2px 6px; border: 1.5px solid var(--sm-ink); border-radius: 6px; color: var(--sm-ink); font: 500 11px/1.2 var(--sm-sans); letter-spacing: .08em; text-transform: uppercase; }
+  .ititle { margin: 6px 0 10px; font-size: 20px; font-weight: 600; line-height: 1.25; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; height: 24px; padding: 0 4px 0 9px; border-radius: 6px; background: var(--sm-ink); color: #fff; font-size: 12px; font-weight: 600; }
+  .chip b { padding: 1px 6px; border-radius: 4px; background: #ffffff26; font: 600 11px var(--sm-sans); }
+  .line3 { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--sm-muted); }
+  .faces { display: inline-flex; }
+  .faces span { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: -4px; border: 2px solid #fff; border-radius: 50%; background: #ececec; color: var(--sm-ink); font: 600 10px var(--sm-sans); }
+  .faces span:first-child { margin-left: 0; }
+
+  .mini { position: relative; align-self: center; height: 100px; overflow: hidden; border-radius: 6px; background: var(--mt); border: 1px solid #0000000f; transition: translate var(--sm-medium) var(--sm-ease), scale var(--sm-medium) var(--sm-ease), box-shadow var(--sm-medium) var(--sm-ease); }
+  .item:hover .mini { translate: 0 -1px; }
+  body.i8 .item:hover .mini { translate: 0 -2px; scale: 1.035; box-shadow: var(--sm-shadow); }
+  .mtex { position: absolute; inset: 0; background-image: var(--mtex); background-size: var(--mtex-size); }
+  .mini canvas { position: absolute; left: 0; top: 0; opacity: .8; transition: opacity var(--sm-medium) var(--sm-ease); }
+  body.i8 .item:hover .mini canvas { opacity: 1; }
+  .mq { position: absolute; left: 20%; right: 20%; top: 10px; height: 9px; border-radius: 2px; background: var(--sm-ink); }
+  body.i7 .mq { box-shadow: inset 0 2px 0 var(--mtint); }
+  .mcols { position: absolute; left: 10px; right: 10px; top: 27px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mcol { display: grid; gap: 3px; padding: 0 3px 4px; border-radius: 2px; background: #f7f7f7d9; }
+  .mcol b { height: 6px; margin: 0 -3px 1px; border-radius: 2px 2px 0 0; background: var(--sm-ink); }
+  .mcol i { height: 9px; border: 1px solid #dcdcdc; border-radius: 2px; background: #fff; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--sm-line); }
+  }
+  @media (max-width: 720px) {
+    .topbar { padding: 0 16px; gap: 10px; }
+    .crumb { display: none; }
+    .inner { padding: 24px 22px 80px 30px; }
+    .qhead { width: 100%; }
+    .qtitle { font-size: 24px; }
+    .cols { grid-template-columns: 1fr; gap: 28px; }
+    .list { grid-template-columns: 1fr; }
+    .side { display: none; }
+    .feed { padding: 16px 16px 56px; }
+    .item { grid-template-columns: 34px minmax(0, 1fr); }
+    .mini { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="../logo.svg" alt="">steelman.</div>
+  <span class="crumb">Style explorations</span>
+  <span class="grow"></span>
+  <div class="seg" role="group" aria-label="View">
+    <button type="button" data-view="board" aria-pressed="true">Board</button>
+    <button type="button" data-view="list" aria-pressed="false">List</button>
+  </div>
+  <button type="button" class="btn" id="compare" aria-pressed="false">Hold to compare</button>
+</header>
+
+<div class="layout">
+  <aside class="controls" aria-label="Ideas">
+    <h1>Nine style ideas</h1>
+    <p class="lede">Turn each idea on or off to compare it with the current design. Hold “Hold to compare” to see the current design for a moment.</p>
+    <div class="btnrow">
+      <button type="button" class="btn primary small" id="allOn">All on</button>
+      <button type="button" class="btn small" id="allOff">Current design</button>
+    </div>
+
+    <div class="gl">Space</div>
+    <div class="spaces" id="spacePicker"></div>
+    <p class="note">The sample board keeps the same arguments in every space, so you can compare the canvases.</p>
+
+    <div id="ideaList"></div>
+    <p class="note" id="reduceNote" hidden>Your system asks for reduced motion, so ideas 4, 5, and 6 stay still on this page.</p>
+    <p class="note">This page is a mock-up. It uses the real tokens in docs/design/tokens.css, but the board and the list are simplified copies of the prototype.</p>
+  </aside>
+
+  <main>
+    <section class="board" id="board" aria-label="Sample board">
+      <div class="drift tile" id="tile"></div>
+      <canvas class="terrain" id="terrain" aria-hidden="true"></canvas>
+      <div class="drift grainl" id="grain"></div>
+      <div class="light"></div>
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+      <canvas class="ripples" id="ripples" aria-hidden="true"></canvas>
+      <div class="inner">
+        <header class="qhead dark" id="qhead">
+          <h2 class="qtitle serif display">Is open-weight AI a smart bet for China?</h2>
+          <div class="meta"><span class="av">KL</span>kieran_lamee<span>·</span>4d ago<span class="pill">Everyone in <span id="spaceName">POD 6</span></span><span class="pill">Open team</span></div>
+        </header>
+        <div class="cols" id="cols"></div>
+      </div>
+    </section>
+
+    <section class="list" id="list" aria-label="Sample list" hidden>
+      <nav class="side" id="side"></nav>
+      <div class="feed">
+        <div class="feedbg" id="feedbg"></div>
+        <div class="sort"><span class="on">Hot</span><span>New</span><span>Top</span><span>Needs help</span></div>
+        <div class="items" id="items"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  const OVER = 200; // how far the map layers reach above and below the board, so they can drift
+
+  // ---------- Data ----------
+  const SPACES = {
+    pod6:      { name: 'POD 6',            tint: '#dcd8cf', tint2: '#cfc6b5', seed: 11, tex: 'contours', group: 'Your spaces' },
+    northwind: { name: 'Northwind Studio', tint: '#d3d9df', tint2: '#c6cfda', seed: 23, tex: 'dots',     group: 'Your spaces' },
+    personal:  { name: 'Personal',         tint: '#e6dbc2', tint2: '#dbccad', seed: 37, tex: 'grain',    group: 'Your spaces' },
+    brooklyn:  { name: 'Brooklyn Streets', tint: '#ccd5e4', tint2: '#bec8df', seed: 41, tex: 'contours', group: 'Communities' },
+    campus:    { name: 'Campus Life',      tint: '#d0dbc8', tint2: '#c2d1c2', seed: 53, tex: 'linen',    group: 'Communities' },
+    future:    { name: 'Future of Work',   tint: '#d9d0e3', tint2: '#cbc1dc', seed: 67, tex: 'dots',     group: 'Communities' },
+  };
+  const TEX = {
+    contours: ['var(--sm-contours)', '480px 480px', '150px 150px'],
+    dots:     ['var(--sm-tex-dots)', '18px 18px', '9px 9px'],
+    linen:    ['var(--sm-tex-linen)', '6px 6px', '6px 6px'],
+    grain:    ['none', 'auto', 'auto'],
+  };
+  const IDEAS = [
+    { n: 1, g: 'Canvas and texture', t: 'Map contours', d: 'Every fifth line is heavier, a fainter set of lines sits between them, and light falls off toward the edges of the board.' },
+    { n: 2, g: 'Canvas and texture', t: 'A landform for each space', flag: true, d: 'Each space gets its own contour map and a two-tone tint, in place of the shared tile, the dots, and the linen. Switch spaces above to compare.' },
+    { n: 3, g: 'Canvas and texture', t: 'Votes shape the terrain', flag: true, d: 'The ground rises under the most important arguments, and the column panels turn slightly see-through so the hills show. Vote on a card to watch the hills move.', act: ['shuffle', 'Shuffle the votes'] },
+    { n: 4, g: 'Motion', t: 'Scroll drift', flag: true, d: 'The map moves a little slower than the board when you scroll, so the cards seem to float above it.' },
+    { n: 5, g: 'Motion', t: 'The board draws itself', d: 'When a board opens, the wires draw in and the cards arrive one after another.', act: ['replay', 'Replay opening'] },
+    { n: 6, g: 'Motion', t: 'Vote ripple', flag: true, d: 'A faint ring spreads across the map from a card when someone votes on it.' },
+    { n: 7, g: 'Color and surfaces', t: 'Space color in the headers', d: 'The dark headers get grain, light from above, and a top edge in the space’s color. The selected space in the sidebar takes its tint too.' },
+    { n: 8, g: 'Color and surfaces', t: 'List atmosphere', flag: true, d: 'Home sits on a faint neutral map, a space’s page sits on its own canvas, and items lift further on hover. Open the List view to see it.' },
+    { n: 9, g: 'Type', t: 'Display serif', d: 'Large headings use the display cut of Source Serif 4, which is finer and slightly tighter.' },
+  ];
+  const OPTIONS = ['Why it makes sense', 'Why it might not'];
+  const CARDS = [
+    { col: 0, row: 0, score: 44, text: 'If the best open-weight models were American, China’s AI would be built on them. Releasing its own keeps China’s stack independent of US companies.', by: 'maya.chen', pct: 70, n: 20, c: 2, s: 2 },
+    { col: 0, row: 1, score: 39, text: 'A closed Chinese model could reach Western users only as a service run from China, which governments and companies avoid. Open weights run on their own servers.', by: 'jordan_w', pct: 80, n: 20, c: 0, s: 3 },
+    { col: 0, row: 2, score: 30, text: 'China controls AI where it’s deployed: every public AI service must be filed with regulators, so open weights cost it little control at home.', by: 'you', pct: 88, n: 17, c: 2, s: 2 },
+    { col: 1, row: 0, score: 41, text: 'Open weights earn nothing directly, and anyone can host them, so the money from serving Chinese models can go to other companies’ clouds.', by: 'priya_s', pct: 80, n: 15, c: 0, s: 2 },
+    { col: 1, row: 1, score: 33, text: 'Open weights don’t fix the trust problem: US agencies treat Chinese models as risky wherever they run.', by: 'jordan_w', pct: 87, n: 15, c: 1, s: 2 },
+    { col: 1, row: 2, score: 28, text: 'Anyone can modify open weights and strip out what China’s rules require, so its control over its own models is fragile, however strict the regulations.', by: 'samr_92', pct: 42, n: 11, c: 2, s: 1 },
+  ];
+  const BOARDS = [
+    { space: 'pod6', score: 559, au: 'kieran_lamee', when: '4d ago', title: 'Is open-weight AI a smart bet for China?', opts: [['Why it makes sense', 6], ['Why it might not', 5]], com: 8, here: 2, faces: ['MC', 'JW'] },
+    { space: 'brooklyn', score: 371, au: 'dev_oka17', when: '11d ago', title: 'Should 7th Avenue get a protected bike lane?', opts: [['Build the protected lane', 4], ['Keep parking, paint a lane', 2]], com: 143, here: 14, faces: ['DC', 'AL', 'RT'] },
+    { space: 'campus', score: 571, au: 'samr_92', when: '2d ago', title: 'Should intro courses grade on a curve?', opts: [['Grade on a curve', 2], ['Grade against fixed standards', 3]], com: 388, here: 31, faces: ['SA', 'BV', 'KN'] },
+    { space: 'pod6', score: 108, au: 'maya.chen', when: '1d ago', title: 'Should capstone teams be allowed to ship AI-written code?', opts: [['Allow it, with disclosure', 2], ['Require hand-written code', 1]], com: 4, here: 1, faces: ['SA'] },
+    { space: 'future', score: 212, au: 'jordan_w', when: '5d ago', title: 'Should small teams adopt a four-day work week?', opts: [['Adopt it', 3], ['Keep five days', 1]], com: 57, here: 4, faces: ['JW', 'PS'] },
+    { space: 'northwind', score: 64, au: 'priya_s', when: '3d ago', title: 'Should we replace daily standups with written updates?', opts: [['Switch to written updates', 3], ['Keep the daily standup', 2]], com: 12, here: 0, faces: [] },
+    { space: 'personal', score: 3, au: 'you', when: '6h ago', title: 'Should I take the job offer in Denver?', opts: [['Take the offer', 2], ['Stay put', 2]], com: 0, here: 0, faces: [] },
+  ];
+
+  const ICON = {
+    up: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.5 10 8.5H2z"/></svg>',
+    down: '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 9.5 2 3.5h8z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    clip: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+    chev: '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+    pulse: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>',
+  };
+
+  // ---------- State ----------
+  const on = new Set(IDEAS.map(i => i.n));
+  let space = 'pod6', view = 'board', place = 'home';
+  let weights = null, tween = 0;
+
+  const board = $('#board'), terrain = $('#terrain'), rippleCv = $('#ripples'), wires = $('#wires'), qhead = $('#qhead');
+  let cardEls = [], oheads = [], panels = [];
+
+  // ---------- Hex texture for the column panels (a quiet stand-in for the vote texture) ----------
+  (() => {
+    const r = 11, w = Math.sqrt(3) * r, h = 3 * r, s = r * .9;
+    const hex = (cx, cy) => { let d = ''; for (let k = 0; k < 6; k++) { const a = Math.PI / 180 * (60 * k - 90); d += (k ? 'L' : 'M') + (cx + s * Math.cos(a)).toFixed(2) + ' ' + (cy + s * Math.sin(a)).toFixed(2); } return d + 'Z'; };
+    const d = [[0, 0], [w, 0], [w / 2, h / 2], [0, h], [w, h]].map(p => hex(...p)).join('');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w.toFixed(3)}" height="${h}"><path d="${d}" fill="none" stroke="#242424" stroke-opacity=".07" stroke-width=".8"/></svg>`;
+    document.body.style.setProperty('--hex', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    document.body.style.setProperty('--hex-size', `${w.toFixed(3)}px ${h}px`);
+  })();
+
+  // ---------- Noise and contours ----------
+  function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function makeNoise(seed) {
+    const rand = mulberry32(seed), perm = [...Array(256).keys()];
+    for (let i = 255; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]]; }
+    const p = new Uint8Array(512); for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+    const G = [[1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+    const fade = t => t * t * t * (t * (t * 6 - 15) + 10), lerp = (a, b, t) => a + (b - a) * t;
+    return (x, y) => {
+      const X = Math.floor(x), Y = Math.floor(y), xf = x - X, yf = y - Y, xi = X & 255, yi = Y & 255;
+      const g = (i, j, dx, dy) => { const v = G[p[p[i] + j] & 7]; return v[0] * dx + v[1] * dy; };
+      const u = fade(xf), v = fade(yf);
+      return lerp(lerp(g(xi, yi, xf, yf), g(xi + 1, yi, xf - 1, yf), u), lerp(g(xi, yi + 1, xf, yf - 1), g(xi + 1, yi + 1, xf - 1, yf - 1), u), v);
+    };
+  }
+  const fieldCache = new Map();
+  function baseField(seed, cols, rows, step, k, offY) {
+    const key = [seed, cols, rows, step, k, offY].join();
+    if (fieldCache.has(key)) return fieldCache.get(key);
+    const nz = makeNoise(seed), W1 = cols + 1, f = new Float32Array(W1 * (rows + 1)), fr = 1 / 340;
+    for (let j = 0; j <= rows; j++) {
+      const wy = (j * step * k + offY) * fr;
+      for (let i = 0; i <= cols; i++) {
+        const wx = i * step * k * fr;
+        f[j * W1 + i] = nz(wx, wy) + .5 * nz(wx * 2 + 5.2, wy * 2 + 1.3) + .22 * nz(wx * 4 + 9.7, wy * 4 + 3.1);
+      }
+    }
+    fieldCache.set(key, f);
+    if (fieldCache.size > 40) fieldCache.delete(fieldCache.keys().next().value);
+    return f;
+  }
+  const SPACING = .052;
+  function paintContours(cv, cssW, cssH, o) {
+    const dpr = Math.min(devicePixelRatio || 1, 2), step = o.step || 4, k = o.k || 1, offY = o.offY || 0;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cssW, cssH);
+    const cols = Math.ceil(cssW / step), rows = Math.ceil(cssH / step), W1 = cols + 1;
+    let f = baseField(o.seed, cols, rows, step, k, offY);
+    if (o.bumps && o.bumps.length) {
+      f = f.slice();
+      for (const b of o.bumps) {
+        if (!b.a) continue;
+        const s2 = 2 * b.s * b.s, R = b.s * 3;
+        const i0 = Math.max(0, Math.floor((b.x - R) / step)), i1 = Math.min(cols, Math.ceil((b.x + R) / step));
+        const j0 = Math.max(0, Math.floor((b.y - R) / step)), j1 = Math.min(rows, Math.ceil((b.y + R) / step));
+        for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+          const dx = i * step - b.x, dy = j * step - b.y;
+          f[j * W1 + i] += b.a * Math.exp(-(dx * dx + dy * dy) / s2);
+        }
+      }
+    }
+    const fine = !!o.fine, index = !!o.index, sub = fine ? SPACING / 2 : SPACING;
+    const reg = new Path2D(), idx = new Path2D(), fin = new Path2D();
+    for (let j = 0; j < rows; j++) {
+      const y = j * step;
+      for (let i = 0; i < cols; i++) {
+        const a = f[j * W1 + i], b = f[j * W1 + i + 1], c = f[(j + 1) * W1 + i + 1], d = f[(j + 1) * W1 + i];
+        const lo = Math.min(a, b, c, d), hi = Math.max(a, b, c, d);
+        const k0 = Math.ceil(lo / sub), k1 = Math.floor(hi / sub);
+        for (let lv = k0; lv <= k1; lv++) {
+          let path;
+          if (fine && lv % 2 !== 0) path = fin;
+          else { const m = fine ? lv / 2 : lv; path = index && ((m % 5) + 5) % 5 === 0 ? idx : reg; }
+          seg(path, a, b, c, d, lv * sub + 1e-7, i * step, y, step);
+        }
+      }
+    }
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = o.color || '#fff';
+    const al = o.alpha ?? .2, lw = o.lw ?? 1;
+    if (fine) { ctx.globalAlpha = al * .5; ctx.lineWidth = lw * .7; ctx.stroke(fin); }
+    ctx.globalAlpha = al; ctx.lineWidth = lw; ctx.stroke(reg);
+    if (index) { ctx.globalAlpha = Math.min(1, al * 2.2); ctx.lineWidth = lw * 1.5; ctx.stroke(idx); }
+    ctx.globalAlpha = 1;
+  }
+  function seg(path, a, b, c, d, l, x, y, s) {
+    const P = [];
+    if ((a > l) !== (b > l)) P.push(x + s * (l - a) / (b - a), y);
+    if ((b > l) !== (c > l)) P.push(x + s, y + s * (l - b) / (c - b));
+    if ((d > l) !== (c > l)) P.push(x + s * (l - d) / (c - d), y + s);
+    if ((a > l) !== (d > l)) P.push(x, y + s * (l - a) / (d - a));
+    if (P.length === 4) { path.moveTo(P[0], P[1]); path.lineTo(P[2], P[3]); }
+    else if (P.length === 8) {
+      const centre = (a + b + c + d) / 4;
+      if ((centre > l) === (a > l)) { path.moveTo(P[0], P[1]); path.lineTo(P[2], P[3]); path.moveTo(P[4], P[5]); path.lineTo(P[6], P[7]); }
+      else { path.moveTo(P[0], P[1]); path.lineTo(P[6], P[7]); path.moveTo(P[2], P[3]); path.lineTo(P[4], P[5]); }
+    }
+  }
+
+  // ---------- Board ----------
+  function meter(pct) {
+    const filled = Math.round(pct / 25), col = pct >= 62.5 ? 'var(--sm-cred-strong)' : pct >= 37.5 ? 'var(--sm-cred-mid)' : 'var(--sm-cred-weak)';
+    return '<span class="meter" aria-hidden="true">' + [0, 1, 2, 3].map(i => `<i style="${i < filled ? 'background:' + col : ''}"></i>`).join('') + '</span>';
+  }
+  function buildBoard() {
+    $('#cols').innerHTML = OPTIONS.map((name, col) => `
+      <div class="col">
+        <div class="ohead dark"><h3 class="serif display">${name}</h3></div>
+        <div class="panelcol">${CARDS.map((c, i) => c.col !== col ? '' : `
+          <article class="card" data-i="${i}">
+            <div class="vote">
+              <button type="button" class="up" aria-label="Vote that this matters more" aria-pressed="false">${ICON.up}</button>
+              <span class="score">${c.score}</span>
+              <button type="button" class="down" aria-label="Vote that this matters less" aria-pressed="false">${ICON.down}</button>
+            </div>
+            <p class="claim">${c.text}</p>
+            <div class="by">${c.by}</div>
+            <footer class="cfoot">${meter(c.pct)}<span>${c.pct}% · ${c.n}</span><span class="grow"></span>
+              <span class="ico">${ICON.comment}${c.c || ''}</span><span class="ico">${ICON.clip}${c.s}</span>${ICON.chev}</footer>
+          </article>`).join('')}
+        </div>
+      </div>`).join('');
+    cardEls = []; $$('.card').forEach(el => { cardEls[+el.dataset.i] = el; });
+    oheads = $$('.ohead'); panels = $$('.panelcol');
+    $('#cols').addEventListener('click', e => {
+      const btn = e.target.closest('.vote button'); if (!btn) return;
+      vote(+btn.closest('.card').dataset.i, btn.classList.contains('up') ? 1 : -1);
+    });
+  }
+  function vote(i, dir) {
+    const c = CARDS[i], prev = c.my || 0, next = prev === dir ? 0 : dir;
+    c.score += next - prev; c.my = next;
+    const el = cardEls[i];
+    $('.score', el).textContent = c.score; $('.score', el).classList.toggle('mine', next !== 0);
+    $('.up', el).setAttribute('aria-pressed', String(next === 1)); $('.down', el).setAttribute('aria-pressed', String(next === -1));
+    const b = board.getBoundingClientRect(), r = el.getBoundingClientRect();
+    addRipple(r.left - b.left + 4, r.top - b.top + 34);
+    retarget();
+  }
+  const targetWeights = () => {
+    const sc = CARDS.map(c => c.score), mn = Math.min(...sc), mx = Math.max(...sc);
+    return sc.map(s => .12 + .62 * Math.pow((s - mn) / Math.max(1, mx - mn), 1.3));
+  };
+  function retarget(from) {
+    const to = targetWeights();
+    if (!on.has(3)) { weights = to; return; }
+    if (reduce) { weights = to; drawTerrain(); return; }
+    const start = from || (weights || to).slice(), t0 = performance.now();
+    cancelAnimationFrame(tween);
+    const tick = now => {
+      const u = Math.min(1, (now - t0) / 640), e = 1 - Math.pow(1 - u, 3);
+      weights = start.map((v, k) => v + (to[k] - v) * e); drawTerrain();
+      if (u < 1) tween = requestAnimationFrame(tick);
+    };
+    tween = requestAnimationFrame(tick);
+  }
+  function bumps() {
+    const b = board.getBoundingClientRect(), w = weights || targetWeights();
+    return cardEls.map((el, i) => { const r = el.getBoundingClientRect(); return { x: r.left - b.left + r.width / 2, y: r.top - b.top + r.height / 2 + OVER, s: 180, a: w[i] }; });
+  }
+  const generated = () => (on.has(1) || on.has(2) || on.has(3)) && (SPACES[space].tex === 'contours' || on.has(2));
+  function drawTerrain() {
+    const gen = generated();
+    board.classList.toggle('gen', gen);
+    if (!gen || view !== 'board') return;
+    paintContours(terrain, board.clientWidth, board.clientHeight + OVER * 2, {
+      seed: on.has(2) ? SPACES[space].seed : SPACES.pod6.seed, offY: -OVER,
+      index: on.has(1), fine: on.has(1), bumps: on.has(3) ? bumps() : null, alpha: .21,
+    });
+  }
+  function applySpace() {
+    const sp = SPACES[space], [img, size] = TEX[sp.tex];
+    document.body.style.setProperty('--tint', sp.tint); document.body.style.setProperty('--tint2', sp.tint2);
+    board.style.setProperty('--tex', img); board.style.setProperty('--tex-size', size);
+    $('#spaceName').textContent = sp.name;
+    $$('#spacePicker button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.space === space)));
+  }
+  function drawWires() {
+    const b = board.getBoundingClientRect(), q = qhead.getBoundingClientRect(), hs = oheads.map(h => h.getBoundingClientRect());
+    wires.setAttribute('width', b.width); wires.setAttribute('height', b.height); wires.setAttribute('viewBox', `0 0 ${b.width} ${b.height}`);
+    const x0 = q.left - b.left + q.width / 2, y0 = q.bottom - b.top;
+    const targets = hs.length > 1 && hs[1].top > hs[0].bottom + 10 ? [hs[0]] : hs;
+    const ym = y0 + (targets[0].top - b.top - y0) / 2;
+    wires.innerHTML = targets.map(h => `<path pathLength="1" d="M${x0} ${y0}V${ym}H${h.left - b.left + h.width / 2}V${h.top - b.top}"/>`).join('');
+  }
+
+  // Idea 4: scroll drift
+  const driftEls = [$('#tile'), $('#grain'), terrain];
+  function drift() {
+    const d = view === 'board' && on.has(4) && !reduce ? Math.max(-170, Math.min(170, -board.getBoundingClientRect().top * .1)) : 0;
+    driftEls.forEach(el => { el.style.transform = d ? `translate3d(0,${d.toFixed(1)}px,0)` : ''; });
+  }
+  let driftQueued = false;
+  addEventListener('scroll', () => { if (driftQueued) return; driftQueued = true; requestAnimationFrame(() => { driftQueued = false; drift(); }); }, { passive: true });
+
+  // Idea 5: the board draws itself
+  function playOpening() {
+    if (!on.has(5) || reduce || view !== 'board') return;
+    drawWires();
+    const rise = [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }];
+    qhead.animate(rise, { duration: 420, easing: EASE, fill: 'backwards' });
+    $$('path', wires).forEach(p => p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 480, delay: 260, easing: EASE, fill: 'backwards' }));
+    oheads.forEach((h, i) => h.animate(rise, { duration: 420, delay: 560 + i * 70, easing: EASE, fill: 'backwards' }));
+    panels.forEach((p, i) => p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, delay: 600 + i * 70, easing: EASE, fill: 'backwards' }));
+    cardEls.forEach((el, i) => el.animate(rise, { duration: 420, delay: 720 + (CARDS[i].row * 2 + CARDS[i].col) * 55, easing: EASE, fill: 'backwards' }));
+  }
+
+  // Idea 6: vote ripple
+  const ripples = []; let ripRaf = 0, ripDpr = 1;
+  function sizeRipples() {
+    ripDpr = Math.min(devicePixelRatio || 1, 2);
+    const w = board.clientWidth, h = board.clientHeight;
+    rippleCv.width = Math.round(w * ripDpr); rippleCv.height = Math.round(h * ripDpr);
+    rippleCv.style.width = w + 'px'; rippleCv.style.height = h + 'px';
+  }
+  function addRipple(x, y) {
+    if (!on.has(6) || reduce) return;
+    ripples.push({ x, y, t0: performance.now() });
+    if (!ripRaf) ripRaf = requestAnimationFrame(tickRipples);
+  }
+  function tickRipples(now) {
+    const ctx = rippleCv.getContext('2d');
+    ctx.setTransform(ripDpr, 0, 0, ripDpr, 0, 0); ctx.clearRect(0, 0, rippleCv.width, rippleCv.height);
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i], t = (now - r.t0) / 1500;
+      if (t >= 1) { ripples.splice(i, 1); continue; }
+      for (const [off, a] of [[0, 1], [.14, .6], [.28, .35]]) {
+        const u = (t - off) / (1 - off); if (u <= 0) continue;
+        const rad = 18 + (1 - Math.pow(1 - u, 3)) * 560, fade = Math.pow(1 - u, 1.5);
+        ctx.beginPath(); ctx.arc(r.x, r.y, rad, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,255,255,${.85 * a * fade})`; ctx.lineWidth = 1.8; ctx.stroke();
+        ctx.strokeStyle = `rgba(36,36,36,${.12 * a * fade})`; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+    ripRaf = ripples.length ? requestAnimationFrame(tickRipples) : 0;
+  }
+
+  // ---------- List ----------
+  function buildSide() {
+    const row = key => { const sp = SPACES[key], n = BOARDS.filter(b => b.space === key).length;
+      return `<button type="button" class="srow" data-place="${key}" data-tint style="--row-tint:${sp.tint}"><span class="sw" style="background:${sp.tint}"></span><span class="tag">${sp.name}</span><span class="ct">${n}</span></button>`; };
+    const keys = g => Object.keys(SPACES).filter(k => SPACES[k].group === g);
+    $('#side').innerHTML = `<button type="button" class="srow" data-place="home">${ICON.home}Home</button>
+      <div class="gl">Your spaces</div><div class="grp">${keys('Your spaces').map(row).join('')}</div>
+      <div class="gl">Communities</div><div class="grp">${keys('Communities').map(row).join('')}</div>`;
+    $('#side').addEventListener('click', e => { const b = e.target.closest('.srow'); if (!b) return; place = b.dataset.place; renderList(); });
+  }
+  function renderList() {
+    $$('#side .srow').forEach(b => b.setAttribute('aria-current', String(b.dataset.place === place)));
+    const shown = place === 'home' ? BOARDS : BOARDS.filter(b => b.space === place);
+    $('#items').innerHTML = shown.map(b => { const sp = SPACES[b.space];
+      return `<article class="item" data-space="${b.space}" tabindex="0">
+        <div class="score-col">${ICON.pulse}${b.score}</div>
+        <div>
+          <div class="line1"><span class="stag">${sp.name}</span>${b.au} · ${b.when}</div>
+          <h3 class="ititle serif display">${b.title}</h3>
+          <div class="chips">${b.opts.map(([o, n]) => `<span class="chip serif">${o}<b>${n}</b></span>`).join('')}</div>
+          <div class="line3"><span class="ico">${ICON.comment}${b.com}</span>${b.faces.length ? `<span class="faces">${b.faces.map(f => `<span>${f}</span>`).join('')}</span>${b.here} here now` : ''}</div>
+        </div>
+        <div class="mini" data-space="${b.space}" style="--mtint:${sp.tint}" aria-hidden="true">
+          <div class="mtex"></div><canvas></canvas>
+          <div class="mq"></div>
+          <div class="mcols"><div class="mcol"><b></b><i></i><i></i><i></i></div><div class="mcol"><b></b><i></i><i></i></div></div>
+        </div>
+      </article>`; }).join('');
+    paintList();
+  }
+  function paintList() {
+    if (view !== 'list') return;
+    const bg = $('#feedbg');
+    if (place === 'home') {
+      bg.style.background = '#e2e1de'; bg.style.backgroundImage = 'var(--sm-grain), var(--sm-contours)'; bg.style.backgroundSize = '180px 180px, 480px 480px';
+    } else {
+      const sp = SPACES[place], [img, size] = TEX[on.has(2) ? 'contours' : sp.tex];
+      const mix = c => `color-mix(in srgb, ${c} 72%, #ebebeb)`;
+      const imgs = ['var(--sm-grain)'], sizes = ['180px 180px'];
+      if (img !== 'none') { imgs.push(img); sizes.push(size); }
+      if (on.has(2)) { imgs.push(`linear-gradient(165deg, ${mix(sp.tint)}, ${mix(sp.tint2)})`); sizes.push('auto'); }
+      bg.style.background = mix(sp.tint); bg.style.backgroundImage = imgs.join(', '); bg.style.backgroundSize = sizes.join(', ');
+    }
+    $$('.mini').forEach(m => {
+      const sp = SPACES[m.dataset.space], cv = $('canvas', m), tex = $('.mtex', m);
+      m.style.setProperty('--mt', on.has(2) ? `linear-gradient(165deg, ${sp.tint}, ${sp.tint2})` : sp.tint);
+      if (on.has(2)) {
+        tex.hidden = true; cv.hidden = false;
+        paintContours(cv, m.clientWidth, m.clientHeight, { seed: sp.seed, k: 3, step: 2, alpha: .5, lw: .7, index: on.has(1) });
+      } else {
+        cv.hidden = true; tex.hidden = false;
+        tex.style.setProperty('--mtex', TEX[sp.tex][0]); tex.style.setProperty('--mtex-size', TEX[sp.tex][2]);
+      }
+    });
+  }
+  $('#items').addEventListener('click', e => { const it = e.target.closest('.item'); if (it) openBoard(it.dataset.space); });
+  $('#items').addEventListener('keydown', e => { const it = e.target.closest('.item'); if (it && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openBoard(it.dataset.space); } });
+  function openBoard(key) { space = key; setView('board'); }
+
+  // ---------- Controls ----------
+  function buildControls() {
+    $('#spacePicker').innerHTML = Object.entries(SPACES).map(([k, s]) => `<button type="button" data-space="${k}" aria-pressed="false"><span class="sw" style="background:${s.tint}"></span>${s.name}</button>`).join('');
+    $('#spacePicker').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; space = b.dataset.space; applySpace(); drawTerrain(); });
+    let lastGroup = '';
+    $('#ideaList').innerHTML = IDEAS.map(i => {
+      const head = i.g !== lastGroup ? `<div class="gl">${(lastGroup = i.g)}</div>` : '';
+      return `${head}<label class="idea"><input type="checkbox" data-n="${i.n}" checked>
+        <span class="t"><span class="n">${i.n}</span>${i.t}${i.flag ? '<span class="flag">Reopens the brief</span>' : ''}</span>
+        <span class="d">${i.d}</span>${i.act ? `<span class="act"><button type="button" class="btn small" data-act="${i.act[0]}">${i.act[1]}</button></span>` : ''}</label>`;
+    }).join('');
+    $('#ideaList').addEventListener('change', e => {
+      const n = +e.target.dataset.n; if (!n) return;
+      e.target.checked ? on.add(n) : on.delete(n);
+      apply();
+      if (!e.target.checked) return;
+      if (n === 5) { setView('board'); playOpening(); }
+      if (n === 3 && view === 'board') { weights = CARDS.map(() => 0); retarget(weights.slice()); }
+      if (n === 6 && view === 'board') { const b = board.getBoundingClientRect(), r = cardEls[0].getBoundingClientRect(); addRipple(r.left - b.left + 4, r.top - b.top + 34); }
+      if (n === 8 && view !== 'list') setView('list');
+    });
+    $('#ideaList').addEventListener('click', e => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      e.preventDefault();
+      if (b.dataset.act === 'replay') { if (!on.has(5)) { on.add(5); apply(); } setView('board'); playOpening(); }
+      if (b.dataset.act === 'shuffle') {
+        if (!on.has(3)) { on.add(3); apply(); }
+        setView('board');
+        CARDS.forEach((c, i) => { c.score = 8 + Math.floor(Math.random() * 55); c.my = 0; const el = cardEls[i]; $('.score', el).textContent = c.score; $('.score', el).classList.remove('mine'); $$('.vote button', el).forEach(x => x.setAttribute('aria-pressed', 'false')); });
+        retarget();
+      }
+    });
+    $('#allOn').addEventListener('click', () => { IDEAS.forEach(i => on.add(i.n)); apply(); playOpening(); });
+    $('#allOff').addEventListener('click', () => { on.clear(); apply(); });
+    $$('.seg button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+    // Hold to compare: the current design shows only while the button is held down.
+    const cmp = $('#compare'); let saved = null;
+    const down = () => { if (saved) return; saved = new Set(on); on.clear(); cmp.setAttribute('aria-pressed', 'true'); apply(); };
+    const up = () => { if (!saved) return; saved.forEach(n => on.add(n)); saved = null; cmp.setAttribute('aria-pressed', 'false'); apply(); };
+    cmp.addEventListener('pointerdown', e => { e.preventDefault(); down(); });
+    ['pointerup', 'pointerleave', 'pointercancel', 'blur'].forEach(t => cmp.addEventListener(t, up));
+    cmp.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); down(); } });
+    cmp.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') up(); });
+    if (reduce) $('#reduceNote').hidden = false;
+  }
+
+  function setView(v) {
+    const changed = v !== view; view = v;
+    $$('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+    board.hidden = v !== 'board'; $('#list').hidden = v !== 'list';
+    if (changed) scrollTo({ top: 0 });
+    apply();
+    if (v === 'board' && changed) playOpening();
+  }
+
+  function apply() {
+    for (let n = 1; n <= 9; n++) document.body.classList.toggle('i' + n, on.has(n));
+    $$('#ideaList input').forEach(i => { i.checked = on.has(+i.dataset.n); });
+    applySpace();
+    if (view === 'board') {
+      if (!weights) weights = targetWeights();
+      drawWires(); sizeRipples(); drawTerrain(); drift();
+    } else {
+      paintList();
+    }
+  }
+
+  // ---------- Start ----------
+  buildBoard(); buildSide(); buildControls(); renderList();
+  apply();
+  let resizeTimer = 0;
+  new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (view === 'board') { drawWires(); sizeRipples(); drawTerrain(); } else paintList(); }, 120); }).observe(document.body);
+  document.fonts.ready.then(() => { apply(); playOpening(); });
+})();
+</script>
+</body>
+</html>
