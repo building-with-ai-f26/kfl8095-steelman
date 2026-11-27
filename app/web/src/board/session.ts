@@ -192,7 +192,8 @@ export class BoardSession {
   }
 
   private mineChanged(): void {
-    this.set({ waiting: this.queue.length, mine: [...this.queue, ...this.sent].reverse() });
+    // Newest first: whatever is still queued was chosen after everything already sent.
+    this.set({ waiting: this.queue.length, mine: [...this.sent, ...this.queue].reverse() });
   }
 
   // ── Starting and stopping ──
