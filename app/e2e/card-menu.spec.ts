@@ -219,6 +219,8 @@ test.describe("deleting", () => {
     const sent = deletesSent(page);
     await row(page, LEAD).getByRole("button", { name: "Compare 2 wordings of this argument" }).click();
     await openMenu(page, SHIFT);
+    // The page's clock stops half a second on, so the ten seconds count only the clock's own runs, not the exit's real time.
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 500);
     await page.getByRole("menuitem", { name: "Delete version" }).click();
 
     await expect(card(page, SHIFT)).toHaveCount(0);
@@ -251,6 +253,8 @@ test.describe("deleting", () => {
     const sent = deletesSent(page);
     const before = await rows(page, "Yes");
     await openMenu(page, LEAD);
+    // The page's clock stops half a second on, so the ten seconds count only the clock's own runs, not the exit's real time.
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 500);
     await page.getByRole("menuitem", { name: "Delete version" }).click();
     await expect(card(page, LEAD)).toHaveCount(0);
     // The row's other wording leads it meanwhile.
