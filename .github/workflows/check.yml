@@ -24,7 +24,7 @@ jobs:
   check:
     name: npm run check (${{ matrix.database }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
