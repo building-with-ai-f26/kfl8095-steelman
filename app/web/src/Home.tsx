@@ -178,7 +178,7 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
   useEffect(() => rememberPlace(() => (spaceId ? { path: spacePath(spaceId), name: "the space" } : HOME_PLACE)), [spaceId]);
   const space = spaceOf(spaces, spaceId);
   const sidebar = <Sidebar spaces={spaces} counts={typeof list === "object" && list !== null ? countsBySpace(all) : null} at={spaceId ? { kind: "space", space: spaceId } : { kind: "home" }} />;
-  if (list === null || (spaceId && spaces === null)) return <HomeSkeleton sidebar={sidebar} rail={spaceId !== null} />;
+  if (list === null || (spaceId && spaces === null)) return <HomeSkeleton sidebar={sidebar} rail={spaceId !== null} canvas={space?.canvas} />;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
   if (spaceId && !space) {
     return (
@@ -198,7 +198,8 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
   }
   const canvasOf = (board: BoardListing): SpaceCanvas => spaceOf(spaces, board.space)?.canvas ?? "stone";
   return (
-    <div ref={page} className="sm-home sm-home-alone" data-rail={space ? "" : undefined}>
+    // A space's page sits on its space's canvas, and Home on the neutral one (the prototype's CSS, M3d-24).
+    <div ref={page} className="sm-home sm-home-alone" data-rail={space ? "" : undefined} data-canvas={space?.canvas}>
       {sidebar}
       <main className="sm-feed">
         <h1 id="sm-feed-title" className={space ? "sm-sr ph-no-capture" : "sm-sr"}>
@@ -522,11 +523,12 @@ const PLACEHOLDERS = [3, 2, 2] as const;
  * and its column are the list's own, so the posts stand where their placeholders stood, but nothing here is the list,
  * a post, or a question, so nothing that finds those finds these.
  */
-function HomeSkeleton({ sidebar, rail }: { sidebar: React.ReactNode; rail: boolean }) {
+function HomeSkeleton({ sidebar, rail, canvas }: { sidebar: React.ReactNode; rail: boolean; canvas: SpaceCanvas | undefined }) {
   const [said, setSaid] = useState(false);
   useEffect(() => setSaid(true), []);
   return (
-    <div className="sm-home sm-home-alone" data-rail={rail ? "" : undefined}>
+    // On a space's page whose space is already known, the skeleton sits on the space's canvas, as the page will.
+    <div className="sm-home sm-home-alone" data-rail={rail ? "" : undefined} data-canvas={canvas}>
       {/* The sidebar is drawn at once, in its own column, so the posts stand where their placeholders stood. */}
       {sidebar}
       <main className="sm-feed sm-feed-skeleton">

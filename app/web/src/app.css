@@ -516,13 +516,8 @@ body { margin:0; }
   #steelman-study .sm-feed-skeleton-thumb { display:none; }
 }
 
-/* M3d-11, E-03: a list post lifts a pixel under the pointer, in the prototype's hover shadow, and settles back to its
-   resting shadow as it's pressed, as a card on the board does (M3d-10). The lift is the `translate` property, so the
-   post's place in the list doesn't change. Only where a pointer hovers. */
-#steelman-study .sm-feed .sm-post { transition:background-color var(--sm-fast) var(--sm-ease), border-color var(--sm-fast) var(--sm-ease), box-shadow var(--sm-fast) var(--sm-ease), translate var(--sm-fast) var(--sm-ease); }
-@media(hover:hover) {
-  #steelman-study .sm-feed .sm-post:hover { translate:0 -1px; }
-}
+/* M3d-11, E-03: a list post settles back to its resting shadow as it's pressed, as a card on the board does (M3d-10).
+   Its hover lift, 3 px in --sm-lift with its miniature rising and growing, is the prototype's (M3d-24). */
 #steelman-study .sm-feed .sm-post:has(h2 a:active) { translate:0 0; box-shadow:var(--sm-shadow-sm); }
 
 /* M3d-11, M-15: one press for every button, New steelman's + Option and remove-option buttons included: it scales
