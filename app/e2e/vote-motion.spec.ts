@@ -489,6 +489,7 @@ test("B-01 B-02 M-02 M-15: under reduced motion nothing animates and the number 
   await expect(importance(page, STUDY_EDITED).getByLabel("Net 4")).toBeVisible();
   board.clock.advance(TICK_MS);
   await poll(page);
+  await expect(pill(page)).toBeVisible();
   await clickInPage(page, ".sm-fresh button");
   expect(await rows(page, "Yes")).toEqual([STUDY_EDITED, LEAD, FAMILY]);
 
