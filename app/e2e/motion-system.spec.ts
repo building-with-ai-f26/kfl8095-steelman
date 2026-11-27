@@ -69,8 +69,11 @@ test("M-15: the drawer's fade and a thread's fold still run for 160 ms and 220 m
 });
 
 test("M-15: with reduced motion, nothing on the board starts a Web Animation", async ({ board }) => {
-  const page = await board.open("jordan_w");
+  // Reduced motion is on before the board opens, so the board never starts drawing itself (M3d-23).
+  const page = await board.open("jordan_w", { at: "/privacy" });
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`/b/${board.demo.board}`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Should our library open on Sundays?");
   const running = () => page.evaluate(() => document.getAnimations().map((animation) => (animation.effect as KeyframeEffect | null)?.target?.className ?? "?"));
 
   expect(await running()).toEqual([]);
