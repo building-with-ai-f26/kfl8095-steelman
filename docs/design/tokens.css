@@ -66,6 +66,10 @@
   --sm-canvas-light:radial-gradient(70% 900px at 50% 0,#ffffff4d,#ffffff00 50%,#0000000a);
   --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-contours);
   --sm-canvas-size:100% 100%,180px 180px,480px 480px;
+  /* The canvas without its light, for the board's drifting layer (M3d-22): the light stays still above it, so a board
+     draws --sm-canvas-light over this list, as --sm-canvas-image does. Each space's rule keeps the two lists in step. */
+  --sm-canvas-texture:var(--sm-grain),var(--sm-contours);
+  --sm-canvas-texture-size:180px 180px,480px 480px;
 
   /* Space canvases: each space gives its boards a tint and a texture, so a board (and its miniature
      in the list) shows where it lives. Tints stay pale and low in saturation, clear of the evidence

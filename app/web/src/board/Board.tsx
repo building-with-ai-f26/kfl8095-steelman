@@ -63,7 +63,7 @@ import { CommentBubble, Comments, targetKey, targetStands } from "./Comments.tsx
 import { commentLanding } from "./comment-link.ts";
 import type { CommentBubbles } from "./Comments.tsx";
 import { useDrawerTop, useLinger } from "./drawer.ts";
-import { captureRects, drawnRect, duration, flip, stopMoves } from "./motion.ts";
+import { captureRects, drawnRect, duration, flip, startDrift, stopMoves } from "./motion.ts";
 import { cardsFor, ring, stopRings } from "./vote-motion.ts";
 import type { Rects } from "./motion.ts";
 import { LeavingCopies, arrive, comeBack, copyOf, measure } from "./Leaving.tsx";
@@ -891,6 +891,9 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
     session.announce(`Opened “${state.question}”.`);
     // Once, when the board first shows.
   }, []);
+  // The canvas drifts as the page scrolls, and holds still under reduced motion (M3d-22).
+  const canvasLayer = useRef<HTMLDivElement>(null);
+  useEffect(() => (canvasLayer.current && surface.current ? startDrift(canvasLayer.current, surface.current) : undefined), []);
   // Where Your account and the other detours lead back to (M3a-1): this board, at the version open as it's left.
   useEffect(() => rememberPlace(() => ({ path: window.location.pathname, name: state.question })), [state.question]);
   // Switching views says where the reader is now. Strongest case closes what's open on the board, as the
@@ -1087,6 +1090,11 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
 
   return (
     <div ref={surface} className="sm-surface" data-canvas={canvas ?? undefined}>
+      {/* The canvas, on a layer of its own behind the board, drifts a tenth as far as the page scrolls, and its light holds still (M3d-22). */}
+      <div className="sm-canvas-frame ph-no-capture" aria-hidden="true" inert>
+        <div ref={canvasLayer} className="sm-canvas-layer" />
+        <div className="sm-canvas-light" />
+      </div>
       {/* What a faded control says to a screen reader: each names one of these by aria-describedby. */}
       {Object.values(WHY).map(({ why, noteId }) => (
         <span key={noteId} id={noteId} hidden>
