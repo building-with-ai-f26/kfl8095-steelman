@@ -514,3 +514,51 @@ body { margin:0; }
 @media (prefers-reduced-motion: reduce) {
   #steelman-study button[data-busy] { opacity:.45; }
 }
+
+/* M3d-13; E-03, E-04, E-05: Search steelmen and Sort above the list, as GitHub's repository list has them: the field
+   takes the row and Sort follows it. The prototype's field sits in the site header, 280 px wide (200 px at 900 px and
+   narrower) and hidden at 640 px and narrower; on the page it takes the row at every width. The row is 34 px high, and
+   44 px where the pointer is a finger, as the prototype's buttons are, and the skeleton's row is the same, so the posts
+   stand where their placeholders stood. The field rings itself, as Share's invite field does (M3d-10), since the
+   prototype takes the ring off its input. */
+#steelman-study .sm-feed-tools, #steelman-study .sm-feed-skeleton-tools { display:flex; align-items:stretch; gap:8px; height:34px; min-width:0; }
+@media(pointer:coarse) {
+  #steelman-study .sm-feed-tools, #steelman-study .sm-feed-skeleton-tools { height:44px; }
+}
+#steelman-study .sm-feed-tools .sm-feed-search { display:flex; flex:1; min-width:0; }
+#steelman-study .sm-feed-tools .sm-search { display:flex; flex:1; width:auto; height:auto; min-width:0; }
+#steelman-study .sm-feed-tools .sm-search input { height:100%; }
+#steelman-study .sm-feed-tools .sm-search:has(input:focus-visible) { outline:2px solid var(--sm-ink); outline-offset:1px; }
+#steelman-study .sm-feed-sort { position:relative; display:flex; }
+#steelman-study .sm-feed-tools .sm-feed-sort-button { height:auto; min-height:0; padding:0 10px 0 12px; font-size:13px; white-space:nowrap; }
+#steelman-study .sm-feed-sort .sm-menu { top:calc(100% + 4px); right:0; }
+/* The chosen sort follows the word Sort in the button, as GitHub's Sort button shows its value, in the muted ink. */
+#steelman-study .sm-feed-sort-value { color:var(--sm-muted); font-weight:500; }
+/* On a phone the word Sort is said to a screen reader but not drawn, beside its arrows, so the field keeps room for
+   its placeholder. */
+@media(max-width:480px) {
+  #steelman-study .sm-feed-sort-word { position:absolute; width:1px; height:1px; margin:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+}
+#steelman-study .sm-feed-skeleton-tools { animation:sm-skeleton-in var(--sm-medium) var(--sm-ease) calc(var(--sm-slow) * 2) both; }
+#steelman-study .sm-feed-skeleton-search, #steelman-study .sm-feed-skeleton-sort { box-sizing:border-box; border:1px solid var(--sm-line); border-radius:6px; background:var(--sm-panel); }
+#steelman-study .sm-feed-skeleton-search { flex:1; min-width:0; }
+/* As wide as Sort with its default, Recently updated, which drops the word Sort on a phone. */
+#steelman-study .sm-feed-skeleton-sort { width:200px; }
+@media(max-width:480px) {
+  #steelman-study .sm-feed-skeleton-sort { width:168px; }
+}
+#steelman-study .sm-feed-skeleton-foot { width:36px; margin-top:13px; }
+
+/* Each post's open comment count, in the prototype's post foot. It stays above the post's covering link, as the date
+   and the argument counts do, so its tooltip shows. */
+#steelman-study .sm-post-foot .sm-post-comments { position:relative; z-index:1; }
+
+/* The posts a search drops fade out from where they stood (Home.tsx), in a layer under the posts that screen readers
+   and the cursor skip. The copies are placed by their animation, so nothing is left in a style attribute. */
+#steelman-study .sm-feed-results { position:relative; min-width:0; }
+#steelman-study .sm-feed-leaving { position:absolute; inset:0; pointer-events:none; }
+#steelman-study .sm-feed .sm-post.sm-post-leaving { position:absolute; top:0; left:0; width:100%; box-sizing:border-box; margin:0; transition:none; }
+
+/* No post matches the search: the empty list's dashed box, with Clear search. */
+#steelman-study .sm-feed-nomatch { display:grid; justify-items:center; gap:14px; padding:40px 20px; border:1px dashed #9a9a9a; border-radius:6px; text-align:center; color:var(--sm-quiet); font:300 14px var(--sm-sans); }
+#steelman-study .sm-feed-nomatch p { margin:0; }
