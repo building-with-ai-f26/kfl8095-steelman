@@ -378,6 +378,21 @@ body { margin:0; }
 #steelman-study .sm-vote-roll { position:absolute; display:grid; place-items:center; box-sizing:border-box; margin:0; opacity:0; pointer-events:none; font-variant-numeric:tabular-nums; }
 /* A board's copy shrinking into its post on the list (M3d-9, zoom.ts): over the window, never in the reader's way. */
 #steelman-study .sm-closing-layer { position:fixed; inset:0; z-index:60; overflow:clip; pointer-events:none; }
+/* M3d-22, M-15, A-01: the board's canvas drifts as the page scrolls (startDrift() in motion.ts). The surface is a grid
+   of one cell, which the frame and the scene share, so the frame is exactly the board's box without the surface being
+   positioned, which would move the tour's overlay. The frame clips the layer, so the layer never adds to the page's
+   scroll height, and neither of them takes a click. The layer is the board's own box and paints the tint and the
+   textures (--sm-canvas-texture, the canvas without its light). The light (--sm-canvas-light) stays still above it, on
+   its own element in the frame, as the exploration keeps it, so at the top of the page the two draw what the surface
+   draws. The canvas drifts only once the board's top has left the window, so the strip it uncovers there is never on
+   screen. The surface still paints the canvas under the frame. The layer has no will-change: at rest it's painted with
+   the board, exactly as the surface was, and its translate3d puts it on a layer of its own once it drifts, so from then
+   on scrolling moves it without painting it again. */
+#steelman-study .sm-surface { display:grid; grid-template-columns:minmax(0,1fr); }
+#steelman-study .sm-surface > .sm-canvas-frame, #steelman-study .sm-surface > .sm-scene { grid-area:1 / 1; }
+#steelman-study .sm-canvas-frame { position:relative; overflow:clip; pointer-events:none; }
+#steelman-study .sm-canvas-layer { position:absolute; inset:0; background-color:var(--sm-paper); background-image:var(--sm-canvas-texture); background-size:var(--sm-canvas-texture-size); pointer-events:none; }
+#steelman-study .sm-canvas-light { position:absolute; inset:0; background-image:var(--sm-canvas-light); background-size:100% 100%; pointer-events:none; }
 
 /* M3d-10, A-01: skeleton cards while the board's first read is on its way (Skeleton.tsx). Blocks in the board's own
    layout, with the scene's padding, the question's width, the columns' grid, and their rows' spacing, so the board

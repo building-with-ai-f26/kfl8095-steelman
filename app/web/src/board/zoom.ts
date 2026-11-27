@@ -185,8 +185,25 @@ export function shrinkInto(closing: Closing, into: Rect | null): Animation | nul
     { duration: duration("slow", copy), easing: curve("ease", copy) },
   );
   if (!animation) layer.remove();
-  else void animation.finished.then(() => layer.remove(), () => layer.remove());
+  else {
+    undrift(copy);
+    void animation.finished.then(() => layer.remove(), () => layer.remove());
+  }
   return animation;
+}
+
+/**
+ * Brings a drifted canvas in the board's copy back to its place over the shrink (M3d-22), so the copy's top, which
+ * lands on screen as it shrinks, never shows the strip the drift uncovers. It eases back on the shrink's own duration
+ * and curve as a CSS transition, so the shrink stays the only Web Animation on the copy.
+ */
+function undrift(copy: HTMLElement): void {
+  const canvas = copy.querySelector<HTMLElement>(".sm-canvas-layer");
+  if (!canvas?.style.transform) return;
+  // The drifted place is read first, so the transition starts from it.
+  void window.getComputedStyle(canvas).transform;
+  canvas.style.transition = `transform ${duration("slow", copy)}ms ${curve("ease", copy)}`;
+  canvas.style.removeProperty("transform");
 }
 
 /**

@@ -10,7 +10,9 @@
 // Update's shuffle (M3d-3) adds flip()'s `travel`, under which a moving row
 // grows by 1 percent while it travels and a row moving up passes over one
 // moving down, stopMoves(), which stops a shuffle still running, and
-// drawnRect(), which measures a traveling row without its growth.
+// drawnRect(), which measures a traveling row without its growth. The board's
+// canvas drifts as the page scrolls (M3d-22): driftOf() says how far, and
+// startDrift() moves the canvas layer from one passive scroll listener.
 //
 // The curves follow Material Design 3's guidance on easing and duration and
 // Apple's Human Interface Guidelines on motion: short and physical, and gone
@@ -251,4 +253,74 @@ function faceOf(element: Element): Element | null {
 
 function round(px: number): number {
   return Math.round(px * 100) / 100;
+}
+
+/** How much of the scroll the board's canvas follows: it moves down a tenth as far, so it moves at 0.9 times the page (M3d-22). */
+const DRIFT_RATE = 0.1;
+/** The furthest the canvas drifts. */
+export const MOST_DRIFT_PX = 170;
+
+/**
+ * How far down the board's canvas is drawn, in px, once the board's top has scrolled `scrolled` px past the window's
+ * top (M3d-22, M-15). While the board's top is in the window, the canvas doesn't move. After that it moves a tenth of
+ * the scroll, so it falls behind the cards and they seem to float above the map, and it never moves more than 170 px.
+ * Under reduced motion it never moves.
+ */
+export function driftOf(scrolled: number, reduced: boolean): number {
+  if (reduced || !(scrolled > 0)) return 0;
+  return Math.min(MOST_DRIFT_PX, scrolled * DRIFT_RATE);
+}
+
+/**
+ * Moves the board's canvas layer with the page's scroll, and returns what stops it (M3d-22, M-15). One passive scroll
+ * listener asks for an animation frame, and that frame reads where the board's top is and writes a single transform on
+ * the layer, so scrolling causes no layout and the composited canvas isn't painted again. The canvas starts to drift
+ * only once the board's top has left the window, so the strip it uncovers at the board's top is never on screen. The
+ * drift is set straight from the scroll and isn't an animation, so it doesn't go through play(), and a test waiting for
+ * the board's animations to end never waits on it. Turning reduced motion on puts a drifted canvas back at once,
+ * without waiting for the next scroll. While the board itself is animated, as it is while it grows out of its post's
+ * miniature (growFrom() in zoom.ts), its rect includes the move, so the drift waits and is measured again as the
+ * animation ends.
+ */
+export function startDrift(layer: HTMLElement, board: Element): () => void {
+  let frame = 0;
+  let drawn = 0;
+  let waiting = false;
+  let stopped = false;
+  const later = () => {
+    if (!frame && !stopped) frame = window.requestAnimationFrame(place);
+  };
+  const place = () => {
+    frame = 0;
+    // Only an animation that ends: a board drawn moved is measured again once it's in its place.
+    const moving = board.getAnimations().filter((animation) => Number.isFinite(animation.effect?.getComputedTiming().endTime));
+    if (moving.length) {
+      if (!waiting) {
+        waiting = true;
+        const settled = () => {
+          waiting = false;
+          later();
+        };
+        void Promise.all(moving.map((animation) => animation.finished)).then(settled, settled);
+      }
+      return;
+    }
+    // Whole device pixels, so the grain and the contours stay sharp as they move.
+    const ratio = window.devicePixelRatio || 1;
+    const drift = Math.round(driftOf(-board.getBoundingClientRect().top, reducedMotion()) * ratio) / ratio;
+    if (drift === drawn) return;
+    drawn = drift;
+    layer.style.transform = drift ? `translate3d(0, ${drift}px, 0)` : "";
+  };
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  place();
+  window.addEventListener("scroll", later, { passive: true });
+  reduced.addEventListener("change", later);
+  return () => {
+    stopped = true;
+    window.cancelAnimationFrame(frame);
+    frame = 0;
+    window.removeEventListener("scroll", later);
+    reduced.removeEventListener("change", later);
+  };
 }
