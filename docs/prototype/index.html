@@ -1867,14 +1867,17 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   /* Space canvases: each space gives its boards a tint and a texture, so a board (and its miniature
      in the list) shows where it lives. Tints stay pale and low in saturation, clear of the evidence
-     red and green and the AI ochre. The list itself sits on plain gray. */
+     red and green and the AI ochre. The list sits on a canvas too (M3d-24): Home on the neutral map
+     below, and a space&#x27;s page on its space&#x27;s tint mixed 72 percent with the list&#x27;s gray, so the
+     miniatures, drawn on the full tint, still stand out. */
   --sm-canvas-stone:#dcd8cf;   /* warm stone: POD 6 (the original canvas) */
   --sm-canvas-cool:#d3d9df;    /* cool gray: Northwind Studio */
   --sm-canvas-sand:#e6dbc2;    /* sand: Personal */
   --sm-canvas-slate:#ccd5e4;   /* slate blue: Brooklyn Streets */
   --sm-canvas-sage:#d0dbc8;    /* sage: Campus Life */
   --sm-canvas-lilac:#d9d0e3;   /* lilac: Future of Work */
-  --sm-list-bg:#ebebeb;        /* the list of steelmen: plain gray, no texture */
+  --sm-list-bg:#ebebeb;        /* the list&#x27;s gray, which a space&#x27;s page mixes into its tint */
+  --sm-canvas-neutral:#e2e1de; /* Home&#x27;s list: a faint warm gray under the light, the grain, and the contours */
   --sm-tex-dots:url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; width=&#x27;18&#x27; height=&#x27;18&#x27;%3E%3Ccircle cx=&#x27;9&#x27; cy=&#x27;9&#x27; r=&#x27;1&#x27; fill=&#x27;%23242424&#x27; fill-opacity=&#x27;.24&#x27;/%3E%3C/svg%3E&quot;);
   --sm-tex-linen:url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; width=&#x27;6&#x27; height=&#x27;6&#x27;%3E%3Cpath d=&#x27;M0 6L6 0M-1 1L1-1M5 7L7 5&#x27; stroke=&#x27;%23242424&#x27; stroke-opacity=&#x27;.1&#x27;/%3E%3Cpath d=&#x27;M0 0L6 6M-1 5L1 7M5-1L7 1&#x27; stroke=&#x27;%23242424&#x27; stroke-opacity=&#x27;.05&#x27;/%3E%3C/svg%3E&quot;);
 
@@ -2528,7 +2531,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-nav-toggle svg { width:20px; height:20px; }
 
   /* ── Home: communities sidebar and the list of steelmen. ── */
-  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(var(--sm-window-h,100vh) - 57px); background-color:var(--sm-list-bg); }
+  #steelman-study .sm-home { position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(var(--sm-window-h,100vh) - 57px); background-color:var(--sm-canvas-neutral); background-image:var(--sm-canvas-image); background-size:var(--sm-canvas-size); }
   #steelman-study .sm-home[hidden] { display:none; }
   /* The sidebar hangs from the site header, running the full height, inverted like the board&#x27;s header boxes. */
   #steelman-study .sm-side { display:flex; flex-direction:column; align-content:start; gap:1px; padding:12px 10px 24px; background:var(--sm-ink); color:#fff; }
@@ -2562,7 +2565,18 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   /* One steelman in the list: votes, the question, its options, activity, and a miniature of the board. */
   #steelman-study .sm-post { display:grid; grid-template-columns:40px minmax(0,1fr) 172px; gap:14px; padding:16px 18px 16px 8px; background:var(--sm-grain) var(--sm-card); border:1px solid var(--sm-line); border-radius:10px; box-shadow:var(--sm-shadow-sm); cursor:pointer;  }
-  #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-shadow); }
+  #steelman-study .sm-post:hover { border-color:#c4c4c4; box-shadow:var(--sm-lift); }
+  /* On hover the item lifts 3 px and its miniature rises 2 px more and grows 3.5 percent (M3d-24), only where a pointer
+     hovers and motion is welcome. The lift is the translate property, so the item&#x27;s place in the list doesn&#x27;t change.
+     Under reduced motion the shadows still change and nothing moves. */
+  #steelman-study .sm-post { position:relative; transition:background-color var(--sm-fast) var(--sm-ease),border-color var(--sm-fast) var(--sm-ease),box-shadow var(--sm-fast) var(--sm-ease),translate var(--sm-fast) var(--sm-ease); }
+  @media(hover:hover) and (prefers-reduced-motion:no-preference) {
+    #steelman-study .sm-post:hover { translate:0 -3px; }
+    /* The lifted item keeps the 3 px it left below its border under the pointer, so a pointer near its bottom edge
+       doesn&#x27;t lose it and make it bob. (The box is placed from the padding edge, inside the 1 px border.) */
+    #steelman-study .sm-post:hover::before { content:&quot;&quot;; position:absolute; left:-1px; right:-1px; bottom:-4px; height:4px; }
+    #steelman-study .sm-post:hover .sm-thumb { transform:translateY(-2px) scale(1.035); }
+  }
   /* Activity: everything people have done on the board, added up (importance, articulation, evidence, comments). */
   #steelman-study .sm-post-vote { display:flex; flex-direction:column; align-items:center; gap:1px; padding-top:4px; }
   #steelman-study .sm-post-activity { display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--sm-muted); }
@@ -2577,7 +2591,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study .sm-post-meta .sm-dot::before { content:&quot;·&quot;; }
   #steelman-study .sm-post h2 { margin:7px 0 11px; font:700 20px/1.22 var(--sm-serif); letter-spacing:-.4px; text-wrap:balance; }
   #steelman-study .sm-post h2 button { padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-align:left; }
-  #steelman-study .sm-post:hover .sm-thumb { transform:translateY(-2px); box-shadow:var(--sm-shadow-sm); }
+  #steelman-study .sm-post:hover .sm-thumb { box-shadow:var(--sm-shadow); }
   #steelman-study .sm-post-options { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
   #steelman-study .sm-post-options li { display:inline-flex; align-items:center; gap:8px; padding:3px 4px 3px 10px; border:1px solid var(--sm-ink); border-radius:6px; background:var(--sm-ink); color:#fff; font:600 12px/1.3 var(--sm-serif); }
   #steelman-study .sm-post-options b { min-width:20px; padding:3px 5px; border-radius:3px; background:#ffffff26; color:#fff; font:600 11px/1 var(--sm-sans); text-align:center; font-variant-numeric:tabular-nums; }
@@ -2796,6 +2810,12 @@ html&gt;body{padding:0}&lt;/style&gt;
   #steelman-study [data-canvas=&quot;slate&quot;] { --sm-paper:var(--sm-canvas-slate); }
   #steelman-study [data-canvas=&quot;sage&quot;] { --sm-paper:var(--sm-canvas-sage); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-tex-linen); --sm-canvas-size:100% 100%,180px 180px,6px 6px; --sm-canvas-texture:var(--sm-grain),var(--sm-tex-linen); --sm-canvas-texture-size:180px 180px,6px 6px; --sm-thumb-size:100% 100%,90px 90px,4px 4px; }
   #steelman-study [data-canvas=&quot;lilac&quot;] { --sm-paper:var(--sm-canvas-lilac); --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-tex-dots); --sm-canvas-size:100% 100%,180px 180px,18px 18px; --sm-canvas-texture:var(--sm-grain),var(--sm-tex-dots); --sm-canvas-texture-size:180px 180px,18px 18px; --sm-thumb-size:100% 100%,90px 90px,9px 9px; }
+  /* A space&#x27;s page (M3d-24) sits on the space&#x27;s canvas, its tint mixed 72 percent with the list&#x27;s gray, so the
+     miniatures, drawn on the full tint, still stand out. Its light and texture are the space&#x27;s own. */
+  #steelman-study .sm-home[data-canvas] { background-color:color-mix(in srgb,var(--sm-paper) 72%,var(--sm-list-bg)); }
+  /* Stone and slate draw the default canvas, which they inherit, so on a space&#x27;s page with another texture, the
+     stone and slate swatches and miniatures inside it take the default canvas back. */
+  #steelman-study .sm-home[data-canvas] :is([data-canvas=&quot;stone&quot;],[data-canvas=&quot;slate&quot;]) { --sm-canvas-image:var(--sm-canvas-light),var(--sm-grain),var(--sm-contours); --sm-canvas-size:100% 100%,180px 180px,480px 480px; --sm-canvas-texture:var(--sm-grain),var(--sm-contours); --sm-canvas-texture-size:180px 180px,480px 480px; }
   #steelman-study .sm-swatch { display:block; width:14px; height:14px; flex:none; border-radius:3px; background-color:var(--sm-paper); background-image:var(--sm-canvas-image); background-size:var(--sm-thumb-size); box-shadow:inset 0 0 0 1px #00000014; }
   #steelman-study .sm-side .sm-swatch { box-shadow:none; }
 
@@ -5224,6 +5244,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(action===&#x27;space-mode&#x27;) {SPACE_META.defaults[s.id]=id;redo(&#x27;space-mode-&#x27;+id,`New steelmen in ${s.name} start as ${MODES[id].label}.`);}
   }
   function renderHome() {
+    delete homeEl.dataset.canvas;
     if(state.deletedNotice) {homeEl.innerHTML=deletedMarkup();return;}
     if(state.notFound) {homeEl.innerHTML=notFoundMarkup();return;}
     if(state.invite) {homeEl.innerHTML=landingMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
@@ -5231,6 +5252,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     if(!state.profile&amp;&amp;state.spaceEdit) {homeEl.innerHTML=sidebar()+spaceSettingsMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     if(state.profile) {homeEl.innerHTML=sidebar()+profileMarkup();if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});return;}
     const list=visibleBoards();
+    // A space&#x27;s page sits on the space&#x27;s canvas (M3d-24); Home and the other pages here sit on the neutral one.
+    if(state.space===&#x27;all&#x27;) delete homeEl.dataset.canvas; else homeEl.dataset.canvas=spaceOf(state.space).canvas;
     const empty=state.query.trim()?&#x27;No steelmen match that search.&#x27;:state.sort===&#x27;help&#x27;?&#x27;Every option here has at least two arguments.&#x27;:&#x27;Nothing here yet.&#x27;;
     homeEl.innerHTML=sidebar()+`&lt;main class=&quot;sm-feed&quot; id=&quot;sm-feed&quot;&gt;&lt;h1 class=&quot;sm-sr&quot;&gt;${state.space===&#x27;all&#x27;?&#x27;Home&#x27;:escape(spaceOf(state.space).name)}&lt;/h1&gt;${feedHead()}&lt;div class=&quot;sm-sort&quot; role=&quot;group&quot; aria-label=&quot;Sort steelmen&quot;&gt;${Object.entries(SORTS).map(([k,[g,l]])=&gt;`&lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-action=&quot;sort&quot; data-id=&quot;${k}&quot; data-key=&quot;sort-${k}&quot; aria-pressed=&quot;${state.sort===k}&quot;&gt;${l}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`
       +(list.length?`&lt;ol class=&quot;sm-feed-list&quot;&gt;${list.map(post).join(&#x27;&#x27;)}&lt;/ol&gt;`:`&lt;p class=&quot;sm-feed-empty&quot;&gt;${empty}&lt;/p&gt;`)+`&lt;/main&gt;${rail()}`;
