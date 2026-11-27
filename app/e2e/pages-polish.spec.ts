@@ -491,7 +491,7 @@ for (const width of WIDTHS) {
     expect(Math.abs(post.width - placeholder!.width)).toBeLessThanOrEqual(1);
   });
 
-  test(`E-03 M-15: at ${width} px, a list post lifts a pixel under the pointer and settles as it's pressed, and its place in the list doesn't change`, async ({ board }) => {
+  test(`E-03 M-15: at ${width} px, a list post lifts 3 px under the pointer and settles as it's pressed, and its place in the list doesn't change`, async ({ board }) => {
     const page = await board.open("jordan_w", { width, at: "/" });
     await expect(list(page)).toBeVisible();
     await settled(page);
@@ -501,7 +501,7 @@ for (const width of WIDTHS) {
 
     await post.hover({ position: { x: 12, y: 12 } });
     await settled(page);
-    expect(await translateOf(post)).toBe("0px -1px");
+    expect(await translateOf(post)).toBe("0px -3px");
     const lifted = await post.evaluate((element) => ({ shadow: getComputedStyle(element).boxShadow, top: (element as HTMLElement).offsetTop }));
     expect(lifted.shadow).not.toBe(resting.shadow);
     expect(lifted.top).toBe(resting.top);
