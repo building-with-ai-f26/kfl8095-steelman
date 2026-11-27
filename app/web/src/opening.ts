@@ -21,8 +21,11 @@ import type { Closing } from "./board/zoom.ts";
 
 /** The board opened from the list, and the rect its post's miniature had on the click, until the board is drawn. */
 let opening: { board: string; from: Rect } | null = null;
-/** The list as Home last drew it, the board last opened from it, and how far down it was scrolled then. */
-let held: { list: BoardList; board: string | null; scrollY: number } | null = null;
+/**
+ * The list as Home last drew it, the board last opened from it, how far down it was scrolled then, and the list's
+ * address: Home's, or a space's (M3d-19).
+ */
+let held: { list: BoardList; board: string | null; scrollY: number; from: string } | null = null;
 /** The boards the reader has written to since the list was last read: those moved to the top when it's drawn again. */
 const written = new Set<string>();
 /** The board just left for the list by Back or the wordmark, and its copy to shrink into its post, if it has one. */
@@ -39,7 +42,7 @@ export function plainClick(event: { button: number; metaKey: boolean; ctrlKey: b
 
 /** Home notes each list it reads from the service, which is the order every write so far has given it. */
 export function rememberList(list: BoardList): void {
-  held = { list, board: held?.board ?? null, scrollY: held?.scrollY ?? 0 };
+  held = { list, board: held?.board ?? null, scrollY: held?.scrollY ?? 0, from: held?.from ?? "/" };
   written.clear();
 }
 
@@ -60,7 +63,7 @@ export function listScroll(): number {
 /** A post's question was clicked: its board opens from the rect its miniature has now. */
 export function noteOpening(board: string, from: Rect): void {
   opening = { board, from };
-  if (held) held = { ...held, board, scrollY: window.scrollY };
+  if (held) held = { ...held, board, scrollY: window.scrollY, from: window.location.pathname };
 }
 
 /** The rect a board grows from, once: only for the board just opened from the list. */
@@ -91,6 +94,11 @@ export function takeReturn(): { board: string; closing: Closing | null } | null 
 /** Whether the list is the page this board was opened from, in this page's memory. */
 export function cameFromList(board: string): boolean {
   return held?.board === board;
+}
+
+/** Whether this board was opened from Home's own list, not a space's, which the wordmark goes back to (M3d-19). */
+export function cameFromHome(board: string): boolean {
+  return cameFromList(board) && held?.from === "/";
 }
 
 /** The api notes each write the service took, by its board. */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Account } from "./Account.tsx";
 import { Hints } from "./Hints.tsx";
 import { AnalyticsNotice } from "./AnalyticsNotice.tsx";
@@ -6,7 +6,7 @@ import { Board } from "./board/Board.tsx";
 import type { Zoom } from "./board/Board.tsx";
 import { Icon, Logo } from "./icons.tsx";
 import { Home } from "./Home.tsx";
-import { NEW_PATH, boardPath, readLink } from "./links.ts";
+import { NEW_PATH, boardPath, readLink, spacePath } from "./links.ts";
 import { ReaderContext } from "./reader.ts";
 import { NewSteelman } from "./NewSteelman.tsx";
 import { NotFound } from "./NotFound.tsx";
@@ -20,14 +20,18 @@ import { SignIn } from "./signIn/SignIn.tsx";
 import { chooseTestUser, chosenTestUser, listTestUsers } from "./testUser.ts";
 import type { TestUser } from "./testUser.ts";
 import { forgetPlaces } from "./places.ts";
-import { cameFromList, forgetOpening, lastAddress, leavesQuietly, noteReturn, plainClick } from "./opening.ts";
+import { cameFromHome, cameFromList, forgetOpening, lastAddress, leavesQuietly, noteReturn, plainClick } from "./opening.ts";
 import { beforeZoom, holdBoard, putAway } from "./board/zoom.ts";
 import { watchPageChanges } from "./paging.ts";
+import { NavContext } from "./Spaces.tsx";
+import { SpaceSettings } from "./SpaceSettings.tsx";
 
 /**
  * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
  * Anything outside /b/ is the home page, the list of your steelmen (E-03),
  * except New steelman's sheet (F-01), at /new, and a person's profile (L-03), at /u/<username>.
+ * A space's page, /s/<space ID>, is the list showing only that space's boards; its settings are
+ * /s/<space ID>/settings, and New space is /spaces/new (M3d-19).
  *
  * A board opened from the list by a plain click, and the way back to the list
  * from it, change the page inside this one, with the browser's history
@@ -44,6 +48,13 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
   const [zoom, setZoom] = useState<Zoom>("read");
   /** The switch shows only while a board is on screen, not on its not-found or no-access page. */
   const [boardShown, setBoardShown] = useState(false);
+  /** The board's space, for the top bar's breadcrumb, when the reader is in it (M3d-19). */
+  const [boardSpace, setBoardSpace] = useState<{ id: string; name: string } | null>(null);
+  /** Whether the sidebar, folded behind its button under 900 px, is open (M3d-19). */
+  const [navOpen, setNavOpen] = useState(false);
+  const nav = useMemo(() => ({ open: navOpen, setOpen: setNavOpen }), [navOpen]);
+  /** The pages with the sidebar beside them: Home, a space's page, its settings, and New space. */
+  const withSidebar = link.kind === "home" || link.kind === "space-settings" || link.kind === "new-space";
   const shownPath = useRef(path);
   shownPath.current = path;
   const zoomShown = useRef(zoom);
@@ -52,6 +63,7 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
   const show = useCallback((next: string) => {
     setPath(next);
     setZoom("read");
+    setNavOpen(false);
   }, []);
   /** Switching views scales the scene from the centred card, or from the card Strongest case opens (M3d-9). */
   const zoomTo = useCallback((level: Zoom, card: string | null = null) => {
@@ -95,14 +107,15 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
     return () => window.removeEventListener("popstate", popped);
   }, [show]);
   // The wordmark leads home, to the list of your steelmen (E-03), as the prototype's does. From a board opened from
-  // the list it goes back there, as Back does, so that the board shrinks into its post.
+  // the list it goes back there, as Back does, so that the board shrinks into its post. From a board opened from a
+  // space's list, it loads Home, since that's where it says it leads.
   const wordmark = (
     <a
       className="sm-wordmark"
       href="/"
       aria-label="steelman. Your steelmen"
       onClick={(event) => {
-        if (!board || !plainClick(event) || !cameFromList(board) || !leavesQuietly()) return;
+        if (!board || !plainClick(event) || !cameFromHome(board) || !leavesQuietly()) return;
         event.preventDefault();
         window.history.back();
       }}
@@ -113,7 +126,7 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
     </a>
   );
   return (
-    <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined}>
+    <div id="steelman-study" data-indicator="dossier" data-density="comfortable" data-zoom={boardShown ? zoom : undefined} data-nav-open={navOpen && withSidebar ? "" : undefined}>
       <Hints />
       {link.kind === "privacy" ? (
         // Readable by anyone, signed in or not (M-07).
@@ -125,11 +138,35 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
         <SignedIn
           header={(signedIn) => (
             <header className="sm-site">
+              {/* The sidebar's button, drawn under 900 px by the prototype's CSS, on the pages that have the sidebar. */}
+              {signedIn && withSidebar ? (
+                <button
+                  id="sm-nav-toggle"
+                  type="button"
+                  className="sm-nav-toggle cursor-interaction"
+                  aria-expanded={navOpen}
+                  aria-controls="sm-side"
+                  aria-label="Spaces"
+                  onClick={() => setNavOpen((open) => !open)}
+                >
+                  <Icon name={navOpen ? "x" : "menu"} />
+                </button>
+              ) : null}
               {wordmark}
+              {/* The board's space, as the prototype's breadcrumb names it after the wordmark: a way to the space's page. */}
+              {signedIn && board && boardSpace ? (
+                <nav className="sm-crumbs ph-no-capture" aria-label="Breadcrumb">
+                  <span aria-hidden="true">/</span>
+                  <a className="sm-tag cursor-interaction" href={spacePath(boardSpace.id)}>
+                    {boardSpace.name}
+                  </a>
+                </nav>
+              ) : null}
               <div className="sm-site-tools">
                 {signedIn && boardShown ? <ViewSwitch zoom={zoom} onZoom={zoomTo} /> : null}
                 {signedIn && (board || link.kind === "home") ? (
-                  <a className="sm-share-button cursor-interaction" href={NEW_PATH} aria-label="New steelman">
+                  // On a space's page, the new steelman starts in that space, as the prototype's draft does.
+                  <a className="sm-share-button cursor-interaction" href={link.kind === "home" && link.space ? `${NEW_PATH}?space=${link.space}` : NEW_PATH} aria-label="New steelman">
                     <Icon name="plus" size={14} />
                     <span>New steelman</span>
                   </a>
@@ -145,7 +182,7 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
           )}
         >
           {link.kind === "board" ? (
-            <Board key={link.board} boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={zoomTo} onShown={setBoardShown} />
+            <Board key={link.board} boardId={link.board} version={link.version} comment={link.comment ?? null} zoom={zoom} onZoom={zoomTo} onShown={setBoardShown} onSpace={setBoardSpace} />
           ) : link.kind === "account" ? (
             <Account />
           ) : link.kind === "profile" ? (
@@ -155,8 +192,14 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
             <NotFound />
           ) : link.kind === "new" ? (
             <NewSteelman />
+          ) : link.kind === "space-settings" || link.kind === "new-space" ? (
+            <NavContext.Provider value={nav}>
+              <SpaceSettings space={link.kind === "space-settings" ? link.space : null} />
+            </NavContext.Provider>
           ) : (
-            <Home onOpen={open} />
+            <NavContext.Provider value={nav}>
+              <Home key={link.space ?? ""} space={link.space ?? null} onOpen={open} />
+            </NavContext.Provider>
           )}
         </SignedIn>
       )}

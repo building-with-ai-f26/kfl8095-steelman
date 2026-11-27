@@ -158,10 +158,14 @@ body { margin:0; }
 /* The wordmark is a link home (E-03), drawn as before. */
 #steelman-study a.sm-wordmark { text-decoration:none; }
 
-/* The list (E-03). The prototype's feed sits between the spaces sidebar and a rail; neither exists yet, so the
-   feed stands alone, centred. Its posts drop the activity column (no score yet), so the question leads, and the
+/* The list (E-03). The prototype's feed stands beside the spaces sidebar (M3d-19), centred in what's left, and on a
+   space's page, from 1280 px, beside the rail too. Under 900 px the sidebar folds behind its button and the feed
+   has the page to itself. Its posts drop the activity column (no score yet), so the question leads, and the
    question's link covers the whole post, as the prototype's click anywhere on it does. */
-#steelman-study .sm-home.sm-home-alone { grid-template-columns:minmax(0,1fr); justify-items:center; }
+#steelman-study .sm-home.sm-home-alone { grid-template-columns:232px minmax(0,1fr); }
+#steelman-study .sm-home.sm-home-alone > .sm-feed { justify-self:center; }
+@media(min-width:1280px) { #steelman-study .sm-home.sm-home-alone[data-rail] { grid-template-columns:232px minmax(0,1fr) 320px; } }
+@media(max-width:900px) { #steelman-study .sm-home.sm-home-alone { grid-template-columns:minmax(0,1fr); } }
 #steelman-study .sm-feed .sm-post { position:relative; grid-template-columns:minmax(0,1fr) 172px; padding-left:18px; }
 #steelman-study .sm-post h2 a { color:inherit; text-decoration:none; }
 #steelman-study .sm-post h2 a::after { content:""; position:absolute; inset:0; border-radius:inherit; }
@@ -569,3 +573,33 @@ body { margin:0; }
 /* No post matches the search: the empty list's dashed box, with Clear search. */
 #steelman-study .sm-feed-nomatch { display:grid; justify-items:center; gap:14px; padding:40px 20px; border:1px dashed #9a9a9a; border-radius:6px; text-align:center; color:var(--sm-quiet); font:300 14px var(--sm-sans); }
 #steelman-study .sm-feed-nomatch p { margin:0; }
+
+
+/* Spaces on screen (M3d-19; G-01, G-05, E-08). The prototype's sidebar, card, rail, and space settings are its own
+   CSS (sm-side, sm-space-card, sm-rail, sm-space-edit); these lines only adjust them for links where the prototype
+   had buttons, for the aria-current the app's links carry, and for the card's heading, which is an h2 here because
+   the page's h1 names the list. */
+#steelman-study a.sm-side-link { text-decoration:none; }
+#steelman-study .sm-side-link[aria-current="page"] { background:#fff; color:var(--sm-ink); }
+#steelman-study .sm-side-link[aria-current="page"] .sm-tag { border-color:var(--sm-ink); color:var(--sm-ink); }
+#steelman-study [aria-current="page"] .sm-side-count { color:var(--sm-muted); }
+#steelman-study .sm-side :focus-visible { outline:2px solid #fff; outline-offset:-2px; }
+#steelman-study .sm-side-link[aria-current="page"]:focus-visible { outline-color:var(--sm-ink); }
+/* Under 900 px it slides in from the left on --sm-medium as it opens; the prototype's reduced-motion rule stops it. */
+@media(max-width:900px) {
+  #steelman-study[data-nav-open] .sm-side { animation:sm-side-in var(--sm-medium) var(--sm-ease); }
+}
+@keyframes sm-side-in { from { translate:-100% 0; } }
+#steelman-study .sm-space-card .sm-space-body h2 { font:700 24px/1.15 var(--sm-serif); letter-spacing:-.4px; text-transform:none; color:var(--sm-ink); overflow-wrap:anywhere; }
+#steelman-study a.sm-button { text-decoration:none; }
+#steelman-study .sm-rail-list a { display:grid; gap:4px; width:100%; padding:8px; border-radius:6px; color:inherit; text-decoration:none; }
+#steelman-study .sm-rail-list a:hover { background:var(--sm-soft); }
+#steelman-study .sm-rail-list a:focus-visible { outline:2px solid var(--sm-ink); outline-offset:0; }
+/* A post's space, as the prototype's post leads with it, above the post's link so it can be followed. */
+#steelman-study .sm-post-meta .sm-post-space { position:relative; z-index:1; text-decoration:none; }
+/* The board's breadcrumb names its space as a link. */
+#steelman-study .sm-crumbs a.sm-tag { text-decoration:none; }
+/* Space settings: the way back is a link, and the Owner's row says why it has no menu, under the name. */
+#steelman-study a.sm-profile-back { text-decoration:none; }
+#steelman-study .sm-space-edit .sm-person > span:nth-child(2) small.sm-person-note { display:block; white-space:normal; }
+#steelman-study .sm-space-page > .sm-space-edit { justify-self:center; }

@@ -24,16 +24,27 @@
 // is deleted or hidden or whose option is deleted don't. A comment a
 // moderator hid still counts, as it does on the board, so the count is the
 // same for every reader. Nothing is stored for it: it's read each time.
+//
+// A board in a space names that space by its ID (G-05, E-08, M3d-19), so the
+// sidebar counts a space's boards and the list shows them under it, but only
+// to a reader who is in that space now, by the rule the board's own answer
+// follows (access.ts's spaceShownTo): someone invited to the board from
+// outside the space, or who has left it, isn't told which space it's in. A
+// board in no space keeps its listing's shape.
 
 import { sql } from "kysely";
-import { ROLES, closingOf } from "@steelman/shared";
+import { ROLES, SPACE_ROLES, closingOf } from "@steelman/shared";
 import type { BoardListing, Clock, Role } from "@steelman/shared";
 import { spaceBoards } from "./access.ts";
 import type { Db } from "./db/database.ts";
 
 export async function listBoards(db: Db, clock: Clock, person: string): Promise<{ now: string; boards: BoardListing[] }> {
-  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date; created_at: Date; comments: string; closed_at: Date | null; closes_at: Date | null }>`
+  const boards = await sql<{ id: string; question: string; role: string; owner: string; changed_at: Date; created_at: Date; comments: string; closed_at: Date | null; closes_at: Date | null; space: string | null }>`
     select b.id, b.question, m.role, owner.username as owner, b.closed_at, b.closes_at, b.created_at,
+      -- Its space, only while the reader is in it and it isn't deleted.
+      (select s.id from space s
+         join space_member sm on sm.space_id = s.id and sm.account_id = ${person} and sm.role = any(${[...SPACE_ROLES]})
+       where s.id = b.space_id and s.deleted_at is null) as space,
       -- A comment counts while it isn't deleted, its thread isn't resolved (a reply goes by its first comment), and
       -- its subject stands, as read.ts's commentRows decides.
       (select count(*) from comment c
@@ -92,6 +103,8 @@ export async function listBoards(db: Db, clock: Clock, person: string): Promise<
       comments: Number(board.comments),
       // Only for a board that's closed or has a closing time (M3b-3), so other listings keep their shape.
       ...closingKey(board, clock),
+      // Only for a board in a space the reader is in (M3d-19), so other listings keep their shape.
+      ...(board.space ? { space: board.space } : {}),
     })),
   };
 }

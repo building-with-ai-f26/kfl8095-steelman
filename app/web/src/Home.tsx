@@ -3,8 +3,8 @@
 // boards you're on, the most recently changed first; each shows who owns it,
 // how long ago it changed, its question (a link to the board), its options
 // with how many arguments each has, its open comment count, and a miniature
-// of the board's shape. Spaces, the activity score, and who's here come with
-// spaces (T3, T4), so they don't appear.
+// of the board's shape. The activity score and who's here come later (T4),
+// so they don't appear.
 //
 // Search and Sort (M3d-13; E-03, E-04, E-05) sit above the list, as GitHub's
 // repository list has them: a wide "Find a repository…" field (from memory),
@@ -40,13 +40,21 @@
 // metadata line) while a filter reads; Google Docs' home draws grey rows too
 // (from memory, since it needs a sign-in). A list post lifts a pixel under the
 // pointer, as a card on the board does (app.css); GitHub only tints the row.
+//
+// Spaces (M3d-19; G-01, G-05, E-08): the prototype's sidebar stands beside the
+// list (Spaces.tsx), and a space's page (/s/<ID>) is this list showing only
+// that space's boards, under the space's card, with the same search and sort,
+// and on a wide screen the rail's "Needs your help". A post in a space shows
+// the space's name on Home, as the prototype's post does, and its miniature
+// takes the space's canvas. Space names come from the reader's own spaces,
+// and sit in ph-no-capture.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import type { BoardList, BoardListing } from "@steelman/shared";
-import { listBoards } from "./api.ts";
+import type { BoardList, BoardListing, SpaceCanvas } from "@steelman/shared";
+import { listBoards, listSpaces } from "./api.ts";
 import { Icon } from "./icons.tsx";
-import { NEW_PATH, boardPath } from "./links.ts";
+import { NEW_PATH, boardPath, spacePath } from "./links.ts";
 import { ago, fullDate } from "./when.ts";
 import { HOME_PLACE, rememberPlace } from "./places.ts";
 import { heldList, listScroll, noteOpening, plainClick, rememberList, takeReturn } from "./opening.ts";
@@ -56,12 +64,17 @@ import type { Rects } from "./board/motion.ts";
 import { useExit } from "./board/drawer.ts";
 import { SORTS, matches, readSort, saveSort, searchSentence, sortBoards, sortSentence } from "./listSearch.ts";
 import type { ListSort } from "./listSearch.ts";
+import { HelpCard, Sidebar, SpaceCard, spaceOf } from "./Spaces.tsx";
+import type { Spaces } from "./Spaces.tsx";
+import { boardsIn, countsBySpace } from "./spaces.ts";
 
 /** The posts flip() moves when a search or a sort changes the list. */
 const POSTS = ".sm-feed-list > .sm-post";
 
 /** What the reader last searched for, in this page's memory only: there again after Back, and never stored or sent. */
 let heldQuery = "";
+/** Your spaces as last read, in this page's memory, so Back from a board draws a space's page at once, as the list is. */
+let heldSpaces: Spaces = null;
 
 /** A post that a change drops, copied as it was drawn, and where it stood among the list's results. */
 interface Dropped {
@@ -70,8 +83,10 @@ interface Dropped {
   y: number;
 }
 
-export function Home({ onOpen }: { onOpen?(path: string): void }) {
+/** `space` is the ID of the space whose boards the list shows (M3d-19); left out, every board. */
+export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string): void; space?: string | null }) {
   const [list, setList] = useState<BoardList | "signed_out" | "failed" | null>(() => heldList());
+  const [spaces, setSpaces] = useState<Spaces>(() => heldSpaces);
   const [query, setQuery] = useState(() => heldQuery);
   const [sort, setSort] = useState<ListSort>(readSort);
   const [said, setSaid] = useState("");
@@ -79,7 +94,9 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
   const field = useRef<HTMLInputElement>(null);
   /** Where the posts stood before the reader's change, and copies of those it drops, for the layout effect below. */
   const moving = useRef<{ rects: Rects; dropped: Dropped[] } | null>(null);
-  const boards = typeof list === "object" && list !== null ? list.boards : [];
+  /** Every board in the list, for the sidebar's counts; and the boards this page shows, which a space narrows. */
+  const all = typeof list === "object" && list !== null ? list.boards : [];
+  const boards = boardsIn(all, spaceId);
 
   // A search or a sort the reader makes. The posts' places are taken first, so they can slide from there.
   const change = (next: { query?: string; sort?: ListSort }) => {
@@ -129,6 +146,10 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
       if (typeof answer === "object") rememberList(answer);
       setList(answer);
     });
+    void listSpaces().then((answer) => {
+      heldSpaces = answer ?? heldSpaces ?? "failed";
+      setSpaces(heldSpaces);
+    });
   }, []);
   useEffect(load, [load]);
   const page = useRef<HTMLDivElement>(null);
@@ -152,16 +173,39 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
     return () => window.removeEventListener("pageshow", restored);
   }, [load]);
 
-  // The list is where detours lead back to when there's nowhere else (M3a-1).
-  useEffect(() => rememberPlace(() => HOME_PLACE), []);
-  if (list === null) return <HomeSkeleton />;
+  // The list is where detours lead back to when there's nowhere else (M3a-1). A space's page is named "the space",
+  // so the way back never names it where screen replays record it.
+  useEffect(() => rememberPlace(() => (spaceId ? { path: spacePath(spaceId), name: "the space" } : HOME_PLACE)), [spaceId]);
+  const space = spaceOf(spaces, spaceId);
+  const sidebar = <Sidebar spaces={spaces} counts={typeof list === "object" && list !== null ? countsBySpace(all) : null} at={spaceId ? { kind: "space", space: spaceId } : { kind: "home" }} />;
+  if (list === null || (spaceId && spaces === null)) return <HomeSkeleton sidebar={sidebar} rail={spaceId !== null} />;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
+  if (spaceId && !space) {
+    return (
+      <div ref={page} className="sm-home sm-home-alone">
+        {sidebar}
+        <main className="sm-feed">
+          <h1 className="sm-sr">Space not found</h1>
+          <div className="sm-feed-empty">
+            <p>{spaces === "failed" ? "Steelman couldn’t load your spaces. Reload the page to try again." : "This space doesn’t exist, or you aren’t in it."}</p>
+            <a className="sm-button cursor-interaction" href="/">
+              Go to Your steelmen
+            </a>
+          </div>
+        </main>
+      </div>
+    );
+  }
+  const canvasOf = (board: BoardListing): SpaceCanvas => spaceOf(spaces, board.space)?.canvas ?? "stone";
   return (
-    <div ref={page} className="sm-home sm-home-alone">
+    <div ref={page} className="sm-home sm-home-alone" data-rail={space ? "" : undefined}>
+      {sidebar}
       <main className="sm-feed">
-        <h1 id="sm-feed-title" className="sm-sr">
-          Your steelmen
+        <h1 id="sm-feed-title" className={space ? "sm-sr ph-no-capture" : "sm-sr"}>
+          {space ? space.name : "Your steelmen"}
         </h1>
+        {/* Above the list on a narrower screen; the rail's copy shows on a wide one (the prototype's CSS). */}
+        {space ? <SpaceCard space={space} /> : null}
         {list === "failed" ? (
           <div className="sm-feed-empty" role="alert">
             <p>Steelman couldn’t load your steelmen.</p>
@@ -169,10 +213,10 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
               Try again
             </button>
           </div>
-        ) : list.boards.length === 0 ? (
+        ) : boards.length === 0 ? (
           <div className="sm-feed-empty">
-            <p>You have no steelmen yet.</p>
-            <a className="sm-button sm-solid cursor-interaction" href={NEW_PATH}>
+            <p>{space ? "No steelmen are in this space yet." : "You have no steelmen yet."}</p>
+            <a className="sm-button sm-solid cursor-interaction" href={space ? `${NEW_PATH}?space=${space.id}` : NEW_PATH}>
               <Icon name="plus" size={14} />
               New steelman
             </a>
@@ -202,10 +246,10 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
             <div ref={results} className="sm-feed-results">
               {/* Copies of the posts a change drops fade out here, under the posts, hidden from screen readers and the cursor. */}
               <div className="sm-feed-leaving ph-no-capture" aria-hidden="true" inert />
-              {shown(list.boards, sort, query).length ? (
+              {shown(boards, sort, query).length ? (
                 <ol className="sm-feed-list" aria-labelledby="sm-feed-title">
-                  {shown(list.boards, sort, query).map((board) => (
-                    <Post key={board.id} board={board} now={list.now} onOpen={onOpen} />
+                  {shown(boards, sort, query).map((board) => (
+                    <Post key={board.id} board={board} now={list.now} onOpen={onOpen} canvas={canvasOf(board)} space={space ? null : spaceOf(spaces, board.space)} />
                   ))}
                 </ol>
               ) : (
@@ -230,15 +274,37 @@ export function Home({ onOpen }: { onOpen?(path: string): void }) {
           </>
         )}
       </main>
+      {space && typeof list === "object" ? (
+        <aside className="sm-rail" aria-label="About this space">
+          <SpaceCard space={space} />
+          <HelpCard boards={list.boards} space={space.id} />
+        </aside>
+      ) : null}
     </div>
   );
 }
 
-function Post({ board, now, onOpen }: { board: BoardListing; now: string; onOpen: ((path: string) => void) | undefined }) {
+interface PostProps {
+  board: BoardListing;
+  now: string;
+  onOpen: ((path: string) => void) | undefined;
+  /** The miniature's canvas: its space's, or stone. */
+  canvas: SpaceCanvas;
+  /** The board's space, named on Home's list; null on a space's own page, or for a board in no space. */
+  space: { id: string; name: string } | null;
+}
+
+function Post({ board, now, onOpen, canvas, space }: PostProps) {
   return (
     <li className="sm-post">
       <div className="sm-post-body">
         <div className="sm-post-meta">
+          {/* The space's name, as the prototype's post leads with it: a way to the space's page. */}
+          {space ? (
+            <a className="sm-tag sm-post-space ph-no-capture cursor-interaction" href={spacePath(space.id)}>
+              {space.name}
+            </a>
+          ) : null}
           {/* Who owns it, as Google Drive's list shows ("me" there, "You" here); the prototype's author goes here. */}
           <span className="sm-post-owner ph-no-capture">{board.role === "owner" ? "You" : board.owner}</span>
           <span className="sm-dot" />
@@ -284,7 +350,7 @@ function Post({ board, now, onOpen }: { board: BoardListing; now: string; onOpen
           </span>
         </div>
       </div>
-      <Thumb options={board.options} />
+      <Thumb options={board.options} canvas={canvas} />
     </li>
   );
 }
@@ -429,9 +495,9 @@ function miniatureOf(question: Element): { left: number; top: number; width: num
 }
 
 /** A miniature of the board: the question, then a column per option with a card for each argument, up to three. */
-function Thumb({ options }: { options: BoardListing["options"] }) {
+function Thumb({ options, canvas }: { options: BoardListing["options"]; canvas: SpaceCanvas }) {
   return (
-    <span className="sm-thumb" data-canvas="stone" aria-hidden="true">
+    <span className="sm-thumb" data-canvas={canvas} aria-hidden="true">
       <span className="sm-thumb-q" />
       <span className="sm-thumb-cols">
         {options.map((option, i) => (
@@ -456,11 +522,13 @@ const PLACEHOLDERS = [3, 2, 2] as const;
  * and its column are the list's own, so the posts stand where their placeholders stood, but nothing here is the list,
  * a post, or a question, so nothing that finds those finds these.
  */
-function HomeSkeleton() {
+function HomeSkeleton({ sidebar, rail }: { sidebar: React.ReactNode; rail: boolean }) {
   const [said, setSaid] = useState(false);
   useEffect(() => setSaid(true), []);
   return (
-    <div className="sm-home sm-home-alone">
+    <div className="sm-home sm-home-alone" data-rail={rail ? "" : undefined}>
+      {/* The sidebar is drawn at once, in its own column, so the posts stand where their placeholders stood. */}
+      {sidebar}
       <main className="sm-feed sm-feed-skeleton">
         <h1 className="sm-sr">Your steelmen</h1>
         {/* The search field and Sort, as blocks of their size, so the posts stand where their placeholders stood. */}

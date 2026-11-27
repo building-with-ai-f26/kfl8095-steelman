@@ -81,10 +81,11 @@ test("H-02, F-01: the sheet sets the board's permissions from the start", async 
   await expect(page.getByRole("button", { name: "Invited only" })).toBeVisible();
 });
 
-test("F-01: Space and Collaboration rules are shown where they'll be, marked Later", async ({ board }) => {
+// Space became a working menu in M3d-19 (spaces.spec.ts tests it); the builder approved this change, Nov 26.
+test("F-01: Collaboration rules is shown where it'll be, marked Later", async ({ board }) => {
   const page = await home(board);
 
-  for (const name of ["Space", "Collaboration rules"]) await expect(page.locator(".sm-rrow-later", { hasText: name })).toContainText("Later");
+  for (const name of ["Collaboration rules"]) await expect(page.locator(".sm-rrow-later", { hasText: name })).toContainText("Later");
 });
 
 test("F-01: a third and fourth option can be added, and removed", async ({ board }) => {

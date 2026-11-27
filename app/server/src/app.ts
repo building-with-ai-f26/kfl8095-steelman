@@ -44,7 +44,7 @@ import { accessOf, entryTo, joinByLink, spaceShownTo } from "./access.ts";
 import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
 import { changeUsername } from "./username.ts";
 import { serveWebApp } from "./web.ts";
-import { createBoard } from "./boards.ts";
+import { NoSpace, createBoard } from "./boards.ts";
 import { LIMITS, createLimiter } from "./limits.ts";
 import type { LimitName, Limits } from "./limits.ts";
 import type { Db } from "./db/database.ts";
@@ -403,12 +403,18 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return listBoards(db, clock, request.person);
   });
 
-  // A new board (F-01). Anyone signed in may make one; they become its Owner.
+  // A new board (F-01). Anyone signed in may make one; they become its Owner. It may start in a space they're in (M3d-19).
   app.post("/api/boards", { config: { limit: "board" } }, async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     const body = newBoardInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
-    return { status: "done", board: await createBoard(db, clock, ids, request.person, body.data) };
+    try {
+      return { status: "done", board: await createBoard(db, clock, ids, request.person, body.data) };
+    } catch (error) {
+      // A space the person isn't in answers as one that doesn't exist does (G-05, M3d-19).
+      if (error instanceof NoSpace) return reply.code(STATUS_FOR.no_space).send({ status: "refused", reason: "no_space" });
+      throw error;
+    }
   });
 
   // Spaces (G-03, G-04, M3d-17; spaces.ts). Anyone signed in makes one, limited as making boards is, with the same

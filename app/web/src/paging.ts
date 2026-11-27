@@ -1,5 +1,6 @@
 // The pages change with a short crossfade and rise (M3d-11, M-15). Home, New
-// steelman, Your account, the privacy page, and a profile (M3d-16) still
+// steelman, Your account, the privacy page, a profile (M3d-16), and a space's
+// page, its settings, and New space (M3d-19) still
 // reach one another by loading the page, as before, so the way back (M-13),
 // the leave prompt (Q20), and analytics' page views work as they did. The
 // browser's own view transition between the two pages draws the new page
@@ -24,7 +25,7 @@ import { reducedMotion } from "./board/motion.ts";
 /** The pages that change with the page transition: every page but a board's and the not-found page. */
 export function changesWithTransition(path: string): boolean {
   const kind = readLink(path).kind;
-  return kind === "home" || kind === "new" || kind === "account" || kind === "privacy" || kind === "profile";
+  return kind === "home" || kind === "new" || kind === "account" || kind === "privacy" || kind === "profile" || kind === "space-settings" || kind === "new-space";
 }
 
 /**

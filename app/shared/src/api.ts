@@ -203,14 +203,16 @@ export const newBoardInput = z
     options: z.array(optionNameInput).min(OPTIONS_PER_BOARD.min).max(OPTIONS_PER_BOARD.max),
     /** Who can get in from the start; left out, anyone with the link, as Contributor. */
     access: accessInput.optional(),
+    /** The space it starts in (G-05, M3d-19), one its maker is in, which the service checks; left out, no space. */
+    space: itemIdInput.optional(),
   })
   .refine(({ options }) => new Set(options.map((name) => name.toLowerCase())).size === options.length, {
     message: "Each option needs a different name.",
     path: ["options"],
   })
-  // A new board is in no space until its Owner puts it in one (M3d-18), so it can't start shared with a space's members.
-  .refine(({ access }) => access?.general !== "space", {
-    message: "A new steelman isn’t in a space yet, so it can’t be shared with everyone in one.",
+  // Only a board that starts in a space (M3d-19) can start shared with everyone in it.
+  .refine(({ access, space }) => access?.general !== "space" || space !== undefined, {
+    message: "Choose a space before you share a new steelman with everyone in it.",
     path: ["access", "general"],
   });
 export type NewBoard = z.infer<typeof newBoardInput>;
@@ -439,6 +441,11 @@ export interface BoardListing {
   comments: number;
   /** Only when the board is closed or has a closing time (M3b-3). */
   closing?: Closing;
+  /**
+   * The ID of the board's space (G-05, E-08, M3d-19), only for a reader who is in that space, so the sidebar can count
+   * a space's boards and the list can show them under it. Its name and canvas come from the reader's own spaces.
+   */
+  space?: string;
 }
 
 /**

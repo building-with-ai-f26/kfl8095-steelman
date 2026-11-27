@@ -2,16 +2,25 @@
 // docs/prototype/source/steelman-refined.html), as the builder revised it on
 // Nov 14: white, with the options side by side like the board's columns
 // (scrolling sideways on a phone), and the settings under them, each an icon
-// and a name. Permissions works (H-02); Space and Collaboration rules (the
-// prototype's "How it runs") are shown where they'll be, marked Later. Wording
-// hints (F-02) show under the question. The sheet is at /new, a button on the
-// list (E-03), and making a board opens it.
+// and a name. Permissions works (H-02); Collaboration rules (the prototype's
+// "How it runs") is shown where it'll be, marked Later. Wording hints (F-02)
+// show under the question. The sheet is at /new, a button on the list (E-03),
+// and making a board opens it.
+//
+// Space (M3d-19, G-05) is the prototype's menu of your spaces, first among
+// the settings, as its createMarkup() has it, with None for a board in no
+// space. Choosing a space offers "Everyone in <space>" in Permissions, chosen
+// for you, at the link's role, as Google Drive's General access names the
+// organisation (from memory), and the sheet takes the space's canvas. The
+// board is made in its space in one write, so it is never left outside it.
+// /new?space=<ID> starts on that space, as a space's empty list links here.
+// Space names sit in ph-no-capture (M-08).
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { LIMITS, OPTIONS_PER_BOARD, cleanText } from "@steelman/shared";
-import type { Access } from "@steelman/shared";
-import { createBoard } from "./api.ts";
+import type { Access, SpaceSummary } from "@steelman/shared";
+import { createBoard, listSpaces } from "./api.ts";
 import { questionHints } from "./questionHints.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
@@ -19,6 +28,13 @@ import { boardPath } from "./links.ts";
 import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 import { busyButton } from "./busy.ts";
 import { arrivingWithTransition } from "./paging.ts";
+import { generalLabel } from "./board/spaceAccess.ts";
+
+/** The space named in the address (/new?space=<ID>), or none. */
+function spaceAsked(): string {
+  if (typeof window === "undefined") return "";
+  return new URLSearchParams(window.location.search).get("space") ?? "";
+}
 
 const PLACEHOLDERS = ["First option", "Second option", "Third option", "Fourth option"];
 
@@ -37,7 +53,14 @@ function problemWith(question: string, options: string[]): { message: string; fi
 export function NewSteelman() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
-  const [access, setAccess] = useState<Access>({ general: "link", linkRole: "contributor" });
+  const [access, setAccess] = useState<Access>(() => ({ general: spaceAsked() ? "space" : "link", linkRole: "contributor" }));
+  /** Your spaces, for the Space menu; empty until they're read, or when they can't be. */
+  const [spaces, setSpaces] = useState<SpaceSummary[]>([]);
+  /** The chosen space's ID, or "" for none. */
+  const [spaceId, setSpaceId] = useState(spaceAsked);
+  const space = spaces.find((each) => each.id === spaceId) ?? null;
+  /** Who can get in as it will be sent: everyone in a space only once that space is one of yours. */
+  const chosen: Access = space || access.general !== "space" ? access : { ...access, general: "link" };
   const [error, setError] = useState("");
   /** The field the error is about: "question" or "option-<n>", or null when it's about the whole sheet. */
   const [badField, setBadField] = useState<string | null>(null);
@@ -49,6 +72,17 @@ export function NewSteelman() {
   const sheet = useRef<HTMLFormElement>(null);
   /** Arriving through the page transition, the sheet rises with the page, not again on its own (M3d-11). */
   const [arrived] = useState(arrivingWithTransition);
+
+  useEffect(() => {
+    void listSpaces().then((mine) => {
+      setSpaces(mine ?? []);
+      // A space asked for by the address that isn't one of yours is none.
+      if (!mine?.some((each) => each.id === spaceAsked()) && spaceAsked()) {
+        setSpaceId("");
+        setAccess((was) => (was.general === "space" ? { ...was, general: "link" } : was));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!focus) return;
@@ -79,7 +113,7 @@ export function NewSteelman() {
     setBusy(true);
     let answer: Awaited<ReturnType<typeof createBoard>>;
     try {
-      answer = await createBoard({ question: cleanText(question), options: options.map(cleanText).filter(Boolean), access });
+      answer = await createBoard({ question: cleanText(question), options: options.map(cleanText).filter(Boolean), access: chosen, ...(space ? { space: space.id } : {}) });
     } catch {
       // An answer the app can't read (a proxy's error page, say): never leave the button stuck.
       answer = { problem: "Steelman couldn’t make that board. Try again." };
@@ -94,7 +128,7 @@ export function NewSteelman() {
   /** What a field needs when the error is about it. */
   const marks = (field: string) => (badField === field ? { "aria-invalid": true, "aria-describedby": "sm-create-error" } : {});
   return (
-    <main className="sm-landing sm-create-landing" data-canvas="cool">
+    <main className="sm-landing sm-create-landing" data-canvas={space?.canvas ?? "cool"}>
       <form ref={sheet} className={arrived ? "sm-create sm-create-page sm-arrived" : "sm-create sm-create-page"} aria-labelledby="sm-create-title" onSubmit={(event) => void submit(event)} noValidate>
         <div className="sm-create-canvas">
           {/* The way back, at the left of the title as on Your account (the builder, Nov 22: "That back option
@@ -178,6 +212,33 @@ export function NewSteelman() {
         <div className="sm-create-foot">
           <div className="sm-rgroup sm-create-basics">
             <div className="sm-rrow">
+              <label className="sm-rrow-label sm-rrow-icon" htmlFor="sm-create-space">
+                <Icon name="users" />
+                Space
+              </label>
+              <span className="sm-rrow-control">
+                <select
+                  id="sm-create-space"
+                  className="sm-rselect ph-no-capture"
+                  value={space ? space.id : ""}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    setSpaceId(next);
+                    // In a space, it starts shared with everyone there; out of one, it can't be.
+                    if (next && access.general !== "space") setAccess({ ...access, general: "space" });
+                    if (!next && access.general === "space") setAccess({ ...access, general: "link" });
+                  }}
+                >
+                  <option value="">None</option>
+                  {spaces.map((each) => (
+                    <option key={each.id} value={each.id}>
+                      {each.name}
+                    </option>
+                  ))}
+                </select>
+              </span>
+            </div>
+            <div className="sm-rrow">
               <label className="sm-rrow-label sm-rrow-icon" htmlFor="sm-create-access">
                 <Icon name="lock" />
                 Permissions
@@ -185,22 +246,27 @@ export function NewSteelman() {
               <span className="sm-rrow-control">
                 <select
                   id="sm-create-access"
-                  className="sm-rselect"
-                  value={access.general}
+                  className="sm-rselect ph-no-capture"
+                  value={chosen.general}
                   onChange={(event) => setAccess({ ...access, general: event.target.value as Access["general"] })}
                 >
+                  {space ? <option value="space">{generalLabel("space", space.name)}</option> : null}
                   <option value="link">Anyone with the link</option>
                   <option value="invited">Invited only</option>
                 </select>
-                {access.general === "link" ? (
-                  <select className="sm-rselect" aria-label="Link role" value={access.linkRole} onChange={(event) => setAccess({ ...access, linkRole: event.target.value as Access["linkRole"] })}>
+                {chosen.general !== "invited" ? (
+                  <select
+                    className="sm-rselect"
+                    aria-label={chosen.general === "space" ? "Space role" : "Link role"}
+                    value={access.linkRole}
+                    onChange={(event) => setAccess({ ...access, linkRole: event.target.value as Access["linkRole"] })}
+                  >
                     <option value="contributor">can contribute</option>
                     <option value="voter">can vote</option>
                   </select>
                 ) : null}
               </span>
             </div>
-            <Later icon="users" name="Space" />
             <Later icon="sliders-horizontal" name="Collaboration rules" />
           </div>
           <div className="sm-create-actions">
