@@ -7,7 +7,7 @@ import { OPTIONS_PER_BOARD, commentBodyInput, contextInput, itemIdInput, optionN
 import type { Closing } from "./closing.ts";
 import type { BoardOrder } from "./order.ts";
 import { LINK_ROLES } from "./policy.ts";
-import type { Role, SpaceRole } from "./policy.ts";
+import type { Role, SpaceAction, SpaceRole } from "./policy.ts";
 
 /** A vote: +1, -1, or null to withdraw it. */
 export const voteInput = z.strictObject({ value: z.union([z.literal(1), z.literal(-1), z.null()]) });
@@ -602,7 +602,23 @@ export type RefusalReason =
    * The board isn't in a space, or the space named isn't one the Owner is in (G-05, M3d-18). A space the Owner isn't in
    * answers as one that doesn't exist does, so no one learns that it exists.
    */
-  | "no_space";
+  | "no_space"
+  /**
+   * Only a public space's Admins and its Owner put a board in it, when it is made or later (G-05, M3d-34). The screen
+   * says SPACE_ADMINS_POST.
+   */
+  | "space_admins_post";
+
+/** What a Member who tries to put a board in a public space is told (M3d-34). */
+export const SPACE_ADMINS_POST = "Only the space’s admins can add steelmen to a public space.";
+
+/**
+ * The space action that puts a board in a space of this visibility (M3d-34): any member's in a private space, and only
+ * its Admins' and Owner's otherwise. A word the service doesn't know counts as public, so it grants nothing more.
+ */
+export function postingIn(visibility: string): SpaceAction {
+  return visibility === "private" ? "space_read" : "space_post";
+}
 
 export type WriteAnswer =
   | { status: "done"; seq: number }

@@ -16,6 +16,13 @@
 // recorded as a board membership, so leaving the space or being removed from
 // it ends their access at once. Someone with a board role of their own keeps
 // it, whatever the space does. A deleted space lets no one in.
+//
+// A board opens through its space only while its Owner is still a member of
+// that space (M3d-34; security review F1 and F4). When an Admin removes the
+// Owner, or the Owner leaves, the board stops opening for the space's other
+// members at once, and leaves their lists, profiles, and statistics, with
+// nothing written to the board. The Owner is the board_member row with the
+// role owner, which account deletion hands on, not the board's created_by.
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
@@ -32,6 +39,9 @@ export interface Entry {
 }
 
 const NO_ROLE: Entry = { role: null, joiningByLink: false };
+
+/** The board `b`'s Owner is still a member of its space (M3d-34). entryTo, spaceBoards, and accessOf all ask it, so they agree. */
+const OWNER_IN_SPACE = sql<boolean>`exists (select 1 from board_member bo join space_member so on so.space_id = b.space_id and so.account_id = bo.account_id where bo.board_id = b.id and bo.role = 'owner' and so.role = any(${[...SPACE_ROLES]}))`;
 
 /** A role as stored. Anything the service doesn't know gives no role, so an unknown word can't grant access. */
 export function asRole(stored: string): Role | null {
@@ -53,7 +63,8 @@ export async function entryTo(db: Reader, boardId: string, person: string | null
     select b.link_role from board b
     join space s on s.id = b.space_id and s.deleted_at is null
     join space_member sm on sm.space_id = s.id and sm.account_id = ${person}
-    where b.id = ${boardId} and b.general_access = 'space' and sm.role = any(${[...SPACE_ROLES]})`.execute(db);
+    where b.id = ${boardId} and b.general_access = 'space' and sm.role = any(${[...SPACE_ROLES]})
+      and ${OWNER_IN_SPACE}`.execute(db);
   if (bySpace.rows[0]) {
     const role = asLinkRole(bySpace.rows[0].link_role);
     return role === null ? NO_ROLE : { role, joiningByLink: false };
@@ -101,11 +112,15 @@ export async function joinByLink(db: Reader, clock: Clock, boardId: string, pers
   return member ? asRole(member.role) : null;
 }
 
-/** The board's general access and link role, as the API sends them. */
+/**
+ * The board's general access and link role, as the API sends them. A space counts only while its Owner is still in it
+ * (M3d-34), so a board whose Owner left reads as open only to invited people, as one in a deleted space does, and
+ * nothing is written to it: it reopens to the space if the Owner rejoins.
+ */
 export async function accessOf(db: Reader, boardId: string): Promise<Access | null> {
   const board = await db
     .selectFrom("board as b")
-    .leftJoin("space as s", (join) => join.onRef("s.id", "=", "b.space_id").on("s.deleted_at", "is", null))
+    .leftJoin("space as s", (join) => join.onRef("s.id", "=", "b.space_id").on("s.deleted_at", "is", null).on(OWNER_IN_SPACE))
     .select(["b.general_access", "b.link_role", "s.id as space"])
     .where("b.id", "=", boardId)
     .executeTakeFirst();
@@ -113,9 +128,10 @@ export async function accessOf(db: Reader, boardId: string): Promise<Access | nu
 }
 
 /**
- * `space` is the board's space if it isn't deleted, else null. A board shared with a space that was deleted (its last
- * member deleted their account) lets no one in through it (entryTo), so it reads as open only to invited people, and
- * Share never tells its Owner that everyone in the space can open it (M3d-18).
+ * `space` is the board's space if it isn't deleted, else null; accessOf also gives null once the board's Owner has left
+ * it (M3d-34). A board shared with a space that was deleted (its last member deleted their account), or that its Owner
+ * left, lets no one in through it (entryTo), so it reads as open only to invited people, and Share never tells its
+ * Owner that everyone in the space can open it (M3d-18).
  */
 export function asAccess(board: { general_access: string; link_role: string; space: string | null }): Access {
   const general = board.general_access === "link" || (board.general_access === "space" && board.space !== null) ? board.general_access : "invited";
@@ -128,7 +144,7 @@ export function asAccess(board: { general_access: string; link_role: string; spa
 /**
  * The boards `person` reaches through a space they're in and no board role of their own (M3d-18), with the role the
  * space gives them: those shared with everyone in a space that isn't deleted, at a role a link may give, and not
- * deleted. The list, profiles, and statistics each add these to the person's board_member rows, so all three agree
+ * deleted, and whose Owner is still in that space. The list, profiles, and statistics each add these to the person's board_member rows, so all three agree
  * with entryTo, which lets them in.
  */
 export function spaceBoards(person: string) {
@@ -137,7 +153,8 @@ export function spaceBoards(person: string) {
     join space s on s.id = b.space_id and s.deleted_at is null
     where b.general_access = 'space' and b.deleted_at is null and b.link_role = any(${[...LINK_ROLES]})
       and exists (select 1 from space_member sm where sm.space_id = b.space_id and sm.account_id = ${person} and sm.role = any(${[...SPACE_ROLES]}))
-      and not exists (select 1 from board_member own where own.board_id = b.id and own.account_id = ${person})`;
+      and not exists (select 1 from board_member own where own.board_id = b.id and own.account_id = ${person})
+      and ${OWNER_IN_SPACE}`;
 }
 
 /** The board's space, for a reader who is in it (M3d-18); null for anyone else, and for a board in no space or a deleted one. */

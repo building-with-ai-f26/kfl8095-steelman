@@ -15,6 +15,14 @@
 // board is made in its space in one write, so it is never left outside it.
 // /new?space=<ID> starts on that space, as a space's empty list links here.
 // Space names sit in ph-no-capture (M-08).
+//
+// A public space is in the menu only for its Admins and its Owner (M3d-34,
+// security review F1), as GitHub leaves an organization out of a member's
+// Owner menu when only its owners create repositories (from memory); the
+// prototype lists every joined community, and the app departs from it here
+// on purpose. A Member the service refuses anyway, made a Member after the
+// sheet opened, reads why, as Slack tells someone in a channel where only
+// admins post (checked live, Nov 28).
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -25,6 +33,7 @@ import { questionHints } from "./questionHints.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
 import { boardPath } from "./links.ts";
+import { spacesToPostIn } from "./spaces.ts";
 import { TitleBar, usePlaceBefore } from "./BackLink.tsx";
 import { busyButton } from "./busy.ts";
 import { arrivingWithTransition } from "./paging.ts";
@@ -74,10 +83,12 @@ export function NewSteelman() {
   const [arrived] = useState(arrivingWithTransition);
 
   useEffect(() => {
-    void listSpaces().then((mine) => {
-      setSpaces(mine ?? []);
-      // A space asked for by the address that isn't one of yours is none.
-      if (!mine?.some((each) => each.id === spaceAsked()) && spaceAsked()) {
+    void listSpaces().then((all) => {
+      // Only the spaces you may start a board in (M3d-34).
+      const mine = spacesToPostIn(all ?? []);
+      setSpaces(mine);
+      // A space asked for by the address that isn't one of yours to post in is none.
+      if (!mine.some((each) => each.id === spaceAsked()) && spaceAsked()) {
         setSpaceId("");
         setAccess((was) => (was.general === "space" ? { ...was, general: "link" } : was));
       }

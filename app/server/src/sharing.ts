@@ -11,10 +11,13 @@
 // so switching to the space removes the people who came by the link, as
 // turning the link off does. The Owner puts their board in a space they are
 // in, or takes it out; moving a board shared with its space stops sharing it,
-// so it never opens to a group the Owner didn't choose.
+// so it never opens to a group the Owner didn't choose. Into a public space,
+// only an Owner who is one of its Admins, or its Owner, moves a board
+// (M3d-34, the policy's space_post); a Member is refused as
+// "space_admins_post", as a new board there is (boards.ts).
 
 import { sql } from "kysely";
-import { canInSpace } from "@steelman/shared";
+import { canInSpace, postingIn } from "@steelman/shared";
 import type { Access, Person, Role } from "@steelman/shared";
 import { asAccess, asRole } from "./access.ts";
 import type { Db } from "./db/database.ts";
@@ -70,7 +73,8 @@ export async function setAccess({ db, clock }: Services, boardId: string, person
 
 /**
  * The Owner puts their board in a space they're in, or takes it out with null (G-05, M3d-18). A space they aren't
- * in answers as one that doesn't exist does, so they can't learn that it exists. A board shared with everyone in its
+ * in answers as one that doesn't exist does, so they can't learn that it exists. A public space takes a board only from
+ * its Admins and its Owner (M3d-34). A board shared with everyone in its
  * space stops being shared when it leaves that space, and is then open only to invited people. Putting it where it is
  * already is "already done".
  */
@@ -84,12 +88,13 @@ export async function setBoardSpace({ db, clock }: Services, boardId: string, pe
         const mine = await trx
           .selectFrom("space_member as sm")
           .innerJoin("space as s", "s.id", "sm.space_id")
-          .select("sm.role")
+          .select(["sm.role", "s.visibility"])
           .where("sm.space_id", "=", space)
           .where("sm.account_id", "=", person!)
           .where("s.deleted_at", "is", null)
           .executeTakeFirst();
         if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) return { refused: "no_space" };
+        if (canInSpace(person, asSpaceRole(mine.role), postingIn(mine.visibility)) !== null) return { refused: "space_admins_post" };
       }
       const unshared = board.general_access === "space";
       await trx

@@ -44,7 +44,7 @@ import { accessOf, entryTo, joinByLink, spaceShownTo } from "./access.ts";
 import { accountSummary, deleteAccount, exportData, markTourSeen, tourSeen } from "./account.ts";
 import { changeUsername } from "./username.ts";
 import { serveWebApp } from "./web.ts";
-import { NoSpace, createBoard } from "./boards.ts";
+import { NoSpace, SpaceAdminsPost, createBoard } from "./boards.ts";
 import { LIMITS, createLimiter } from "./limits.ts";
 import type { LimitName, Limits } from "./limits.ts";
 import type { Db } from "./db/database.ts";
@@ -184,6 +184,8 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   comment_deleted: 409,
   owner_keeps_role: 409,
   no_space: 409,
+  // A refusal for the person's role, as not_allowed is, and not 409, which the sheet reads as having left the space.
+  space_admins_post: 403,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -422,6 +424,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     } catch (error) {
       // A space the person isn't in answers as one that doesn't exist does (G-05, M3d-19).
       if (error instanceof NoSpace) return reply.code(STATUS_FOR.no_space).send({ status: "refused", reason: "no_space" });
+      // A Member naming a public space, where only its Admins and Owner start a board (M3d-34).
+      if (error instanceof SpaceAdminsPost) return reply.code(STATUS_FOR.space_admins_post).send({ status: "refused", reason: "space_admins_post" });
       throw error;
     }
   });

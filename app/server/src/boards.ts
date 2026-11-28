@@ -17,9 +17,15 @@
 // failed. A space they aren't in, or one that was deleted, is refused as no
 // space, as putting a board in a space is (sharing.ts's setBoardSpace), and
 // nothing is made. The change row names the space by its ID (invariant 7).
+//
+// In a public space, only its Admins and its Owner start a board (M3d-34,
+// the policy's space_post; security review F1), as GitHub lets an
+// organization keep repository creation to its owners. A Member who tries is
+// refused as "space_admins_post", and nothing is made. In a private space,
+// any member still may.
 
 import { sql } from "kysely";
-import { canInSpace } from "@steelman/shared";
+import { canInSpace, postingIn } from "@steelman/shared";
 import type { Clock, IdSource, NewBoard } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import { asSpaceRole } from "./spaces.ts";
@@ -31,6 +37,13 @@ export class NoSpace extends Error {
   }
 }
 
+/** Thrown when a Member names a public space, where only its Admins and Owner start a board (M3d-34); nothing is made. */
+export class SpaceAdminsPost extends Error {
+  constructor() {
+    super("space_admins_post");
+  }
+}
+
 /** Makes the board in one transaction and returns its ID. Only the local seed passes `id`, for its example boards' fixed links. */
 export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: string, board: NewBoard, id = ids.boardId()): Promise<string> {
   const now = clock.now();
@@ -39,12 +52,13 @@ export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: s
       const mine = await trx
         .selectFrom("space_member as sm")
         .innerJoin("space as s", "s.id", "sm.space_id")
-        .select("sm.role")
+        .select(["sm.role", "s.visibility"])
         .where("sm.space_id", "=", board.space)
         .where("sm.account_id", "=", person)
         .where("s.deleted_at", "is", null)
         .executeTakeFirst();
       if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) throw new NoSpace();
+      if (canInSpace(person, asSpaceRole(mine.role), postingIn(mine.visibility)) !== null) throw new SpaceAdminsPost();
     }
     await trx
       .insertInto("board")

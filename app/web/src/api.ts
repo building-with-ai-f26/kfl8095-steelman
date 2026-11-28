@@ -2,7 +2,7 @@
 // in (the browser sends their session cookie), or says which test account the
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
-import { tooManyMessage } from "@steelman/shared";
+import { SPACE_ADMINS_POST, tooManyMessage } from "@steelman/shared";
 import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, SpaceCanvas, SpaceMember, SpaceSummary, SpaceWriteAnswer, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
@@ -93,6 +93,8 @@ export async function createBoard(board: NewBoard): Promise<string | { problem: 
   if (response.status === 429) return { problem: tooManyMessage(((await response.json()) as { retryAfter: number }).retryAfter) };
   // The space was deleted, or they were taken out of it, since the sheet opened (M3d-19).
   if (response.status === 409) return { problem: "You aren’t in that space any more. Choose another space, or none." };
+  // They were made a Member of a public space since the sheet opened, and only its Admins start a board there (M3d-34).
+  if (response.status === 403 && (await response.json().catch(() => null))?.reason === "space_admins_post") return { problem: SPACE_ADMINS_POST };
   if (!response.ok) return { problem: "Steelman couldn’t make that board. Try again." };
   return ((await response.json()) as { board: string }).board;
 }

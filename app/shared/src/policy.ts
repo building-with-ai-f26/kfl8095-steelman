@@ -109,8 +109,8 @@ export function can(person: string | null, role: Role | null, action: Action, bo
 // Spaces (G-03, G-04, M3d-17; plans/architecture.md §7, point 4). A space has
 // its own three roles, apart from a board's: Member (reads the space and its
 // members, and may leave), Admin (also renames it, edits its about text and
-// canvas, invites by username, removes a member, and switches a role between
-// Admin and Member), and Owner (also changes its visibility, as only a
+// canvas, invites by username, removes a member, switches a role between
+// Admin and Member, and puts a board in a public space, M3d-34), and Owner (also changes its visibility, as only a
 // board's Owner changes General access). The Owner is the one who made the
 // space; no one demotes or removes the Owner, and the Owner can't leave,
 // which the service refuses as "owner_keeps_role". There is no Moderator.
@@ -121,7 +121,7 @@ export type SpaceRole = "member" | "admin" | "owner";
 /** Each space role, least to most. A role may do everything the ones before it may. */
 export const SPACE_ROLES: readonly SpaceRole[] = ["member", "admin", "owner"];
 
-export type SpaceAction = "space_read" | "space_leave" | "space_edit" | "space_invite" | "space_remove" | "space_role" | "space_visibility";
+export type SpaceAction = "space_read" | "space_leave" | "space_edit" | "space_invite" | "space_remove" | "space_role" | "space_visibility" | "space_post";
 
 export const SPACE_POLICY: Record<SpaceAction, { least: SpaceRole }> = {
   /** Reading the space, how many members it has, and its member list: its members only. */
@@ -138,6 +138,8 @@ export const SPACE_POLICY: Record<SpaceAction, { least: SpaceRole }> = {
   space_role: { least: "admin" },
   /** Changing who can find the space: only "private" until M3d-20. */
   space_visibility: { least: "owner" },
+  /** Putting a board in a public space, when it is made or later (M3d-34). In a private space, any member may (space_read). */
+  space_post: { least: "admin" },
 };
 
 /**
