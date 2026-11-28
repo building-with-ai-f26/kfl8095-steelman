@@ -86,11 +86,13 @@ interface Box {
   height: number;
 }
 
-/** Where an element is drawn, in page pixels. */
+/** Where an element is drawn, in page pixels, or on screen for one fixed to the window. */
 function boxOf(locator: Locator): Promise<Box> {
   return locator.evaluate((element) => {
     const { left, top, width, height } = element.getBoundingClientRect();
-    return { left: left + window.scrollX, top: top + window.scrollY, width, height };
+    // A bar fixed to the window stays where it is on screen as the page scrolls, so it's measured on screen.
+    const fixed = getComputedStyle(element).position === "fixed";
+    return { left: left + (fixed ? 0 : window.scrollX), top: top + (fixed ? 0 : window.scrollY), width, height };
   });
 }
 
@@ -375,7 +377,7 @@ async function watchExits(page: Page): Promise<{ taken(): Promise<Exit[]>; clear
         role: node.getAttribute("role"),
         names: node.querySelectorAll("[id], [for], [name], [data-key]").length + (node.matches("[id], [for], [name], [data-key]") ? 1 : 0),
         looks: looks(node),
-        box: { left: left + window.scrollX, top: top + window.scrollY, width, height },
+        box: style.position === "fixed" ? { left, top, width, height } : { left: left + window.scrollX, top: top + window.scrollY, width, height },
       });
     };
     const leaving = (node: Node): node is HTMLElement => node instanceof HTMLElement && (node.classList.contains("sm-exit") || node.classList.contains("sm-leaving"));
