@@ -14,7 +14,8 @@
 // longest-standing Admin, as they were before the deletion (M3d-18, M3d-33;
 // architecture §2's deletion table). A space its Owner leaves passes to the
 // longest-standing Admin, else the longest-standing Member who was invited;
-// someone who joined by themselves never inherits it (M3d-33).
+// someone who joined by themselves never inherits it (M3d-33). Their blocks
+// are deleted, and the blocks they wrote are credited to the stand-in (M3d-35).
 // The username is held for 30 days. Analytics are anonymous, so PostHog
 // isn't asked to delete anything.
 
@@ -193,6 +194,17 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     .orderBy("m.joined_at")
     .orderBy("m.space_id")
     .execute();
+  // The spaces that removed them and haven't invited them back (G-07, M3d-35), with when. Never who removed them, and
+  // not a space that was deleted since, as their memberships aren't listed for one.
+  const removedFrom = await db
+    .selectFrom("space_block as b")
+    .innerJoin("space as s", "s.id", "b.space_id")
+    .select(["b.space_id", "b.at"])
+    .where("b.account_id", "=", person)
+    .where("s.deleted_at", "is", null)
+    .orderBy("b.at")
+    .orderBy("b.space_id")
+    .execute();
 
   return {
     exported: clock.now().toISOString(),
@@ -205,6 +217,7 @@ export async function exportData(db: Db, clock: Clock, person: string) {
       ...(space.joined_via !== "invite" ? { joinedVia: space.joined_via } : {}),
       ...(space.created_by === person ? { name: space.name, about: space.about } : {}),
     })),
+    removedFrom: removedFrom.map((block) => ({ space: block.space_id, at: block.at.toISOString() })),
     votes: {
       importance: importance.map((v) => ({ board: v.board_id, argument: v.argument_id, value: v.value, at: v.voted_at.toISOString() })),
       articulation: articulation.map((v) => ({ board: v.board_id, version: v.version_id, value: v.value, at: v.voted_at.toISOString() })),
@@ -338,6 +351,8 @@ const SPACE_HEIRS = ["admin", "member"];
  * deleted, as a space with no one else in it is: its name and about text are erased and its row is kept, as a deleted
  * board's is, and the members who joined by themselves no longer find it. A space they made is credited to the
  * stand-in, and their ID is scrubbed from its change rows. Locked in ID order, so two deletions can't wait on each other.
+ * Their blocks are deleted in every space, and a block they wrote is credited to the stand-in, as their change rows are
+ * (M3d-35), so it keeps the person out after the remover's account is gone.
  */
 async function handOverSpaces(trx: Trx, person: string, now: Date): Promise<void> {
   const touched = await sql<{ id: string }>`
@@ -363,6 +378,9 @@ async function handOverSpaces(trx: Trx, person: string, now: Date): Promise<void
     }
     await trx.updateTable("space").set({ created_by: DELETED_ACCOUNT }).where("id", "=", id).where("created_by", "=", person).execute();
   }
+  // In every space, not only theirs: a person removed from a space isn't in it any more.
+  await trx.deleteFrom("space_block").where("account_id", "=", person).execute();
+  await trx.updateTable("space_block").set({ blocked_by: DELETED_ACCOUNT }).where("blocked_by", "=", person).execute();
   const quoted = JSON.stringify(person);
   await trx
     .updateTable("space_change")

@@ -56,6 +56,8 @@ export interface Database {
     before: ColumnType<unknown, string | undefined, never>;
     after: ColumnType<unknown, string | undefined, never>;
   };
+  /** A person an Admin or the Owner removed from a space, kept out until invited back (G-04, G-07; migration 0020). */
+  space_block: { space_id: string; account_id: string; blocked_by: string; at: Date };
   // Sign-in's own tables (migration 0007). Better Auth reads and writes
   // these; the service's own code uses only sent_email.
   "sign_in.session": { id: string; account_id: string; token: string; expires_at: Date; created_at: Date; updated_at: Date };
