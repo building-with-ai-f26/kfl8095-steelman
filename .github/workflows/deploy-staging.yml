@@ -88,3 +88,9 @@ jobs:
           gcloud run services update-traffic steelman --project "$PROJECT" --region "$REGION" --to-latest --quiet
           gcloud run jobs update steelman-daily --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
           echo "Staging runs $DIGEST"
+
+      # Staging has no schedule for the daily job, because its database is stopped every night. Running it here
+      # deletes expired codes and sessions and releases held usernames, as the privacy page says (M3d-31, F29).
+      # The new version already serves, so a failure here means the clean-up failed, not the deploy.
+      - name: Run the daily clean-up, which staging has no schedule for
+        run: gcloud run jobs execute steelman-daily --project "$PROJECT" --region "$REGION" --wait
