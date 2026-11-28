@@ -29,7 +29,7 @@ import type { EmailSender } from "./email.ts";
 import { claimFirstUsername } from "./username.ts";
 
 export interface SignInDependencies {
-  /** Where the site is, such as https://app.steelman-argument.com. Cookies are Secure when it's https, and writes must come from it. */
+  /** Where the site is, such as https://app.steelman-argument.com. Cookies are Secure when it's https, every answer then carries Strict-Transport-Security, and writes must come from it. */
   origin: string;
   /** Signs the session cookie. From the environment, never from a file (AGENTS.md rule 5). */
   secret: string;

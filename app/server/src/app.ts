@@ -148,6 +148,9 @@ function cloudLogging(stream: NodeJS.WritableStream, clock: Clock) {
 /** The header the browser uses to say which test account it is acting as, while there is no sign-in (M0). */
 const TEST_USER_HEADER = "x-steelman-test-user";
 
+/** Strict-Transport-Security on an https site: one year, the max-age GitHub and accounts.google.com send, without includeSubDomains or preload (M3d-29). */
+const STRICT_TRANSPORT = "max-age=31536000";
+
 const STATUS_FOR: Record<RefusalReason, number> = {
   signed_out: 401,
   no_access: 403,
@@ -231,9 +234,15 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
   });
   const policy = contentSecurityPolicy(analytics);
   const saved = createEvents(analytics, sendEvent);
+  // When the site's address is https, every answer tells the browser to use https here for a year, so a later
+  // visit typed as http:// never leaves the browser unencrypted (M-07, F20, M3d-29). A local run on http
+  // sends none. It leaves out includeSubDomains and preload, because both are hard to undo and the other names
+  // under the domain haven't been checked. The address is the one sign-in uses, the same test as its Secure cookies.
+  const strictTransport = signInDependencies?.origin.startsWith("https://") ?? false;
   app.addHook("onSend", async (_request, reply) => {
     reply.header("content-security-policy", policy);
     reply.header("x-content-type-options", "nosniff");
+    if (strictTransport) reply.header("strict-transport-security", STRICT_TRANSPORT);
   });
 
   app.get("/api/health", () => ({ status: "ok", time: clock.now().toISOString() }));
