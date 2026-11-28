@@ -69,6 +69,9 @@ export const SIGN_IN_ROUTES: ReadonlySet<string> = new Set([
  */
 const CODE_ROUTES: ReadonlySet<string> = new Set(["/email-otp/send-verification-otp", "/sign-in/email-otp", "/email-otp/request-email-change", "/email-otp/change-email"]);
 
+/** What a code or Google sign-in answers for a suspended account (J-06): the body's code, or Google's ?error=. */
+export const SUSPENDED = "ACCOUNT_SUSPENDED";
+
 /** The most characters of one of Better Auth's messages that go to the log. */
 const LOG_LINE_MOST = 300;
 
@@ -187,8 +190,16 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
       // Better Auth would record the browser's user agent with each session. Steelman doesn't keep it.
       session: {
         create: {
-          // Better Auth merges what this returns over the session, so the two are blanked rather than left out.
-          before: async (session) => ({ data: { ...session, userAgent: undefined, ipAddress: undefined } }),
+          before: async (session) => {
+            // A suspended account gets no session (J-06, M3d-36; finding F8). This runs only once the code or Google
+            // has proved the address, for both, so only someone who could sign in learns why they can't. Better
+            // Auth's own ban (its admin plugin) refuses the same way. Google's sign-in sends the browser back with
+            // ?error=ACCOUNT_SUSPENDED.
+            const account = await db.selectFrom("account").select("suspended_at").where("id", "=", session.userId).executeTakeFirst();
+            if (account?.suspended_at) throw new APIError("FORBIDDEN", { code: SUSPENDED, message: "This account is suspended." });
+            // Better Auth merges what this returns over the session, so the two are blanked rather than left out.
+            return { data: { ...session, userAgent: undefined, ipAddress: undefined } };
+          },
         },
       },
       // Better Auth would keep Google's tokens with the sign-in method. Steelman
@@ -361,6 +372,15 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
     async personFor(headers: Headers): Promise<SignedIn | null> {
       const session = await auth.api.getSession({ headers });
       if (!session) return null;
+      // Suspending ends the account's sessions, but one written as it ran could outlive it: a suspended account is
+      // signed out on every route either way (J-06, M3d-36). Such a session is ended here too, so the next
+      // get-session answers signed out and the web shows the person as signed out rather than half signed in.
+      const account = await db.selectFrom("account").select("suspended_at").where("id", "=", session.user.id).executeTakeFirst();
+      if (!account) return null;
+      if (account.suspended_at !== null) {
+        await db.deleteFrom("sign_in.session").where("account_id", "=", session.user.id).execute();
+        return null;
+      }
       return { id: session.user.id, username: (session.user as { username?: string | null }).username ?? null };
     },
   };

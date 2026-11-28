@@ -538,6 +538,55 @@ resource "google_cloud_run_v2_job" "daily" {
   depends_on = [google_secret_manager_secret_iam_member.readers, google_project_iam_member.sql_client, google_secret_manager_secret_version.made]
 }
 
+# The operator job: the builder's suspend, unsuspend, and make-private (app/server/src/jobs/operator.ts; M3d-36,
+# finding F8 of the public-spaces security review), as the service. Nothing schedules it: the builder runs it by hand,
+# with the command as its arguments (infra/README.md, "Taking something down"). A failed run isn't retried, so a
+# takedown that fails says so once and is never quietly run again.
+resource "google_cloud_run_v2_job" "operator" {
+  project             = var.project_id
+  name                = "${local.name}-operator"
+  location            = var.region
+  deletion_protection = false
+
+  template {
+    task_count = 1
+    template {
+      service_account = google_service_account.service.email
+      max_retries     = 0
+      timeout         = "300s"
+      containers {
+        image   = local.placeholder
+        command = ["node", "server/dist/operator-cli.mjs"]
+        env {
+          name = "DATABASE_URL"
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.made["database-url"].secret_id
+              version = "latest"
+            }
+          }
+        }
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+      }
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [google_sql_database_instance.main.connection_name]
+        }
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [template[0].template[0].containers[0].image, client, client_version]
+  }
+
+  depends_on = [google_secret_manager_secret_iam_member.readers, google_project_iam_member.sql_client, google_secret_manager_secret_version.made]
+}
+
 # ── Schedules ──
 
 resource "google_cloud_run_v2_job_iam_member" "scheduler_runs_daily" {

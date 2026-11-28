@@ -271,7 +271,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const named = request.headers[TEST_USER_HEADER];
     if (named !== undefined) {
       if (!testUsersOn) return reply.code(403).send({ status: "refused", reason: "test_users_off" });
-      const account = typeof named === "string" ? await db.selectFrom("account").select("id").where("id", "=", named).executeTakeFirst() : undefined;
+      // A suspended account is signed out here too (J-06), as it is with a session.
+      const account = typeof named === "string" ? await db.selectFrom("account").select("id").where("id", "=", named).where("suspended_at", "is", null).executeTakeFirst() : undefined;
       request.person = account?.id ?? null;
       return;
     }
@@ -323,6 +324,9 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
             return reply.code(429).header("retry-after", String(wait)).send({ code: "TOO_MANY_REQUESTS", message: tooManyMessage(wait), retryAfter: wait });
           }
         }
+        // A session that outlived a suspension ends here before the web asks who is signed in, so the person is
+        // shown as signed out rather than signed in with every request refused (J-06).
+        if (route === "GET /get-session") await signIn.personFor(headersOf(request.headers));
         const response = await signIn.handle(
           new Request(url, {
             method: request.method,

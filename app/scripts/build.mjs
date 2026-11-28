@@ -1,9 +1,9 @@
 // `npm run build`: what the container runs (app/Dockerfile, M1-14a).
 //
 // - web/dist: the web app, built by Vite for production (with the web fonts).
-// - server/dist: the service, its migration runner, and the daily job, each
-//   bundled by esbuild (which comes with Vite) into one JavaScript file with
-//   the shared rules inside it. Packages from npm stay outside the bundle and
+// - server/dist: the service, its migration runner, the daily job, and the
+//   builder's operator job (M3d-36), each bundled by esbuild (which comes
+//   with Vite) into one JavaScript file with the shared rules inside it. Packages from npm stay outside the bundle and
 //   are installed in the container as usual. Bundling means production runs
 //   plain JavaScript: no TypeScript runner is needed at run time.
 
@@ -17,7 +17,7 @@ const app = join(import.meta.dirname, "..");
 await buildWeb({ root: join(app, "web"), mode: "production", logLevel: "warn", build: { outDir: "dist", emptyOutDir: true } });
 
 await buildServer({
-  entryPoints: { main: "server/src/main.ts", "migrate-cli": "server/src/db/migrate-cli.ts", "daily-cli": "server/src/jobs/daily-cli.ts" },
+  entryPoints: { main: "server/src/main.ts", "migrate-cli": "server/src/db/migrate-cli.ts", "daily-cli": "server/src/jobs/daily-cli.ts", "operator-cli": "server/src/jobs/operator-cli.ts" },
   absWorkingDir: app,
   outdir: "server/dist",
   outExtension: { ".js": ".mjs" },

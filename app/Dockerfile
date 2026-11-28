@@ -1,10 +1,12 @@
 # The Steelman service as one container (M1-14a; plans/architecture.md §4):
 # the API, sign-in, and the built web app at one address. The same image runs
-# the migrations and the daily call as Cloud Run jobs, with another command:
+# the migrations, the daily call, and the operator commands as Cloud Run jobs,
+# with another command:
 #
 #   node server/dist/main.mjs          the service (the default)
 #   node server/dist/migrate-cli.mjs   brings the database up to date
 #   node server/dist/daily-cli.mjs     the daily clean-up
+#   node server/dist/operator-cli.mjs  the builder's suspend, unsuspend, and make-private (M3d-36)
 #
 # Built from the repository's root, since the web app takes its look from the
 # prototype in docs/:  docker build -f app/Dockerfile -t steelman .

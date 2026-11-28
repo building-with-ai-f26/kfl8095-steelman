@@ -29,6 +29,13 @@ import { heldUsername } from "./username.ts";
 /** The stand-in that everything a deleted person wrote is credited to (migration 0009). */
 export const DELETED_ACCOUNT = "deleted_account";
 
+/**
+ * The stand-in that the builder's operator changes are credited to, such as making a space private (J-06, M3d-36). The
+ * first such change makes it, as the first deletion makes DELETED_ACCOUNT, and the name is reserved
+ * (RESERVED_USERNAMES). It is made deleted, with no email, so it can't sign in and no one can find or invite it.
+ */
+export const OPERATOR_ACCOUNT = "steelman";
+
 /** How long a deleted account's username stays unavailable to others (architecture §7, Retention). */
 export const USERNAME_HELD_DAYS = 30;
 
@@ -74,7 +81,7 @@ export async function markTourSeen(db: Db, clock: Clock, person: string): Promis
 export async function exportData(db: Db, clock: Clock, person: string) {
   const summary = await accountSummary(db, person);
   if (!summary) return null;
-  const joined = (await db.selectFrom("account").select("created_at").where("id", "=", person).executeTakeFirstOrThrow()).created_at;
+  const { created_at: joined, suspended_at: suspended } = await db.selectFrom("account").select(["created_at", "suspended_at"]).where("id", "=", person).executeTakeFirstOrThrow();
 
   const importance = await db
     .selectFrom("importance_vote")
@@ -210,6 +217,8 @@ export async function exportData(db: Db, clock: Clock, person: string) {
     exported: clock.now().toISOString(),
     account: { ...summary, joined: joined.toISOString() },
     heldUsername: held,
+    // When the builder suspended the account (J-06, M3d-36), or null.
+    suspended: suspended?.toISOString() ?? null,
     spaces: spaces.map((space) => ({
       space: space.space_id,
       role: space.role,
@@ -568,12 +577,12 @@ async function deleteBoard(trx: Trx, boardId: string, now: Date, seq: number): P
 
 /**
  * Releases the usernames of accounts deleted at least 30 days ago, so others
- * may take them. The daily scheduled call runs it (M1-14).
+ * may take them, but never the two stand-ins'. The daily scheduled call runs it (M1-14).
  *
  * @returns How many were released.
  */
 export async function releaseHeldUsernames(db: Db, clock: Pick<Clock, "now">): Promise<number> {
   const before = new Date(clock.now().getTime() - USERNAME_HELD_DAYS * 86_400_000);
-  const released = await db.updateTable("account").set({ username: null }).where("deleted_at", "<=", before).where("username", "is not", null).where("id", "!=", DELETED_ACCOUNT).executeTakeFirst();
+  const released = await db.updateTable("account").set({ username: null }).where("deleted_at", "<=", before).where("username", "is not", null).where("id", "not in", [DELETED_ACCOUNT, OPERATOR_ACCOUNT]).executeTakeFirst();
   return Number(released.numUpdatedRows);
 }

@@ -20,6 +20,11 @@ const STATE: Record<AnalyticsStatus, string> = {
 };
 
 export function Privacy() {
+  // The page draws after the browser has looked for #questions (Account suspended links there, J-06), so it scrolls to
+  // the section itself, as Your account does for #statistics.
+  useEffect(() => {
+    if (window.location.hash === "#questions") document.getElementById("questions")?.scrollIntoView();
+  }, []);
   return (
     <main className="sm-privacy">
       <TitleBar here="/privacy">
@@ -121,7 +126,8 @@ export function Privacy() {
       <h2>Changes to this page</h2>
       <p>We date each change at the top of this page, so the date shows when what we keep about you last changed.</p>
 
-      <h2>Questions</h2>
+      {/* Account suspended links here (J-06). */}
+      <h2 id="questions">Questions</h2>
       <p>
         If you have a question, ask Kieran LaMee or <a href="https://github.com/building-with-ai-f26/kfl8095-steelman/issues">open an issue on GitHub</a>.
       </p>

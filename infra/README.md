@@ -11,7 +11,7 @@ Terraform for the two environments (plans/architecture.md §5 and §6; M1-14b):
 | Database | stopped every night, started by each deploy | always on; a weekly export to a bucket in `steelman-staging`, kept 8 weeks |
 
 Both use `modules/steelman/`, which reads top to bottom: the APIs, the database, the secrets, the service
-accounts and GitHub's way in, the Cloud Run service and its two jobs, the schedules, and the monitoring.
+accounts and GitHub's way in, the Cloud Run service and its three jobs, the schedules, and the monitoring.
 
 **What applying it costs:** about $15–20 a month in all (plans/build-plan.md, M1): the production database
 about $9–10, Cloud Run $0–5, staging's database about $2 while stopped. Budget alerts don't stop spending.
@@ -146,6 +146,64 @@ gcloud sql instances patch steelman-staging --project=steelman-staging --activat
 
  Terraform leaves alone what other things change: the image (each deploy), and staging's
 database being stopped or started.
+
+## Taking something down
+
+The `steelman-operator` job (M3d-36, `app/server/src/jobs/operator.ts`) suspends an account or makes a public
+space private. It runs as the service, on the service's image, and nothing schedules it: the builder runs it
+by hand. Each command prints one sentence and changes nothing when it runs twice. A username or space ID
+that matches nothing prints a sentence and fails the run.
+
+- `suspend <username>` signs the person out everywhere and stops them signing back in. Their sessions end,
+  and a code or Google sign-in shows "This account is suspended." The code is still emailed when they ask
+  for one, so asking reveals nothing. What they wrote stays, and Editors hide it with the tools they
+  already have.
+- `unsuspend <username>` lets them sign in again.
+- `make-private <space ID>` makes a public space private. Its members stay, and its change log credits the
+  change to the `steelman` stand-in.
+
+Why a job and not SQL by hand: finding F8 of `plans/reviews/public-spaces-security-review.md` says deleting
+someone's sessions alone lets them sign straight back in. Suspension has to be a mark on the account that
+sign-in checks, so it goes through the job. Running SQL by hand against staging or production is on the Ask
+me first list anyway.
+
+The job starts on the placeholder image, as the daily job does, and gets Steelman's image from the next
+deploy (staging) or release (production). Check which image it has before the first run:
+
+```bash
+gcloud run jobs describe steelman-operator --project steelman-staging --region us-central1 --format='value(template.template.containers[0].image)'
+```
+
+Staging's database is stopped every night, so start it first:
+
+```bash
+gcloud sql instances patch steelman-staging --project=steelman-staging --activation-policy=ALWAYS
+```
+
+Then, on staging:
+
+```bash
+gcloud run jobs execute steelman-operator --project steelman-staging --region us-central1 --args=suspend,lin_zhao --wait
+```
+```bash
+gcloud run jobs execute steelman-operator --project steelman-staging --region us-central1 --args=unsuspend,lin_zhao --wait
+```
+```bash
+gcloud run jobs execute steelman-operator --project steelman-staging --region us-central1 --args=make-private,SPACE_ID --wait
+```
+
+The sentence the job printed is in its log:
+
+```bash
+gcloud logging read 'resource.type="cloud_run_job" AND resource.labels.job_name="steelman-operator"' --project steelman-staging --limit 5 --format='value(textPayload)'
+```
+
+On production, only the builder runs it, with `--project steelman-production` in place of
+`--project steelman-staging`, for example:
+
+```bash
+gcloud run jobs execute steelman-operator --project steelman-production --region us-central1 --args=suspend,lin_zhao --wait
+```
 
 ## Moving production to steelman-argument.com
 

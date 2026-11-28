@@ -2,11 +2,17 @@
 // (docs/prototype/source/steelman-refined.html, authCard): Continue with Google,
 // or a 6-digit code by email, typed into six boxes. The prototype's own CSS
 // classes, so it looks as approved.
+//
+// A suspended account (J-06, M3d-36) gets its own card once the code or
+// Google has proved the address, as Google's "Your account is disabled" page
+// and GitHub's suspended-account notice do: it says the account is suspended,
+// not why, and where to ask. Google's help page was checked live on Nov 28;
+// GitHub's appeal page was too, and its notice's wording is from memory.
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { tooManyMessage } from "@steelman/shared";
-import { emailCode, googleAddress, signInWithCode } from "./account.ts";
+import { SUSPENDED, emailCode, googleAddress, signInWithCode } from "./account.ts";
 import { AuthCard } from "./AuthCard.tsx";
 import { CodeBoxes } from "./CodeBoxes.tsx";
 import { busyButton } from "../busy.ts";
@@ -27,10 +33,13 @@ const MESSAGES = {
 /** Five wrong tries cancel a code (plans/architecture.md §7). */
 const WRONG_TRIES_ALLOWED = 5;
 
-/** Google sends the browser back with ?error=… when it didn't sign someone in. Someone who cancelled at Google needs no message. */
+/**
+ * Google sends the browser back with ?error=… when it didn't sign someone in. Someone who cancelled at Google needs no
+ * message, and a suspended account gets its own card.
+ */
 function googleErrorIn(search: string): string {
   const error = new URLSearchParams(search).get("error");
-  return error && error !== "access_denied" ? MESSAGES.google : "";
+  return error && error !== "access_denied" && error !== SUSPENDED ? MESSAGES.google : "";
 }
 
 export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
@@ -39,6 +48,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [googleError, setGoogleError] = useState(() => googleErrorIn(window.location.search));
+  const [suspended, setSuspended] = useState(() => new URLSearchParams(window.location.search).get("error") === SUSPENDED);
   const [resent, setResent] = useState(false);
   const [wrongTries, setWrongTries] = useState(0);
   // Once a code has expired or been cancelled by wrong tries, the service deletes it and only says a code is wrong.
@@ -63,7 +73,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   // Each step, and each error, puts the cursor where it's needed.
   useEffect(() => {
     field.current?.focus();
-  }, [step, error, googleError, refocus]);
+  }, [step, error, googleError, refocus, suspended]);
 
   const fail = (message: string) => {
     setError(message);
@@ -104,6 +114,14 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
     setResending(false);
     const answer = await signInWithCode(email, code);
     if (answer === "signed_in") return onSignedIn();
+    if (answer === "suspended") {
+      // The code is used up, so going back starts again at the email.
+      setBusy(false);
+      setError("");
+      setStep("start");
+      setSuspended(true);
+      return;
+    }
     if (answer === "failed") return fail(MESSAGES.unreachable);
     const gone = answer === "expired" ? "expired" : answer === "too_many_tries" ? "tooManyTries" : codeGone;
     if (gone) {
@@ -130,6 +148,8 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
       {error}
     </p>
   ) : null;
+
+  if (suspended) return <Suspended onBack={() => setSuspended(false)} />;
 
   if (step === "code") {
     return (
@@ -216,6 +236,29 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
           By continuing, you agree to Steelman’s Terms and Privacy Policy.
         </p>
       </form>
+    </AuthCard>
+  );
+}
+
+/** Account suspended (J-06): what Sign in says once the code or Google has proved a suspended account's address. */
+function Suspended({ onBack }: { onBack: () => void }) {
+  const title = useRef<HTMLHeadingElement>(null);
+  // A new card in the place of the one they were on: the keyboard's place moves to its title, as on a new page.
+  useEffect(() => title.current?.focus(), []);
+  return (
+    <AuthCard label="Account suspended">
+      <h1 ref={title} tabIndex={-1} className="sm-auth-title sm-auth-signin sm-quiet-focus">
+        Account suspended
+      </h1>
+      <p className="sm-auth-text">This account is suspended.</p>
+      <p className="sm-auth-text">
+        To ask about it, see <a href="/privacy#questions">Questions on the privacy page</a>.
+      </p>
+      <div className="sm-auth-links">
+        <button type="button" className="sm-link-button cursor-interaction" onClick={onBack}>
+          Use a different email
+        </button>
+      </div>
     </AuthCard>
   );
 }
