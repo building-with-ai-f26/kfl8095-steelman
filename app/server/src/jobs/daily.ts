@@ -2,13 +2,14 @@
 // the retention table says goes after a while. Cloud Scheduler runs it once a
 // day as a Cloud Run job (daily-cli.ts), with the service's own database role.
 
+import { SIGN_IN_EMAILS_KEPT_HOURS } from "@steelman/shared";
 import type { Clock } from "@steelman/shared";
 import { releaseHeldUsernames } from "../account.ts";
 import type { Db } from "../db/database.ts";
 import { releaseEndedHolds } from "../username.ts";
 
-/** The record of sign-in emails sent only counts the last hour (sign-in.ts); a day is plenty. */
-const SENT_EMAILS_KEPT_MS = 24 * 60 * 60 * 1000;
+/** The record of sign-in emails sent only counts the last hour (sign-in.ts); a day is plenty. The privacy page says it (M3d-37). */
+const SENT_EMAILS_KEPT_MS = SIGN_IN_EMAILS_KEPT_HOURS * 60 * 60 * 1000;
 
 export async function dailyCleanUp(db: Db, clock: Pick<Clock, "now">): Promise<{ codes: number; sessions: number; sentEmails: number; usernames: number }> {
   const now = clock.now();

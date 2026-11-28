@@ -34,6 +34,7 @@ export {
   wordingInput,
 } from "./inputs.ts";
 export type { SourceInput } from "./inputs.ts";
+export { CODE_LASTS_MINUTES, SESSION_LASTS_DAYS, SIGN_IN_CODES_COUNTED_HOURS, SIGN_IN_EMAILS_KEPT_HOURS, USERNAME_HELD_DAYS, USERNAME_HOLD_DAYS } from "./periods.ts";
 export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
 export { SPACE_POLICY, SPACE_ROLES, canInSpace } from "./policy.ts";

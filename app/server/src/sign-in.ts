@@ -22,7 +22,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, genericOAuth, username } from "better-auth/plugins";
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { emailAddress, isAllowedUsername, USERNAME } from "@steelman/shared";
+import { CODE_LASTS_MINUTES, SESSION_LASTS_DAYS, emailAddress, isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { EmailSender } from "./email.ts";
@@ -110,11 +110,11 @@ const GOOGLE_START_FIELDS: ReadonlySet<string> = new Set(["provider", "callbackU
 /** Where Google publishes its OpenID Connect endpoints and signing keys. */
 export const GOOGLE_DISCOVERY = "https://accounts.google.com/.well-known/openid-configuration";
 
-/** The rules for codes and sessions (architecture §7). */
+/** The rules for codes and sessions (architecture §7). The two periods are in shared, where the privacy page's test reads them (M3d-37). */
 const CODE_DIGITS = 6;
-const CODE_LASTS_SECONDS = 10 * 60;
+const CODE_LASTS_SECONDS = CODE_LASTS_MINUTES * 60;
 const WRONG_TRIES_ALLOWED = 5;
-const SESSION_LASTS_SECONDS = 30 * 24 * 60 * 60;
+const SESSION_LASTS_SECONDS = SESSION_LASTS_DAYS * 24 * 60 * 60;
 const EMAILS_PER_ADDRESS_PER_HOUR = 5;
 const HOUR = 60 * 60 * 1000;
 /**

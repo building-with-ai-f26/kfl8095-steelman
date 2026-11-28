@@ -18,13 +18,13 @@
 // account's name stays taken until that job releases it.
 
 import { sql } from "kysely";
-import { RESERVED_USERNAMES, isAllowedUsername } from "@steelman/shared";
+import { RESERVED_USERNAMES, USERNAME_HOLD_DAYS, isAllowedUsername } from "@steelman/shared";
 import type { Clock } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { Trx } from "./write-path.ts";
 
-/** How long a changed username's old name is held, and how often a name may change (architecture §7, Retention). */
-export const USERNAME_HOLD_DAYS = 30;
+// How long a changed username's old name is held, and how often a name may change, is USERNAME_HOLD_DAYS (architecture
+// §7, Retention), in shared so the privacy page's test can check the page says it (M3d-37).
 const DAY_MS = 86_400_000;
 
 /** Postgres's code for a row a unique index refuses. */

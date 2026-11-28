@@ -8,6 +8,7 @@
 // loose. The one limit that must hold exactly, sign-in emails to an address,
 // is counted in Postgres instead (sign-in.ts).
 
+import { SIGN_IN_CODES_COUNTED_HOURS } from "@steelman/shared";
 import type { Clock } from "@steelman/shared";
 
 const MINUTE = 60_000;
@@ -20,8 +21,8 @@ export interface Limit {
 }
 
 export const LIMITS = {
-  /** Asking for a sign-in code, to any address, counted by network address. */
-  signInCode: { most: 30, windowMs: HOUR },
+  /** Asking for a sign-in code, to any address, counted by network address. The privacy page says how long it counts (M3d-37). */
+  signInCode: { most: 30, windowMs: SIGN_IN_CODES_COUNTED_HOURS * HOUR },
   /** New boards, by account. */
   board: { most: 20, windowMs: HOUR },
   /** New arguments, new wordings, edits, and sources added or cited, by account. */
