@@ -5,7 +5,10 @@
 // anyone else reads "the space". As Google Drive's General access names the
 // organisation ("Anyone in <organisation>"), Notion's "Everyone at
 // <workspace>", and Figma's "Anyone at <team>" (from memory), the choice
-// names the group, and the role follows the link's.
+// names the group, and the role follows the link's. On a board in a public
+// space (M3d-20, security review F5), the hint says that anyone with an
+// account can join the space and then get in, so its Owner knows how far it
+// reaches.
 
 import type { Access } from "@steelman/shared";
 
@@ -31,9 +34,10 @@ export function generalLabel(general: Access["general"], spaceName: string | nul
 /** The General access choice on a board that isn't in a space, which can't be chosen until it is. */
 export const NO_SPACE_LABEL = "Everyone in a space";
 
-/** The first sentence under General access. */
-export function accessHint(access: Access, spaceName: string | null): string {
+/** The first sentence under General access. `visibility` is the space's, when the reader is told it's public. */
+export function accessHint(access: Access, spaceName: string | null, visibility?: "public"): string {
   if (access.general === "link") return `Anyone with the link can ${MAY[access.linkRole]}.`;
+  if (access.general === "space" && visibility === "public") return `Anyone with a Steelman account can join ${called(spaceName)} and then ${SPACE_MAY[access.linkRole]}.`;
   if (access.general === "space") return `Everyone in ${called(spaceName)} can ${SPACE_MAY[access.linkRole]}.`;
   return "Only invited people can open it.";
 }

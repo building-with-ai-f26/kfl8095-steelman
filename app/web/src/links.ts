@@ -24,6 +24,9 @@
 // channel's ID, not its name (from memory). An address carries a space's ID,
 // never its name, so no name reaches analytics' page views. Anything else
 // under /s/ names no space.
+//
+// Find spaces (M3d-20, G-07) is /spaces/find, beside New space; /spaces
+// itself stays Home, as it always read.
 
 const ID = "[A-Za-z0-9_-]+";
 const BOARD = new RegExp(`^/b/(${ID})(?:/v/(${ID})|/c/(${ID}))?/?$`);
@@ -38,6 +41,7 @@ export type Link =
   | { kind: "home"; space?: string }
   | { kind: "space-settings"; space: string }
   | { kind: "new-space" }
+  | { kind: "find-spaces" }
   | { kind: "new" }
   | { kind: "account" }
   | { kind: "privacy" }
@@ -52,6 +56,7 @@ export function readLink(path: string): Link {
   if (/^\/privacy\/?$/.test(path)) return { kind: "privacy" };
   if (path === "/u" || path.startsWith("/u/")) return { kind: "profile", username: PROFILE.exec(path)?.[1] ?? null };
   if (/^\/spaces\/new\/?$/.test(path)) return { kind: "new-space" };
+  if (/^\/spaces\/find\/?$/.test(path)) return { kind: "find-spaces" };
   if (path === "/s" || path.startsWith("/s/")) {
     const space = SPACE.exec(path);
     if (!space) return { kind: "unknown" };
@@ -99,3 +104,6 @@ export function spaceSettingsPath(space: string): string {
 }
 
 export const NEW_SPACE_PATH = "/spaces/new";
+
+/** Find spaces: the public spaces you haven't joined (M3d-20, G-07). */
+export const FIND_SPACES_PATH = "/spaces/find";

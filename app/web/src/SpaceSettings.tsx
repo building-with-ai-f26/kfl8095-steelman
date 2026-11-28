@@ -2,8 +2,8 @@
 // spaceSettingsMarkup() (docs/prototype/source/steelman-refined.html): a
 // back link, a hero in the space's canvas that names it as it's typed, then
 // cards of grouped rows. Basics holds the name (40 characters) and about
-// text (120), from M3d-17's shared limits, the canvas, and a Visibility row
-// with its sentence; M3d-20 makes Visibility a choice. Settings adds
+// text (120), from M3d-17's shared limits, the canvas, and Visibility.
+// Settings adds
 // Members: invite by username, as an Admin or a Member, and everyone with
 // their role. The Owner's row shows "Owner" with no menu, and says why.
 // Rules, AI, and how new steelmen start wait for later rows.
@@ -24,11 +24,24 @@
 // lands first. Nothing waits for a connection (architecture §3): when a save
 // fails, the text stays in its field and a sentence says so. Everything here can name the space or a person, so
 // the whole page sits in ph-no-capture (M-08).
+//
+// Visibility (M3d-20, G-07) is the Owner's choice alone, as only a board's
+// Owner changes General access; its Admins read it. It offers Private and
+// Public, each with what it lets people do, as GitHub's new-repository form
+// puts a sentence under each of Public and Private, and as the prototype's
+// "Who can join" choice draws them (from memory). Choosing Public asks first,
+// in place, with Make public and Cancel, as GitHub's Change visibility asks
+// before "Make this repository public" and lists its effects (checked live on
+// Nov 28): the question counts the members and the steelmen that open, and
+// says which stop being shared. Choosing Private saves at once and keeps
+// everyone who joined, as Slack keeps a channel's members. In a public space,
+// only its Admins and its Owner see the member list (the builder, Nov 28), so
+// a Member's Members card says so and doesn't ask for it.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SPACE_CANVASES, SPACE_LIMITS, canInSpace, cleanText, tooManyMessage } from "@steelman/shared";
-import type { BoardListing, SpaceCanvas, SpaceMember, SpaceSummary } from "@steelman/shared";
-import { createSpace, inviteToSpace, listBoards, listSpaces, readSpacePeople, removeFromSpace, setSpaceRole, updateSpace } from "./api.ts";
+import { PUBLIC_SPACES_MOST, SPACE_CANVASES, SPACE_LIMITS, canInSpace, cleanText, peopleIn, tooManyMessage } from "@steelman/shared";
+import type { BoardListing, MakePublicCounts, SpaceCanvas, SpaceMember, SpaceSummary } from "@steelman/shared";
+import { createSpace, inviteToSpace, listBoards, listSpaces, readMakePublicCounts, readSpacePeople, removeFromSpace, setSpaceRole, setSpaceVisibility, updateSpace } from "./api.ts";
 import type { SpaceAnswer } from "./api.ts";
 import { busyButton } from "./busy.ts";
 import { Icon } from "./icons.tsx";
@@ -37,7 +50,7 @@ import { initials } from "./board/Sharing.tsx";
 import { useReader } from "./reader.ts";
 import { Sidebar, SpaceFacts, spaceOf } from "./Spaces.tsx";
 import type { Spaces } from "./Spaces.tsx";
-import { canvasLabel, countsBySpace } from "./spaces.ts";
+import { VISIBILITY_SENTENCE, canvasLabel, countsBySpace, makePublicQuestion, peopleHiddenSentence, visibilitySaved } from "./spaces.ts";
 import { browserIds } from "./system.ts";
 import { UserLink } from "./UserLink.tsx";
 
@@ -50,6 +63,7 @@ function problemOf(answer: SpaceAnswer, fallback: string): string {
   if (answer.status === "unreachable") return "Your browser couldn’t reach Steelman. Try again.";
   if (answer.status === "refused" && answer.reason === "too_many" && answer.retryAfter !== undefined) return tooManyMessage(answer.retryAfter);
   if (answer.status === "refused" && answer.reason === "owner_keeps_role") return "The owner of a space keeps that role.";
+  if (answer.status === "refused" && answer.reason === "too_many_public_spaces") return PUBLIC_SPACES_MOST;
   if (answer.status === "refused" && answer.reason === "not_allowed") return "Only the space’s Owner and Admins can change that.";
   if (answer.status === "not_found") return "This space doesn’t exist any more, or you aren’t in it.";
   return fallback;
@@ -193,7 +207,7 @@ function SpaceForm({ space, justMade = false, onMade, onSaved }: SpaceFormProps)
           <h1 id="sm-space-hero-name" data-empty={shownName ? undefined : ""}>
             {shownName || "Untitled space"}
           </h1>
-          <SpaceFacts members={space?.members ?? 1} />
+          <SpaceFacts members={space?.members ?? 1} visibility={space?.visibility ?? "private"} />
         </div>
       </header>
       <div className="sm-profile-main">
@@ -256,16 +270,20 @@ function SpaceForm({ space, justMade = false, onMade, onSaved }: SpaceFormProps)
                 }}
               />
             </section>
-            {/* Who can find it: only members, for now. M3d-20 makes it a choice, after the security re-review. */}
-            <div className="sm-rrow">
-              <span className="sm-rrow-label">
-                Visibility
-                <small>Only members can find and open this space.</small>
-              </span>
-              <span className="sm-rrow-control">
-                <span className="sm-rrow-value">Private</span>
-              </span>
-            </div>
+            {space && canInSpace("reader", space.role, "space_visibility") === null ? (
+              <VisibilityChoice space={space} onSaid={setSaid} onSaved={onSaved} />
+            ) : (
+              // New space starts private, and an Admin reads the Owner's choice.
+              <div className="sm-rrow">
+                <span className="sm-rrow-label">
+                  Visibility
+                  <small>{space?.visibility === "public" ? VISIBILITY_SENTENCE.public : VISIBILITY_SENTENCE.private}</small>
+                </span>
+                <span className="sm-rrow-control">
+                  <span className="sm-rrow-value">{space?.visibility === "public" ? "Public" : "Private"}</span>
+                </span>
+              </div>
+            )}
             {!space ? (
               <div className="sm-space-foot">
                 <a className="sm-link-button cursor-interaction" href="/">
@@ -294,6 +312,150 @@ function SpaceForm({ space, justMade = false, onMade, onSaved }: SpaceFormProps)
         {said}
       </p>
     </main>
+  );
+}
+
+const VISIBILITY_CHOICES = [
+  { value: "private", icon: "lock", label: "Private" },
+  { value: "public", icon: "globe", label: "Public" },
+] as const;
+
+/**
+ * The Owner's Visibility choice (G-07, M3d-20): Private and Public as a radio group, each with what it lets people do.
+ * Public asks first, in place, with its counts, and is saved only by Make public; Private is saved at once. The arrow
+ * keys only move between the two, and Space or Enter chooses, so hearing an option's description changes nothing.
+ * Focus moves to the question when it opens, and back to the chosen option when it closes.
+ */
+function VisibilityChoice({ space, onSaid, onSaved }: { space: SpaceSummary; onSaid(sentence: string): void; onSaved: (() => void) | undefined }) {
+  /** The question's counts once Public is chosen: being read, read, or couldn't be read. */
+  const [asking, setAsking] = useState<MakePublicCounts | "reading" | "failed" | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  /** What was saved, shown at once, before the space is read again. */
+  const [saved, setSaved] = useState(space.visibility);
+  useEffect(() => setSaved(space.visibility), [space.visibility]);
+  /** The option the arrow keys are on, which takes Tab; the chosen one until they move. */
+  const [focused, setFocused] = useState<"private" | "public" | null>(null);
+  const group = useRef<HTMLDivElement>(null);
+  const question = useRef<HTMLDivElement>(null);
+  const opened = useRef(false);
+  const chosen = asking !== null ? "public" : saved;
+  const tabStop = focused ?? chosen;
+  const focusOption = (visibility: "private" | "public") => group.current?.querySelector<HTMLElement>(`[data-visibility="${visibility}"]`)?.focus();
+  const isOpen = asking !== null;
+  useEffect(() => {
+    if (isOpen && !opened.current) question.current?.focus();
+    opened.current = isOpen;
+  }, [isOpen]);
+
+  const fail = (message: string) => {
+    setProblem(message);
+    setAttempt((n) => n + 1);
+  };
+  async function save(visibility: "private" | "public") {
+    if (busy) return;
+    setBusy(true);
+    const answer = await setSpaceVisibility(space.id, visibility);
+    setBusy(false);
+    if (answer.status === "done" || answer.status === "already_done") {
+      setSaved(visibility);
+      setAsking(null);
+      setProblem(null);
+      setFocused(null);
+      // Make public's button goes with its question, so focus returns to the option now chosen.
+      if (visibility === "public") focusOption("public");
+      onSaid(visibilitySaved(space.name, visibility));
+      onSaved?.();
+      return;
+    }
+    fail(problemOf(answer, "Steelman couldn’t change who can find the space. Try again."));
+  }
+  function choose(visibility: "private" | "public") {
+    setProblem(null);
+    if (visibility === saved) return setAsking(null);
+    if (visibility === "private") return void save("private");
+    setAsking("reading");
+    void readMakePublicCounts(space.id).then((counts) => setAsking((now) => (now === null ? null : (counts ?? "failed"))));
+  }
+
+  return (
+    <section className="sm-rgroup sm-visibility">
+      <h3 id="sm-visibility-title">Visibility</h3>
+      <div
+        ref={group}
+        className="sm-modes sm-kinds"
+        role="radiogroup"
+        aria-labelledby="sm-visibility-title"
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null);
+        }}
+        onKeyDown={(event) => {
+          const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+          if (step === undefined) return;
+          event.preventDefault();
+          const next = tabStop === "public" ? "private" : "public";
+          setFocused(next);
+          focusOption(next);
+        }}
+      >
+        {VISIBILITY_CHOICES.map((each) => (
+          <button
+            key={each.value}
+            type="button"
+            role="radio"
+            className="sm-mode cursor-interaction"
+            data-visibility={each.value}
+            aria-checked={each.value === chosen}
+            aria-label={each.label}
+            aria-describedby={`sm-visibility-${each.value}`}
+            tabIndex={each.value === tabStop ? 0 : -1}
+            onFocus={() => setFocused(each.value)}
+            onClick={() => choose(each.value)}
+          >
+            <Icon name={each.icon} />
+            <span>{each.label}</span>
+            <small id={`sm-visibility-${each.value}`}>{VISIBILITY_SENTENCE[each.value]}</small>
+          </button>
+        ))}
+      </div>
+      {asking !== null ? (
+        <div ref={question} className="sm-space-ask" role="group" aria-label="Make the space public" tabIndex={-1}>
+          {/* Read out when the counts arrive, as focus is already on the question. */}
+          <div role="status">
+            {asking === "reading" ? (
+              <p>Steelman is counting the members and the steelmen that would open.</p>
+            ) : asking === "failed" ? (
+              <p>Steelman couldn’t count what would open, so the space stays private. Choose Cancel, then Public, to try again.</p>
+            ) : (
+              makePublicQuestion(space.name, asking).map((sentence) => <p key={sentence}>{sentence}</p>)
+            )}
+          </div>
+          <div className="sm-space-actions">
+            <button
+              type="button"
+              className="sm-button cursor-interaction"
+              onClick={() => {
+                setAsking(null);
+                setProblem(null);
+                setFocused(null);
+                focusOption(saved);
+              }}
+            >
+              Cancel
+            </button>
+            <button type="button" className="sm-button sm-solid cursor-interaction" {...busyButton(busy || asking === "reading")} disabled={busy || typeof asking !== "object"} onClick={() => void save("public")}>
+              Make public
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {problem ? (
+        <p key={attempt} className="sm-field-error" role="alert">
+          {problem}
+        </p>
+      ) : null}
+    </section>
   );
 }
 
@@ -341,7 +503,11 @@ function Members({ space, onSaid, onChanged }: { space: SpaceSummary; onSaid(sen
   const me = useReader();
   const [people, setPeople] = useState<SpaceMember[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const load = useCallback(() => void readSpacePeople(space.id).then(setPeople), [space.id]);
+  // In a public space only its Admins and its Owner read the list (M3d-20), so no one else asks for it.
+  const mayList = canInSpace("reader", space.role, peopleIn(space.visibility)) === null;
+  const load = useCallback(() => {
+    if (mayList) void readSpacePeople(space.id).then(setPeople);
+  }, [space.id, mayList]);
   useEffect(load, [load]);
   const mayRole = canInSpace("reader", space.role, "space_role") === null;
   const mayRemove = canInSpace("reader", space.role, "space_remove") === null;
@@ -370,7 +536,9 @@ function Members({ space, onSaid, onChanged }: { space: SpaceSummary; onSaid(sen
           }}
         />
       ) : null}
-      {people === null ? null : (
+      {!mayList ? (
+        <p className="sm-rail-empty">{peopleHiddenSentence}</p>
+      ) : people === null ? null : (
         <ul className="sm-people">
           {people.map((person) => {
             const name = person.name ?? "someone without a username";

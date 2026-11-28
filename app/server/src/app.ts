@@ -56,7 +56,7 @@ import { accountStatistics } from "./statistics.ts";
 import { PROFILE_NAME, readProfile } from "./profiles.ts";
 import { readChanges, readSnapshot } from "./read.ts";
 import { inviteByUsername, listPeople, removeMember, setAccess, setBoardSpace, setRole } from "./sharing.ts";
-import { createSpace, inviteToSpace, listSpacePeople, listSpaces, readSpace, removeFromSpace, setSpaceRole, setSpaceVisibility, updateSpaceSettings } from "./spaces.ts";
+import { createSpace, findSpaces, inviteToSpace, joinSpace, listSpacePeople, listSpaces, readMakePublicCounts, readSpace, removeFromSpace, setSpaceRole, setSpaceVisibility, updateSpaceSettings } from "./spaces.ts";
 import type { SpaceWriteResult } from "./spaces.ts";
 import { setReport, withdrawReport } from "./reports.ts";
 import { addComment, commentLink, deleteComment, reopenThread, resolveThread } from "./comments.ts";
@@ -186,6 +186,8 @@ const STATUS_FOR: Record<RefusalReason, number> = {
   no_space: 409,
   // A refusal for the person's role, as not_allowed is, and not 409, which the sheet reads as having left the space.
   space_admins_post: 403,
+  // The Owner owns 3 public spaces already (M3d-20): a conflict with what is there, as too_many_options is.
+  too_many_public_spaces: 409,
 };
 
 /** The most bytes a request to sign-in's routes may send. */
@@ -434,9 +436,11 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     }
   });
 
-  // Spaces (G-03, G-04, M3d-17; spaces.ts). Anyone signed in makes one, limited as making boards is, with the same
-  // count. Only members learn that a space exists: every read and write by anyone else answers 404, as an unknown,
-  // deleted, or malformed space does. Signed out is told to sign in first, as on every route.
+  // Spaces (G-03, G-04, G-07, M3d-17, M3d-20; spaces.ts). Anyone signed in makes one, limited as making boards is, with
+  // the same count. Only members learn that a private space exists: every read and write by anyone else answers 404, as
+  // an unknown, deleted, or malformed space does. Anyone signed in finds a public space, reads its name, about text,
+  // canvas, and member count, and joins it, unless an Admin removed them, who is answered as if it were private. Signed
+  // out is told to sign in first, as on every route.
   app.get("/api/spaces", async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     return { spaces: await listSpaces(db, request.person) };
@@ -447,6 +451,13 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     const body = newSpaceInput.safeParse(request.body);
     if (!body.success) return reply.code(400).send({ reason: "invalid", issues: body.error.issues });
     return answer(reply, await createSpace(services, request.person, body.data));
+  });
+
+  // Find spaces (M3d-20): public spaces you aren't in, most members first, at most PUBLIC_SPACES.found. A path of its
+  // own, which Fastify matches before /api/spaces/:space; no space's ID is six characters long.
+  app.get("/api/spaces/public", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    return { spaces: await findSpaces(db, request.person) };
   });
 
   app.get<{ Params: { space: string } }>("/api/spaces/:space", async (request, reply) => {
@@ -462,7 +473,8 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return answer(reply, await updateSpaceSettings(services, request.params.space, request.person, body.data));
   });
 
-  // Who can find the space: the Owner's, as General access is a board Owner's, and not counted, as Share isn't.
+  // Who can find the space, private or public: the Owner's, as General access is a board Owner's, and not counted, as
+  // Share isn't.
   app.put<{ Params: { space: string } }>("/api/spaces/:space/visibility", async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     const body = spaceVisibilityInput.safeParse(request.body);
@@ -470,9 +482,23 @@ export function buildApp({ clock, ids, database, mode = "production", signIn: si
     return answer(reply, await setSpaceVisibility(services, request.params.space, request.person, body.data.visibility));
   });
 
+  // What Make public's question counts (M3d-20): the Owner's alone. An Admin or a Member is refused; anyone else isn't told the space is there.
+  app.get<{ Params: { space: string } }>("/api/spaces/:space/visibility", async (request, reply) => {
+    if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
+    const counts = await readMakePublicCounts(db, request.person, request.params.space);
+    if (counts === "not_allowed") return reply.code(STATUS_FOR.not_allowed).send({ status: "refused", reason: "not_allowed" });
+    return counts ?? reply.code(404).send({ reason: "not_found" });
+  });
+
+  // Join a public space (M3d-20): uncounted, as leaving is, and a write, so the Origin check covers it.
+  app.post<{ Params: { space: string } }>("/api/spaces/:space/join", async (request, reply) => answer(reply, await joinSpace(services, request.params.space, request.person)));
+
+  // The member list: every member's in a private space, and only the Admins' and the Owner's in a public one (M3d-20).
+  // A Member refused it already knows the space is there, so they're told not allowed, not 404.
   app.get<{ Params: { space: string } }>("/api/spaces/:space/people", async (request, reply) => {
     if (request.person === null) return reply.code(401).send({ status: "refused", reason: "signed_out" });
     const people = await listSpacePeople(db, request.person, request.params.space);
+    if (people === "not_allowed") return reply.code(STATUS_FOR.not_allowed).send({ status: "refused", reason: "not_allowed" });
     return people ? { people } : reply.code(404).send({ reason: "not_found" });
   });
 

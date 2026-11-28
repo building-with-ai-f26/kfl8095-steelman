@@ -5,7 +5,7 @@
 // runs them at the right moments and tells React when something changed.
 
 import { enqueue, leaveOut, openView, pillCount, pressUpdate, putBack, receive, showMoved, tooManyMessage } from "@steelman/shared";
-import type { Access, BoardChanges, BoardOrder, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
+import type { Access, BoardChanges, BoardOrder, BoardSpace, CommentLinkState, CommentTarget, BoardSnapshot, Closing, CombinePreview, HistoryEntry, Person, QueuedAction, ReaderView, ReportReason, Role, Standing } from "@steelman/shared";
 import { Unreachable, addComment, addOption, deleteComment, setCommentHidden, setResolved, citeSource, combineWording, deleteOption, readCombinePreview, separateWording, undoChange, readBoard, readChanges, readCommentLink, readHistory, readPeople, invite, removeMember, renameOption, renameQuestion, restoreOption, setClosed, setClosingTime, send, setAccess, setHidden, setReport, setRole, setUnavailable } from "../api.ts";
 import type { Answer, Closed } from "../api.ts";
 import { browserIds } from "../system.ts";
@@ -67,8 +67,8 @@ export interface SessionState {
   /** Who can get in, and the reader's own role, as the service last said. */
   access: Access | null;
   role: Role | null;
-  /** The board's space (G-05, M3d-18), which the service names only to a reader in it; null otherwise. */
-  space: { id: string; name: string } | null;
+  /** The board's space (G-05, M3d-18), which the service names only to a reader in it, public or not (M3d-20); null otherwise. */
+  space: BoardSpace | null;
   /** Whether the board is closed and when, as the service last said (M3b-5); null when it's open with no closing time. */
   closing: Closing | null;
   /**

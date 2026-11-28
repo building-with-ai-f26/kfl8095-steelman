@@ -116,8 +116,21 @@ export interface Person {
 export const SPACE_CANVASES = ["stone", "cool", "sand", "slate", "sage", "lilac"] as const;
 export type SpaceCanvas = (typeof SPACE_CANVASES)[number];
 
-/** Who can find a space (G-03): only its members, for now. M3d-20 adds "public", after the security re-review. */
-export const SPACE_VISIBILITIES = ["private"] as const;
+/**
+ * Who can find a space (G-03, G-07): only its members, or, public, anyone with a Steelman account, who may join it
+ * (M3d-20, after the security re-review of Nov 27).
+ */
+export const SPACE_VISIBILITIES = ["private", "public"] as const;
+export type SpaceVisibility = (typeof SPACE_VISIBILITIES)[number];
+
+/** A new space can only start private (M3d-17); only its Owner makes it public, afterwards, in its settings. */
+export const NEW_SPACE_VISIBILITIES = ["private"] as const satisfies readonly SpaceVisibility[];
+
+/**
+ * Public spaces' limits (G-07, M3d-20; security review F9): one account owns at most 3, and Find spaces answers at most
+ * 100, most members first, which the browser then filters by name and about text.
+ */
+export const PUBLIC_SPACES = { perOwner: 3, found: 100 } as const;
 
 /** The roles an Admin or the Owner may give someone in a space (G-04): any but Owner. */
 export const SPACE_MEMBER_ROLES = ["admin", "member"] as const satisfies readonly SpaceRole[];
@@ -131,13 +144,13 @@ export const newSpaceInput = z.strictObject({
   name: spaceNameInput,
   about: spaceAboutInput.optional(),
   canvas: z.enum(SPACE_CANVASES).optional(),
-  visibility: z.enum(SPACE_VISIBILITIES).optional(),
+  visibility: z.enum(NEW_SPACE_VISIBILITIES).optional(),
 });
 
 /** A space's settings (G-03): all three are always sent, as Share sends both its settings. */
 export const spaceSettingsInput = z.strictObject({ name: spaceNameInput, about: spaceAboutInput, canvas: z.enum(SPACE_CANVASES) });
 
-/** A space's visibility, which only its Owner sets (G-03). */
+/** A space's visibility, which only its Owner sets (G-03, G-07). */
 export const spaceVisibilityInput = z.strictObject({ visibility: z.enum(SPACE_VISIBILITIES) });
 
 /** Adding someone to a space by their username (G-04), tidied as a board invite's is. */
@@ -152,9 +165,38 @@ export interface SpaceSummary {
   name: string;
   about: string;
   canvas: SpaceCanvas;
-  visibility: (typeof SPACE_VISIBILITIES)[number];
+  visibility: SpaceVisibility;
   role: SpaceRole;
   members: number;
+}
+
+/**
+ * A public space as anyone signed in reads it (G-07, M3d-20): in Find spaces, and as its summary to someone who isn't
+ * in it. Its name, about text, canvas, and member count, and never its members or its boards.
+ */
+export interface FoundSpace {
+  id: string;
+  name: string;
+  about: string;
+  canvas: SpaceCanvas;
+  visibility: "public";
+  members: number;
+}
+
+/** Find spaces' answer (G-07): at most PUBLIC_SPACES.found public spaces you aren't in, most members first. */
+export interface FoundSpaces {
+  spaces: FoundSpace[];
+}
+
+/**
+ * What Make public's question counts (G-07, M3d-20), for the space's Owner: its members, the Owner's own steelmen
+ * shared with everyone in it, which stay shared and open to anyone who joins, and the steelmen other members own that
+ * are shared with it, which stop being shared.
+ */
+export interface MakePublicCounts {
+  members: number;
+  shared: number;
+  unshared: number;
 }
 
 /** Your spaces: the ones you belong to, by name. */
@@ -513,6 +555,16 @@ export interface BoardList {
 }
 
 /**
+ * A board's space, for a reader in it (M3d-18). `visibility` is there only when the space is public (M3d-20), for
+ * Share's hint, so a private space's answer keeps its shape.
+ */
+export interface BoardSpace {
+  id: string;
+  name: string;
+  visibility?: "public";
+}
+
+/**
  * Sent with the snapshot and with every answer about changes: who can get in
  * now, and the reader's own role now, since the owner can change either at
  * any moment.
@@ -524,7 +576,7 @@ export interface Standing {
    * The board's space (G-05, M3d-18), only for a reader who is in it, so an ordinary answer keeps its shape and no one
    * outside a space learns its name.
    */
-  space?: { id: string; name: string };
+  space?: BoardSpace;
   /** Only when the board is closed or has a closing time (M3b-3), so an open board's answers keep their shape. */
   closing?: Closing;
 }
@@ -607,7 +659,9 @@ export type RefusalReason =
    * Only a public space's Admins and its Owner put a board in it, when it is made or later (G-05, M3d-34). The screen
    * says SPACE_ADMINS_POST.
    */
-  | "space_admins_post";
+  | "space_admins_post"
+  /** One account owns at most 3 public spaces (G-07, M3d-20; security review F9). The screen says PUBLIC_SPACES_MOST. */
+  | "too_many_public_spaces";
 
 /** What a Member who tries to put a board in a public space is told (M3d-34). */
 export const SPACE_ADMINS_POST = "Only the space’s admins can add steelmen to a public space.";
@@ -618,6 +672,20 @@ export const SPACE_ADMINS_POST = "Only the space’s admins can add steelmen to 
  */
 export function postingIn(visibility: string): SpaceAction {
   return visibility === "private" ? "space_read" : "space_post";
+}
+
+/** What an Owner who tries to make a fourth space public is told (M3d-20). */
+export const PUBLIC_SPACES_MOST = "You already own 3 public spaces. Make one of them private first.";
+
+/**
+ * The space action that reads a space's member list (G-04, G-07, M3d-20; security review F6): any member's in a
+ * private space, and only its Admins' and its Owner's in a public one, as the builder decided on Nov 28. A word the
+ * service doesn't know counts as public, so it grants nothing more. The policy has no action of its own for this yet,
+ * so a public space asks space_invite, which is the Admins' and the Owner's; a `space_people` action in policy.ts
+ * needs the builder's approval.
+ */
+export function peopleIn(visibility: string): SpaceAction {
+  return visibility === "private" ? "space_read" : "space_invite";
 }
 
 export type WriteAnswer =

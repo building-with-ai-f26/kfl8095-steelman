@@ -3,7 +3,7 @@
 // tab is acting as (testUser.ts), and answers in the shared API types.
 
 import { SPACE_ADMINS_POST, tooManyMessage } from "@steelman/shared";
-import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, HistoryEntry, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, SpaceCanvas, SpaceMember, SpaceSummary, SpaceWriteAnswer, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
+import type { AccountStatistics, Access, BoardChanges, BoardList, BoardSnapshot, CombinePreview, CommentLinkState, FoundSpace, FoundSpaces, HistoryEntry, MakePublicCounts, NewBoard, Person, Profile, PublicConfig, QueuedAction, ReportReason, SpaceCanvas, SpaceMember, SpaceSummary, SpaceWriteAnswer, Standing, UsernameChangeAnswer, WriteAnswer } from "@steelman/shared";
 import { analyticsOn } from "./analyticsChoice.ts";
 import { chosenTestUser } from "./testUser.ts";
 import { noteWrite } from "./opening.ts";
@@ -465,11 +465,47 @@ export function updateSpace(space: string, settings: { name: string; about: stri
   return spaceAnswerOf(() => call("PUT", `spaces/${encodeURIComponent(space)}`, settings));
 }
 
-/** A space's members, Owner first, or null when they can't be read now. */
+/**
+ * A space's members, Owner first, or null when they can't be read now. In a public space only its Admins and its Owner
+ * may read them (M3d-20), so the page doesn't ask for anyone else.
+ */
 export async function readSpacePeople(space: string): Promise<SpaceMember[] | null> {
   try {
     const response = await call("GET", `spaces/${encodeURIComponent(space)}/people`);
     return response.ok ? ((await response.json()) as { people: SpaceMember[] }).people : null;
+  } catch {
+    return null;
+  }
+}
+
+// Public spaces (M3d-20, G-07): Find spaces, Join, and the Owner's visibility, with Make public's counts. Find spaces
+// sends no search text: the page filters its answer in the browser.
+
+/** The public spaces you aren't in, most members first, or null when they can't be read now. */
+export async function findSpaces(): Promise<FoundSpace[] | null> {
+  try {
+    const response = await call("GET", "spaces/public");
+    return response.ok ? ((await response.json()) as FoundSpaces).spaces : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Joins a public space as a Member. A space that isn't public, or that an Admin removed you from, isn't found. */
+export function joinSpace(space: string): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("POST", `spaces/${encodeURIComponent(space)}/join`, {}));
+}
+
+/** The Owner's choice of who can find the space. */
+export function setSpaceVisibility(space: string, visibility: "private" | "public"): Promise<SpaceAnswer> {
+  return spaceAnswerOf(() => call("PUT", `spaces/${encodeURIComponent(space)}/visibility`, { visibility }));
+}
+
+/** What Make public's question counts, for the space's Owner, or null when it can't be read now. */
+export async function readMakePublicCounts(space: string): Promise<MakePublicCounts | null> {
+  try {
+    const response = await call("GET", `spaces/${encodeURIComponent(space)}/visibility`);
+    return response.ok ? ((await response.json()) as MakePublicCounts) : null;
   } catch {
     return null;
   }

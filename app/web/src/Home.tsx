@@ -47,14 +47,16 @@
 // and on a wide screen the rail's "Needs your help". A post in a space shows
 // the space's name on Home, as the prototype's post does, and its miniature
 // takes the space's canvas. Space names come from the reader's own spaces,
-// and sit in ph-no-capture.
+// and sit in ph-no-capture. Leave on the space's card (M3d-20, G-07) takes
+// you out at once, and the page then says you left, with no list.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { BoardList, BoardListing, SpaceCanvas } from "@steelman/shared";
+import type { SpaceAnswer } from "./api.ts";
 import { listBoards, listSpaces } from "./api.ts";
 import { Icon } from "./icons.tsx";
-import { NEW_PATH, boardPath, spacePath } from "./links.ts";
+import { FIND_SPACES_PATH, NEW_PATH, boardPath, spacePath } from "./links.ts";
 import { ago, fullDate } from "./when.ts";
 import { HOME_PLACE, rememberPlace } from "./places.ts";
 import { heldList, listScroll, noteOpening, plainClick, rememberList, takeReturn } from "./opening.ts";
@@ -66,7 +68,7 @@ import { SORTS, matches, readSort, saveSort, searchSentence, sortBoards, sortSen
 import type { ListSort } from "./listSearch.ts";
 import { HelpCard, Sidebar, SpaceCard, spaceOf } from "./Spaces.tsx";
 import type { Spaces } from "./Spaces.tsx";
-import { boardsIn, countsBySpace } from "./spaces.ts";
+import { boardsIn, countsBySpace, leftSentence } from "./spaces.ts";
 
 /** The posts flip() moves when a search or a sort changes the list. */
 const POSTS = ".sm-feed-list > .sm-post";
@@ -90,6 +92,9 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
   const [query, setQuery] = useState(() => heldQuery);
   const [sort, setSort] = useState<ListSort>(readSort);
   const [said, setSaid] = useState("");
+  /** The space's name once the reader has left it here (M3d-20), and why Leave failed, when it did. */
+  const [left, setLeft] = useState<string | null>(null);
+  const [leaveProblem, setLeaveProblem] = useState<string | null>(null);
   const results = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
   /** Where the posts stood before the reader's change, and copies of those it drops, for the layout effect below. */
@@ -177,20 +182,41 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
   // so the way back never names it where screen replays record it.
   useEffect(() => rememberPlace(() => (spaceId ? { path: spacePath(spaceId), name: "the space" } : HOME_PLACE)), [spaceId]);
   const space = spaceOf(spaces, spaceId);
+  const onLeft = (answer: SpaceAnswer) => {
+    // Not found: they were out of it already.
+    if (answer.status === "done" || answer.status === "already_done" || answer.status === "not_found") {
+      setLeaveProblem(null);
+      setLeft(space?.name ?? "the space");
+      load();
+      return;
+    }
+    setLeaveProblem(answer.status === "unreachable" ? "Your browser couldn’t reach Steelman. Try again." : "Steelman couldn’t take you out of the space. Try again.");
+  };
   const sidebar = <Sidebar spaces={spaces} counts={typeof list === "object" && list !== null ? countsBySpace(all) : null} at={spaceId ? { kind: "space", space: spaceId } : { kind: "home" }} />;
   if (list === null || (spaceId && spaces === null)) return <HomeSkeleton sidebar={sidebar} rail={spaceId !== null} canvas={space?.canvas} />;
   if (list === "signed_out") return <p className="sm-meta">You’ve been signed out. Reload the page to sign in.</p>;
-  if (spaceId && !space) {
+  if (spaceId && (!space || left !== null)) {
     return (
       <div ref={page} className="sm-home sm-home-alone">
         {sidebar}
         <main className="sm-feed">
-          <h1 className="sm-sr">Space not found</h1>
+          <h1 className="sm-sr">{left !== null ? "You left the space" : "Space not found"}</h1>
           <div className="sm-feed-empty">
-            <p>{spaces === "failed" ? "Steelman couldn’t load your spaces. Reload the page to try again." : "This space doesn’t exist, or you aren’t in it."}</p>
+            {left !== null ? (
+              <p className="ph-no-capture" role="status">
+                {leftSentence(left)}
+              </p>
+            ) : (
+              <p>{spaces === "failed" ? "Steelman couldn’t load your spaces. Reload the page to try again." : "This space doesn’t exist, or you aren’t in it."}</p>
+            )}
             <a className="sm-button cursor-interaction" href="/">
               Go to Your steelmen
             </a>
+            {left !== null ? (
+              <a className="sm-button cursor-interaction" href={FIND_SPACES_PATH}>
+                Find spaces
+              </a>
+            ) : null}
           </div>
         </main>
       </div>
@@ -206,7 +232,12 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
           {space ? space.name : "Your steelmen"}
         </h1>
         {/* Above the list on a narrower screen; the rail's copy shows on a wide one (the prototype's CSS). */}
-        {space ? <SpaceCard space={space} /> : null}
+        {space ? <SpaceCard space={space} onLeft={onLeft} /> : null}
+        {leaveProblem ? (
+          <p className="sm-field-error" role="alert">
+            {leaveProblem}
+          </p>
+        ) : null}
         {list === "failed" ? (
           <div className="sm-feed-empty" role="alert">
             <p>Steelman couldn’t load your steelmen.</p>
@@ -277,7 +308,7 @@ export function Home({ onOpen, space: spaceId = null }: { onOpen?(path: string):
       </main>
       {space && typeof list === "object" ? (
         <aside className="sm-rail" aria-label="About this space">
-          <SpaceCard space={space} />
+          <SpaceCard space={space} onLeft={onLeft} />
           <HelpCard boards={list.boards} space={space.id} />
         </aside>
       ) : null}

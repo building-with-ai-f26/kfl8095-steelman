@@ -25,13 +25,15 @@ import { beforeZoom, holdBoard, putAway } from "./board/zoom.ts";
 import { watchPageChanges } from "./paging.ts";
 import { NavContext } from "./Spaces.tsx";
 import { SpaceSettings } from "./SpaceSettings.tsx";
+import { FindSpaces } from "./FindSpaces.tsx";
 
 /**
  * Links look like /b/<board ID>, /b/<board ID>/v/<version ID>, or /b/<board ID>/c/<comment ID> (links.ts).
  * Anything outside /b/ is the home page, the list of your steelmen (E-03),
  * except New steelman's sheet (F-01), at /new, and a person's profile (L-03), at /u/<username>.
  * A space's page, /s/<space ID>, is the list showing only that space's boards; its settings are
- * /s/<space ID>/settings, and New space is /spaces/new (M3d-19).
+ * /s/<space ID>/settings, and New space is /spaces/new (M3d-19). Find spaces, the public spaces you haven't joined,
+ * is /spaces/find (M3d-20); signed out, SignedIn asks for sign-in and shows none of them.
  *
  * A board opened from the list by a plain click, and the way back to the list
  * from it, change the page inside this one, with the browser's history
@@ -53,8 +55,8 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
   /** Whether the sidebar, folded behind its button under 900 px, is open (M3d-19). */
   const [navOpen, setNavOpen] = useState(false);
   const nav = useMemo(() => ({ open: navOpen, setOpen: setNavOpen }), [navOpen]);
-  /** The pages with the sidebar beside them: Home, a space's page, its settings, and New space. */
-  const withSidebar = link.kind === "home" || link.kind === "space-settings" || link.kind === "new-space";
+  /** The pages with the sidebar beside them: Home, a space's page, its settings, New space, and Find spaces. */
+  const withSidebar = link.kind === "home" || link.kind === "space-settings" || link.kind === "new-space" || link.kind === "find-spaces";
   const shownPath = useRef(path);
   shownPath.current = path;
   const zoomShown = useRef(zoom);
@@ -192,6 +194,10 @@ export function App({ path: first = typeof window === "undefined" ? "/" : window
             <NotFound />
           ) : link.kind === "new" ? (
             <NewSteelman />
+          ) : link.kind === "find-spaces" ? (
+            <NavContext.Provider value={nav}>
+              <FindSpaces />
+            </NavContext.Provider>
           ) : link.kind === "space-settings" || link.kind === "new-space" ? (
             <NavContext.Provider value={nav}>
               <SpaceSettings space={link.kind === "space-settings" ? link.space : null} />
