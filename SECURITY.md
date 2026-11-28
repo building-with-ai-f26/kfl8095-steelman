@@ -67,7 +67,7 @@ The app stores no user files. Google Cloud holds two buckets, one for Terraform 
 - New spaces (M3d-17) count toward the same 20 an hour as new boards, and space invitations count toward the same 20 an hour as board invitations, whatever the answer. Renaming a space counts as a write. No new limit was added, so the limits table is unchanged.
 - Sign-in emails are limited to 5 an hour per address and 30 an hour per network.
 - On staging, 32 requests for a sign-in code returned five `400` answers and then `429` with a `retry-after` header. The address was invalid, so no email was sent.
-- Each environment runs at most three servers on a fixed-size database. Budget alerts are set at $25 a month for production and $10 for staging. Google's budgets alert and do not stop spending.
+- Each environment runs at most three servers, and its database disk can grow to 20 GB and no further (M3d-30). Budget alerts are set at $25 a month for production and $10 for staging. Google's budgets alert and do not stop spending.
 
 ### 6. Dependencies
 
@@ -98,7 +98,7 @@ Each fix has new tests that failed before it. No existing test changed. After th
 ## Remaining issues
 
 - **The low findings in [#105](https://github.com/building-with-ai-f26/kfl8095-steelman/issues/105) are open.**
-- **Budgets alert and do not cap.** The ceilings are three servers and a fixed database size.
+- **Budgets alert and do not cap.** The ceilings are three servers per environment and a database disk that stops at 20 GB. If the disk reaches 20 GB, writes fail until the builder raises the limit. A budget that stops spending needs IAM changes, so it stays with the builder and comes with the load balancer.
 - **Rate-limit counts are kept per server.** With three servers a limit can be three times too generous. The sign-in email limit is exact, because it is counted in Postgres.
 - **Changing a username isn't rate-limited (M3d-15, L-04).** A username changes only through `PUT /api/account/username`; Better Auth's `/update-user` doesn't change a name once it's picked. A refused change says a name is taken whether an account has it or a hold keeps it, as picking one at first sign-in already does, and refusals use up no change, so a signed-in person can try many names. Invitations are limited to stop the same probing. Adding a limit would add a row to the limits table, which needs the builder.
 - **Three gaps were accepted on November 18** (`plans/reviews/deployment-trust-boundary.md`). The agent acts with the builder's own GitHub and Google logins, the protected-files check can be bypassed from inside a pull request, and repository admins can bypass the release approval. They are sized for a class project and get reviewed again before access widens.
