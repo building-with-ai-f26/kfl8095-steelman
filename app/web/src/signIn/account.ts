@@ -11,6 +11,12 @@ export interface Me {
   username: string | null;
 }
 
+/**
+ * What the service answers for a suspended account (J-06): a code sign-in's error code, and Google's ?error=. The same
+ * as SUSPENDED in server/src/sign-in.ts, which e2e/suspended.spec.ts checks end to end.
+ */
+export const SUSPENDED = "ACCOUNT_SUSPENDED";
+
 interface Reply {
   status: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +62,8 @@ export async function emailCode(email: string): Promise<SendAnswer> {
   return "failed";
 }
 
-export type CodeAnswer = "signed_in" | "wrong" | "expired" | "too_many_tries" | "failed";
+/** "suspended": the code was right, but the builder has suspended the account (J-06), so no session was made. */
+export type CodeAnswer = "signed_in" | "wrong" | "expired" | "too_many_tries" | "suspended" | "failed";
 
 export async function signInWithCode(email: string, code: string): Promise<CodeAnswer> {
   const reply = await post("sign-in/email-otp", { email, otp: code });
@@ -68,6 +75,8 @@ export async function signInWithCode(email: string, code: string): Promise<CodeA
       return "expired";
     case "TOO_MANY_ATTEMPTS":
       return "too_many_tries";
+    case SUSPENDED:
+      return "suspended";
     default:
       return "failed";
   }

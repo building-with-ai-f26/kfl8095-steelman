@@ -83,10 +83,11 @@ jobs:
         working-directory: app
         run: npx tsx server/src/smoke-cli.ts "$CANDIDATE"
 
-      - name: Send everyone to the new version, and give the daily job its image
+      - name: Send everyone to the new version, and give the daily and operator jobs their image
         run: |
           gcloud run services update-traffic steelman --project "$PROJECT" --region "$REGION" --to-latest --quiet
           gcloud run jobs update steelman-daily --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
+          gcloud run jobs update steelman-operator --project "$PROJECT" --region "$REGION" --image "$DIGEST" --quiet
           echo "Staging runs $DIGEST"
 
       # Staging has no schedule for the daily job, because its database is stopped every night. Running it here

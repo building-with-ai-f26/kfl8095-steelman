@@ -1,8 +1,8 @@
 // Spaces (G-03, G-04, M3d-17; plans/architecture.md §2 and §7): making one,
 // its settings and visibility, its members and their roles, and reading it.
 //
-// Every write but making one goes through `writeToSpace`, which does what the
-// board write path does (write-path.ts), in one transaction:
+// Every write by a person, but making a space, goes through `writeToSpace`,
+// which does what the board write path does (write-path.ts), in one transaction:
 //
 //   0. first, for a removal only: the removed person's account row, which
 //              their own deletion locks before their spaces (M3d-35);
@@ -27,10 +27,17 @@
 // kept in the same transaction, and M3d-20's Join and Find spaces ask
 // blockedFrom before letting them back. Leaving keeps no block. An invite
 // from an Admin or the Owner lifts the block, and its change row says so.
+//
+// The builder's make-private (J-06, M3d-36; finding F8 of the review) is the
+// one write that doesn't: the operator job is no member, so it takes the same
+// row lock and writes the same change row as the Owner's visibility change,
+// without asking the space policy, and credits the row to the `steelman`
+// stand-in.
 
 import { sql } from "kysely";
 import { canInSpace, itemIdInput } from "@steelman/shared";
-import type { RefusalReason, SpaceAction, SpaceMember, SpaceRole, SpaceSummary, SpaceWriteAnswer } from "@steelman/shared";
+import type { Clock, RefusalReason, SpaceAction, SpaceMember, SpaceRole, SpaceSummary, SpaceWriteAnswer } from "@steelman/shared";
+import { OPERATOR_ACCOUNT } from "./account.ts";
 import type { Db } from "./db/database.ts";
 import type { Services, Trx } from "./write-path.ts";
 
@@ -179,6 +186,30 @@ export async function setSpaceVisibility({ db, clock }: Services, spaceId: strin
       await logChange(trx, { space: spaceId, at: clock.now(), actor: person!, kind: "visibility_changed", before: { visibility: now.visibility }, after: { visibility } });
       return "done";
     },
+  });
+}
+
+/**
+ * The builder makes a space private (J-06, M3d-36), from the operator job, with no member's say: under the space's row
+ * lock, as the Owner's change takes it, keeping every member, with a change row credited to the `steelman` stand-in,
+ * which the first such change makes. A space that is already private, or isn't there (deleted, or an ID of the wrong
+ * shape), changes nothing.
+ */
+export async function makeSpacePrivate(db: Db, clock: Clock, spaceId: string): Promise<"done" | "already_private" | "not_found"> {
+  if (!itemIdInput.safeParse(spaceId).success) return "not_found";
+  return db.transaction().execute(async (trx) => {
+    const space = await trx.selectFrom("space").select("visibility").where("id", "=", spaceId).where("deleted_at", "is", null).forUpdate().executeTakeFirst();
+    if (!space) return "not_found";
+    if (space.visibility === "private") return "already_private";
+    const now = clock.now();
+    await trx
+      .insertInto("account")
+      .values({ id: OPERATOR_ACCOUNT, username: OPERATOR_ACCOUNT, created_at: now, deleted_at: now })
+      .onConflict((c) => c.column("id").doNothing())
+      .execute();
+    await trx.updateTable("space").set({ visibility: "private" }).where("id", "=", spaceId).execute();
+    await logChange(trx, { space: spaceId, at: now, actor: OPERATOR_ACCOUNT, kind: "visibility_changed", before: { visibility: space.visibility }, after: { visibility: "private" } });
+    return "done";
   });
 }
 

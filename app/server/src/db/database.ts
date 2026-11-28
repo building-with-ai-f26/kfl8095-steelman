@@ -25,6 +25,8 @@ export interface Database {
     deleted_at: Date | null;
     /** When the account was first shown the tour (L-02; migration 0011). Null until then. */
     tour_seen_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+    /** When the builder suspended the account (J-06; migration 0021). Null when it isn't suspended. */
+    suspended_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
   };
   /** A changed username's old name, kept from others until ends_at (L-04; migration 0015). */
   username_hold: { old_name: string; account_id: string; ends_at: Date };
