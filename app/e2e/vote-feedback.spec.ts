@@ -51,15 +51,13 @@ test("B-06: an articulation vote in an unfolded row shows the same way", async (
   await expect(page.locator("#sm-status")).toHaveText("You voted this wording better articulated.");
 });
 
-test("B-06: the importance axis runs from more to less important, and a row's axis from best articulation to weaker", async ({ board }) => {
+test("B-06: the importance key is captioned More important, and an unfolded row's key Best articulation", async ({ board }) => {
   const page = await board.open("jordan_w");
 
-  const down = page.locator('.sm-axis[data-axis="v"]').first();
-  await expect(down.locator(".sm-axis-label")).toHaveText(["more important", "less important"]);
+  await expect(page.locator(".sm-hex-vkey .sm-hex-caption")).toHaveText("More important");
 
   await page.getByRole("button", { name: "Compare 2 wordings of this argument" }).first().click();
-  const across = page.locator('.sm-axis[data-axis="h"]').first();
-  await expect(across.locator(".sm-axis-label")).toHaveText(["best articulation", "weaker"]);
+  await expect(page.locator(".sm-hex-hkey .sm-hex-caption").first()).toHaveText("Best articulation");
 });
 
 test("B-06: no word fades in on the card after a vote", async ({ board }) => {

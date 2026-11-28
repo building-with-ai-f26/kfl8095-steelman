@@ -107,28 +107,6 @@ export function Icon({ name, size = 16, className }: { name: IconName; size?: nu
   );
 }
 
-/** The arrowhead the prototype's axes use. */
-export function AxisHead() {
-  return (
-    <svg className="sm-axis-head" viewBox="0 0 12 8" aria-hidden="true">
-      <path d="M11.5 .6C7 2.7 3.4 3.7 .5 4c2.9.3 6.5 1.3 11 3.4" />
-    </svg>
-  );
-}
-
-export function Axis({ kind, start, end }: { kind: "v" | "h"; start: string; end: string }) {
-  return (
-    <div className="sm-axis" data-axis={kind} aria-hidden="true">
-      <span className="sm-axis-label">{start}</span>
-      <span className="sm-axis-line">
-        <AxisHead />
-        <AxisHead />
-      </span>
-      <span className="sm-axis-label">{end}</span>
-    </div>
-  );
-}
-
 /** The Steelman logo: a honeycomb diamond, strongest cell solid, weakest dashed. */
 export function Logo() {
   return (

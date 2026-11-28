@@ -34,7 +34,7 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { flushSync } from "react-dom";
 import { OPTIONS_PER_BOARD, can, cleanText, leaveOut, openCount } from "@steelman/shared";
 import type { ArgumentRow, CaseItem, CommentLinkState, CommentTarget, OptionRow, ReaderView, VersionRow } from "@steelman/shared";
-import { Axis, Icon } from "../icons.tsx";
+import { Icon } from "../icons.tsx";
 import type { IconName } from "../icons.tsx";
 import { NoAccess } from "../NoAccess.tsx";
 import { NotFound } from "../NotFound.tsx";
@@ -72,7 +72,7 @@ import { LeavingCopies, arrive, comeBack, copyOf, measure } from "./Leaving.tsx"
 import type { Arriving, Leaving } from "./Leaving.tsx";
 import { RestructureDialog } from "./Restructure.tsx";
 import type { Asking } from "./Restructure.tsx";
-import { Texture } from "./Texture.tsx";
+import { ImportanceKey, Texture } from "./Texture.tsx";
 import { Wires, redrawWhile } from "./Wires.tsx";
 import { beforeColumns, beforeToggle, holdReveal, playColumns, playReveal, playToggle, stopRowMotion } from "./unfold.ts";
 import { argumentCount, argumentsLabel, firstVisible, hiddenOf, readHidden, saveHidden } from "./hidden-columns.ts";
@@ -144,8 +144,6 @@ interface BoardViewProps {
 
 function BoardView({ boardId, linked, linkedComment, view, state, session, zoom, onZoom, onShown, onSpace }: BoardViewProps) {
   const options = columns(view);
-  // The importance axis only means something once a column has two arguments to rank.
-  const ranked = options.some((option) => (view.shown.arguments[option.id]?.length ?? 0) >= 2);
   const [arrival] = useState(() => (linkedComment ? commentArrivalFor(view, linkedComment, state.commentLink) : arrivalFor(view, linked)));
   /** At 640 px and narrower: the board shows one side at a time, and the Settings button is its icon alone. */
   const [narrow, setNarrow] = useState(() => window.matchMedia("(max-width: 640px)").matches);
@@ -1274,7 +1272,6 @@ function BoardView({ boardId, linked, linkedComment, view, state, session, zoom,
                   key={option.id}
                   option={option}
                   first={option.id === firstShown}
-                  ranked={ranked}
                   on={option.id === side}
                   gap={index > 0}
                   open={open}
@@ -1528,8 +1525,6 @@ function Pill({ state, count, onUpdate }: { state: SessionState; count: number; 
 interface ColumnProps {
   option: OptionRow;
   first: boolean;
-  /** Whether any column has two arguments to rank, so the importance axis means something. */
-  ranked: boolean;
   on: boolean;
   gap: boolean;
   open: string | null;
@@ -1575,7 +1570,7 @@ interface Structure {
   undo(): void;
 }
 
-function Column({ option, first, ranked, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, structure, mayStructure, deleteBlocked, columnView }: ColumnProps) {
+function Column({ option, first, on, gap, open, onToggle, writer, opening, view, state, session, onUndo, structure, mayStructure, deleteBlocked, columnView }: ColumnProps) {
   const reader = useReader();
   const key = `a:${option.id}`;
   const argumentIds = view.shown.arguments[option.id] ?? [];
@@ -1609,11 +1604,8 @@ function Column({ option, first, ranked, on, gap, open, onToggle, writer, openin
         }}
       >
         <Texture />
-        {first && ranked && (
-          <div className="sm-col-vaxis">
-            <Axis kind="v" start="more important" end="less important" />
-          </div>
-        )}
+        {/* The importance key (M3d-27), down the first column's gutter once it has an argument. */}
+        {first && argumentIds.length > 0 && <ImportanceKey />}
         <OptionHead option={option} mayStructure={mayStructure} deleteBlocked={deleteBlocked} columnView={columnView} session={session} bubbles={opening.comments} />
         {structure.picking?.optionId === option.id ? (
           // Not a live region: the cursor is already on the first Combine here, and the status line has said this.

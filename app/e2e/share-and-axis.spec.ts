@@ -38,14 +38,16 @@ test("H-02: someone who isn't the owner sees Share's two settings faded, arrows 
   for (const name of ["General access", "Link role"]) expect(await opacity(owner, name), name).toBe(1);
 });
 
-test("A-01: the importance axis shows only once a column has two arguments to rank", async ({ board }) => {
+test("A-01: the importance key shows once the first column has an argument", async ({ board }) => {
   const page = await board.open("maya.chen");
 
   await boardWith(board, page, 0, 0);
   await expect(axis(page)).toHaveCount(0);
 
+  // One argument shows one hexagon (the builder, Nov 27).
   await boardWith(board, page, 1, 1);
-  await expect(axis(page)).toHaveCount(0);
+  await expect(axis(page)).toHaveCount(1);
+  await expect(axis(page).locator("polygon")).toHaveCount(1);
 
   await boardWith(board, page, 2, 0);
   await expect(axis(page)).toBeVisible();
