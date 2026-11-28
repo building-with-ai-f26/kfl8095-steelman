@@ -16,6 +16,7 @@
 // isn't asked to delete anything.
 
 import { sql } from "kysely";
+import { emailAddress } from "@steelman/shared";
 import type { Clock } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { Trx } from "./write-path.ts";
@@ -292,7 +293,8 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
     await trx.deleteFrom("sign_in.session").where("account_id", "=", person).execute();
     await trx.deleteFrom("sign_in.sign_in_method").where("account_id", "=", person).execute();
     if (account.email) {
-      const email = account.email.toLowerCase();
+      // In its one form (M3d-32), as Better Auth now keys codes, even for an account stored in another form before then.
+      const email = emailAddress(account.email);
       // Better Auth names each code by its purpose and the address.
       const identifiers = ["sign-in-otp-", "email-verification-otp-", "forget-password-otp-"].map((purpose) => purpose + email);
       // A code for a new email (M2-8c) is named by the account's ID and the new address, since Better Auth 1.7.16

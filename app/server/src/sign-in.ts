@@ -22,7 +22,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, genericOAuth, username } from "better-auth/plugins";
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
-import { isAllowedUsername, USERNAME } from "@steelman/shared";
+import { emailAddress, isAllowedUsername, USERNAME } from "@steelman/shared";
 import type { Clock, IdSource } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { EmailSender } from "./email.ts";
@@ -235,18 +235,30 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
           onlyText(ctx.body, USERNAME_FIELDS, "Send the username you picked, as text, and nothing else.");
           return claimAtFirstSignIn(ctx.headers, (ctx.body as { username: string }).username);
         }
-        if (ctx.path === "/sign-in/email-otp") onlyText(ctx.body, CODE_SIGN_IN_FIELDS, "Send the email address and the code, as text, and nothing else.");
-        if (ctx.path === "/email-otp/request-email-change") return beforeEmailChangeCode(ctx.headers, (ctx.body as { newEmail?: unknown } | undefined)?.newEmail);
+        // One address is one account, however it's written (L-01, M3d-32): from here on, Better Auth sees each address
+        // in its one form, emailAddress(), so the code's key, the account lookup, and what's stored all agree with the
+        // database's unique index. Better Auth itself only lowers the case. Anything that isn't text is left as it
+        // came, for Better Auth's own check to refuse.
+        if (ctx.path === "/sign-in/email-otp") {
+          onlyText(ctx.body, CODE_SIGN_IN_FIELDS, "Send the email address and the code, as text, and nothing else.");
+          return inOneForm(ctx.body, "email");
+        }
+        if (ctx.path === "/email-otp/request-email-change") {
+          await beforeEmailChangeCode(ctx.headers, (ctx.body as { newEmail?: unknown } | undefined)?.newEmail);
+          return inOneForm(ctx.body, "newEmail");
+        }
         if (ctx.path === "/email-otp/change-email") {
           const person = await sessionOf(ctx.headers);
           if (person && ctx.request) changing.set(ctx.request, { id: person.id, email: person.email });
-          return;
+          return inOneForm(ctx.body, "newEmail");
         }
         if (ctx.path !== "/email-otp/send-verification-otp") return;
-        const address = String((ctx.body as { email?: unknown } | undefined)?.email ?? "").toLowerCase();
+        const sent = (ctx.body as { email?: unknown } | undefined)?.email;
+        const address = typeof sent === "string" ? emailAddress(sent) : String(sent ?? "").toLowerCase();
         if (!(await mayEmail(db, clock, address))) {
           throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_EMAILS", message: "Too many sign-in emails to this address. Try again in an hour." });
         }
+        return inOneForm(ctx.body, "email");
       }),
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== "/email-otp/change-email") return;
@@ -255,8 +267,8 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
         // (A request it refuses before it starts, such as one with no code, isn't one of its own APIErrors.)
         if (!before || (ctx.context.returned as { success?: unknown } | undefined)?.success !== true) return;
         const now = await db.selectFrom("account").select("email").where("id", "=", before.id).executeTakeFirst();
-        if (!now?.email || now.email.toLowerCase() === before.email.toLowerCase()) return;
-        await afterEmailChanged(before, now.email.toLowerCase());
+        if (!now?.email || emailAddress(now.email) === emailAddress(before.email)) return;
+        await afterEmailChanged(before, emailAddress(now.email));
       }),
     },
     plugins: [
@@ -310,14 +322,14 @@ export function createSignIn({ db, clock, ids, origin, secret, email, google }: 
    */
   async function beforeEmailChangeCode(headers: Headers | undefined, newEmail: unknown): Promise<void> {
     const person = await sessionOf(headers);
-    const address = typeof newEmail === "string" ? newEmail.trim().toLowerCase() : "";
+    const address = typeof newEmail === "string" ? emailAddress(newEmail) : "";
     // Better Auth refuses these itself: signed out, not an address, or the same email.
-    if (!person || !address.includes("@") || address === person.email.toLowerCase()) return;
+    if (!person || !address.includes("@") || address === emailAddress(person.email)) return;
     if (!(await mayEmail(db, clock, address))) {
       throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_EMAILS", message: "Too many emails to this address. Try again in an hour." });
     }
-    // As Better Auth and the unique index compare them, in lower case. A deleted account's email is erased, so it doesn't count.
-    const other = await db.selectFrom("account").select("id").where(sql<string>`lower(email)`, "=", address).executeTakeFirst();
+    // As the unique index compares them, in lower case after Unicode NFKC (M3d-32). A deleted account's email is erased, so it doesn't count.
+    const other = await db.selectFrom("account").select("id").where(sql<string>`lower(normalize(email, NFKC))`, "=", address).executeTakeFirst();
     if (other) await email.sendEmailInUse(address);
   }
 
@@ -424,8 +436,23 @@ export function acceptGoogleIdentity(claims: Record<string, unknown>): { sub: st
   // claim that is missing, false, or anything else refuses.
   if (verified !== true) return null;
   // `sub` is who the person is at Google, for good; the email can change.
-  if (typeof sub !== "string" || sub === "" || typeof email !== "string" || !email.includes("@")) return null;
-  return { sub, email };
+  if (typeof sub !== "string" || sub === "" || typeof email !== "string") return null;
+  // In its one form (M3d-32), so Better Auth finds the account a code made for the same address and adds Google to
+  // it, instead of making a second account. The @ is checked after, so a full-width ＠ counts as one.
+  const address = emailAddress(email);
+  if (!address.includes("@")) return null;
+  return { sub, email: address };
+}
+
+/**
+ * The request's body with one field's address in its one form (M3d-32), as a before hook returns it: Better Auth
+ * merges it over the request before its own checks run. A field that isn't text is left alone.
+ */
+function inOneForm(body: unknown, field: "email" | "newEmail"): { context: { body: Record<string, unknown> } } | undefined {
+  const fields = body as Record<string, unknown> | undefined;
+  const written = fields?.[field];
+  if (typeof written !== "string") return undefined;
+  return { context: { body: { ...fields, [field]: emailAddress(written) } } };
 }
 
 /**

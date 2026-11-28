@@ -1,0 +1,27 @@
+-- One email address, one account (L-01, L-04, M3d-32; plans/architecture.md
+-- §7, "Sign-in and sessions"; finding F7; the builder's decision on Nov 28).
+--
+-- What the database holds true: two accounts never have addresses that are
+-- the same once Unicode NFKC is applied and their case is lowered. So
+-- "Dana@x.edu", a full-width "ｄana@x.edu", and a decomposed "é" against a
+-- composed one are each one address, and one account. An account with no
+-- email (a deleted one, or a test user) takes no address. The service writes
+-- every address in this form already (emailAddress() in shared/src/inputs.ts);
+-- this index makes the database refuse a second account even if a path is
+-- missed. account_email_unique (0007) stays beside it.
+--
+-- Q24 allows it, because one account per address is an invariant. What counts
+-- as a well-formed address, and Gmail's dotted or plus-tagged forms of one
+-- mailbox, are the service's questions, not the schema's.
+--
+-- If two accounts already share an address in this form, the index can't be
+-- built, this migration fails, and nothing of the run is kept: the deploy
+-- stops before any traffic moves. Which account keeps the address is the
+-- builder's decision (AGENTS.md §5), never this file's.
+--
+-- Additive, so the code already running keeps working for every address
+-- already in its one form (AGENTS.md rule 7). Until traffic moves, the old
+-- version can answer a server error to an address sent in another Unicode
+-- form, instead of making a second account.
+
+create unique index account_email_one on account (lower(normalize(email, NFKC)));

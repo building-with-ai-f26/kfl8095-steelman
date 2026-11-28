@@ -38,6 +38,16 @@ export function cleanText(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * An email address in its one form (L-01, L-04; build plan M3d-32): its ends trimmed, Unicode NFKC applied, and its
+ * case lowered, in the same order as the database's unique index, lower(normalize(email, NFKC)). So "Dana@X.edu",
+ * " dana@x.edu", and a full-width "ｄana@x.edu" are one address, and one account. Gmail's dotted and plus-tagged forms
+ * of one mailbox stay separate addresses.
+ */
+export function emailAddress(text: string): string {
+  return text.trim().normalize("NFKC").toLowerCase();
+}
+
 /** Text that must be there: tidied first, then measured. */
 const required = (max: number) => z.string().transform(cleanText).pipe(z.string().min(1).max(max));
 
