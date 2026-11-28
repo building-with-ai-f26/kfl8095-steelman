@@ -4,9 +4,10 @@
 
 import { Fragment } from "react";
 import type { VersionRow } from "@steelman/shared";
-import { Axis, Icon } from "../icons.tsx";
+import { Icon } from "../icons.tsx";
 import type { Writer } from "./Board.tsx";
 import { Card } from "./Card.tsx";
+import { ArticulationKey } from "./Texture.tsx";
 import type { Opening } from "./Card.tsx";
 import { WordingSlot } from "./Forms.tsx";
 import { articulationShown, isLiveVersion, short, whyNot } from "./display.ts";
@@ -28,10 +29,10 @@ export function TrackAxis({ count, at, onFold }: { count: number; at: number; on
       </div>
     );
   }
-  // Phones swap the axis for which wording you're on, and dots while they fit.
+  // Wider screens show the articulation key (M3d-27); phones show which wording you're on, and dots while they fit.
   return (
     <div className="sm-track-axis">
-      <Axis kind="h" start="best articulation" end="weaker" />
+      <ArticulationKey />
       <div className="sm-pager" aria-live="polite">
         <span className="sm-pager-text">{`${at + 1} of ${count}${at === 0 ? " · best articulated" : ""}`}</span>
         {count <= 8 && (

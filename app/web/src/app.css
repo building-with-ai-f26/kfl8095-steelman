@@ -637,3 +637,21 @@ body { margin:0; }
 #steelman-study a.sm-profile-back { text-decoration:none; }
 #steelman-study .sm-space-edit .sm-person > span:nth-child(2) small.sm-person-note { display:block; white-space:normal; }
 #steelman-study .sm-space-page > .sm-space-edit { justify-self:center; }
+
+/* M3d-27, B-06 and B-07: the hex keys, as the approved specimen draws them (docs/design/index.html, "Hex keys").
+   They take the place of the prototype's two axes in the app only; the prototype keeps its axes, so its .sm-axis
+   and .sm-col-vaxis rules stay as they are. paintTextures() in board/Texture.tsx draws the hexagons and places the
+   captions. Both keys are decoration, hidden from screen readers and from the pointer, and neither moves. */
+#steelman-study .sm-hex-caption { color:var(--sm-axis); font:500 10px/1 var(--sm-sans); letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; }
+#steelman-study .sm-hex-key svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+/* The importance key runs down the 28 px gutter left of the first column's panel, where today's axis ran. */
+#steelman-study .sm-col-vaxis.sm-hex-vkey { display:block; left:0; top:0; bottom:0; width:28px; z-index:1; pointer-events:none; }
+#steelman-study .sm-hex-vkey .sm-hex-caption { position:absolute; left:10px; writing-mode:vertical-rl; transform:translateX(-50%) rotate(180deg); }
+/* The articulation key fills an unfolded row's strip up to the fold button, and the strip clips what scrolls past
+   its ends. The strip's 11 px left padding is taken back, so the key's hexagons line up with the wordings. */
+#steelman-study .sm-hex-hkey { position:relative; flex:1; align-self:stretch; min-width:0; margin-left:-11px; overflow:hidden; pointer-events:none; }
+#steelman-study .sm-hex-hkey .sm-hex-caption { position:absolute; top:50%; transform:translateY(-50%); }
+/* Phones keep today's captions: "Most important first" under the column head, and the pager in the strip. */
+@media(max-width:640px) {
+  #steelman-study .sm-col-vaxis.sm-hex-vkey, #steelman-study .sm-hex-hkey { display:none; }
+}

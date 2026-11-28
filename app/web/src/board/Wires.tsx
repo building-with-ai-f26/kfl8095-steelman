@@ -30,7 +30,7 @@ import type { Box, WireColumn } from "./wires.ts";
 
 const SVG = "http://www.w3.org/2000/svg";
 /** The decoration itself, whose own redraws aren't changes to redraw for. */
-const DECORATION = ".sm-links, canvas.sm-texture";
+const DECORATION = ".sm-links, canvas.sm-texture, .sm-hex-key";
 
 /** Every Wires on the page: a redraw of its wires alone, for each frame of a move, and its usual full redraw. */
 const mounted = new Set<{ follow(): void; redraw(): void }>();
