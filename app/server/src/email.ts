@@ -6,6 +6,8 @@
 // (plans/architecture.md §6). The tests keep them in memory. Deployed, they
 // go through Resend (M1-14a), by its HTTP API: no package needed.
 
+import { CODE_LASTS_MINUTES } from "@steelman/shared";
+
 export interface EmailSender {
   sendSignInCode(to: string, code: string): Promise<void>;
   /** The code that makes `to` an account's new email (M2-8c). */
@@ -32,8 +34,8 @@ export const terminalEmail: EmailSender = {
   },
 };
 
-/** How long a code works, as the email says (sign-in.ts's CODE_LASTS_SECONDS). */
-const CODE_LASTS = "10 minutes";
+/** How long a code works, as the email says: the same constant sign-in.ts and the privacy page use (M3d-37). */
+const CODE_LASTS = `${CODE_LASTS_MINUTES} minutes`;
 
 /**
  * Sends Steelman's emails through Resend's API (resend.com/docs/api-reference/emails/send-email).

@@ -20,7 +20,7 @@
 // isn't asked to delete anything.
 
 import { sql } from "kysely";
-import { emailAddress } from "@steelman/shared";
+import { USERNAME_HELD_DAYS, emailAddress } from "@steelman/shared";
 import type { Clock } from "@steelman/shared";
 import type { Db } from "./db/database.ts";
 import type { Trx } from "./write-path.ts";
@@ -36,8 +36,8 @@ export const DELETED_ACCOUNT = "deleted_account";
  */
 export const OPERATOR_ACCOUNT = "steelman";
 
-/** How long a deleted account's username stays unavailable to others (architecture §7, Retention). */
-export const USERNAME_HELD_DAYS = 30;
+// How long a deleted account's username stays unavailable to others is USERNAME_HELD_DAYS (architecture §7, Retention),
+// in shared so the privacy page's test can check the page says it (M3d-37).
 
 /** Who should take a board its owner leaves, best first. Voters never do (the builder's decision, Nov 15). */
 const HEIRS = ["owner", "editor", "contributor"];
