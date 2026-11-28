@@ -399,6 +399,26 @@ body { margin:0; }
 #steelman-study .sm-canvas-frame { position:relative; overflow:clip; pointer-events:none; }
 #steelman-study .sm-canvas-layer { position:absolute; inset:0; background-color:var(--sm-paper); background-image:var(--sm-canvas-texture); background-size:var(--sm-canvas-texture-size); pointer-events:none; }
 #steelman-study .sm-canvas-light { position:absolute; inset:0; background-image:var(--sm-canvas-light); background-size:100% 100%; pointer-events:none; }
+/* M3d-25, L-01, M-05: the sign-in page's map tours the spaces' tints (tintTour.ts). Only the sign-in steps opt in
+   (data-tour); the problem pages that share the card keep the still stone map that .sm-landing draws. On the touring
+   page, the page paints only stone, and the map behind the card paints the rest: a layer of each tint, hidden at rest
+   and faded in by the tour, each new tint above the last within their own stacking context, the contours and grain (--sm-canvas-texture) above them, and the light
+   (--sm-canvas-light) still on top, as the board's drifting canvas keeps it (M3d-22). The contours are 24 px larger
+   than the page on every side, so their pan never shows an edge, and they're placed so that at rest they line up
+   with the still map. The map clips them, so the page never scrolls sideways, and it takes no click. At rest the
+   touring page draws exactly what the still stone map draws. */
+#steelman-study .sm-landing[data-tour] { position:relative; isolation:isolate; background-image:none; }
+#steelman-study .sm-tint-map { position:absolute; inset:0; z-index:-1; overflow:clip; pointer-events:none; }
+#steelman-study .sm-tint-layers { position:absolute; inset:0; isolation:isolate; }
+#steelman-study .sm-tint-layer { position:absolute; inset:0; opacity:0; }
+#steelman-study .sm-tint-layer[data-tint-layer="stone"] { background-color:var(--sm-canvas-stone); }
+#steelman-study .sm-tint-layer[data-tint-layer="cool"] { background-color:var(--sm-canvas-cool); }
+#steelman-study .sm-tint-layer[data-tint-layer="sand"] { background-color:var(--sm-canvas-sand); }
+#steelman-study .sm-tint-layer[data-tint-layer="slate"] { background-color:var(--sm-canvas-slate); }
+#steelman-study .sm-tint-layer[data-tint-layer="sage"] { background-color:var(--sm-canvas-sage); }
+#steelman-study .sm-tint-layer[data-tint-layer="lilac"] { background-color:var(--sm-canvas-lilac); }
+#steelman-study .sm-tint-texture { position:absolute; inset:-24px; background-image:var(--sm-canvas-texture); background-size:var(--sm-canvas-texture-size); background-position:24px 24px; }
+#steelman-study .sm-tint-light { position:absolute; inset:0; background-image:var(--sm-canvas-light); background-size:100% 100%; }
 /* M3d-23, M-15, E-07: while a board opened from the list grows out of its miniature, the parts that then draw
    themselves in are hidden (drawInAfter() in draw-in.ts), so the board doesn't show in full and then blink out as the
    drawing starts. Only the canvas grows. The drawing's own starting keyframes take over in the same frame. */

@@ -44,7 +44,7 @@ export function ChooseUsername({ email, onChosen }: { email: string; onChosen: (
   }
 
   return (
-    <AuthCard>
+    <AuthCard tour>
       <form className="sm-auth-form" onSubmit={(event) => void submit(event)} noValidate>
         <h1 className="sm-auth-title sm-auth-signin">Choose a username</h1>
         <label className="sm-field">

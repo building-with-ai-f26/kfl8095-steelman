@@ -18,7 +18,7 @@ A short record of how Steelman should look and feel, and why. Change it when a d
    - articulation runs left to right, voted under each version.
    Importance and articulation share one vote control, a quarter turn apart, and one arrowhead.
 3. **Everything stays physically inside the diagram.** Detail unfolds in place (a stack fans out, a card extends downward) rather than opening a new view.
-4. **Grayscale first; color only carries meaning.** Three meanings so far: evidence strength, AI, and which space a board belongs to (its canvas). Nothing decorative is colored.
+4. **Grayscale first; color only carries meaning.** Three meanings so far: evidence strength, AI, and which space a board belongs to (its canvas). Nothing decorative is colored. The one exception is the sign-in page, which previews the spaces' colors: its map moves slowly through the six spaces' tints, so a new person sees what spaces look like before they sign in.
 5. **Editorial, not app-like.** Inspiration: NYT graphics and maps, early FiveThirtyEight. Serif for questions and axis labels, a clean sans for claims and controls, generous whitespace, thin rules.
 
 ## Current choices

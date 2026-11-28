@@ -133,7 +133,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
 
   if (step === "code") {
     return (
-      <AuthCard>
+      <AuthCard tour>
         <form className="sm-auth-form" onSubmit={(event) => void submitCode(event)} noValidate>
           <h1 className="sm-auth-title sm-auth-signin">Check your email</h1>
           <p className="sm-auth-text" id="sm-auth-sent">
@@ -178,7 +178,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
   }
 
   return (
-    <AuthCard>
+    <AuthCard tour>
       <form className="sm-auth-form" onSubmit={submitEmail} noValidate>
         <h1 className="sm-auth-title sm-auth-signin">Sign in</h1>
         <button type="button" className="sm-button sm-google cursor-interaction" onClick={() => void continueWithGoogle()}>
