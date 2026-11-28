@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 import { useExit } from "./drawer.ts";
 import { MEMBER_ROLES, can } from "@steelman/shared";
-import type { Access, Closing, Person, Role } from "@steelman/shared";
+import type { Access, BoardSpace, Closing, Person, Role } from "@steelman/shared";
 import { Icon } from "../icons.tsx";
 import { closedDay, momentWithZone } from "../when.ts";
 import { WHY, blockedProps } from "./display.ts";
@@ -41,8 +41,8 @@ export function initials(name: string): string {
 interface SharingProps {
   access: Access;
   role: Role;
-  /** The board's space, when the reader is in it (M3d-18); null otherwise. */
-  space?: { id: string; name: string } | null;
+  /** The board's space, when the reader is in it (M3d-18), with its visibility when it's public (M3d-20); null otherwise. */
+  space?: BoardSpace | null;
   me: string | null;
   session: BoardSession;
   /** Counts the times Settings' "Sharing and access" asked for the panel (M3b-2): each new count opens it. */
@@ -158,7 +158,7 @@ export function Sharing({ access, role, space = null, me, session, asked = 0, cl
     if (!lockedBy) void session.share({ ...access, ...next });
   };
   const spaceName = space?.name ?? null;
-  const hint = accessHint(access, spaceName);
+  const hint = accessHint(access, spaceName, space?.visibility);
   // Everyone in a space can be chosen once the board is in one: the reader is in it, or it's shared with it already.
   const inSpace = space !== null || access.general === "space";
   // The space's name stays out of analytics and screen replays, as usernames do (M-08).

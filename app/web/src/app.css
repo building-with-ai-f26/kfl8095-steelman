@@ -619,3 +619,16 @@ body { margin:0; }
 #steelman-study a.sm-profile-back { text-decoration:none; }
 #steelman-study .sm-space-edit .sm-person > span:nth-child(2) small.sm-person-note { display:block; white-space:normal; }
 #steelman-study .sm-space-page > .sm-space-edit { justify-self:center; }
+
+/* Public spaces (M3d-20; G-07, G-01). Find spaces ends the sidebar, under New space; its page lists each public space
+   as the prototype's space card, in a grid that is one column on a phone. A question asked in place (Make public, and
+   Leave on a private space) is a quiet box under its control. Visibility's two choices are the prototype's sm-mode
+   tiles, each with its sentence under its name. */
+#steelman-study .sm-side-find { margin-top:4px; }
+#steelman-study .sm-find h1 { margin:0; font:700 28px/1.15 var(--sm-serif); letter-spacing:-.4px; color:var(--sm-ink); }
+#steelman-study .sm-find-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:14px; margin:0; padding:0; list-style:none; }
+#steelman-study .sm-find-list .sm-space-card { margin:0; }
+#steelman-study .sm-space-ask { display:grid; gap:10px; margin-top:10px; padding:12px; border:1px solid var(--sm-line); border-radius:8px; background:var(--sm-soft); color:var(--sm-ink); font:400 13px/1.45 var(--sm-sans); }
+#steelman-study .sm-space-ask p { margin:0; }
+#steelman-study .sm-visibility .sm-mode { align-items:flex-start; text-align:left; padding:12px; }
+#steelman-study .sm-visibility .sm-mode small { font-weight:400; color:var(--sm-muted); white-space:normal; line-height:1.35; }

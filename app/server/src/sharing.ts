@@ -92,6 +92,9 @@ export async function setBoardSpace({ db, clock }: Services, boardId: string, pe
           .where("sm.space_id", "=", space)
           .where("sm.account_id", "=", person!)
           .where("s.deleted_at", "is", null)
+          // Held FOR SHARE before the visibility is read, so a Make public in progress (which holds the space FOR NO KEY
+          // UPDATE) is waited for and the visibility it leaves is what's checked.
+          .forShare("s")
           .executeTakeFirst();
         if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) return { refused: "no_space" };
         if (canInSpace(person, asSpaceRole(mine.role), postingIn(mine.visibility)) !== null) return { refused: "space_admins_post" };

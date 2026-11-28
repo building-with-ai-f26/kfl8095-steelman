@@ -27,7 +27,7 @@
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import { LINK_ROLES, ROLES, SPACE_ROLES } from "@steelman/shared";
-import type { Access, Clock, Role } from "@steelman/shared";
+import type { Access, BoardSpace, Clock, Role } from "@steelman/shared";
 import type { Database } from "./db/database.ts";
 
 type Reader = Kysely<Database>;
@@ -157,16 +157,20 @@ export function spaceBoards(person: string) {
       and ${OWNER_IN_SPACE}`;
 }
 
-/** The board's space, for a reader who is in it (M3d-18); null for anyone else, and for a board in no space or a deleted one. */
-export async function spaceShownTo(db: Reader, boardId: string, person: string | null): Promise<{ id: string; name: string } | null> {
+/**
+ * The board's space, for a reader who is in it (M3d-18); null for anyone else, and for a board in no space or a deleted
+ * one. A public space says so (M3d-20), for Share's hint; a private one keeps its shape, with no visibility.
+ */
+export async function spaceShownTo(db: Reader, boardId: string, person: string | null): Promise<BoardSpace | null> {
   if (person === null) return null;
   const space = await db
     .selectFrom("board as b")
     .innerJoin("space as s", "s.id", "b.space_id")
     .innerJoin("space_member as sm", (join) => join.onRef("sm.space_id", "=", "s.id").on("sm.account_id", "=", person))
-    .select(["s.id", "s.name"])
+    .select(["s.id", "s.name", "s.visibility"])
     .where("b.id", "=", boardId)
     .where("s.deleted_at", "is", null)
     .executeTakeFirst();
-  return space ?? null;
+  if (!space) return null;
+  return space.visibility === "public" ? { id: space.id, name: space.name, visibility: "public" } : { id: space.id, name: space.name };
 }

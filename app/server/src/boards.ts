@@ -56,6 +56,9 @@ export async function createBoard(db: Db, clock: Clock, ids: IdSource, person: s
         .where("sm.space_id", "=", board.space)
         .where("sm.account_id", "=", person)
         .where("s.deleted_at", "is", null)
+        // Held FOR SHARE before the visibility is read, so a Make public in progress (which holds the space FOR NO KEY
+        // UPDATE) is waited for and the visibility it leaves is what's checked.
+        .forShare("s")
         .executeTakeFirst();
       if (!mine || canInSpace(person, asSpaceRole(mine.role), "space_read") !== null) throw new NoSpace();
       if (canInSpace(person, asSpaceRole(mine.role), postingIn(mine.visibility)) !== null) throw new SpaceAdminsPost();

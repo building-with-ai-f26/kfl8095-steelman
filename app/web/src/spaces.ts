@@ -11,7 +11,7 @@
 // not every message (from memory); this counts what's yours to open.
 
 import { can, canInSpace, postingIn } from "@steelman/shared";
-import type { BoardListing, SpaceCanvas, SpaceSummary } from "@steelman/shared";
+import type { BoardListing, FoundSpace, MakePublicCounts, SpaceCanvas, SpaceSummary } from "@steelman/shared";
 
 /** The prototype's names for its canvases (CANVASES in docs/prototype/source/steelman-refined.html). */
 const CANVAS_LABELS: Record<SpaceCanvas, string> = { stone: "Warm stone", cool: "Cool gray", sand: "Sand", slate: "Slate", sage: "Sage", lilac: "Lilac" };
@@ -81,4 +81,65 @@ export function helpSentence(board: BoardListing): string {
 /** The member count on the space's card, as the prototype writes it: "1 member", "1,200 members". */
 export function membersLabel(count: number): string {
   return `${count.toLocaleString("en-US")} ${count === 1 ? "member" : "members"}`;
+}
+
+// Public spaces (M3d-20, G-07): the words for a space's visibility, Find
+// spaces' search, Make public's question, and what is read out after a join,
+// a leave, or a change of visibility. Each is a full sentence (rule 13).
+
+/** What each visibility lets people do, under its choice in Space settings. */
+export const VISIBILITY_SENTENCE = {
+  private: "Only members can find and open this space.",
+  public: "Anyone with a Steelman account can find this space and join it.",
+} as const;
+
+/** The space card's fact: a word the web doesn't know reads as private, which says the least. */
+export function visibilityLabel(visibility: string): string {
+  return visibility === "public" ? "Public space" : "Private space";
+}
+
+/** Whether a public space matches what was typed in Search spaces: by name or about text, capitals aside. */
+export function matchesSpace(space: Pick<FoundSpace, "name" | "about">, query: string): boolean {
+  const words = query.trim().toLowerCase();
+  if (!words) return true;
+  return space.name.toLowerCase().includes(words) || space.about.toLowerCase().includes(words);
+}
+
+/** What is read out after the search changes. */
+export function spaceSearchSentence(found: number): string {
+  if (found === 0) return "No spaces match that search.";
+  return found === 1 ? "1 space matches that search." : `${found} spaces match that search.`;
+}
+
+/** Find spaces with nothing to list. */
+export const findSpacesEmpty = "There are no public spaces you haven’t joined yet.";
+
+/** What a Member of a public space reads where the member list would be (security review F6). */
+export const peopleHiddenSentence = "Only the space’s Admins and its Owner can see who is in a public space.";
+
+export const joinedSentence = (name: string): string => `You joined ${name}.`;
+export const leftSentence = (name: string): string => `You left ${name}.`;
+
+/** What is read out once the visibility is saved. */
+export function visibilitySaved(name: string, visibility: "private" | "public"): string {
+  return visibility === "public" ? `${name} is now public.` : `${name} is now private, and everyone who joined stays in it.`;
+}
+
+/**
+ * Make public's question (G-07, M3d-20), as GitHub's Change visibility lists the effects before "Make this repository
+ * public" (checked live on Nov 28): who can then join, how many members the space has, which steelmen open, with
+ * their history and comments, and, when there are any, which steelmen stop being shared.
+ */
+export function makePublicQuestion(name: string, counts: MakePublicCounts): string[] {
+  const members = `${counts.members.toLocaleString("en-US")} ${counts.members === 1 ? "member" : "members"}`;
+  const opens =
+    counts.shared === 0
+      ? "any steelman you share with everyone in the space, with its history and comments"
+      : counts.shared === 1
+        ? "its 1 steelman that is shared with everyone in the space, with its history and comments"
+        : `its ${counts.shared} steelmen that are shared with everyone in the space, with their history and comments`;
+  const sentences = [`Anyone with a Steelman account can then join ${name}, which has ${members}, and open ${opens}.`];
+  if (counts.unshared === 1) sentences.push("The 1 steelman that another member owns stops being shared with the space, until its Owner shares it again.");
+  if (counts.unshared > 1) sentences.push(`The ${counts.unshared} steelmen that other members own stop being shared with the space, until their Owners share them again.`);
+  return sentences;
 }

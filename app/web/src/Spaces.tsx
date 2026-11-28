@@ -2,8 +2,21 @@
 // list, a space's card, and the rail's "Needs your help", ported from the
 // prototype's sidebar(), spaceCard(), and rail() (docs/prototype/source/
 // steelman-refined.html) and drawn by its own CSS (sm-side, sm-space-card,
-// sm-rail). Public communities and Join wait for M3d-20, so the sidebar has
-// no Communities group and the card no Join.
+// sm-rail).
+//
+// Public spaces (M3d-20, G-07): "Find spaces" ends the sidebar, after New
+// space, where Slack's sidebar ends with "Add channels", whose menu browses
+// channels (from memory); Slack's Channels directory, read live on Nov 28,
+// lists public channels to browse or search by name or description, each
+// with Join Channel. A space you joined sits under "Your spaces" with the
+// rest, since it's one of yours now, where the prototype grouped joined
+// communities apart. The card says "Public space" with a globe or "Private
+// space" with a lock (security review F13), where the prototype said
+// "Public community"; a found space's card has Join, and a member's card has
+// Leave for anyone but its Owner, who can't leave. Leaving a private space
+// asks first, in place, since only an invite brings you back, as GitHub asks
+// before you leave an organization (from memory); leaving a public one
+// doesn't, as Slack's Leave channel doesn't (from memory).
 //
 // The layout is the prototype's, which copies a workspace sidebar. Slack's
 // help page on the sidebar, read live on Nov 26, names its groups with short
@@ -30,12 +43,16 @@
 // replays never record one (M-08). Tooltips are left off anything that names
 // a space, since the tooltip box sits outside the page's masks (Hints.tsx).
 
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { canInSpace } from "@steelman/shared";
-import type { BoardListing, SpaceSummary } from "@steelman/shared";
+import type { BoardListing, FoundSpace, SpaceSummary } from "@steelman/shared";
+import { removeFromSpace } from "./api.ts";
+import type { SpaceAnswer } from "./api.ts";
+import { busyButton } from "./busy.ts";
 import { Icon } from "./icons.tsx";
-import { NEW_SPACE_PATH, boardPath, spacePath, spaceSettingsPath } from "./links.ts";
-import { boardsIn, helpEmpty, helpSentence, membersLabel, needsYourHelp } from "./spaces.ts";
+import { FIND_SPACES_PATH, NEW_SPACE_PATH, boardPath, spacePath, spaceSettingsPath } from "./links.ts";
+import { useReader } from "./reader.ts";
+import { boardsIn, helpEmpty, helpSentence, membersLabel, needsYourHelp, visibilityLabel } from "./spaces.ts";
 
 /** Whether the folded sidebar is open, and the way to open or close it: held by the page, which draws its button. */
 export const NavContext = createContext<{ open: boolean; setOpen(open: boolean): void }>({ open: false, setOpen: () => undefined });
@@ -52,10 +69,11 @@ export function spaceOf(spaces: Spaces, id: string | null | undefined): SpaceSum
 const FOLDED = "(max-width: 900px)";
 
 /** Where the reader is, for the sidebar's current link. */
-export type SidebarAt = { kind: "home" } | { kind: "space"; space: string } | { kind: "new-space" };
+export type SidebarAt = { kind: "home" } | { kind: "space"; space: string } | { kind: "new-space" } | { kind: "find-spaces" };
 
 /**
- * The sidebar (G-01): Home, "Your spaces" with each space's swatch, name, and board count, and New space. The count
+ * The sidebar (G-01): Home, "Your spaces" with each space's swatch, name, and board count, New space, and Find spaces
+ * (G-07). The count
  * waits for the list; the sidebar's width never does, so the list doesn't move when it arrives.
  */
 export function Sidebar({ spaces, counts, at }: { spaces: Spaces; counts: Map<string, number> | null; at: SidebarAt }) {
@@ -127,29 +145,39 @@ export function Sidebar({ spaces, counts, at }: { spaces: Spaces; counts: Map<st
         <Icon name="plus" />
         <span>New space</span>
       </a>
+      <a className="sm-side-link sm-side-find cursor-interaction" href={FIND_SPACES_PATH} {...current(at.kind === "find-spaces")}>
+        <Icon name="globe" />
+        <span>Find spaces</span>
+      </a>
     </nav>
   );
 }
 
 /**
- * A space's card (G-05): a strip of its canvas, its name and about text, "Private space", how many members it has,
- * and Settings for its Owner and Admins. The prototype draws it in the rail on a wide screen and above the list
- * otherwise; its CSS shows one at a time.
+ * A space's card (G-05): a strip of its canvas, its name and about text, whether it's private or public, how many
+ * members it has, Settings for its Owner and Admins, and Leave for anyone but its Owner (G-07). The prototype draws it
+ * in the rail on a wide screen and above the list otherwise; its CSS shows one at a time.
  */
-export function SpaceCard({ space }: { space: SpaceSummary }) {
+export function SpaceCard({ space, onLeft }: { space: SpaceSummary; onLeft?(answer: SpaceAnswer): void }) {
+  const settings = canInSpace("reader", space.role, "space_edit") === null;
+  // The Owner can't leave; the service refuses them too.
+  const leaves = space.role !== "owner" && canInSpace("reader", space.role, "space_leave") === null;
   return (
     <section className="sm-rail-card sm-space-card ph-no-capture" aria-label={`About ${space.name}`}>
       <div className="sm-space-banner" data-canvas={space.canvas} />
       <div className="sm-space-body">
         <h2>{space.name}</h2>
         {space.about ? <p>{space.about}</p> : null}
-        <SpaceFacts members={space.members} />
-        {canInSpace("reader", space.role, "space_edit") === null ? (
+        <SpaceFacts members={space.members} visibility={space.visibility} />
+        {settings || leaves ? (
           <div className="sm-space-actions">
-            <a className="sm-button cursor-interaction" href={spaceSettingsPath(space.id)}>
-              <Icon name="settings" size={14} />
-              Settings
-            </a>
+            {settings ? (
+              <a className="sm-button cursor-interaction" href={spaceSettingsPath(space.id)}>
+                <Icon name="settings" size={14} />
+                Settings
+              </a>
+            ) : null}
+            {leaves ? <LeaveSpace space={space} onLeft={onLeft} /> : null}
           </div>
         ) : null}
       </div>
@@ -157,13 +185,94 @@ export function SpaceCard({ space }: { space: SpaceSummary }) {
   );
 }
 
-/** "Private space" and the member count, as the prototype's spaceFacts() lists them. */
-export function SpaceFacts({ members }: { members: number }) {
+/** Leave: at once from a public space, and after asking, in place, from a private one, which only an invite brings you back to. */
+function LeaveSpace({ space, onLeft }: { space: SpaceSummary; onLeft: ((answer: SpaceAnswer) => void) | undefined }) {
+  const me = useReader();
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  // Each of Leave and its question replaces the other, so focus moves with them: to the question's Cancel when it
+  // opens, and back to Leave when it's cancelled.
+  const cancel = useRef<HTMLButtonElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!moved.current) return;
+    (asking ? cancel : button).current?.focus();
+  }, [asking]);
+  const ask = (next: boolean) => {
+    moved.current = true;
+    setAsking(next);
+  };
+  const leave = async () => {
+    if (busy || !me) return;
+    setBusy(true);
+    const answer = await removeFromSpace(space.id, me);
+    setBusy(false);
+    setAsking(false);
+    onLeft?.(answer);
+  };
+  if (asking) {
+    return (
+      <div className="sm-space-ask" role="group" aria-label={`Leave ${space.name}`} aria-describedby={`sm-leave-${space.id}`}>
+        <p id={`sm-leave-${space.id}`}>You need an invite from its Admins or its Owner to come back to {space.name}.</p>
+        <div className="sm-space-actions">
+          <button ref={cancel} type="button" className="sm-button cursor-interaction" onClick={() => ask(false)}>
+            Cancel
+          </button>
+          <button type="button" className="sm-button sm-solid cursor-interaction" {...busyButton(busy)} onClick={() => void leave()}>
+            Leave
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <button ref={button} type="button" className="sm-button cursor-interaction" {...busyButton(busy)} onClick={() => (space.visibility === "public" ? void leave() : ask(true))}>
+      <Icon name="log-out" size={14} />
+      Leave
+    </button>
+  );
+}
+
+/**
+ * A public space's card in Find spaces (G-07): the prototype's space card, with Join, which turns into a way to the
+ * space once you're in. `justJoined` says this card's Join was the one pressed, so its Open link takes the focus Join had.
+ */
+export function FoundSpaceCard({ space, joined, justJoined = false, busy, onJoin }: { space: FoundSpace; joined: boolean; justJoined?: boolean; busy: boolean; onJoin(): void }) {
+  const open = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (joined && justJoined) open.current?.focus();
+  }, [joined, justJoined]);
+  return (
+    <li className="sm-rail-card sm-space-card ph-no-capture" aria-label={`About ${space.name}`}>
+      <div className="sm-space-banner" data-canvas={space.canvas} />
+      <div className="sm-space-body">
+        <h2>{space.name}</h2>
+        {space.about ? <p>{space.about}</p> : null}
+        <SpaceFacts members={space.members} visibility={space.visibility} />
+        <div className="sm-space-actions">
+          {joined ? (
+            <a ref={open} className="sm-button cursor-interaction" href={spacePath(space.id)} aria-label={`Open ${space.name}`}>
+              Open
+            </a>
+          ) : (
+            <button type="button" className="sm-button sm-solid cursor-interaction" aria-label={`Join ${space.name}`} {...busyButton(busy)} onClick={onJoin}>
+              Join
+            </button>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** Whether the space is private or public, and the member count, as the prototype's spaceFacts() lists them. */
+export function SpaceFacts({ members, visibility = "private" }: { members: number; visibility?: string }) {
   return (
     <ul className="sm-space-facts">
       <li>
-        <Icon name="lock" />
-        Private space
+        <Icon name={visibility === "public" ? "globe" : "lock"} />
+        {visibilityLabel(visibility)}
       </li>
       <li>
         <Icon name="users" />

@@ -39,9 +39,9 @@ export { LINK_ROLES, POLICY, ROLES, can } from "./policy.ts";
 export type { Action, Refusal, Role } from "./policy.ts";
 export { SPACE_POLICY, SPACE_ROLES, canInSpace } from "./policy.ts";
 export type { SpaceAction, SpaceRole } from "./policy.ts";
-export { SPACE_CANVASES, SPACE_MEMBER_ROLES, SPACE_VISIBILITIES, newSpaceInput, spaceInviteInput, spaceRoleInput, spaceSettingsInput, spaceVisibilityInput } from "./api.ts";
-export type { SpaceCanvas, SpaceList, SpaceMember, SpaceSummary, SpaceWriteAnswer } from "./api.ts";
-export { SPACE_ADMINS_POST, postingIn, posthogAssetsHost, tooManyMessage } from "./api.ts";
+export { NEW_SPACE_VISIBILITIES, PUBLIC_SPACES, SPACE_CANVASES, SPACE_MEMBER_ROLES, SPACE_VISIBILITIES, newSpaceInput, spaceInviteInput, spaceRoleInput, spaceSettingsInput, spaceVisibilityInput } from "./api.ts";
+export type { BoardSpace, FoundSpace, FoundSpaces, MakePublicCounts, SpaceCanvas, SpaceList, SpaceMember, SpaceSummary, SpaceVisibility, SpaceWriteAnswer } from "./api.ts";
+export { PUBLIC_SPACES_MOST, SPACE_ADMINS_POST, peopleIn, postingIn, posthogAssetsHost, tooManyMessage } from "./api.ts";
 export { MEMBER_ROLES, REPORT_REASONS, accessInput, assessmentInput, boardSpaceInput, changesQuery, deleteAccountInput, usernameChangeInput, editInput, hideInput, memberRoleInput, newArgumentInput, newBoardInput, newCommentInput, newOptionInput, newSourceInput, newWordingInput, renameOptionInput, renameQuestionInput, closingInput, inviteInput, reportInput, voteInput, combineInput, separateInput } from "./api.ts";
 export type {
   Access,
