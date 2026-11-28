@@ -1,0 +1,28 @@
+-- How someone came into a space (G-04, M-07, M3d-33; plans/architecture.md
+-- §2, the space_member table and the deletion table; finding F2 of the
+-- public-spaces security review).
+--
+-- What the database holds true: every membership says how it began.
+-- joined_via is 'invite' when someone was added by name: the Owner by making
+-- the space, and everyone else by an Owner's or an Admin's invite. It is
+-- 'join' when they joined a public space by themselves (M3d-20's Join). This
+-- mirrors board_member's joined_via (0008). Every membership made before this
+-- column existed began with an invite, so each reads 'invite'.
+--
+-- Account deletion reads it: a Member who joined by themselves never inherits
+-- a space, and a space with no Admin and no invited Member left is deleted
+-- with its Owner's account.
+--
+-- Q24 allows the column, because a membership always began some way. The
+-- words 'invite' and 'join' are the service's, so the schema doesn't list
+-- them.
+--
+-- The grants of 0016 are on the whole table, so they already cover this
+-- column: the service writes it, and account deletion reads it and never
+-- changes it, since its update grant names only role.
+--
+-- Additive, so the code already running keeps working (AGENTS.md rule 7): it
+-- adds members without naming the column, and the default records them as
+-- invited, which is how that code adds everyone.
+
+alter table space_member add column joined_via text not null default 'invite';

@@ -10,8 +10,11 @@
 //
 // The builder's decisions (Nov 15): a board its owner leaves passes to its
 // longest-standing editor, else contributor; with neither, it is deleted with
-// the account. A board in a space passes to the space's Owner, else its
-// longest-standing Admin, first (M3d-18; architecture §2's deletion table).
+// the account. A board in a space passes first to the space's Owner, else its
+// longest-standing Admin, as they were before the deletion (M3d-18, M3d-33;
+// architecture §2's deletion table). A space its Owner leaves passes to the
+// longest-standing Admin, else the longest-standing Member who was invited;
+// someone who joined by themselves never inherits it (M3d-33).
 // The username is held for 30 days. Analytics are anonymous, so PostHog
 // isn't asked to delete anything.
 
@@ -178,11 +181,13 @@ export async function exportData(db: Db, clock: Clock, person: string) {
   // the account's own fields stay as they were.
   const held = await heldUsername(db, person);
   // Their spaces (G-03, G-04, M3d-17): which, their role, and when they joined; a space's name and about text only
-  // for one they made, as a board's question appears only on a board they asked. Never who else is in it.
+  // for one they made, as a board's question appears only on a board they asked. Never who else is in it. One they
+  // joined by themselves says so (joinedVia, M3d-33); one they were invited to has no such key, so other exports
+  // keep their shape.
   const spaces = await db
     .selectFrom("space_member as m")
     .innerJoin("space as s", "s.id", "m.space_id")
-    .select(["m.space_id", "m.role", "m.joined_at", "s.name", "s.about", "s.created_by"])
+    .select(["m.space_id", "m.role", "m.joined_at", "m.joined_via", "s.name", "s.about", "s.created_by"])
     .where("m.account_id", "=", person)
     .where("s.deleted_at", "is", null)
     .orderBy("m.joined_at")
@@ -197,6 +202,7 @@ export async function exportData(db: Db, clock: Clock, person: string) {
       space: space.space_id,
       role: space.role,
       joined: space.joined_at.toISOString(),
+      ...(space.joined_via !== "invite" ? { joinedVia: space.joined_via } : {}),
       ...(space.created_by === person ? { name: space.name, about: space.about } : {}),
     })),
     votes: {
@@ -248,7 +254,10 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       .onConflict((c) => c.column("id").doNothing())
       .execute();
 
-    // Their spaces first (M3d-17), each handed over or deleted, so a board in a space (M3d-18) finds its space's new Owner.
+    // Who in each of their spaces may take a board, read before any space is handed over (M3d-33), so a Member whom
+    // this deletion makes a space's Owner never takes the person's boards in it.
+    const spaceHeirs = await boardHeirsBySpace(trx, person);
+    // Their spaces next (M3d-17), each handed over or deleted.
     await handOverSpaces(trx, person, now);
 
     // Every board they're on or left a mark on, in one order, so two deletions can't wait on each other.
@@ -273,7 +282,7 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       await deleteReports(trx, boardId, person, seq);
       await eraseComments(trx, boardId, person, now, seq);
       await credit(trx, boardId, person, seq);
-      const stays = await handOver(trx, boardId, person, now);
+      const stays = await handOver(trx, boardId, person, now, spaceHeirs);
       if (!stays) await deleteBoard(trx, boardId, now, seq);
     }
 
@@ -316,14 +325,19 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
   });
 }
 
-/** Who should take a space its Owner leaves, best first (architecture §2, the deletion table). */
+/**
+ * Who should take a space its Owner leaves, best first (architecture §2, the deletion table): an Admin, however they
+ * came in, then a Member who was invited (joined_via "invite"). A Member who joined by themselves (joined_via "join",
+ * M3d-20) never inherits a space (M3d-33).
+ */
 const SPACE_HEIRS = ["admin", "member"];
 
 /**
- * Their spaces (G-03, G-04, M3d-17; architecture §2, the deletion table): each membership ends. A space they own
- * passes to the longest-standing Admin, else the longest-standing Member; with no one else in it, it is deleted, its
- * name and about text erased and its row kept, as a deleted board's is. A space they made is credited to the stand-in,
- * and their ID is scrubbed from its change rows. Locked in ID order, so two deletions can't wait on each other.
+ * Their spaces (G-03, G-04, M3d-17, M3d-33; architecture §2, the deletion table): each membership ends. A space they
+ * own passes to the longest-standing Admin, else the longest-standing Member who was invited. With no such heir, it is
+ * deleted, as a space with no one else in it is: its name and about text are erased and its row is kept, as a deleted
+ * board's is, and the members who joined by themselves no longer find it. A space they made is credited to the
+ * stand-in, and their ID is scrubbed from its change rows. Locked in ID order, so two deletions can't wait on each other.
  */
 async function handOverSpaces(trx: Trx, person: string, now: Date): Promise<void> {
   const touched = await sql<{ id: string }>`
@@ -339,7 +353,7 @@ async function handOverSpaces(trx: Trx, person: string, now: Date): Promise<void
         .selectFrom("space_member")
         .select("account_id")
         .where("space_id", "=", id)
-        .where("role", "in", SPACE_HEIRS)
+        .where((eb) => eb.or([eb("role", "=", "admin"), eb.and([eb("role", "=", "member"), eb("joined_via", "=", "invite")])]))
         .orderBy(sql`array_position(${sql.val(SPACE_HEIRS)}::text[], role)`)
         .orderBy("joined_at")
         .orderBy("account_id")
@@ -431,27 +445,41 @@ async function credit(trx: Trx, boardId: string, person: string, seq: number): P
   await trx.updateTable("board").set({ created_by: DELETED_ACCOUNT }).where("id", "=", boardId).where("created_by", "=", person).execute();
 }
 
-/** Who in a board's space should take it, best first (M3d-18; architecture §2, the deletion table). */
+/**
+ * Who in a board's space should take it, best first (M3d-18, M3d-33; architecture §2, the deletion table): the space's
+ * Owner, then its longest-standing Admin, as they were before the deletion. Someone the same deletion makes the
+ * space's Owner doesn't count, so a Member it promotes never takes the deleted person's boards.
+ */
 const SPACE_BOARD_HEIRS = ["owner", "admin"];
 
+/** For each space, who should take a board in it: an account, or null for no one. */
+type SpaceBoardHeirs = ReadonlyMap<string, string | null>;
+
 /**
- * Their membership ends. A board they own passes, in a space, to the space's
- * Owner, else its longest-standing Admin (their spaces were handed over first,
- * so that Owner is the new one); else to the longest-standing editor, else
- * contributor, unless it has another owner.
- *
- * @returns Whether the board stays: false when they owned it and nobody can take it.
+ * Who would take a board in each space the person is in or made, read before handOverSpaces changes any of them
+ * (M3d-33). The spaces are locked first, in the same ID order handOverSpaces locks them, so no role changes between
+ * this read and the hand-over, and two deletions still can't wait on each other.
  */
-async function handOver(trx: Trx, boardId: string, person: string, now: Date): Promise<boolean> {
-  const mine = await trx.selectFrom("board_member").select("role").where("board_id", "=", boardId).where("account_id", "=", person).executeTakeFirst();
-  await trx.deleteFrom("board_member").where("board_id", "=", boardId).where("account_id", "=", person).execute();
-  if (mine?.role !== "owner") return true;
-  const fromSpace = await trx
-    .selectFrom("board as b")
-    .innerJoin("space as s", "s.id", "b.space_id")
-    .innerJoin("space_member as sm", "sm.space_id", "s.id")
+async function boardHeirsBySpace(trx: Trx, person: string): Promise<SpaceBoardHeirs> {
+  const touched = await sql<{ id: string }>`
+    select space_id as id from space_member where account_id = ${person}
+    union select id from space where created_by = ${person}
+    order by 1`.execute(trx);
+  const heirs = new Map<string, string | null>();
+  for (const { id } of touched.rows) {
+    await trx.selectFrom("space").select("id").where("id", "=", id).forUpdate().executeTakeFirst();
+    heirs.set(id, (await spaceBoardHeir(trx, id, person))?.account_id ?? null);
+  }
+  return heirs;
+}
+
+/** A space's Owner, else its longest-standing Admin, leaving out the person; none in a deleted space. */
+function spaceBoardHeir(trx: Trx, spaceId: string, person: string) {
+  return trx
+    .selectFrom("space_member as sm")
+    .innerJoin("space as s", "s.id", "sm.space_id")
     .select("sm.account_id")
-    .where("b.id", "=", boardId)
+    .where("sm.space_id", "=", spaceId)
     .where("s.deleted_at", "is", null)
     .where("sm.role", "in", SPACE_BOARD_HEIRS)
     .where("sm.account_id", "!=", person)
@@ -459,11 +487,28 @@ async function handOver(trx: Trx, boardId: string, person: string, now: Date): P
     .orderBy("sm.joined_at")
     .orderBy("sm.account_id")
     .executeTakeFirst();
+}
+
+/**
+ * Their membership ends. A board they own in a space passes to the space's Owner, else its longest-standing Admin, as
+ * they were before the deletion (`spaceHeirs`, read before their spaces were handed over), so a Member whom the same
+ * deletion makes the space's Owner never takes it. A board in a space the person had already left is read now, since
+ * this deletion changes nothing there. Without such an heir, the board passes to its longest-standing editor, else
+ * contributor, unless it has another owner.
+ *
+ * @returns Whether the board stays: false when they owned it and nobody can take it.
+ */
+async function handOver(trx: Trx, boardId: string, person: string, now: Date, spaceHeirs: SpaceBoardHeirs): Promise<boolean> {
+  const mine = await trx.selectFrom("board_member").select("role").where("board_id", "=", boardId).where("account_id", "=", person).executeTakeFirst();
+  await trx.deleteFrom("board_member").where("board_id", "=", boardId).where("account_id", "=", person).execute();
+  if (mine?.role !== "owner") return true;
+  const { space_id: spaceId } = await trx.selectFrom("board").select("space_id").where("id", "=", boardId).executeTakeFirstOrThrow();
+  const fromSpace = spaceId === null ? null : spaceHeirs.has(spaceId) ? spaceHeirs.get(spaceId)! : ((await spaceBoardHeir(trx, spaceId, person))?.account_id ?? null);
   if (fromSpace) {
     // They may not be on the board yet, or may have come by the link: either way, they're its Owner by name now.
     await trx
       .insertInto("board_member")
-      .values({ board_id: boardId, account_id: fromSpace.account_id, role: "owner", joined_via: "invite", joined_at: now })
+      .values({ board_id: boardId, account_id: fromSpace, role: "owner", joined_via: "invite", joined_at: now })
       .onConflict((c) => c.columns(["board_id", "account_id"]).doUpdateSet({ role: "owner", joined_via: "invite" }))
       .execute();
     return true;

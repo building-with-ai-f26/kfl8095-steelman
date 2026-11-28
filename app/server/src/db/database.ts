@@ -41,8 +41,11 @@ export interface Database {
     created_at: Date;
     deleted_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
   };
-  /** A person's role in a space: "owner", "admin", or "member" (G-04; migration 0016). */
-  space_member: { space_id: string; account_id: string; role: string; joined_at: Date };
+  /**
+   * A person's role in a space: "owner", "admin", or "member" (G-04; migration 0016), and how they came in:
+   * "invite" when added by name, "join" when they joined by themselves (migration 0019).
+   */
+  space_member: { space_id: string; account_id: string; role: string; joined_via: string; joined_at: Date };
   /** One row per change to a space or its members, holding IDs and keywords only (migration 0016). */
   space_change: {
     id: ColumnType<string, never, never>;
