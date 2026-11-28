@@ -17,6 +17,8 @@
 // A space isn't synced live as a board is, so a write answers no change
 // number. Boards join spaces in M3d-18; public spaces, joining, and space
 // links come later (M3d-20), so nothing here lets a non-member find a space.
+// Making a space and inviting someone both record them as added by name
+// (joined_via "invite", migration 0019); M3d-20's Join will record "join".
 
 import { sql } from "kysely";
 import { canInSpace, itemIdInput } from "@steelman/shared";
@@ -119,7 +121,7 @@ export async function createSpace({ db, clock }: Services, person: string, space
         .insertInto("space")
         .values({ id: space.id, name: space.name, about: space.about ?? "", canvas: space.canvas ?? "stone", visibility: "private", created_by: person, created_at: now })
         .execute();
-      await trx.insertInto("space_member").values({ space_id: space.id, account_id: person, role: "owner", joined_at: now }).execute();
+      await trx.insertInto("space_member").values({ space_id: space.id, account_id: person, role: "owner", joined_via: "invite", joined_at: now }).execute();
       await logChange(trx, { space: space.id, at: now, actor: person, kind: "space_created" });
     });
   } catch (error) {
@@ -192,7 +194,7 @@ export async function inviteToSpace({ db, clock }: Services, spaceId: string, pe
         await trx.updateTable("space_member").set({ role }).where("space_id", "=", spaceId).where("account_id", "=", account).execute();
         await logChange(trx, { space: spaceId, at: now, actor: person!, kind: "role_changed", before: { account, role: member }, after: { account, role } });
       } else {
-        await trx.insertInto("space_member").values({ space_id: spaceId, account_id: account, role, joined_at: now }).execute();
+        await trx.insertInto("space_member").values({ space_id: spaceId, account_id: account, role, joined_via: "invite", joined_at: now }).execute();
         await logChange(trx, { space: spaceId, at: now, actor: person!, kind: "member_added", after: { account, role } });
       }
       return "done";
