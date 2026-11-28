@@ -22,6 +22,7 @@ export {
   cleanText,
   commentBodyInput,
   contextInput,
+  emailAddress,
   isAllowedUsername,
   itemIdInput,
   optionNameInput,
