@@ -14,8 +14,8 @@ Both use `modules/steelman/`, which reads top to bottom: the APIs, the database,
 accounts and GitHub's way in, the Cloud Run service and its two jobs, the schedules, and the monitoring.
 
 **What applying it costs:** about $15–20 a month in all (plans/build-plan.md, M1): the production database
-about $9–10, Cloud Run $0–5, staging's database about $2 while stopped. Budget alerts don't stop spending;
-the ceilings are Cloud Run's 3 instances and the database's fixed size.
+about $9–10, Cloud Run $0–5, staging's database about $2 while stopped. Budget alerts don't stop spending.
+The ceilings are Cloud Run's 3 instances and the database disk, which grows on its own up to 20 GB and stops there.
 
 **What it doesn't do:** put Steelman's own image in. The service and its jobs start on Google's sample
 container; the deploy workflow (M1-14c) builds the image from `app/Dockerfile`, runs the migration job, and

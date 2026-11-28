@@ -536,7 +536,7 @@ GitHub Pages keeps publishing `main:/docs` as today; the app's code lives in its
 - **Uptime and alerts** (by email to the builder): an uptime check on `/api/health` every few minutes (not `/healthz`: Cloud Run reserves some paths ending in `z`, per its known-issues page, checked Nov 16); alerts on error rate, slow responses (p95 over 1 s), database CPU and storage, and failed scheduled jobs.
 - **Spend:**
   - **Budget alerts** on each project at 50%, 90%, and 100% (e.g. $25 a month for production during the class trial). Google is explicit that alert budgets don't stop spending.
-  - **Hard ceilings** where they exist: Cloud Run **maximum instances** (e.g. 3), which caps compute however much traffic arrives; a fixed database size; and, from T3, the model provider's own spend limit plus our credit ledger. Google also offers **spend cap budgets** that pause services when a project goes over, for the services that support them (*not yet checked which ones*); worth setting on staging.
+  - **Hard ceilings** where they exist: Cloud Run **maximum instances** (e.g. 3), which caps compute however much traffic arrives; the database disk's autoresize limit of 20 GB, so the disk grows on its own and then stops (M3d-30); and, from T3, the model provider's own spend limit plus our credit ledger. Google also offers **spend cap budgets** that pause services when a project goes over, for the services that support them (*not yet checked which ones*); worth setting on staging.
 
 ---
 

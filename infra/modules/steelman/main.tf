@@ -65,12 +65,13 @@ resource "google_sql_database_instance" "main" {
 
   settings {
     # The smallest shared-core size, in the edition that offers it (architecture §5: about $9–10 a month).
-    edition           = "ENTERPRISE"
-    tier              = "db-f1-micro"
-    availability_type = "ZONAL"
-    disk_type         = "PD_SSD"
-    disk_size         = 10
-    disk_autoresize   = true
+    edition               = "ENTERPRISE"
+    tier                  = "db-f1-micro"
+    availability_type     = "ZONAL"
+    disk_type             = "PD_SSD"
+    disk_size             = 10
+    disk_autoresize       = true
+    disk_autoresize_limit = 20 # GB: the disk grows on its own up to here and no further (architecture §6)
 
     backup_configuration {
       enabled                        = true
@@ -702,8 +703,8 @@ resource "google_monitoring_alert_policy" "down" {
   notification_channels = [google_monitoring_notification_channel.email.id]
 }
 
-# Alerts at 50, 90, and 100% of the monthly budget. Google is explicit that this doesn't stop spending;
-# max_instances and the database's fixed size are the ceilings (architecture §6).
+# Alerts at 50, 90, and 100% of the monthly budget. Google is explicit that this doesn't stop spending.
+# The ceilings are max_instances, which allows three servers, and the database disk, which stops at 20 GB (architecture §6).
 resource "google_billing_budget" "monthly" {
   billing_account = var.billing_account
   display_name    = "Steelman ${var.environment}"
