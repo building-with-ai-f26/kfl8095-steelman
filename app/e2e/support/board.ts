@@ -42,6 +42,8 @@ export interface TestBoard {
   errors: string[];
   /** Gives a person a different role on the board, straight in the database (no screen sets every role yet). */
   setRole(person: DemoPerson, role: "viewer" | "voter" | "contributor" | "editor" | "owner"): Promise<void>;
+  /** Sets a space's visibility straight in the database, since no route makes a space public until M3d-20 (M3d-34). */
+  setSpaceVisibility(space: string, visibility: string): Promise<void>;
 }
 
 export interface OpenOptions {
@@ -106,6 +108,11 @@ export const test = base.extend<{ board: TestBoard; analytics: boolean; limits: 
         const roles = createDatabase(databaseUrl.href);
         await roles.updateTable("board_member").set({ role }).where("board_id", "=", demo.board).where("account_id", "=", demo.people[person]).execute();
         await roles.destroy();
+      },
+      async setSpaceVisibility(space, visibility) {
+        const spaces = createDatabase(databaseUrl.href);
+        await spaces.updateTable("space").set({ visibility }).where("id", "=", space).execute();
+        await spaces.destroy();
       },
       api(person) {
         const header = { "x-steelman-test-user": demo.people[person] };

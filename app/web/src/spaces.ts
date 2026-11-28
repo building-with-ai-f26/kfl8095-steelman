@@ -10,11 +10,20 @@
 // everyone in it, and their own. Slack's sidebar counts what's new to you,
 // not every message (from memory); this counts what's yours to open.
 
-import { can } from "@steelman/shared";
-import type { BoardListing, SpaceCanvas } from "@steelman/shared";
+import { can, canInSpace, postingIn } from "@steelman/shared";
+import type { BoardListing, SpaceCanvas, SpaceSummary } from "@steelman/shared";
 
 /** The prototype's names for its canvases (CANVASES in docs/prototype/source/steelman-refined.html). */
 const CANVAS_LABELS: Record<SpaceCanvas, string> = { stone: "Warm stone", cool: "Cool gray", sand: "Sand", slate: "Slate", sage: "Sage", lilac: "Lilac" };
+
+/**
+ * The spaces New steelman's Space menu offers (M3d-34): every private space you're in, and a public one only when you
+ * are one of its Admins or its Owner, as the service allows. GitHub leaves an organization out of a member's Owner menu
+ * on "Create a new repository" when only its owners may create them (from memory), so the menu leaves it out too.
+ */
+export function spacesToPostIn(spaces: readonly SpaceSummary[]): SpaceSummary[] {
+  return spaces.filter((each) => canInSpace("reader", each.role, postingIn(each.visibility)) === null);
+}
 
 export function canvasLabel(canvas: SpaceCanvas): string {
   return CANVAS_LABELS[canvas];
