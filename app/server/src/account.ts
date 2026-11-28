@@ -295,7 +295,11 @@ export async function deleteAccount(db: Db, clock: Clock, person: string, typed:
       const email = account.email.toLowerCase();
       // Better Auth names each code by its purpose and the address.
       const identifiers = ["sign-in-otp-", "email-verification-otp-", "forget-password-otp-"].map((purpose) => purpose + email);
-      // A code for a new email is stored under both addresses (M2-8c). starts_with, since _ in an email would be a LIKE wildcard.
+      // A code for a new email (M2-8c) is named by the account's ID and the new address, since Better Auth 1.7.16
+      // (GHSA-2f9c-7xj7-gh55; M3d-28). Codes asked for before that release were named by the old and new addresses,
+      // and the second line erases those until the daily job does. starts_with, since _ would be a LIKE wildcard, and
+      // the ID isn't lowered because IDs mix upper and lower case.
+      await trx.deleteFrom("sign_in.sign_in_code").where(sql<boolean>`starts_with(identifier, ${`change-email-otp-${person}:`})`).execute();
       await trx.deleteFrom("sign_in.sign_in_code").where(sql<boolean>`starts_with(lower(identifier), ${`change-email-otp-${email}-`})`).execute();
       await trx
         .deleteFrom("sign_in.sign_in_code")
