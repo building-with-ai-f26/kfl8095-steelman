@@ -4,6 +4,8 @@
 // Every write but making one goes through `writeToSpace`, which does what the
 // board write path does (write-path.ts), in one transaction:
 //
+//   0. first, for a removal only: the removed person's account row, which
+//              their own deletion locks before their spaces (M3d-35);
 //   1. lock:   the space's row, so writes to one space take turns, and
 //              "exactly one owner" holds without a database rule (Q24);
 //   2. load:   the person's own role in it; none, and the space isn't found,
@@ -19,6 +21,12 @@
 // links come later (M3d-20), so nothing here lets a non-member find a space.
 // Making a space and inviting someone both record them as added by name
 // (joined_via "invite", migration 0019); M3d-20's Join will record "join".
+//
+// A removal sticks (M3d-35, migration 0020; finding F3 of the public-spaces
+// security review): when an Admin or the Owner removes someone, a block is
+// kept in the same transaction, and M3d-20's Join and Find spaces ask
+// blockedFrom before letting them back. Leaving keeps no block. An invite
+// from an Admin or the Owner lifts the block, and its change row says so.
 
 import { sql } from "kysely";
 import { canInSpace, itemIdInput } from "@steelman/shared";
@@ -32,6 +40,11 @@ type SpaceOutcome = "done" | "already_done" | { refused: RefusalReason };
 
 interface SpaceWriteSteps<Loaded> {
   action: SpaceAction;
+  /**
+   * Step 0, before the space is locked: hold a row the change will need that an account deletion locks before it locks
+   * the space, so the two take their locks in the same order and can't wait on each other.
+   */
+  preLock?(trx: Trx): Promise<void>;
   /** Step 4. Null when the thing isn't there. */
   load(trx: Trx, role: SpaceRole): Promise<Loaded | null>;
   /** Step 5: make the change and add its change row. */
@@ -54,6 +67,8 @@ async function writeToSpace<Loaded>(db: Db, spaceId: string, person: string | nu
   if (!itemIdInput.safeParse(spaceId).success) return { status: "not_found" };
   try {
     return await db.transaction().execute(async (trx) => {
+      // 0. What an account deletion locks first.
+      await steps.preLock?.(trx);
       // 1. Lock.
       const space = await trx.selectFrom("space").select("id").where("id", "=", spaceId).where("deleted_at", "is", null).forUpdate().executeTakeFirst();
       if (!space) throw new RollBack({ status: "not_found" });
@@ -194,8 +209,11 @@ export async function inviteToSpace({ db, clock }: Services, spaceId: string, pe
         await trx.updateTable("space_member").set({ role }).where("space_id", "=", spaceId).where("account_id", "=", account).execute();
         await logChange(trx, { space: spaceId, at: now, actor: person!, kind: "role_changed", before: { account, role: member }, after: { account, role } });
       } else {
+        // Someone who was removed is invited back: the invite lifts the block (M3d-35), and the change row says so.
+        const lifted = await trx.deleteFrom("space_block").where("space_id", "=", spaceId).where("account_id", "=", account).executeTakeFirst();
         await trx.insertInto("space_member").values({ space_id: spaceId, account_id: account, role, joined_via: "invite", joined_at: now }).execute();
-        await logChange(trx, { space: spaceId, at: now, actor: person!, kind: "member_added", after: { account, role } });
+        const unblocked = Number(lifted.numDeletedRows) > 0;
+        await logChange(trx, { space: spaceId, at: now, actor: person!, kind: "member_added", after: unblocked ? { account, role, unblocked } : { account, role } });
       }
       return "done";
     },
@@ -220,14 +238,20 @@ export async function setSpaceRole({ db, clock }: Services, spaceId: string, per
 /**
  * An Admin or the Owner removes a member (G-04), who loses the space at once; anyone but the Owner removes themself
  * to leave. The Owner keeps their role, so no one removes them and they can't leave. Removing someone not in the space
- * is already done; an account that doesn't exist isn't found.
+ * is already done; an account that doesn't exist isn't found. A removal keeps a block, so the person can't come back
+ * by themselves until an Admin or the Owner invites them (G-07, M3d-35); leaving keeps none.
  */
 export async function removeFromSpace({ db, clock }: Services, spaceId: string, person: string | null, account: string): Promise<SpaceWriteResult> {
   const leaving = account === person;
+  let exists = false;
   return writeToSpace(db, spaceId, person, {
     action: leaving ? "space_leave" : "space_remove",
+    // The block names their account, so it's held before the space, as their own deletion holds it (M3d-35). A
+    // deletion running now finishes first, and then they're already out, or waits for the removal to finish.
+    preLock: async (trx) => {
+      exists = (await trx.selectFrom("account").select("id").where("id", "=", account).forKeyShare().executeTakeFirst()) !== undefined;
+    },
     load: async (trx) => {
-      const exists = await trx.selectFrom("account").select("id").where("id", "=", account).executeTakeFirst();
       if (!exists) return null;
       const member = await trx.selectFrom("space_member").select("role").where("space_id", "=", spaceId).where("account_id", "=", account).executeTakeFirst();
       return { member: member?.role ?? null };
@@ -235,11 +259,30 @@ export async function removeFromSpace({ db, clock }: Services, spaceId: string, 
     async change(trx, { member }) {
       if (member === "owner") return { refused: "owner_keeps_role" };
       if (member === null) return "already_done";
+      const now = clock.now();
       await trx.deleteFrom("space_member").where("space_id", "=", spaceId).where("account_id", "=", account).execute();
-      await logChange(trx, { space: spaceId, at: clock.now(), actor: person!, kind: leaving ? "member_left" : "member_removed", after: { account } });
+      // The service may not change a block, so one already there is left as it is.
+      if (!leaving) {
+        await trx
+          .insertInto("space_block")
+          .values({ space_id: spaceId, account_id: account, blocked_by: person!, at: now })
+          .onConflict((c) => c.columns(["space_id", "account_id"]).doNothing())
+          .execute();
+      }
+      await logChange(trx, { space: spaceId, at: now, actor: person!, kind: leaving ? "member_left" : "member_removed", after: { account } });
       return "done";
     },
   });
+}
+
+/**
+ * Whether an Admin or the Owner removed `account` from the space and no one has invited them back (G-07, M3d-35).
+ * M3d-20's Join refuses them with the 404 a private space gives, and Find spaces leaves the space out for them. Read it
+ * in the caller's transaction, after the space's row is locked, so a removal or an invite can't change it meanwhile.
+ */
+export async function blockedFrom(db: Db | Trx, spaceId: string, account: string): Promise<boolean> {
+  const block = await db.selectFrom("space_block").select("space_id").where("space_id", "=", spaceId).where("account_id", "=", account).executeTakeFirst();
+  return block !== undefined;
 }
 
 /** The spaces `person` is in that aren't deleted, with their role and how many members each has (deleted accounts aside). */
