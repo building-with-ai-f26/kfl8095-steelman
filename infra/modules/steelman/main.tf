@@ -548,7 +548,8 @@ resource "google_cloud_run_v2_job_iam_member" "scheduler_runs_daily" {
   member   = "serviceAccount:${google_service_account.scheduler.email}"
 }
 
-# Not on staging: its database is stopped every night, and its data can be wiped anyway.
+# Not on staging, because its database is stopped every night. Instead, deploy-staging.yml runs the daily job
+# after each deploy, while the database is started (M3d-31).
 resource "google_cloud_scheduler_job" "daily" {
   count     = var.stop_database_nightly ? 0 : 1
   project   = var.project_id
